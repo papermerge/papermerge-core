@@ -20,7 +20,7 @@ router = APIRouter(
 logger = logging.getLogger(__name__)
 
 
-@router.get("/")
+@router.get("/", response_model=schema.PaginatedResponse[schema.AuditLog])
 @utils.docstring_parameter(scope=scopes.AUDIT_LOG_VIEW)
 async def get_audit_logs(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.AUDIT_LOG_VIEW])],
@@ -31,17 +31,26 @@ async def get_audit_logs(
 
     Required scope: `{scope}`
     """
-    advanced_filters = params.to_advanced_filters()
+    try:
+        advanced_filters = params.to_advanced_filters()
 
-    # Use your advanced database function
-    result = await dbapi.get_audit_logs(
-        db_session,
-        page_size=params.page_size,
-        page_number=params.page_number,
-        sort_by=params.sort_by,
-        sort_direction=params.sort_direction,
-        filters=advanced_filters
-    )
+        # Use your advanced database function
+        result = await dbapi.get_audit_logs(
+            db_session,
+            page_size=params.page_size,
+            page_number=params.page_number,
+            sort_by=params.sort_by,
+            sort_direction=params.sort_direction,
+            filters=advanced_filters
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid parameters: {str(e)}")
+    except Exception as e:
+        logger.error(
+            f"Error fetching audit logs for user {user.id}: {e}",
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     return result
 
@@ -52,7 +61,7 @@ async def get_audit_log(
     audit_log_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.AUDIT_LOG_VIEW])],
     db_session: AsyncSession = Depends(get_db),
-):
+) -> schema.AuditLogDetails:
     """Get audit log entry details
 
     Required scope: `{scope}`
@@ -61,5 +70,11 @@ async def get_audit_log(
         result = await dbapi.get_audit_log(db_session, audit_log_id=audit_log_id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Audit log entry not found")
+    except Exception as e:
+        logger.error(
+            f"Error fetching audit log {audit_log_id} for user {user.id}: {e}",
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     return result

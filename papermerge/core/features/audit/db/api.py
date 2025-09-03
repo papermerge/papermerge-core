@@ -11,6 +11,19 @@ from papermerge.core import schema, orm
 
 logger = logging.getLogger(__name__)
 
+ALLOWED_SORT_COLUMNS = {
+    'timestamp', 'operation', 'table_name', 'username'
+}
+
+ALLOWED_FILTER_COLUMNS = {
+    'username',
+    'user_id',
+    'table_name',
+    'operation',
+    'timestamp',
+    'record_id',
+    'id'
+}
 
 async def get_audit_log(
     db_session: AsyncSession,
@@ -28,7 +41,6 @@ async def get_audit_log(
     return result
 
 
-# Alternative version with more advanced filtering support
 async def get_audit_logs(
     db_session: AsyncSession,
     *,
@@ -41,12 +53,17 @@ async def get_audit_logs(
     base_query = select(orm.AuditLog)
     count_query = select(func.count(orm.AuditLog.id))
 
-    # Apply advanced filters
+    if sort_by and sort_by not in ALLOWED_SORT_COLUMNS:
+        raise ValueError(f"Invalid sort column: {sort_by}")
+
     if filters:
         filter_conditions = []
 
         for column, filter_data in filters.items():
             if not isinstance(filter_data, dict):
+                continue
+
+            if column not in ALLOWED_FILTER_COLUMNS:
                 continue
 
             value = filter_data.get("value")
@@ -66,44 +83,26 @@ async def get_audit_logs(
                         orm.AuditLog.operation.ilike(f"%{value.lower()}%")
                     )
                 )
-            else:
-                column_attr = getattr(orm.AuditLog, column, None)
-                if column_attr is None:
-                    continue
+            elif column in ALLOWED_FILTER_COLUMNS:
+                column_attr = getattr(orm.AuditLog, column)
+                if operator == "in" and isinstance(value, list):
+                    filter_conditions.append(column_attr.in_(value))
+                elif operator == "in" and isinstance(value, str):
+                    filter_conditions.append(column_attr.in_(value.split(",")))
+                elif column == "timestamp" and operator == "range" and isinstance(value, dict):
+                    if "from" in value and value["from"]:
+                        try:
+                            date_from = datetime.fromisoformat(value["from"].replace('Z', '+00:00'))
+                            filter_conditions.append(column_attr >= date_from)
+                        except ValueError:
+                            pass
 
-            # Apply different operators
-            if operator == "equals":
-                filter_conditions.append(column_attr == value)
-
-            elif operator == "contains":
-                filter_conditions.append(column_attr.ilike(f"%{value}%"))
-
-            elif operator == "startsWith":
-                filter_conditions.append(column_attr.ilike(f"{value}%"))
-
-            elif operator == "endsWith":
-                filter_conditions.append(column_attr.ilike(f"%{value}"))
-
-            elif operator == "in" and isinstance(value, list):
-                filter_conditions.append(column_attr.in_(value))
-            elif operator == "in" and isinstance(value, str):
-                filter_conditions.append(column_attr.in_(value.split(",")))
-
-            # Date range handling for timestamp
-            elif column == "timestamp" and operator == "range" and isinstance(value, dict):
-                if "from" in value and value["from"]:
-                    try:
-                        date_from = datetime.fromisoformat(value["from"].replace('Z', '+00:00'))
-                        filter_conditions.append(column_attr >= date_from)
-                    except ValueError:
-                        pass
-
-                if "to" in value and value["to"]:
-                    try:
-                        date_to = datetime.fromisoformat(value["to"].replace('Z', '+00:00'))
-                        filter_conditions.append(column_attr <= date_to)
-                    except ValueError:
-                        pass
+                    if "to" in value and value["to"]:
+                        try:
+                            date_to = datetime.fromisoformat(value["to"].replace('Z', '+00:00'))
+                            filter_conditions.append(column_attr <= date_to)
+                        except ValueError:
+                            pass
 
         if filter_conditions:
             filter_clause = and_(*filter_conditions)

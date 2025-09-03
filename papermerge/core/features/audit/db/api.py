@@ -60,7 +60,10 @@ async def get_audit_logs(
                     or_(
                         func.cast(orm.AuditLog.record_id, db_String).ilike(f"%{value}%"),
                         func.cast(orm.AuditLog.user_id, db_String).ilike(f"%{value}%"),
-                        func.cast(orm.AuditLog.id, db_String).ilike(f"%{value}%")
+                        func.cast(orm.AuditLog.id, db_String).ilike(f"%{value}%"),
+                        orm.AuditLog.username.ilike(f"%{value}%"),
+                        orm.AuditLog.table_name.ilike(f"%{value}%"),
+                        orm.AuditLog.operation.ilike(f"%{value.lower()}%")
                     )
                 )
             else:

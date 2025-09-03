@@ -1,3 +1,4 @@
+import CopyButton from "@/components/CopyButton"
 import {Paper, ScrollArea, TextInput, Textarea} from "@mantine/core"
 import {AuditLogDetails} from "../types"
 
@@ -13,11 +14,13 @@ export default function AuditLogDetailsComponent({auditLog}: Args) {
           value={auditLog?.id}
           readOnly={true}
           label={"Audit Log ID"}
+          rightSection={<CopyButton value={auditLog?.id || ""} />}
         />
         <TextInput
           value={auditLog?.timestamp}
           readOnly={true}
           label={"Timestamp"}
+          rightSection={<CopyButton value={auditLog?.timestamp || ""} />}
         />
         <TextInput
           value={auditLog?.operation}

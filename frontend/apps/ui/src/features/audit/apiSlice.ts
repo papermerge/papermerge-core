@@ -28,6 +28,7 @@ export interface AuditLogQueryParams extends Partial<PaginatedArgs> {
   filter_record_id?: string
   filter_timestamp_from?: string // ISO string format
   filter_timestamp_to?: string // ISO string format
+  filter_free_text?: string
 }
 
 // Helper function to build clean query string
@@ -70,6 +71,10 @@ function buildQueryString(params: AuditLogQueryParams = {}): string {
   }
   if (params.filter_timestamp_to) {
     searchParams.append("filter_timestamp_to", params.filter_timestamp_to)
+  }
+
+  if (params.filter_free_text) {
+    searchParams.append("filter_free_text", params.filter_free_text)
   }
 
   return searchParams.toString()

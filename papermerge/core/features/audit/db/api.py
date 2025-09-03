@@ -5,7 +5,7 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, desc, asc
+from sqlalchemy import select, func, and_, or_, desc, asc, String as db_String
 
 from papermerge.core import schema, orm
 
@@ -55,9 +55,18 @@ async def get_audit_logs(
             if value is None:
                 continue
 
-            column_attr = getattr(orm.AuditLog, column, None)
-            if column_attr is None:
-                continue
+            if column == "free_text":
+                filter_conditions.append(
+                    or_(
+                        func.cast(orm.AuditLog.record_id, db_String).ilike(f"%{value}%"),
+                        func.cast(orm.AuditLog.user_id, db_String).ilike(f"%{value}%"),
+                        func.cast(orm.AuditLog.id, db_String).ilike(f"%{value}%")
+                    )
+                )
+            else:
+                column_attr = getattr(orm.AuditLog, column, None)
+                if column_attr is None:
+                    continue
 
             # Apply different operators
             if operator == "equals":

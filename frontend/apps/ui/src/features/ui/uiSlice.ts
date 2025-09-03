@@ -231,6 +231,7 @@ interface AuditLogPanelList {
   operationFilterValue?: Array<AuditOperation>
   tableNameFilterValue?: Array<string>
   usernameFilterValue?: Array<string>
+  freeTextFilterValue?: string
   pageNumber?: number
   pageSize?: number
   sorting?: SortState
@@ -963,6 +964,7 @@ const uiSlice = createSlice({
         tableNameFilterValue?: Array<string>
         operationFilterValue?: Array<AuditOperation>
         usernameFilterValue?: Array<string>
+        freeTextFilterValue?: string
       }>
     ) {
       const {
@@ -970,7 +972,8 @@ const uiSlice = createSlice({
         tableNameFilterValue,
         operationFilterValue,
         timestampFilterValue,
-        usernameFilterValue
+        usernameFilterValue,
+        freeTextFilterValue
       } = action.payload
       if (mode == "main") {
         state.mainAuditLogList = {
@@ -978,7 +981,8 @@ const uiSlice = createSlice({
           tableNameFilterValue,
           operationFilterValue,
           timestampFilterValue,
-          usernameFilterValue
+          usernameFilterValue,
+          freeTextFilterValue
         }
         return
       }
@@ -988,7 +992,8 @@ const uiSlice = createSlice({
         tableNameFilterValue,
         operationFilterValue,
         timestampFilterValue,
-        usernameFilterValue
+        usernameFilterValue,
+        freeTextFilterValue
       }
     },
     auditLogPaginationUpdated(
@@ -1588,6 +1593,17 @@ export const selectAuditLogUsernameFilterValue = (
   }
 
   return state.ui.secondaryAuditLogList?.usernameFilterValue
+}
+
+export const selectAuditLogFreeTextFilterValue = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.ui.mainAuditLogList?.freeTextFilterValue
+  }
+
+  return state.ui.secondaryAuditLogList?.freeTextFilterValue
 }
 
 export const selectAuditLogPageSize = (state: RootState, mode: PanelMode) => {

@@ -64,6 +64,7 @@ export interface AuditLogQueryParams extends Partial<PaginatedArgs> {
   filter_record_id?: string
   filter_timestamp_from?: string // ISO string format
   filter_timestamp_to?: string // ISO string format
+  filter_free_text?: string
 }
 
 export type TimestampFilterType = {

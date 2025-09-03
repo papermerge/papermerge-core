@@ -2,17 +2,20 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import type {AuditOperation, TimestampFilterType} from "@/features/audit/types"
 import {
   auditLogTableFiltersUpdated,
+  selectAuditLogFreeTextFilterValue,
   selectAuditLogOperationFilterValue,
   selectAuditLogTableNameFilterValue,
   selectAuditLogUsernameFilterValue
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
-import {useState} from "react"
+import {useEffect, useState} from "react"
 import OperationFilter from "./OperationFilter"
 import SearchContainer from "./SearchContainer"
 import TableNameFilter from "./TableNameFilter"
 import TimestampFilter from "./TimestampFilter"
 import UserFilter from "./UserFilter"
+
+const DEBOUNCE_MS = 300 // 300 miliseconds
 
 export default function Search() {
   const mode = usePanelMode()
@@ -25,14 +28,39 @@ export default function Search() {
     selectAuditLogOperationFilterValue(s, mode)
   )
   const users = useAppSelector(s => selectAuditLogUsernameFilterValue(s, mode))
+  const searchText = useAppSelector(s =>
+    selectAuditLogFreeTextFilterValue(s, mode)
+  )
   const [localTableNames, setLocalTableNames] = useState<string[]>(
     tableNames || []
   )
+
   const [localOperations, setLocalOperations] = useState<AuditOperation[]>(
     operations || []
   )
   const [localRange, setLocalRange] = useState<TimestampFilterType>()
   const [localUsers, setLocalUsers] = useState<string[]>(users || [])
+  const [localSearchTextValue, setSearchTextValue] = useState(searchText || "")
+  const [debouncedSearchTextValue, setDebouncedSearchTextValue] = useState(
+    searchText || ""
+  )
+
+  // Debounce the search value
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTextValue(localSearchTextValue)
+    }, DEBOUNCE_MS)
+
+    return () => clearTimeout(timer)
+  }, [localSearchTextValue])
+
+  useEffect(() => {
+    onSearch?.()
+  }, [debouncedSearchTextValue])
+
+  const onTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTextValue(e.currentTarget.value)
+  }
 
   const onLocalTableNamesChange = (values: string[]) => {
     setLocalTableNames(values)
@@ -55,6 +83,10 @@ export default function Search() {
     }
   }
 
+  const onClearSearchText = () => {
+    setSearchTextValue("")
+  }
+
   const onSearch = () => {
     dispatch(
       auditLogTableFiltersUpdated({
@@ -62,7 +94,8 @@ export default function Search() {
         tableNameFilterValue: localTableNames,
         operationFilterValue: localOperations,
         timestampFilterValue: localRange,
-        usernameFilterValue: localUsers
+        usernameFilterValue: localUsers,
+        freeTextFilterValue: debouncedSearchTextValue
       })
     )
   }
@@ -79,13 +112,21 @@ export default function Search() {
         tableNameFilterValue: undefined,
         operationFilterValue: undefined,
         timestampFilterValue: undefined,
-        usernameFilterValue: undefined
+        usernameFilterValue: undefined,
+        freeTextFilterValue: undefined
       })
     )
   }
 
   return (
-    <SearchContainer onClear={onClear} onSearch={onSearch}>
+    <SearchContainer
+      onTextChange={onTextChange}
+      searchText={localSearchTextValue}
+      onClearSearchText={onClearSearchText}
+      onClear={onClear}
+      w={200}
+      onSearch={onSearch}
+    >
       <TimestampFilter range={localRange} onChange={onLocalRangeChange} />
       <TableNameFilter
         tableNames={localTableNames}

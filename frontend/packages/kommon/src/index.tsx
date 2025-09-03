@@ -7,6 +7,8 @@ import type {
 } from "./components/RoleForm/types"
 import type {I18NRoleFormModal} from "./components/RoleFormModal/types"
 
+import CopyableTextArea from "./components/CopyableTextArea"
+import CopyableTextInput from "./components/CopyableTextInput"
 import RoleForm from "./components/RoleForm"
 import RoleFormModal from "./components/RoleFormModal"
 import SubmitButton from "./components/SubmitButton/SubmitButton"
@@ -21,6 +23,8 @@ import type {
 
 export {
   ColumnSelector,
+  CopyableTextArea,
+  CopyableTextInput,
   DataTable,
   EditNodeTitleModal,
   RoleForm,

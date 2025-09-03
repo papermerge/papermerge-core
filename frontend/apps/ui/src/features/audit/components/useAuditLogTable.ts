@@ -1,5 +1,6 @@
 import {useAppSelector} from "@/app/hooks"
 import {
+  selectAuditLogFreeTextFilterValue,
   selectAuditLogOperationFilterValue,
   selectAuditLogPageNumber,
   selectAuditLogPageSize,
@@ -35,6 +36,9 @@ function useQueryParams(): AuditLogQueryParams {
   const usernames = useAppSelector(s =>
     selectAuditLogUsernameFilterValue(s, mode)
   )
+  const free_text = useAppSelector(s =>
+    selectAuditLogFreeTextFilterValue(s, mode)
+  )
   const pageSize = useAppSelector(s => selectAuditLogPageSize(s, mode)) || 10
   const pageNumber = useAppSelector(s => selectAuditLogPageNumber(s, mode)) || 1
   const sorting = useAppSelector(s => selectAuditLogSorting(s, mode))
@@ -49,7 +53,8 @@ function useQueryParams(): AuditLogQueryParams {
     filter_operation: operations?.join(","),
     filter_username: usernames?.join(","),
     filter_timestamp_from: timestamp?.from || undefined,
-    filter_timestamp_to: timestamp?.to || undefined
+    filter_timestamp_to: timestamp?.to || undefined,
+    filter_free_text: free_text
   }
 
   return queryParams

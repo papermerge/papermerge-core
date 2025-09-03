@@ -92,6 +92,10 @@ class AuditLogParams(BaseModel):
         None,
         description="Filter to timestamp (ISO 8601 format: 2025-08-21T06:35:10Z)"
     )
+    filter_free_text: Optional[str] = Query(
+        None,
+        description="Filter by free text"
+    )
 
     @field_validator('filter_operation', mode='before')
     @classmethod
@@ -127,6 +131,12 @@ class AuditLogParams(BaseModel):
             filters["username"] = {
                 "value": self.filter_username,
                 "operator": "in"
+            }
+
+        if self.filter_free_text:
+            filters["free_text"] = {
+                "value": self.filter_free_text,
+                "operator": "free_text"
             }
 
         # Handle timestamp range filtering

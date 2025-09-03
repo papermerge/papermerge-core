@@ -1,16 +1,44 @@
 import {ActionIcon, Button, Group, Menu, Stack, TextInput} from "@mantine/core"
-import {IconAdjustmentsHorizontal, IconSearch} from "@tabler/icons-react"
+import {IconAdjustmentsHorizontal, IconSearch, IconX} from "@tabler/icons-react"
 
 interface Args {
   children: React.ReactNode
   onSearch?: () => void
   onClear?: () => void
+  searchText?: string
+  onClearSearchText?: () => void
+  onTextChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
-export default function SearchContainer({children, onSearch, onClear}: Args) {
+export default function SearchContainer({
+  children,
+  onSearch,
+  onClear,
+  searchText,
+  onTextChange,
+  onClearSearchText
+}: Args) {
   return (
     <TextInput
-      rightSection={<IconSearch size={16} />}
+      value={searchText}
+      onChange={onTextChange}
+      w={330}
+      rightSection={
+        searchText ? (
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            size="sm"
+            onClick={onClearSearchText}
+            style={{cursor: "pointer"}}
+            aria-label="Clear search"
+          >
+            <IconX size={16} />
+          </ActionIcon>
+        ) : (
+          <IconSearch size={16} />
+        )
+      }
       leftSectionPointerEvents="auto"
       leftSection={
         <Menu

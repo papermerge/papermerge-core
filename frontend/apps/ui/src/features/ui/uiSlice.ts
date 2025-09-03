@@ -962,20 +962,23 @@ const uiSlice = createSlice({
         timestampFilterValue?: TimestampFilterType
         tableNameFilterValue?: Array<string>
         operationFilterValue?: Array<AuditOperation>
+        usernameFilterValue?: Array<string>
       }>
     ) {
       const {
         mode,
         tableNameFilterValue,
         operationFilterValue,
-        timestampFilterValue
+        timestampFilterValue,
+        usernameFilterValue
       } = action.payload
       if (mode == "main") {
         state.mainAuditLogList = {
           ...state.mainAuditLogList,
           tableNameFilterValue,
           operationFilterValue,
-          timestampFilterValue
+          timestampFilterValue,
+          usernameFilterValue
         }
         return
       }
@@ -984,7 +987,8 @@ const uiSlice = createSlice({
         ...state.secondaryAuditLogList,
         tableNameFilterValue,
         operationFilterValue,
-        timestampFilterValue
+        timestampFilterValue,
+        usernameFilterValue
       }
     },
     auditLogPaginationUpdated(
@@ -1573,6 +1577,17 @@ export const selectAuditLogTableNameFilterValue = (
   }
 
   return state.ui.secondaryAuditLogList?.tableNameFilterValue
+}
+
+export const selectAuditLogUsernameFilterValue = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.ui.mainAuditLogList?.usernameFilterValue
+  }
+
+  return state.ui.secondaryAuditLogList?.usernameFilterValue
 }
 
 export const selectAuditLogPageSize = (state: RootState, mode: PanelMode) => {

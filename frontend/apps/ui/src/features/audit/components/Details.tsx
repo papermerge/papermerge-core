@@ -1,5 +1,5 @@
-import CopyButton from "@/components/CopyButton"
-import {Paper, ScrollArea, TextInput, Textarea} from "@mantine/core"
+import {Paper, ScrollArea} from "@mantine/core"
+import {CopyableTextArea, CopyableTextInput} from "kommon"
 import {AuditLogDetails} from "../types"
 
 interface Args {
@@ -10,63 +10,29 @@ export default function AuditLogDetailsComponent({auditLog}: Args) {
   return (
     <Paper px="md">
       <ScrollArea h={800}>
-        <TextInput
-          value={auditLog?.id}
-          readOnly={true}
-          label={"Audit Log ID"}
-          rightSection={<CopyButton value={auditLog?.id || ""} />}
-        />
-        <TextInput
-          value={auditLog?.timestamp}
-          readOnly={true}
-          label={"Timestamp"}
-          rightSection={<CopyButton value={auditLog?.timestamp || ""} />}
-        />
-        <TextInput
-          value={auditLog?.operation}
-          readOnly={true}
-          label={"Operation"}
-        />
-        <TextInput
-          value={auditLog?.table_name}
-          readOnly={true}
-          label={"Table Name"}
-        />
-        <TextInput
-          value={auditLog?.record_id}
-          readOnly={true}
-          label={"Record ID"}
-        />
-        <TextInput
-          value={auditLog?.username}
-          readOnly={true}
-          label={"Username"}
-        />
-        <TextInput
-          value={auditLog?.user_id}
-          readOnly={true}
-          label={"User ID"}
-        />
-        <Textarea
+        <CopyableTextInput value={auditLog?.id} label={"Audit Log ID"} />
+        <CopyableTextInput value={auditLog?.timestamp} label={"Timestamp"} />
+        <CopyableTextInput value={auditLog?.operation} label={"Operation"} />
+        <CopyableTextInput value={auditLog?.table_name} label={"Table Name"} />
+        <CopyableTextInput value={auditLog?.record_id} label={"Record ID"} />
+        <CopyableTextInput value={auditLog?.username} label={"Username"} />
+        <CopyableTextInput value={auditLog?.user_id} label={"User ID"} />
+        <CopyableTextArea
           value={formatValue(auditLog?.old_values)}
-          readOnly={true}
           autosize
           label={"Old Values"}
         />
-        <Textarea
+        <CopyableTextArea
           value={formatValue(auditLog?.new_values)}
           autosize
-          readOnly={true}
           label={"New Values"}
         />
-        <TextInput
-          value={auditLog?.changed_fields}
-          readOnly={true}
+        <CopyableTextInput
+          value={auditLog?.changed_fields || ""}
           label={"Changed Fields"}
         />
-        <Textarea
-          value={auditLog?.audit_message}
-          readOnly={true}
+        <CopyableTextInput
+          value={auditLog?.audit_message || ""}
           label={"Audit Message"}
         />
       </ScrollArea>

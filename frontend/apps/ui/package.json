@@ -36,7 +36,7 @@
     "pdfjs-dist": "^5.4.54",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-i18next": "^15.7.1",
+    "react-i18next": "^15.7.3",
     "react-redux": "^9.2.0",
     "react-router": "^7.8.1",
     "react-router-dom": "^7.8.1",

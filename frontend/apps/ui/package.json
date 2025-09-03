@@ -46,7 +46,7 @@
   "devDependencies": {
     "@types/js-cookie": "^3.0.6",
     "@types/react": "^19.1.11",
-    "@types/react-dom": "^19.1.7",
+    "@types/react-dom": "^19.1.9",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.0.1",
     "prettier": "^3.6.2",

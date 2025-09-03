@@ -23,7 +23,7 @@
   "devDependencies": {
     "@eslint/js": "^9.33.0",
     "@types/react": "^19.1.11",
-    "@types/react-dom": "^19.1.7",
+    "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.1",
     "eslint": "^9.34.0",
     "eslint-plugin-react-hooks": "^5.2.0",

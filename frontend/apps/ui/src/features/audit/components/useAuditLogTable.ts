@@ -5,7 +5,8 @@ import {
   selectAuditLogPageSize,
   selectAuditLogSorting,
   selectAuditLogTableNameFilterValue,
-  selectAuditLogTimestampFilterValue
+  selectAuditLogTimestampFilterValue,
+  selectAuditLogUsernameFilterValue
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {useGetPaginatedAuditLogsQuery} from "../apiSlice"
@@ -31,6 +32,9 @@ function useQueryParams(): AuditLogQueryParams {
   const timestamp = useAppSelector(s =>
     selectAuditLogTimestampFilterValue(s, mode)
   )
+  const usernames = useAppSelector(s =>
+    selectAuditLogUsernameFilterValue(s, mode)
+  )
   const pageSize = useAppSelector(s => selectAuditLogPageSize(s, mode)) || 10
   const pageNumber = useAppSelector(s => selectAuditLogPageNumber(s, mode)) || 1
   const sorting = useAppSelector(s => selectAuditLogSorting(s, mode))
@@ -43,6 +47,7 @@ function useQueryParams(): AuditLogQueryParams {
     sort_direction: sorting?.direction || undefined,
     filter_table_name: tableNames?.join(","),
     filter_operation: operations?.join(","),
+    filter_username: usernames?.join(","),
     filter_timestamp_from: timestamp?.from || undefined,
     filter_timestamp_to: timestamp?.to || undefined
   }

@@ -1,15 +1,18 @@
-import {MultiSelect, Paper} from "@mantine/core"
+import {Paper} from "@mantine/core"
+import LazyUserSelect from "./LazyUserSelect"
 
-export default function UsersListFilter() {
+interface Args {
+  users?: string[] // i.e. usernames
+  onChange?: (value: string[] | null) => void
+}
+
+export default function UserFilter({users, onChange}: Args) {
   return (
-    <Paper p="xs">
-      <MultiSelect
-        searchable
-        label="User"
-        placeholder="Pick value"
-        clearable
-        data={["admin", "eugen", "coco"]}
-      />
+    <Paper
+      onClick={e => e.stopPropagation()}
+      onMouseDown={e => e.stopPropagation()}
+    >
+      <LazyUserSelect selectedUsers={users} onChange={onChange} />
     </Paper>
   )
 }

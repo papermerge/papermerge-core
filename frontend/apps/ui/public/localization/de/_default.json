@@ -134,7 +134,25 @@
       "noUsersFound": "Keine Benutzer gefunden",
       "label": "Benutzer",
       "pickValue": "Wert auswählen"
-    }
+    },
+    "noAuditLogFound": "Keine Audit-Protokolle gefunden",
+    "errorLoadingAuditLogs": "Fehler beim Laden der Audit-Protokollen",
+    "anErrorOccurred": "Ein Fehler ist aufgetreten",
+    "noAuditLogsFound": "Keine Audit-Protokollen gefunden"
+  },
+  "auditLogDetails": {
+    "auditLogs": "Audit-Protokollen",
+    "timestamp": "Zeitstempel",
+    "operation": "Aktion",
+    "table_name": "Tabelle",
+    "record_id": "Datensatz-ID",
+    "username": "Benutzer",
+    "user_id": "Benutzer-ID",
+    "id": "Protokoll-ID",
+    "old_values": "Alte Werte",
+    "new_values": "Neue Werte",
+    "changed_fields": "Geänderte Felder",
+    "audit_message": "Audit-Nachricht"
   },
   "load-more": "Mehr anzeigen",
   "app.version": "Version",

@@ -133,8 +133,26 @@
       "error": "Error loading users",
       "noUsersFound": "No users found",
       "label": "User",
-      "pickValue": "Pick value"
+      "pickValue": "Pick value",
+      "noAuditLogFound": "No audit logs found",
+      "errorLoadingAuditLogs": "Error loading audit logs",
+      "anErrorOccurred": "An error occurred",
+      "noAuditLogsFound": "No audit logs found"
     }
+  },
+  "auditLogDetails": {
+    "timestamp": "Timestamp",
+    "operation": "Operation",
+    "table_name": "Table",
+    "record_id": "Record ID",
+    "username": "User",
+    "user_id": "User ID",
+    "id": "Log ID",
+    "auditLogs": "Audit Logs",
+    "old_values": "Old Values",
+    "new_values": "New Values",
+    "changed_fields": "Changed Fields",
+    "audit_message": "Audit Message"
   },
   "load-more": "Load more",
   "app.version": "Version",

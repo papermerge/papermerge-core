@@ -34,7 +34,6 @@ async def get_audit_logs(
     try:
         advanced_filters = params.to_advanced_filters()
 
-        # Use your advanced database function
         result = await dbapi.get_audit_logs(
             db_session,
             page_size=params.page_size,

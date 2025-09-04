@@ -63,9 +63,6 @@ async def get_audit_logs(
             if not isinstance(filter_data, dict):
                 continue
 
-            if column not in ALLOWED_FILTER_COLUMNS:
-                continue
-
             value = filter_data.get("value")
             operator = filter_data.get("operator", "contains")
 
@@ -80,7 +77,7 @@ async def get_audit_logs(
                         func.cast(orm.AuditLog.id, db_String).ilike(f"%{value}%"),
                         orm.AuditLog.username.ilike(f"%{value}%"),
                         orm.AuditLog.table_name.ilike(f"%{value}%"),
-                        orm.AuditLog.operation.ilike(f"%{value.lower()}%")
+                        orm.AuditLog.operation.ilike(f"%{value}%")
                     )
                 )
             elif column in ALLOWED_FILTER_COLUMNS:

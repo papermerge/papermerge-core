@@ -1,4 +1,5 @@
 import {MultiSelect, Paper} from "@mantine/core"
+import {TFunction} from "i18next"
 
 const ALL_TABLES = [
   "nodes",
@@ -19,9 +20,10 @@ const ALL_TABLES = [
 interface Args {
   tableNames?: string[]
   onChange?: (value: string[]) => void
+  t?: TFunction
 }
 
-export default function TableNameFilter({tableNames, onChange}: Args) {
+export default function TableNameFilter({tableNames, onChange, t}: Args) {
   return (
     <Paper
       onClick={e => e.stopPropagation()}
@@ -29,8 +31,8 @@ export default function TableNameFilter({tableNames, onChange}: Args) {
     >
       <MultiSelect
         searchable
-        label="Table"
-        placeholder="Pick value"
+        label={t?.("auditLog.tableNameFilter.label") || "Table"}
+        placeholder={t?.("auditLog.tableNameFilter.pickValue") || "Pick value"}
         clearable
         onChange={onChange}
         value={tableNames}

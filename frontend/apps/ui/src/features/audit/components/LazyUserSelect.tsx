@@ -1,13 +1,15 @@
 import {useGetUsersQuery} from "@/features/users/apiSlice"
 import {Loader, MultiSelect} from "@mantine/core"
+import {TFunction} from "i18next"
 import {useState} from "react"
 
 interface Args {
   onChange?: (values: string[] | null) => void
   selectedUsers?: string[]
+  t?: TFunction
 }
 
-export default function LazyUserSelect({onChange, selectedUsers}: Args) {
+export default function LazyUserSelect({onChange, selectedUsers, t}: Args) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   // Only fetch data when dropdown is opened
@@ -40,7 +42,7 @@ export default function LazyUserSelect({onChange, selectedUsers}: Args) {
       return [
         {
           value: "loading",
-          label: "Loading users...",
+          label: t?.("auditLog.userFilter.loading") || "Loading...",
           disabled: true
         }
       ]
@@ -50,7 +52,7 @@ export default function LazyUserSelect({onChange, selectedUsers}: Args) {
       return [
         {
           value: "error",
-          label: "Error loading users",
+          label: t?.("auditLog.userFilter.error") || "Error loading users",
           disabled: true
         }
       ]
@@ -60,7 +62,7 @@ export default function LazyUserSelect({onChange, selectedUsers}: Args) {
       return [
         {
           value: "empty",
-          label: "No users found",
+          label: t?.("auditLog.userFilter.noUsersFound") || "No users found",
           disabled: true
         }
       ]
@@ -75,8 +77,8 @@ export default function LazyUserSelect({onChange, selectedUsers}: Args) {
       value={selectedUsers}
       onChange={handleChange}
       onDropdownOpen={handleDropdownOpen}
-      placeholder={"Pick value"}
-      label="User"
+      placeholder={t?.("auditLog.userFilter.pickValue") || "Pick value"}
+      label={t?.("auditLog.userFilter.label") || "User"}
       rightSection={isLoading ? <Loader size="xs" /> : undefined}
       searchable
       clearable

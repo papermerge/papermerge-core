@@ -129,16 +129,18 @@ export default function Search() {
       onSearch={onSearch}
       t={t}
     >
-      <TimestampFilter range={localRange} onChange={onLocalRangeChange} />
+      <TimestampFilter t={t} range={localRange} onChange={onLocalRangeChange} />
       <TableNameFilter
+        t={t}
         tableNames={localTableNames}
         onChange={onLocalTableNamesChange}
       />
       <OperationFilter
+        t={t}
         operations={localOperations}
         onChange={onLocalOperationChange}
       />
-      <UserFilter users={localUsers} onChange={onLocalUserChange} />
+      <UserFilter t={t} users={localUsers} onChange={onLocalUserChange} />
     </SearchContainer>
   )
 }

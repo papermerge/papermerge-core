@@ -111,6 +111,31 @@
     "user_id": "User ID",
     "id": "Log ID"
   },
+  "auditLog": {
+    "timestampFilter": {
+      "from": "From",
+      "to": "To",
+      "today": "Today",
+      "last_1_hour": "Last 1 Hour",
+      "last_3_hour": "Last 3 Hour",
+      "clear": "Clear"
+    },
+    "tableNameFilter": {
+      "label": "Table",
+      "pickValue": "Pick value"
+    },
+    "operationFilter": {
+      "label": "Operation",
+      "pickValue": "Pick value"
+    },
+    "userFilter": {
+      "loading": "Loading...",
+      "error": "Error loading users",
+      "noUsersFound": "No users found",
+      "label": "User",
+      "pickValue": "Pick value"
+    }
+  },
   "load-more": "Load more",
   "app.version": "Version",
   "me": "Me",

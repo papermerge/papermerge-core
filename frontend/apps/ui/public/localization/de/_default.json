@@ -111,6 +111,31 @@
     "user_id": "Benutzer-ID",
     "id": "Protokoll-ID"
   },
+  "auditLog": {
+    "timestampFilter": {
+      "from": "Von",
+      "to": "Bis",
+      "today": "Heute",
+      "last_1_hour": "Letzte 1 Stunde",
+      "last_3_hour": "Letzte 3 Stunden",
+      "clear": "Löschen"
+    },
+    "tableNameFilter": {
+      "label": "Tabbelle",
+      "pickValue": "Wert auswählen"
+    },
+    "operationFilter": {
+      "label": "Aktion",
+      "pickValue": "Wert auswählen"
+    },
+    "userFilter": {
+      "loading": "Wird geladen...",
+      "error": "Fehler beim Laden der Benutzer",
+      "noUsersFound": "Keine Benutzer gefunden",
+      "label": "Benutzer",
+      "pickValue": "Wert auswählen"
+    }
+  },
   "load-more": "Mehr anzeigen",
   "app.version": "Version",
   "me": "Ich",

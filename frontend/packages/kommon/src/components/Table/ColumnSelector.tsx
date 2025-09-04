@@ -1,17 +1,20 @@
 // components/ColumnSelector/ColumnSelector.tsx
 import {ActionIcon, Checkbox, Popover, ScrollArea, Stack} from "@mantine/core"
 import {IconColumns} from "@tabler/icons-react"
+import {TFunction} from "i18next"
 import {useState} from "react"
 import {ColumnConfig} from "./types"
 
 interface ColumnSelectorArgs<T> {
   columns: ColumnConfig<T>[]
   onColumnsChange: (columns: ColumnConfig<T>[]) => void
+  t?: TFunction
 }
 
 export default function ColumnSelector<T>({
   columns,
-  onColumnsChange
+  onColumnsChange,
+  t
 }: ColumnSelectorArgs<T>) {
   const [opened, setOpened] = useState(false)
 
@@ -43,7 +46,9 @@ export default function ColumnSelector<T>({
             {columns.map(column => (
               <Checkbox
                 key={String(column.key)}
-                label={column.label}
+                label={
+                  t?.(`auditLogColumns.${String(column.key)}`) || column.label
+                }
                 checked={column.visible !== false}
                 onChange={() => handleToggle(column.key)}
                 size="sm"

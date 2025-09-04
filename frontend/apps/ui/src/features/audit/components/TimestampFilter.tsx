@@ -1,13 +1,15 @@
 import type {TimestampFilterType} from "@/features/audit/types"
 import {Button, Group, Paper, Stack} from "@mantine/core"
 import {DateTimePicker} from "@mantine/dates"
+import {TFunction} from "i18next"
 
 interface Args {
   range?: TimestampFilterType
   onChange?: (range: TimestampFilterType) => void
+  t?: TFunction
 }
 
-export default function TimestampFilter({range, onChange}: Args) {
+export default function TimestampFilter({range, onChange, t}: Args) {
   const onChangeFrom = (valueFrom: string | null) => {
     if (onChange) {
       onChange({
@@ -73,7 +75,7 @@ export default function TimestampFilter({range, onChange}: Args) {
       <Stack>
         <Group justify={"start"}>
           <DateTimePicker
-            label="From"
+            label={t?.("auditLog.timestampFilter.from") || "From"}
             value={range?.from}
             miw={180}
             clearable
@@ -81,7 +83,7 @@ export default function TimestampFilter({range, onChange}: Args) {
             onChange={onChangeFrom}
           />
           <DateTimePicker
-            label="To"
+            label={t?.("auditLog.timestampFilter.to") || "To"}
             miw={180}
             value={range?.to}
             clearable
@@ -96,24 +98,24 @@ export default function TimestampFilter({range, onChange}: Args) {
             variant="light"
             onClick={() => handleQuickSelect("today")}
           >
-            Today
+            {t?.("auditLog.timestampFilter.today") || "Today"}
           </Button>
           <Button
             size="xs"
             variant="light"
             onClick={() => handleQuickSelect("1hour")}
           >
-            Last 1 Hour
+            {t?.("auditLog.timestampFilter.last_1_hour") || "Last 1 Hour"}
           </Button>
           <Button
             size="xs"
             variant="light"
             onClick={() => handleQuickSelect("3hours")}
           >
-            Last 3 Hours
+            {t?.("auditLog.timestampFilter.last_3_hour") || "Last 3 Hours"}
           </Button>
           <Button size="xs" variant="light" onClick={() => handleClear()}>
-            Clear
+            {t?.("auditLog.timestampFilter.clear") || "Clear"}
           </Button>
         </Group>
       </Stack>

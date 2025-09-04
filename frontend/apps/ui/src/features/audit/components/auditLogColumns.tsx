@@ -1,6 +1,7 @@
 import {ActionIcon, Badge, Group, Text, Tooltip} from "@mantine/core"
 import {useClipboard} from "@mantine/hooks"
 import {IconCheck, IconColumns2, IconCopy} from "@tabler/icons-react"
+import {TFunction} from "i18next"
 import type {ColumnConfig} from "kommon"
 import {useCallback, useState} from "react"
 import type {AuditLogItem} from "../types"
@@ -119,100 +120,101 @@ const formatTimestamp = (timestamp: string) => {
   }
 }
 
-const auditLogColumns: ColumnConfig<AuditLogItem>[] = [
-  {
-    key: "timestamp",
-    label: "Timestamp",
-    sortable: true,
-    filterable: false,
-    width: 180,
-    minWidth: 180,
-    render: (value, row, onClick) => {
-      const {date, time} = formatTimestamp(value as string)
+export default function auditLogColumns(t?: TFunction) {
+  const columns: ColumnConfig<AuditLogItem>[] = [
+    {
+      key: "timestamp",
+      label: t?.("auditLogColumns.timestamp") || "Timestamp",
+      sortable: true,
+      filterable: false,
+      width: 180,
+      minWidth: 180,
+      render: (value, row, onClick) => {
+        const {date, time} = formatTimestamp(value as string)
 
-      return (
-        <Clickable row={row} onClickHandler={onClick}>
-          <Text component="a" size="xs">
-            {date}
-          </Text>
-          <Text size="xs" c="dimmed">
-            {time}
-          </Text>
-        </Clickable>
-      )
-    }
-  },
-  {
-    key: "operation",
-    label: "Operation",
-    sortable: true,
-    filterable: true,
-    width: 100,
-    minWidth: 120,
-    render: value => {
-      const operation = value as keyof typeof OPERATION_COLORS
-      return (
-        <Badge
-          color={OPERATION_COLORS[operation] || "gray"}
-          variant="light"
-          size="sm"
-        >
+        return (
+          <Clickable row={row} onClickHandler={onClick}>
+            <Text component="a" size="xs">
+              {date}
+            </Text>
+            <Text size="xs" c="dimmed">
+              {time}
+            </Text>
+          </Clickable>
+        )
+      }
+    },
+    {
+      key: "operation",
+      label: t?.("auditLogColumns.operation") || "Operation",
+      sortable: true,
+      filterable: true,
+      width: 100,
+      minWidth: 120,
+      render: value => {
+        const operation = value as keyof typeof OPERATION_COLORS
+        return (
+          <Badge
+            color={OPERATION_COLORS[operation] || "gray"}
+            variant="light"
+            size="sm"
+          >
+            {value as string}
+          </Badge>
+        )
+      }
+    },
+    {
+      key: "table_name",
+      label: t?.("auditLogColumns.table_name") || "Table",
+      sortable: true,
+      filterable: true,
+      width: 120,
+      minWidth: 120,
+      render: value => (
+        <Text size="sm" ff="monospace">
           {value as string}
-        </Badge>
+        </Text>
       )
+    },
+    {
+      key: "record_id",
+      label: t?.("auditLogColumns.record_id") || "Record ID",
+      sortable: false,
+      filterable: true,
+      width: 200,
+      minWidth: 100,
+      render: value => <TruncatedTextWithCopy value={value as string} />
+    },
+    {
+      key: "username",
+      label: t?.("auditLogColumns.username") || "User",
+      sortable: true,
+      filterable: true,
+      width: 120,
+      minWidth: 100,
+      render: value => <Text size="sm">{value as string}</Text>
+    },
+    {
+      key: "user_id",
+      label: t?.("auditLogColumns.user_id") || "User ID",
+      sortable: false,
+      filterable: true,
+      visible: false,
+      width: 200,
+      minWidth: 100,
+      render: value => <TruncatedTextWithCopy value={value as string} />
+    },
+    {
+      key: "id",
+      label: t?.("auditLogColumns.id") || "Log ID",
+      sortable: false,
+      filterable: false,
+      visible: false,
+      width: 200,
+      minWidth: 100,
+      render: value => <TruncatedTextWithCopy value={value as string} />
     }
-  },
-  {
-    key: "table_name",
-    label: "Table",
-    sortable: true,
-    filterable: true,
-    width: 120,
-    minWidth: 120,
-    render: value => (
-      <Text size="sm" ff="monospace">
-        {value as string}
-      </Text>
-    )
-  },
-  {
-    key: "record_id",
-    label: "Record ID",
-    sortable: false,
-    filterable: true,
-    width: 200,
-    minWidth: 100,
-    render: value => <TruncatedTextWithCopy value={value as string} />
-  },
-  {
-    key: "username",
-    label: "User",
-    sortable: true,
-    filterable: true,
-    width: 120,
-    minWidth: 100,
-    render: value => <Text size="sm">{value as string}</Text>
-  },
-  {
-    key: "user_id",
-    label: "User ID",
-    sortable: false,
-    filterable: true,
-    visible: false,
-    width: 200,
-    minWidth: 100,
-    render: value => <TruncatedTextWithCopy value={value as string} />
-  },
-  {
-    key: "id",
-    label: "Log ID",
-    sortable: false,
-    filterable: false,
-    visible: false,
-    width: 200,
-    minWidth: 100,
-    render: value => <TruncatedTextWithCopy value={value as string} />
-  }
-]
-
-export default auditLogColumns
+  ]
+  return columns
+}

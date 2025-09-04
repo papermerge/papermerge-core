@@ -96,6 +96,64 @@
       "category": "Categories"
     }
   },
+  "tableSearchContainer": {
+    "search": "Search",
+    "clearSearch": "clear search",
+    "clearAll": "Clear All",
+    "searchAuditLogs": "Search audit logs..."
+  },
+  "auditLogColumns": {
+    "timestamp": "Timestamp",
+    "operation": "Operation",
+    "table_name": "Table",
+    "record_id": "Record ID",
+    "username": "User",
+    "user_id": "User ID",
+    "id": "Log ID"
+  },
+  "auditLog": {
+    "timestampFilter": {
+      "from": "From",
+      "to": "To",
+      "today": "Today",
+      "last_1_hour": "Last 1 Hour",
+      "last_3_hour": "Last 3 Hour",
+      "clear": "Clear"
+    },
+    "tableNameFilter": {
+      "label": "Table",
+      "pickValue": "Pick value"
+    },
+    "operationFilter": {
+      "label": "Operation",
+      "pickValue": "Pick value"
+    },
+    "userFilter": {
+      "loading": "Loading...",
+      "error": "Error loading users",
+      "noUsersFound": "No users found",
+      "label": "User",
+      "pickValue": "Pick value",
+      "noAuditLogFound": "No audit logs found",
+      "errorLoadingAuditLogs": "Error loading audit logs",
+      "anErrorOccurred": "An error occurred",
+      "noAuditLogsFound": "No audit logs found"
+    }
+  },
+  "auditLogDetails": {
+    "timestamp": "Timestamp",
+    "operation": "Operation",
+    "table_name": "Table",
+    "record_id": "Record ID",
+    "username": "User",
+    "user_id": "User ID",
+    "id": "Log ID",
+    "auditLogs": "Audit Logs",
+    "old_values": "Old Values",
+    "new_values": "New Values",
+    "changed_fields": "Changed Fields",
+    "audit_message": "Audit Message"
+  },
   "load-more": "Load more",
   "app.version": "Version",
   "me": "Me",

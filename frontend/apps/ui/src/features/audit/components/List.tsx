@@ -33,7 +33,7 @@ export default function AuditLogsList() {
     selectAuditLogDetailsID(s, "secondary")
   )
 
-  const visibleColumns = useVisibleColumns(auditLogColumns)
+  const visibleColumns = useVisibleColumns(auditLogColumns(t))
 
   const calculateMinTableWidth = useMemo(() => {
     return visibleColumns.reduce((totalWidth, column) => {
@@ -80,8 +80,15 @@ export default function AuditLogsList() {
     return (
       <Container size="xl" py="md">
         <div style={{textAlign: "center", padding: "2rem"}}>
-          <h3>Error loading audit logs</h3>
-          <p>{error?.toString() || "An error occurred"}</p>
+          <h3>
+            {t?.("auditLog.errorLoadingAuditLogs") ||
+              "Error loading audit logs"}
+          </h3>
+          <p>
+            {error?.toString() ||
+              t?.("auditLog.anErrorOccurred") ||
+              "An error occurred"}
+          </p>
         </div>
       </Container>
     )
@@ -103,7 +110,9 @@ export default function AuditLogsList() {
           }}
           onSortChange={handleSortChange}
           loading={isLoading || isFetching}
-          emptyMessage="No audit logs found"
+          emptyMessage={
+            t?.("auditLog.noAuditLogsFound") || "No audit logs found"
+          }
           style={{minWidth: `${calculateMinTableWidth}px`}}
           onRowClick={onTableRowClick}
           highlightRowID={auditLogDetailsID}

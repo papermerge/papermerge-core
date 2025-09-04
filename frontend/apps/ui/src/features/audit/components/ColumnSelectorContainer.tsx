@@ -5,16 +5,18 @@ import {
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {ColumnConfig, ColumnSelector} from "kommon"
+import {useTranslation} from "react-i18next"
 import {AuditLogItem} from "../types"
 import auditLogColumns from "./auditLogColumns"
 
 export default function ColumnSelectorContainer() {
   const mode = usePanelMode()
+  const {t} = useTranslation()
   const dispatch = useAppDispatch()
   const visibleColumns = useAppSelector(s =>
     selectAuditLogVisibleColumns(s, mode)
   )
-  const allColumns = auditLogColumns.map(c => {
+  const allColumns = auditLogColumns(t).map(c => {
     if (!visibleColumns) {
       return {...c, visible: c.visible !== false}
     }
@@ -38,6 +40,10 @@ export default function ColumnSelectorContainer() {
   }
 
   return (
-    <ColumnSelector columns={allColumns} onColumnsChange={onColumnChange} />
+    <ColumnSelector
+      t={t}
+      columns={allColumns}
+      onColumnsChange={onColumnChange}
+    />
   )
 }

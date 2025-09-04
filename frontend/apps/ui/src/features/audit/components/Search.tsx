@@ -9,6 +9,7 @@ import {
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {useEffect, useState} from "react"
+import {useTranslation} from "react-i18next"
 import OperationFilter from "./OperationFilter"
 import SearchContainer from "./SearchContainer"
 import TableNameFilter from "./TableNameFilter"
@@ -18,6 +19,7 @@ import UserFilter from "./UserFilter"
 const DEBOUNCE_MS = 300 // 300 miliseconds
 
 export default function Search() {
+  const {t} = useTranslation()
   const mode = usePanelMode()
 
   const dispatch = useAppDispatch()
@@ -124,8 +126,8 @@ export default function Search() {
       searchText={localSearchTextValue}
       onClearSearchText={onClearSearchText}
       onClear={onClear}
-      w={200}
       onSearch={onSearch}
+      t={t}
     >
       <TimestampFilter range={localRange} onChange={onLocalRangeChange} />
       <TableNameFilter

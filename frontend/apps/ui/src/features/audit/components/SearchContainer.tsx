@@ -1,5 +1,6 @@
 import {ActionIcon, Button, Group, Menu, Stack, TextInput} from "@mantine/core"
 import {IconAdjustmentsHorizontal, IconSearch, IconX} from "@tabler/icons-react"
+import {TFunction} from "i18next"
 
 interface Args {
   children: React.ReactNode
@@ -8,6 +9,7 @@ interface Args {
   searchText?: string
   onClearSearchText?: () => void
   onTextChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
+  t?: TFunction
 }
 
 export default function SearchContainer({
@@ -16,7 +18,8 @@ export default function SearchContainer({
   onClear,
   searchText,
   onTextChange,
-  onClearSearchText
+  onClearSearchText,
+  t
 }: Args) {
   return (
     <TextInput
@@ -31,7 +34,9 @@ export default function SearchContainer({
             size="sm"
             onClick={onClearSearchText}
             style={{cursor: "pointer"}}
-            aria-label="Clear search"
+            aria-label={
+              t?.("tableSearchContainer.clearSearch") || "clear search"
+            }
           >
             <IconX size={16} />
           </ActionIcon>
@@ -69,20 +74,22 @@ export default function SearchContainer({
 
             <Group justify="space-between" p="sm">
               <Button onClick={onClear} variant="subtle" size="xs">
-                Clear All
+                {t?.("tableSearchContainer.clearAll") || "Clear All"}
               </Button>
               <Button
                 onClick={onSearch}
                 size="xs"
                 leftSection={<IconSearch size={14} />}
               >
-                Search
+                {t?.("tableSearchContainer.search") || "Search"}
               </Button>
             </Group>
           </Menu.Dropdown>
         </Menu>
       }
-      placeholder="Search audit logs..."
+      placeholder={
+        t?.("tableSearchContainer.searchAuditLogs") || "Search audit logs..."
+      }
     />
   )
 }

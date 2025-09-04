@@ -96,6 +96,21 @@
       "category": "Categories"
     }
   },
+  "tableSearchContainer": {
+    "search": "Search",
+    "clearSearch": "clear search",
+    "clearAll": "Clear All",
+    "searchAuditLogs": "Search audit logs..."
+  },
+  "auditLogColumns": {
+    "timestamp": "Timestamp",
+    "operation": "Operation",
+    "table_name": "Table",
+    "record_id": "Record ID",
+    "username": "User",
+    "user_id": "User ID",
+    "id": "Log ID"
+  },
   "load-more": "Load more",
   "app.version": "Version",
   "me": "Me",

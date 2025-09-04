@@ -33,7 +33,7 @@ export default function AuditLogsList() {
     selectAuditLogDetailsID(s, "secondary")
   )
 
-  const visibleColumns = useVisibleColumns(auditLogColumns)
+  const visibleColumns = useVisibleColumns(auditLogColumns(t))
 
   const calculateMinTableWidth = useMemo(() => {
     return visibleColumns.reduce((totalWidth, column) => {

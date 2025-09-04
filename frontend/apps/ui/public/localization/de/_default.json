@@ -96,6 +96,21 @@
       "category": "Kategorie"
     }
   },
+  "tableSearchContainer": {
+    "search": "Suchen",
+    "clearSearch": "Suche löschen",
+    "clearAll": "Alles löschen",
+    "searchAuditLogs": "Audit-Protokolle durchsuchen..."
+  },
+  "auditLogColumns": {
+    "timestamp": "Zeitstempel",
+    "operation": "Aktion",
+    "table_name": "Tabelle",
+    "record_id": "Datensatz-ID",
+    "username": "Benutzer",
+    "user_id": "Benutzer-ID",
+    "id": "Protokoll-ID"
+  },
   "load-more": "Mehr anzeigen",
   "app.version": "Version",
   "me": "Ich",

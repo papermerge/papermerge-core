@@ -1668,6 +1668,45 @@ export const selectAuditLogVisibleColumns = (
   return state.ui.secondaryAuditLogList?.visibleColumns
 }
 
+export const selectRolePageSize = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainRoleList?.pageSize
+  }
+
+  return state.ui.secondaryRoleList?.pageSize
+}
+
+export const selectRolePageNumber = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainRoleList?.pageNumber
+  }
+
+  return state.ui.secondaryRoleList?.pageNumber
+}
+export const selectRoleSorting = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainRoleList?.sorting
+  }
+
+  return state.ui.secondaryRoleList?.sorting
+}
+
+export const selectRoleDetailsID = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainRoleDetails?.id
+  }
+
+  return state.ui.secondaryRoleDetails?.id
+}
+
+export const selectRoleVisibleColumns = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainRoleList?.visibleColumns
+  }
+
+  return state.ui.secondaryRoleList?.visibleColumns
+}
+
 /* Load initial collapse state value from cookie */
 function initial_collapse_value(): boolean {
   const collapsed = Cookies.get(NAVBAR_COLLAPSED_COOKIE) as BooleanString

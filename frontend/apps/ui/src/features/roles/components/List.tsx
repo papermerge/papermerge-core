@@ -1,22 +1,21 @@
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
-import {useGetPaginatedRolesQuery} from "@/features/roles/apiSlice"
+import useRoleTable from "@/features/roles/hooks/useRoleTable"
+import useVisibleColumns from "@/features/roles/hooks/useVisibleColumns"
 import {
   clearSelection,
-  lastPageSizeUpdate,
   selectionAddMany,
   selectLastPageSize,
   selectSelectedIds
 } from "@/features/roles/rolesSlice"
 import {isHTTP403Forbidden} from "@/services/helpers"
-import {Center, Checkbox, Group, Loader, Stack, Table} from "@mantine/core"
-import {useState} from "react"
+import {Center, Group, Loader, Stack} from "@mantine/core"
+import {DataTable, TablePagination} from "kommon"
 import {useDispatch, useSelector} from "react-redux"
 import {useNavigate} from "react-router-dom"
+import roleColumns from "./roleColumns"
 
-import Pagination from "@/components/Pagination"
 import {useTranslation} from "react-i18next"
 import ActionButtons from "./ActionButtons"
-import RoleRow from "./RoleRow"
 
 export default function RolesList() {
   const {t} = useTranslation()
@@ -24,15 +23,10 @@ export default function RolesList() {
   const dispatch = useDispatch()
   const lastPageSize = useSelector(selectLastPageSize)
   const navigate = useNavigate()
+  const visibleColumns = useVisibleColumns(roleColumns(t))
 
-  const [page, setPage] = useState<number>(1)
-  const [pageSize, setPageSize] = useState<number>(lastPageSize)
-
-  const {data, isLoading, isFetching, isError, error} =
-    useGetPaginatedRolesQuery({
-      page_number: page,
-      page_size: pageSize
-    })
+  const {isError, data, queryParams, error, isLoading, isFetching} =
+    useRoleTable()
 
   const onCheckAll = (checked: boolean) => {
     if (!data) {
@@ -46,19 +40,6 @@ export default function RolesList() {
     } else {
       // uncheck all/unselect all role items
       dispatch(clearSelection())
-    }
-  }
-
-  const onPageNumberChange = (page: number) => {
-    setPage(page)
-  }
-
-  const onPageSizeChange = (value: string | null) => {
-    if (value) {
-      const pageSize = parseInt(value)
-
-      dispatch(lastPageSizeUpdate(pageSize))
-      setPageSize(pageSize)
     }
   }
 
@@ -86,36 +67,29 @@ export default function RolesList() {
     )
   }
 
-  const roleRows = data.items.map(g => <RoleRow key={g.id} role={g} />)
-
   return (
     <Stack>
       <Group>
         <ActionButtons /> {isFetching && <Loader size={"sm"} />}
       </Group>
-      <Table>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>
-              <Checkbox
-                checked={data.items.length == selectedIds.length}
-                onChange={e => onCheckAll(e.currentTarget.checked)}
-              />
-            </Table.Th>
-            <Table.Th>{t("common.table.columns.name")}</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{roleRows}</Table.Tbody>
-      </Table>
-      <Pagination
-        pagination={{
-          pageNumber: page,
-          pageSize: pageSize,
-          numPages: data.num_pages
+
+      <DataTable
+        data={data?.items || []}
+        columns={visibleColumns}
+        sorting={{
+          column: queryParams.sort_by,
+          direction: queryParams.sort_direction || null
         }}
-        onPageNumberChange={onPageNumberChange}
-        onPageSizeChange={onPageSizeChange}
-        lastPageSize={lastPageSize}
+        loading={isLoading || isFetching}
+        emptyMessage={t?.("auditLog.noAuditLogsFound") || "No audit logs found"}
+      />
+
+      <TablePagination
+        currentPage={data?.page_number || 1}
+        totalPages={data?.num_pages || 0}
+        pageSize={data?.page_size || 15}
+        totalItems={data?.total_items}
+        t={t}
       />
     </Stack>
   )

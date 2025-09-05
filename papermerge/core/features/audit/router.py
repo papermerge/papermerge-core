@@ -46,7 +46,7 @@ async def get_audit_logs(
         raise HTTPException(status_code=400, detail=f"Invalid parameters: {str(e)}")
     except Exception as e:
         logger.error(
-            f"Error fetching audit logs for user {user.id}: {e}",
+            f"Error fetching audit logs by the user {user.id}: {e}",
             exc_info=True
         )
         raise HTTPException(status_code=500, detail="Internal server error")

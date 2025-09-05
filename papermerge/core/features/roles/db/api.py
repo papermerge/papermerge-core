@@ -1,7 +1,7 @@
 import logging
 import math
 import uuid
-from typing import Tuple
+from typing import Tuple, Optional, Dict, Any
 
 from sqlalchemy import delete, select, func
 from sqlalchemy.orm import selectinload
@@ -30,7 +30,13 @@ async def get_role(db_session: AsyncSession, role_id: uuid.UUID) -> schema.RoleD
 
 
 async def get_roles(
-    db_session: AsyncSession, *, page_size: int, page_number: int
+    db_session: AsyncSession,
+    *,
+    page_size: int,
+    page_number: int,
+    sort_by: Optional[str] = None,
+    sort_direction: Optional[str] = None,
+    filters: Optional[Dict[str, Dict[str, Any]]] = None
 ) -> schema.PaginatedResponse[schema.Role]:
     stmt_total_users = select(func.count(orm.Role.id))
     total_roles = (await db_session.execute(stmt_total_users)).scalar()

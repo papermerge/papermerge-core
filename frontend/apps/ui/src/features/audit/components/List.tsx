@@ -1,3 +1,4 @@
+import useAuditLogTable from "@/features/audit/hooks/useAuditLogTable"
 import {useDynamicHeight} from "@/hooks/useDynamicHeight"
 import {Container, Group, ScrollArea, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
@@ -5,9 +6,9 @@ import {useMemo, useRef} from "react"
 import {useTranslation} from "react-i18next"
 import type {AuditLogItem} from "../types"
 import Search from "./Search"
-import useAuditLogTable from "./useAuditLogTable"
 
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import useVisibleColumns from "@/features/audit/hooks/useVisibleColumns"
 import {
   auditLogPaginationUpdated,
   auditLogSortingUpdated,
@@ -19,7 +20,6 @@ import {DataTable, TablePagination} from "kommon"
 import {useNavigate} from "react-router"
 import auditLogColumns from "./auditLogColumns"
 import ColumnSelector from "./ColumnSelectorContainer"
-import useVisibleColumns from "./useVisibleColumns"
 
 export default function AuditLogsList() {
   const {t} = useTranslation()

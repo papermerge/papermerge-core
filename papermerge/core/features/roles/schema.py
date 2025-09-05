@@ -24,14 +24,31 @@ class Role(BaseModel):
     id: uuid.UUID
     name: str
     created_at: datetime
-    created_by: uuid.UUID
     created_by: ByUser
     updated_at: datetime
-    updated_by: uuid.UUID
     updated_by: ByUser
 
     # Config
     model_config = ConfigDict(from_attributes=True)
+
+    @classmethod
+    def from_db_with_users(cls, role_row) -> "Role":
+        """Create Role schema from database row with user data."""
+        role = role_row[0]  # The Role object
+        return cls(
+            id=role.id,
+            name=role.name,
+            created_at=role.created_at,
+            updated_at=role.updated_at,
+            created_by=ByUser(
+                id=role_row.created_by_id,
+                username=role_row.created_by_username
+            ),
+            updated_by=ByUser(
+                id=role_row.updated_by_id,
+                username=role_row.updated_by_username
+            )
+        )
 
 
 class RoleDetails(BaseModel):

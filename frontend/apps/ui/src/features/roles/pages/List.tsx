@@ -1,5 +1,16 @@
-import {RolesList} from "@/features/roles/components"
+import {store} from "@/app/store"
+import DualPanel from "@/components/DualPanel"
+import {mainPanelComponentUpdated} from "@/features/ui/uiSlice"
+import {LoaderFunctionArgs} from "react-router"
 
-export default function RolesPage() {
-  return <RolesList />
+export default function RolesListPage() {
+  return <DualPanel />
+}
+
+export async function loader({request}: LoaderFunctionArgs) {
+  const url = new URL(request.url)
+
+  store.dispatch(mainPanelComponentUpdated("rolesList"))
+
+  return {urlParams: url.searchParams}
 }

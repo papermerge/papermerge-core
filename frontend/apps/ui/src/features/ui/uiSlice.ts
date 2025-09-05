@@ -226,11 +226,7 @@ interface Pagination {
   pageSize?: number
 }
 
-interface AuditLogPanelList {
-  timestampFilterValue?: TimestampFilterType
-  operationFilterValue?: Array<AuditOperation>
-  tableNameFilterValue?: Array<string>
-  usernameFilterValue?: Array<string>
+interface PanelListBase {
   freeTextFilterValue?: string
   pageNumber?: number
   pageSize?: number
@@ -238,7 +234,20 @@ interface AuditLogPanelList {
   visibleColumns?: Array<string>
 }
 
+interface AuditLogPanelList extends PanelListBase {
+  timestampFilterValue?: TimestampFilterType
+  operationFilterValue?: Array<AuditOperation>
+  tableNameFilterValue?: Array<string>
+  usernameFilterValue?: Array<string>
+}
+
 interface AuditLogPanelDetails {
+  id: string
+}
+
+interface RolePanelList extends PanelListBase {}
+
+interface RolePanelDetails {
   id: string
 }
 
@@ -308,6 +317,10 @@ export interface UIState {
   secondaryAuditLogList?: AuditLogPanelList
   mainAuditLogDetails?: AuditLogPanelDetails
   secondaryAuditLogDetails?: AuditLogPanelDetails
+  mainRoleList?: RolePanelList
+  secondaryRoleList?: RolePanelList
+  mainRoleDetails?: RolePanelDetails
+  secondaryRoleDetails?: RolePanelDetails
 }
 
 const initialState: UIState = {
@@ -490,6 +503,11 @@ const uiSlice = createSlice({
         state.secondaryPanelComponent = undefined
         state.secondaryAuditLogDetails = undefined
       }
+    },
+    mainPanelRoleDetailsUpdated(state, action: PayloadAction<string>) {
+      const roleID = action.payload
+      state.mainPanelComponent = "roleDetails"
+      state.mainRoleDetails = {id: roleID}
     },
     currentNodeChanged(state, action: PayloadAction<CurrentNodeArgs>) {
       const payload = action.payload
@@ -1110,6 +1128,7 @@ export const {
   mainPanelAuditLogDetailsUpdated,
   secondaryPanelAuditLogDetailsUpdated,
   searchResultsLastPageSizeUpdated,
+  mainPanelRoleDetailsUpdated,
   /* Main panel switched to show search results.
   This happens when user clicks enter in search field
   in the header */

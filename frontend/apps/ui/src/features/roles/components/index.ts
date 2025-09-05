@@ -1,4 +1,4 @@
 import RolesList from "./List"
-import RoleDetails from "./RoleDetails"
+import RoleDetails from "./RoleDetailsContainer"
 
 export {RoleDetails, RolesList}

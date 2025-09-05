@@ -1,8 +1,21 @@
-import {RoleDetails} from "@/features/roles/components"
-import {useParams} from "react-router"
+import {store} from "@/app/store"
+import DualPanel from "@/components/DualPanel"
+import {mainPanelRoleDetailsUpdated} from "@/features/ui/uiSlice"
+import {LoaderFunctionArgs} from "react-router"
 
 export default function RoleDetailsPage() {
-  const {roleId} = useParams()
+  return <DualPanel />
+}
 
-  return <RoleDetails roleId={roleId!} />
+export async function loader({params, request}: LoaderFunctionArgs) {
+  const url = new URL(request.url)
+  let entryID = "whatever"
+
+  if (params.id) {
+    entryID = params.id
+  }
+
+  store.dispatch(mainPanelRoleDetailsUpdated(entryID))
+
+  return {entryID, urlParams: url.searchParams}
 }

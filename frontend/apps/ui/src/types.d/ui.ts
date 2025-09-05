@@ -6,3 +6,5 @@ export type PanelComponent =
   | "sharedViewer"
   | "auditLogList"
   | "auditLogDetails"
+  | "rolesList"
+  | "roleDetails"

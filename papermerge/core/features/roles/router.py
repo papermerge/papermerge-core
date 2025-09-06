@@ -11,10 +11,10 @@ from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.features.roles.db import api as dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
-from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.db.engine import get_db
 from papermerge.core.schemas.error import ErrorResponse
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
+from .schema import RoleParams
 
 router = APIRouter(
     prefix="/roles",
@@ -41,20 +41,36 @@ async def get_roles_without_pagination(
     return result
 
 
-@router.get("/")
+@router.get("/", response_model=schema.PaginatedResponse[schema.Role])
 @utils.docstring_parameter(scope=scopes.ROLE_VIEW)
 async def get_roles(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.ROLE_VIEW])],
-    params: CommonQueryParams = Depends(),
+    params: RoleParams = Depends(),
     db_session: AsyncSession = Depends(get_db),
-):
+) -> schema.PaginatedResponse[schema.Role]:
     """Get all (paginated) roles
 
     Required scope: `{scope}`
     """
-    result = await dbapi.get_roles(
-        db_session, page_size=params.page_size, page_number=params.page_number
-    )
+    try:
+        filters = params.to_filters()
+        result = await dbapi.get_roles(
+            db_session,
+            page_size=params.page_size,
+            page_number=params.page_number,
+            sort_by=params.sort_by,
+            sort_direction=params.sort_direction,
+            filters=filters
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid parameters: {str(e)}")
+    except Exception as e:
+        logger.error(
+            f"Error fetching roles by the user {user.id}: {e}",
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
     return result
 

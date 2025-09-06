@@ -1,10 +1,10 @@
 import logging
 import math
 import uuid
-from typing import Tuple
+from typing import Tuple, Optional, Dict, Any
 
-from sqlalchemy import delete, select, func
-from sqlalchemy.orm import selectinload
+from sqlalchemy import delete, select, func, and_, or_
+from sqlalchemy.orm import selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
@@ -30,21 +30,121 @@ async def get_role(db_session: AsyncSession, role_id: uuid.UUID) -> schema.RoleD
 
 
 async def get_roles(
-    db_session: AsyncSession, *, page_size: int, page_number: int
+    db_session: AsyncSession,
+    *,
+    page_size: int,
+    page_number: int,
+    sort_by: Optional[str] = None,
+    sort_direction: Optional[str] = None,
+    filters: Optional[Dict[str, Dict[str, Any]]] = None
 ) -> schema.PaginatedResponse[schema.Role]:
-    stmt_total_users = select(func.count(orm.Role.id))
-    total_roles = (await db_session.execute(stmt_total_users)).scalar()
+    """
+    Get paginated roles with filtering and sorting support.
 
+    Args:
+        db_session: Database session
+        page_size: Number of items per page
+        page_number: Page number (1-based)
+        sort_by: Column to sort by
+        sort_direction: Sort direction ('asc' or 'desc')
+        filters: Dictionary of filters with format:
+            {
+                "filter_name": {
+                    "value": filter_value,
+                    "operator": "in" | "like" | "eq" | "free_text"
+                }
+            }
+
+    Returns:
+        Paginated response with roles
+    """
+
+    # Create user aliases for joins
+    created_user = aliased(orm.User, name='created_user')
+    updated_user = aliased(orm.User, name='updated_user')
+
+
+    # Build base query with joins for user data
+    base_query = (
+        select(orm.Role)
+        .join(created_user, orm.Role.created_by == created_user.id, isouter=True)
+        .join(updated_user, orm.Role.updated_by == updated_user.id, isouter=True)
+    )
+
+    # Apply filters
+    where_conditions = []
+    if filters:
+        where_conditions = _build_filter_conditions(filters, created_user, updated_user)
+
+    if where_conditions:
+        base_query = base_query.where(and_(*where_conditions))
+
+    # Count total items (using the same filters)
+    count_query = (
+        select(func.count(orm.Role.id))
+        .join(created_user, orm.Role.created_by == created_user.id, isouter=True)
+        .join(updated_user, orm.Role.updated_by == updated_user.id, isouter=True)
+    )
+
+    if where_conditions:
+        count_query = count_query.where(and_(*where_conditions))
+
+    total_roles = (await db_session.execute(count_query)).scalar()
+
+    # Apply sorting
+    if sort_by and sort_direction:
+        base_query = _apply_sorting(base_query, sort_by, sort_direction, created_user, updated_user)
+    else:
+        # Default sorting by created_at desc
+        base_query = base_query.order_by(orm.Role.created_at.desc())
+
+    # Apply pagination
     offset = page_size * (page_number - 1)
-    stmt = select(orm.Role).limit(page_size).offset(offset)
 
-    db_roles = (await db_session.scalars(stmt)).all()
-    items = [schema.Role.model_validate(db_role) for db_role in db_roles]
+    # Modify query to include user data we need
+    paginated_query_with_users = (
+        base_query
+        .add_columns(
+            created_user.id.label('created_by_id'),
+            created_user.username.label('created_by_username'),
+            updated_user.id.label('updated_by_id'),
+            updated_user.username.label('updated_by_username')
+        )
+        .limit(page_size)
+        .offset(offset)
+    )
 
-    total_pages = math.ceil(total_roles / page_size)
+    # Execute query - get tuples with role and user data
+    results = (await db_session.execute(paginated_query_with_users)).all()
+
+    # Convert to schema models with proper user data
+    items = []
+    for row in results:
+        role = row[0]  # The Role object
+        role_data = {
+            "id": role.id,
+            "name": role.name,
+            "created_at": role.created_at,
+            "updated_at": role.updated_at,
+            "created_by": schema.ByUser(
+                id=row.created_by_id,
+                username=row.created_by_username
+            ),
+            "updated_by": schema.ByUser(
+                id=row.updated_by_id,
+                username=row.updated_by_username
+            )
+        }
+        items.append(schema.Role(**role_data))
+
+    # Calculate total pages
+    total_pages = math.ceil(total_roles / page_size) if total_roles > 0 else 1
 
     return schema.PaginatedResponse[schema.Role](
-        items=items, page_size=page_size, page_number=page_number, num_pages=total_pages
+        items=items,
+        page_size=page_size,
+        page_number=page_number,
+        num_pages=total_pages
     )
 
 
@@ -180,3 +280,98 @@ async def sync_perms(db_session: AsyncSession):
     stmt = delete(orm.Permission).where(orm.Permission.codename.notin_(scope_codenames))
     await db_session.execute(stmt)
     await db_session.commit()
+
+
+
+def _build_filter_conditions(
+        filters: Dict[str, Dict[str, Any]],
+        created_user,
+        updated_user
+) -> list:
+    """Build SQLAlchemy WHERE conditions from filters dictionary."""
+    conditions = []
+
+    for filter_name, filter_config in filters.items():
+        value = filter_config.get("value")
+        operator = filter_config.get("operator", "eq")
+
+        if not value:
+            continue
+
+        condition = None
+
+        if filter_name == "scope":
+            # Filter by permissions/scopes - assuming you have a permissions relationship
+            if operator == "in" and isinstance(value, list):
+                condition = orm.Role.permissions.any(
+                    orm.Permission.codename.in_(value)
+                )
+
+        elif filter_name == "created_by_username":
+            if operator == "in" and isinstance(value, list):
+                condition = created_user.username.in_(value)
+            elif operator == "like":
+                condition = created_user.username.ilike(f"%{value}%")
+
+        elif filter_name == "updated_by_username":
+            if operator == "in" and isinstance(value, list):
+                condition = updated_user.username.in_(value)
+            elif operator == "like":
+                condition = updated_user.username.ilike(f"%{value}%")
+
+        elif filter_name == "free_text":
+            # Search across multiple text fields
+            search_term = f"%{value}%"
+
+            condition = or_(
+                orm.Role.name.ilike(search_term),
+                created_user.username.ilike(search_term),
+                updated_user.username.ilike(search_term),
+                created_user.first_name.ilike(search_term),
+                created_user.last_name.ilike(search_term),
+                updated_user.first_name.ilike(search_term),
+                updated_user.last_name.ilike(search_term),
+            )
+
+        elif filter_name == "name":
+            if operator == "like":
+                condition = orm.Role.name.ilike(f"%{value}%")
+            elif operator == "eq":
+                condition = orm.Role.name == value
+            elif operator == "in" and isinstance(value, list):
+                condition = orm.Role.name.in_(value)
+
+        # Add more filter conditions as needed
+
+        if condition is not None:
+            conditions.append(condition)
+
+    return conditions
+
+
+def _apply_sorting(query, sort_by: str, sort_direction: str, created_user, updated_user):
+    """Apply sorting to the query."""
+    sort_column = None
+    # Map sort_by to actual columns
+    if sort_by == "id":
+        sort_column = orm.Role.id
+    elif sort_by == "name":
+        sort_column = orm.Role.name
+    elif sort_by == "created_at":
+        sort_column = orm.Role.created_at
+    elif sort_by == "updated_at":
+        sort_column = orm.Role.updated_at
+    elif sort_by == "created_by":
+        # Sort by username of creator
+        sort_column = created_user.username
+    elif sort_by == "updated_by":
+        # Sort by username of updater
+        sort_column = updated_user.username
+
+    if sort_column is not None:
+        if sort_direction.lower() == "desc":
+            query = query.order_by(sort_column.desc())
+        else:
+            query = query.order_by(sort_column.asc())
+
+    return query

@@ -1,20 +1,16 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import type {AuditOperation, TimestampFilterType} from "@/features/audit/types"
 import {
-  auditLogTableFiltersUpdated,
-  selectAuditLogFreeTextFilterValue,
+  rolesTableFiltersUpdated,
   selectAuditLogOperationFilterValue,
   selectAuditLogTableNameFilterValue,
-  selectAuditLogUsernameFilterValue
+  selectAuditLogUsernameFilterValue,
+  selectRoleFreeTextFilterValue
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {SearchContainer} from "kommon"
 import {useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
-import OperationFilter from "./OperationFilter"
-import TableNameFilter from "./TableNameFilter"
-import TimestampFilter from "./TimestampFilter"
-import UserFilter from "./UserFilter"
 
 const DEBOUNCE_MS = 300 // 300 miliseconds
 
@@ -30,9 +26,7 @@ export default function Search() {
     selectAuditLogOperationFilterValue(s, mode)
   )
   const users = useAppSelector(s => selectAuditLogUsernameFilterValue(s, mode))
-  const searchText = useAppSelector(s =>
-    selectAuditLogFreeTextFilterValue(s, mode)
-  )
+  const searchText = useAppSelector(s => selectRoleFreeTextFilterValue(s, mode))
   const [localTableNames, setLocalTableNames] = useState<string[]>(
     tableNames || []
   )
@@ -91,12 +85,8 @@ export default function Search() {
 
   const onSearch = () => {
     dispatch(
-      auditLogTableFiltersUpdated({
+      rolesTableFiltersUpdated({
         mode,
-        tableNameFilterValue: localTableNames,
-        operationFilterValue: localOperations,
-        timestampFilterValue: localRange,
-        usernameFilterValue: localUsers,
         freeTextFilterValue: debouncedSearchTextValue
       })
     )
@@ -109,12 +99,8 @@ export default function Search() {
     setLocalUsers([])
 
     dispatch(
-      auditLogTableFiltersUpdated({
+      rolesTableFiltersUpdated({
         mode,
-        tableNameFilterValue: undefined,
-        operationFilterValue: undefined,
-        timestampFilterValue: undefined,
-        usernameFilterValue: undefined,
         freeTextFilterValue: undefined
       })
     )
@@ -128,19 +114,9 @@ export default function Search() {
       onClear={onClear}
       onSearch={onSearch}
       t={t}
+      placeholder={t?.("searchRoles") || "Search roles..."}
     >
-      <TimestampFilter t={t} range={localRange} onChange={onLocalRangeChange} />
-      <TableNameFilter
-        t={t}
-        tableNames={localTableNames}
-        onChange={onLocalTableNamesChange}
-      />
-      <OperationFilter
-        t={t}
-        operations={localOperations}
-        onChange={onLocalOperationChange}
-      />
-      <UserFilter t={t} users={localUsers} onChange={onLocalUserChange} />
+      {"Filters here"}
     </SearchContainer>
   )
 }

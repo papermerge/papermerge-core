@@ -18,7 +18,7 @@ interface Args<T> {
   data: T[]
   columns: ColumnConfig<T>[]
   sorting: SortState
-  onSortChange: (sort: SortState) => void
+  onSortChange?: (sort: SortState) => void
   loading?: boolean
   emptyMessage?: string
   style?: React.CSSProperties
@@ -63,7 +63,7 @@ export default function DataTable<T>({
       }
     }
 
-    onSortChange({
+    onSortChange?.({
       column: newDirection ? columnKey : null,
       direction: newDirection
     })

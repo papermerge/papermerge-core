@@ -6,8 +6,8 @@ interface Args {
   currentPage: number
   totalPages: number
   pageSize: number
-  onPageChange: (page: number) => void
-  onPageSizeChange: (size: number) => void
+  onPageChange?: (page: number) => void
+  onPageSizeChange?: (size: number) => void
   pageSizeOptions?: number[]
   totalItems?: number
   t?: TFunction // Optional translation function
@@ -70,7 +70,7 @@ export default function TablePagination({
             size="xs"
             data={data}
             value={String(pageSize)}
-            onChange={value => value && onPageSizeChange(Number(value))}
+            onChange={value => value && onPageSizeChange?.(Number(value))}
             w={60}
             placeholder={translate("pagination.pageSize")}
           />

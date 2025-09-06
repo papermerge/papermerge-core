@@ -1,18 +1,27 @@
 import {apiSlice} from "@/features/api/slice"
-import type {NewRole, Paginated, PaginatedArgs, Role, RoleUpdate} from "@/types"
+import type {NewRole, Paginated, Role, RoleUpdate} from "@/types"
+import type {RoleItem, RoleQueryParams} from "./types"
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
 export const apiSliceWithRoles = apiSlice.injectEndpoints({
   endpoints: builder => ({
-    getPaginatedRoles: builder.query<Paginated<Role>, PaginatedArgs | void>({
-      query: ({
-        page_number = 1,
-        page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES
-      }: PaginatedArgs) =>
-        `/roles/?page_number=${page_number}&page_size=${page_size}`,
+    getPaginatedRoles: builder.query<
+      Paginated<RoleItem>,
+      RoleQueryParams | void
+    >({
+      query: (params = {}) => {
+        const queryString = buildQueryString(params || {})
+        return `/roles/?${queryString}`
+      },
       providesTags: (
-        result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
+        result = {
+          page_number: 1,
+          page_size: 1,
+          num_pages: 1,
+          items: [],
+          total_items: 1
+        },
         _error,
         _arg
       ) => [
@@ -20,14 +29,14 @@ export const apiSliceWithRoles = apiSlice.injectEndpoints({
         ...result.items.map(({id}) => ({type: "Role", id}) as const)
       ]
     }),
-    getRoles: builder.query<Role[], void>({
+    getRoles: builder.query<RoleItem[], void>({
       query: _roles => "/roles/all",
       providesTags: (result = [], _error, _arg) => [
         "Role",
         ...result.map(({id}) => ({type: "Role", id}) as const)
       ]
     }),
-    getRole: builder.query<Role, string>({
+    getRole: builder.query<RoleItem, string>({
       query: roleID => `/roles/${roleID}`,
       providesTags: (_result, _error, arg) => [{type: "Role", id: arg}]
     }),
@@ -68,3 +77,28 @@ export const {
   useDeleteRoleMutation,
   useAddNewRoleMutation
 } = apiSliceWithRoles
+
+function buildQueryString(params: RoleQueryParams = {}): string {
+  const searchParams = new URLSearchParams()
+
+  // Always include pagination with defaults
+  searchParams.append("page_number", String(params.page_number || 1))
+  searchParams.append(
+    "page_size",
+    String(params.page_size || PAGINATION_DEFAULT_ITEMS_PER_PAGES)
+  )
+
+  // Add sorting if provided
+  if (params.sort_by) {
+    searchParams.append("sort_by", params.sort_by)
+  }
+  if (params.sort_direction) {
+    searchParams.append("sort_direction", params.sort_direction)
+  }
+
+  if (params.filter_free_text) {
+    searchParams.append("filter_free_text", params.filter_free_text)
+  }
+
+  return searchParams.toString()
+}

@@ -8,12 +8,14 @@ import {ColumnConfig} from "./types"
 interface ColumnSelectorArgs<T> {
   columns: ColumnConfig<T>[]
   onColumnsChange: (columns: ColumnConfig<T>[]) => void
+  i18NPrefix?: string
   t?: TFunction
 }
 
 export default function ColumnSelector<T>({
   columns,
   onColumnsChange,
+  i18NPrefix = "columnSelectorI18NPrefix",
   t
 }: ColumnSelectorArgs<T>) {
   const [opened, setOpened] = useState(false)
@@ -47,7 +49,7 @@ export default function ColumnSelector<T>({
               <Checkbox
                 key={String(column.key)}
                 label={
-                  t?.(`auditLogColumns.${String(column.key)}`) || column.label
+                  t?.(`${i18NPrefix}.${String(column.key)}`) || column.label
                 }
                 checked={column.visible !== false}
                 onChange={() => handleToggle(column.key)}

@@ -226,11 +226,7 @@ interface Pagination {
   pageSize?: number
 }
 
-interface AuditLogPanelList {
-  timestampFilterValue?: TimestampFilterType
-  operationFilterValue?: Array<AuditOperation>
-  tableNameFilterValue?: Array<string>
-  usernameFilterValue?: Array<string>
+interface PanelListBase {
   freeTextFilterValue?: string
   pageNumber?: number
   pageSize?: number
@@ -238,7 +234,20 @@ interface AuditLogPanelList {
   visibleColumns?: Array<string>
 }
 
+interface AuditLogPanelList extends PanelListBase {
+  timestampFilterValue?: TimestampFilterType
+  operationFilterValue?: Array<AuditOperation>
+  tableNameFilterValue?: Array<string>
+  usernameFilterValue?: Array<string>
+}
+
 interface AuditLogPanelDetails {
+  id: string
+}
+
+interface RolePanelList extends PanelListBase {}
+
+interface RolePanelDetails {
   id: string
 }
 
@@ -308,6 +317,10 @@ export interface UIState {
   secondaryAuditLogList?: AuditLogPanelList
   mainAuditLogDetails?: AuditLogPanelDetails
   secondaryAuditLogDetails?: AuditLogPanelDetails
+  mainRoleList?: RolePanelList
+  secondaryRoleList?: RolePanelList
+  mainRoleDetails?: RolePanelDetails
+  secondaryRoleDetails?: RolePanelDetails
 }
 
 const initialState: UIState = {
@@ -490,6 +503,11 @@ const uiSlice = createSlice({
         state.secondaryPanelComponent = undefined
         state.secondaryAuditLogDetails = undefined
       }
+    },
+    mainPanelRoleDetailsUpdated(state, action: PayloadAction<string>) {
+      const roleID = action.payload
+      state.mainPanelComponent = "roleDetails"
+      state.mainRoleDetails = {id: roleID}
     },
     currentNodeChanged(state, action: PayloadAction<CurrentNodeArgs>) {
       const payload = action.payload
@@ -1090,6 +1108,63 @@ const uiSlice = createSlice({
         ...state.secondaryAuditLogList,
         visibleColumns: value
       }
+    },
+    rolesTableFiltersUpdated(
+      state,
+      action: PayloadAction<{
+        mode: PanelMode
+        freeTextFilterValue?: string
+      }>
+    ) {
+      const {mode, freeTextFilterValue} = action.payload
+      if (mode == "main") {
+        state.mainRoleList = {
+          ...state.mainRoleList,
+          freeTextFilterValue
+        }
+        return
+      }
+
+      state.secondaryRoleList = {
+        ...state.secondaryRoleList,
+        freeTextFilterValue
+      }
+    },
+    roleListSortingUpdated(
+      state,
+      action: PayloadAction<{mode: PanelMode; value: SortState}>
+    ) {
+      const {mode, value} = action.payload
+      if (mode == "main") {
+        state.mainRoleList = {
+          ...state.mainRoleList,
+          sorting: value
+        }
+        return
+      }
+
+      state.secondaryRoleList = {
+        ...state.secondaryRoleList,
+        sorting: value
+      }
+    },
+    roleListVisibleColumnsUpdated(
+      state,
+      action: PayloadAction<{mode: PanelMode; value: Array<string>}>
+    ) {
+      const {mode, value} = action.payload
+      if (mode == "main") {
+        state.mainRoleList = {
+          ...state.mainRoleList,
+          visibleColumns: value
+        }
+        return
+      }
+
+      state.secondaryRoleList = {
+        ...state.secondaryRoleList,
+        visibleColumns: value
+      }
     }
   }
 })
@@ -1110,6 +1185,7 @@ export const {
   mainPanelAuditLogDetailsUpdated,
   secondaryPanelAuditLogDetailsUpdated,
   searchResultsLastPageSizeUpdated,
+  mainPanelRoleDetailsUpdated,
   /* Main panel switched to show search results.
   This happens when user clicks enter in search field
   in the header */
@@ -1149,7 +1225,10 @@ export const {
   auditLogPaginationUpdated,
   auditLogPageNumberValueUpdated,
   auditLogSortingUpdated,
-  auditLogVisibleColumnsUpdated
+  auditLogVisibleColumnsUpdated,
+  roleListSortingUpdated,
+  roleListVisibleColumnsUpdated,
+  rolesTableFiltersUpdated
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -1647,6 +1726,56 @@ export const selectAuditLogVisibleColumns = (
   }
 
   return state.ui.secondaryAuditLogList?.visibleColumns
+}
+
+export const selectRolePageSize = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainRoleList?.pageSize
+  }
+
+  return state.ui.secondaryRoleList?.pageSize
+}
+
+export const selectRolePageNumber = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainRoleList?.pageNumber
+  }
+
+  return state.ui.secondaryRoleList?.pageNumber
+}
+export const selectRoleSorting = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainRoleList?.sorting
+  }
+
+  return state.ui.secondaryRoleList?.sorting
+}
+
+export const selectRoleDetailsID = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainRoleDetails?.id
+  }
+
+  return state.ui.secondaryRoleDetails?.id
+}
+
+export const selectRoleVisibleColumns = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.ui.mainRoleList?.visibleColumns
+  }
+
+  return state.ui.secondaryRoleList?.visibleColumns
+}
+
+export const selectRoleFreeTextFilterValue = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.ui.mainRoleList?.freeTextFilterValue
+  }
+
+  return state.ui.secondaryRoleList?.freeTextFilterValue
 }
 
 /* Load initial collapse state value from cookie */

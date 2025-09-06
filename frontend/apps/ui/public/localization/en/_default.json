@@ -154,6 +154,15 @@
     "changed_fields": "Changed Fields",
     "audit_message": "Audit Message"
   },
+  "roleColumns": {
+    "name": "Name",
+    "id": "ID",
+    "created_at": "Created At",
+    "created_by": "Created By",
+    "updated_at": "Updated At",
+    "updated_by": "Updated By"
+  },
+  "searchRoles": "Search roles...",
   "load-more": "Load more",
   "app.version": "Version",
   "me": "Me",

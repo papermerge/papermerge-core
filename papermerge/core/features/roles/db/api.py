@@ -157,7 +157,10 @@ async def get_roles_without_pagination(db_session: AsyncSession) -> list[schema.
 
 
 async def create_role(
-    db_session: AsyncSession, name: str, scopes: list[str], exists_ok: bool = False
+    db_session: AsyncSession,
+    name: str,
+    scopes: list[str],
+    exists_ok: bool = False
 ) -> Tuple[schema.Role | None, str | None]:
     """Creates a role with given scopes"""
 

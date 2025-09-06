@@ -1,7 +1,7 @@
 import {store} from "@/app/store"
 import DualPanel from "@/components/DualPanel"
-import {mainPanelAuditLogDetailsUpdated} from "@/features/ui/uiSlice"
 import {LoaderFunctionArgs} from "react-router"
+import {showAuditLogDetailsInMainPanel} from "../storage/thunks"
 
 export default function AuditLogDetailsPage() {
   return <DualPanel />
@@ -15,7 +15,9 @@ export async function loader({params, request}: LoaderFunctionArgs) {
     entryID = params.id
   }
 
-  store.dispatch(mainPanelAuditLogDetailsUpdated(entryID))
+  if (entryID) {
+    store.dispatch(showAuditLogDetailsInMainPanel(entryID))
+  }
 
   return {entryID, urlParams: url.searchParams}
 }

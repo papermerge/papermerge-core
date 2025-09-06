@@ -2,7 +2,7 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {
   auditLogVisibleColumnsUpdated,
   selectAuditLogVisibleColumns
-} from "@/features/ui/uiSlice"
+} from "@/features/audit/storage/audit"
 import {usePanelMode} from "@/hooks"
 import {ColumnConfig, ColumnSelector} from "kommon"
 import {useTranslation} from "react-i18next"

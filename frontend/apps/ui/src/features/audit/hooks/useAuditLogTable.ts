@@ -9,7 +9,7 @@ import {
   selectAuditLogTableNameFilterValue,
   selectAuditLogTimestampFilterValue,
   selectAuditLogUsernameFilterValue
-} from "@/features/ui/uiSlice"
+} from "@/features/audit/storage/audit"
 import {usePanelMode} from "@/hooks"
 import type {AuditLogQueryParams} from "../types"
 

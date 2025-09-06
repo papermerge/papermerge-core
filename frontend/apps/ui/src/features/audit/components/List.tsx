@@ -12,9 +12,9 @@ import useVisibleColumns from "@/features/audit/hooks/useVisibleColumns"
 import {
   auditLogPaginationUpdated,
   auditLogSortingUpdated,
-  secondaryPanelAuditLogDetailsUpdated,
   selectAuditLogDetailsID
-} from "@/features/ui/uiSlice"
+} from "@/features/audit/storage/audit"
+import {showAuditLogDetailsInSecondaryPanel} from "@/features/audit/storage/thunks"
 import {usePanelMode} from "@/hooks"
 import {DataTable, TablePagination} from "kommon"
 import {useNavigate} from "react-router"
@@ -70,7 +70,7 @@ export default function AuditLogsList() {
     openInSecondaryPanel: boolean
   ) => {
     if (openInSecondaryPanel) {
-      dispatch(secondaryPanelAuditLogDetailsUpdated(row.id))
+      dispatch(showAuditLogDetailsInSecondaryPanel(row.id))
     } else {
       navigate(`/audit-logs/${row.id}`)
     }

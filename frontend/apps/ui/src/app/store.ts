@@ -1,4 +1,5 @@
 import {apiSlice} from "@/features/api/slice"
+import auditLogsReducer from "@/features/audit/storage/audit"
 import authSliceReducer from "@/features/auth/slice"
 import customFieldsReducer from "@/features/custom-fields/customFieldsSlice"
 import documentTypesReducer from "@/features/document-types/documentTypesSlice"
@@ -29,6 +30,7 @@ export const store = configureStore({
     tags: tagsReducer,
     groups: groupsReducer,
     roles: rolesReducer,
+    auditLogs: auditLogsReducer,
     customFields: customFieldsReducer,
     documentTypes: documentTypesReducer,
     users: usersReducer,
@@ -43,6 +45,7 @@ export const store = configureStore({
     docVers: docVersReducer,
     docs: docsReducer,
     files: filesReducer,
+
     [apiSlice.reducerPath]: apiSlice.reducer
   },
   middleware: getDefaultMiddleware =>

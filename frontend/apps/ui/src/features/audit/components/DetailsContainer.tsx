@@ -1,6 +1,6 @@
 import {useAppSelector} from "@/app/hooks"
-import {useGetAuditLogQuery} from "@/features/audit/apiSlice"
-import {selectAuditLogDetailsID} from "@/features/ui/uiSlice"
+import {useGetAuditLogQuery} from "@/features/audit/storage/api"
+import {selectAuditLogDetailsID} from "@/features/audit/storage/audit"
 import {usePanelMode} from "@/hooks"
 import {Group, Stack} from "@mantine/core"
 import {useTranslation} from "react-i18next"

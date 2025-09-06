@@ -70,7 +70,7 @@ export default function RolesList() {
         }}
         onSortChange={handleSortChange}
         loading={isLoading || isFetching}
-        emptyMessage={t?.("auditLog.noAuditLogsFound") || "No audit logs found"}
+        emptyMessage={t?.("rolesList.noRolesFound") || "No roles found"}
       />
 
       <TablePagination

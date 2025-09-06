@@ -1,11 +1,11 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import type {AuditOperation, TimestampFilterType} from "@/features/audit/types"
 import {
-  auditLogTableFiltersUpdated,
-  selectAuditLogFreeTextFilterValue,
+  rolesTableFiltersUpdated,
   selectAuditLogOperationFilterValue,
   selectAuditLogTableNameFilterValue,
-  selectAuditLogUsernameFilterValue
+  selectAuditLogUsernameFilterValue,
+  selectRoleFreeTextFilterValue
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {SearchContainer} from "kommon"
@@ -26,9 +26,7 @@ export default function Search() {
     selectAuditLogOperationFilterValue(s, mode)
   )
   const users = useAppSelector(s => selectAuditLogUsernameFilterValue(s, mode))
-  const searchText = useAppSelector(s =>
-    selectAuditLogFreeTextFilterValue(s, mode)
-  )
+  const searchText = useAppSelector(s => selectRoleFreeTextFilterValue(s, mode))
   const [localTableNames, setLocalTableNames] = useState<string[]>(
     tableNames || []
   )
@@ -87,12 +85,8 @@ export default function Search() {
 
   const onSearch = () => {
     dispatch(
-      auditLogTableFiltersUpdated({
+      rolesTableFiltersUpdated({
         mode,
-        tableNameFilterValue: localTableNames,
-        operationFilterValue: localOperations,
-        timestampFilterValue: localRange,
-        usernameFilterValue: localUsers,
         freeTextFilterValue: debouncedSearchTextValue
       })
     )
@@ -105,12 +99,8 @@ export default function Search() {
     setLocalUsers([])
 
     dispatch(
-      auditLogTableFiltersUpdated({
+      rolesTableFiltersUpdated({
         mode,
-        tableNameFilterValue: undefined,
-        operationFilterValue: undefined,
-        timestampFilterValue: undefined,
-        usernameFilterValue: undefined,
         freeTextFilterValue: undefined
       })
     )
@@ -124,6 +114,7 @@ export default function Search() {
       onClear={onClear}
       onSearch={onSearch}
       t={t}
+      placeholder={t?.("searchRoles") || "Search roles..."}
     >
       {"Filters here"}
     </SearchContainer>

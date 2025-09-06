@@ -10,6 +10,7 @@ interface Args {
   onClearSearchText?: () => void
   onTextChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
   t?: TFunction
+  placeholder?: string
 }
 
 export default function SearchContainer({
@@ -19,7 +20,8 @@ export default function SearchContainer({
   searchText,
   onTextChange,
   onClearSearchText,
-  t
+  t,
+  placeholder
 }: Args) {
   return (
     <TextInput
@@ -87,9 +89,7 @@ export default function SearchContainer({
           </Menu.Dropdown>
         </Menu>
       }
-      placeholder={
-        t?.("tableSearchContainer.searchAuditLogs") || "Search audit logs..."
-      }
+      placeholder={placeholder}
     />
   )
 }

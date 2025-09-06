@@ -154,6 +154,15 @@
     "changed_fields": "Geänderte Felder",
     "audit_message": "Audit-Nachricht"
   },
+  "roleColumns": {
+    "name": "Name",
+    "id": "ID",
+    "created_at": "Erstellt am",
+    "created_by": "Erstellt von",
+    "updated_at": "Aktualisiert am",
+    "updated_by": "Aktualisiert von"
+  },
+  "searchRoles": "Rollen suchen...",
   "load-more": "Mehr anzeigen",
   "app.version": "Version",
   "me": "Ich",

@@ -1,6 +1,7 @@
 import {useAppSelector} from "@/app/hooks"
 import type {RoleQueryParams, SortBy} from "@/features/roles/types"
 import {
+  selectRoleFreeTextFilterValue,
   selectRolePageNumber,
   selectRolePageSize,
   selectRoleSorting
@@ -14,12 +15,14 @@ function useQueryParams(): RoleQueryParams {
   const pageNumber = useAppSelector(s => selectRolePageNumber(s, mode)) || 1
   const sorting = useAppSelector(s => selectRoleSorting(s, mode))
   const column = sorting?.column as SortBy | undefined
+  const free_text = useAppSelector(s => selectRoleFreeTextFilterValue(s, mode))
 
   const queryParams: RoleQueryParams = {
     page_size: pageSize,
     page_number: pageNumber,
     sort_by: column,
-    sort_direction: sorting?.direction || undefined
+    sort_direction: sorting?.direction || undefined,
+    filter_free_text: free_text
   }
 
   return queryParams

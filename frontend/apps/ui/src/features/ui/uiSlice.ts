@@ -1109,6 +1109,27 @@ const uiSlice = createSlice({
         visibleColumns: value
       }
     },
+    rolesTableFiltersUpdated(
+      state,
+      action: PayloadAction<{
+        mode: PanelMode
+        freeTextFilterValue?: string
+      }>
+    ) {
+      const {mode, freeTextFilterValue} = action.payload
+      if (mode == "main") {
+        state.mainRoleList = {
+          ...state.mainRoleList,
+          freeTextFilterValue
+        }
+        return
+      }
+
+      state.secondaryRoleList = {
+        ...state.secondaryRoleList,
+        freeTextFilterValue
+      }
+    },
     roleListSortingUpdated(
       state,
       action: PayloadAction<{mode: PanelMode; value: SortState}>
@@ -1206,7 +1227,8 @@ export const {
   auditLogSortingUpdated,
   auditLogVisibleColumnsUpdated,
   roleListSortingUpdated,
-  roleListVisibleColumnsUpdated
+  roleListVisibleColumnsUpdated,
+  rolesTableFiltersUpdated
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -1743,6 +1765,17 @@ export const selectRoleVisibleColumns = (state: RootState, mode: PanelMode) => {
   }
 
   return state.ui.secondaryRoleList?.visibleColumns
+}
+
+export const selectRoleFreeTextFilterValue = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.ui.mainRoleList?.freeTextFilterValue
+  }
+
+  return state.ui.secondaryRoleList?.freeTextFilterValue
 }
 
 /* Load initial collapse state value from cookie */

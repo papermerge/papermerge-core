@@ -1,4 +1,5 @@
 import {useAppSelector} from "@/app/hooks"
+import {useGetPaginatedAuditLogsQuery} from "@/features/audit/storage/api"
 import {
   selectAuditLogFreeTextFilterValue,
   selectAuditLogOperationFilterValue,
@@ -10,7 +11,6 @@ import {
   selectAuditLogUsernameFilterValue
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
-import {useGetPaginatedAuditLogsQuery} from "../apiSlice"
 import type {AuditLogQueryParams} from "../types"
 
 type SortBy =

@@ -16,7 +16,7 @@ import {useEditUserMutation, useGetUserQuery} from "@/features/users/apiSlice"
 import {UserEditableFields} from "@/types"
 
 import {useGetGroupsQuery} from "@/features/groups/apiSlice"
-import {useGetRolesQuery} from "@/features/roles/apiSlice"
+import {useGetRolesQuery} from "@/features/roles/storage/api"
 import {useTranslation} from "react-i18next"
 
 interface EditUserModalArgs {

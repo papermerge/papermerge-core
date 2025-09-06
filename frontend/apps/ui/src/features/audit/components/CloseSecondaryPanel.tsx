@@ -6,7 +6,7 @@ import {useContext} from "react"
 import type {PanelMode} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
-import {secondaryPanelAuditLogDetailsUpdated} from "@/features/ui/uiSlice"
+import {closeAuditLogDetailsSecondaryPanel} from "@/features/audit/storage/thunks"
 
 export default function CloseSecondaryPanel() {
   const mode: PanelMode = useContext(PanelContext)
@@ -18,7 +18,7 @@ export default function CloseSecondaryPanel() {
 
   return (
     <ActionIcon
-      onClick={() => dispatch(secondaryPanelAuditLogDetailsUpdated(undefined))}
+      onClick={() => dispatch(closeAuditLogDetailsSecondaryPanel())}
       size="lg"
       variant="default"
     >

@@ -2,7 +2,7 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {
   roleListVisibleColumnsUpdated,
   selectRoleVisibleColumns
-} from "@/features/ui/uiSlice"
+} from "@/features/roles/storage/role"
 import {usePanelMode} from "@/hooks"
 import {ColumnConfig, ColumnSelector} from "kommon"
 import {useTranslation} from "react-i18next"

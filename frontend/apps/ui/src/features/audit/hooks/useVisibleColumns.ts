@@ -1,5 +1,5 @@
 import {useAppSelector} from "@/app/hooks"
-import {selectAuditLogVisibleColumns} from "@/features/ui/uiSlice"
+import {selectAuditLogVisibleColumns} from "@/features/audit/storage/audit"
 import {usePanelMode} from "@/hooks"
 import {ColumnConfig} from "kommon"
 

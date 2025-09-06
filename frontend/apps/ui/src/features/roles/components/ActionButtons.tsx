@@ -1,4 +1,4 @@
-import {selectSelectedIds} from "@/features/roles/rolesSlice"
+import {selectSelectedIds} from "@/features/roles/storage/role"
 import {Group} from "@mantine/core"
 import {useSelector} from "react-redux"
 import ColumnSelectorContainer from "./ColumnSelector"

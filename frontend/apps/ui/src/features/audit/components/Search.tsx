@@ -1,12 +1,12 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import type {AuditOperation, TimestampFilterType} from "@/features/audit/types"
 import {
   auditLogTableFiltersUpdated,
   selectAuditLogFreeTextFilterValue,
   selectAuditLogOperationFilterValue,
   selectAuditLogTableNameFilterValue,
   selectAuditLogUsernameFilterValue
-} from "@/features/ui/uiSlice"
+} from "@/features/audit/storage/audit"
+import type {AuditOperation, TimestampFilterType} from "@/features/audit/types"
 import {usePanelMode} from "@/hooks"
 import {SearchContainer} from "kommon"
 import {useEffect, useState} from "react"

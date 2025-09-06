@@ -4,10 +4,10 @@ import {IconTrash} from "@tabler/icons-react"
 import {useDispatch, useSelector} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
-import {clearSelection, selectSelectedIds} from "@/features/roles/rolesSlice"
+import {clearSelection, selectSelectedIds} from "@/features/roles/storage/role"
 
-import {RemoveRoleModal, RemoveRolesModal} from "./DeleteModal"
 import {useTranslation} from "react-i18next"
+import {RemoveRoleModal, RemoveRolesModal} from "./DeleteModal"
 
 export function DeleteRoleButton({roleId}: {roleId: string}) {
   const {t} = useTranslation()

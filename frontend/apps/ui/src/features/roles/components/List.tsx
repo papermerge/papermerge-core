@@ -3,11 +3,11 @@ import useRoleTable from "@/features/roles/hooks/useRoleTable"
 import useVisibleColumns from "@/features/roles/hooks/useVisibleColumns"
 import {
   clearSelection,
+  roleListSortingUpdated,
   selectionAddMany,
   selectLastPageSize,
   selectSelectedIds
-} from "@/features/roles/rolesSlice"
-import {roleListSortingUpdated} from "@/features/ui/uiSlice"
+} from "@/features/roles/storage/role"
 import {isHTTP403Forbidden} from "@/services/helpers"
 import {Center, Group, Loader, Stack} from "@mantine/core"
 import type {SortState} from "kommon"

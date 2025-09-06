@@ -1,12 +1,15 @@
 import {useState} from "react"
 
-import {useEditRoleMutation, useGetRoleQuery} from "@/features/roles/apiSlice"
+import {
+  useEditRoleMutation,
+  useGetRoleQuery
+} from "@/features/roles/storage/api"
 
-import {useTranslation} from "react-i18next"
-import {RoleFormModal} from "kommon"
-import {CheckedNodeStatus} from "@mantine/core"
-import {client2serverPerms, server2clientPerms} from "@/features/roles/utils"
 import useI18NText from "@/features/roles/hooks/useRoleFormI18NText"
+import {client2serverPerms, server2clientPerms} from "@/features/roles/utils"
+import {CheckedNodeStatus} from "@mantine/core"
+import {RoleFormModal} from "kommon"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   roleID: string

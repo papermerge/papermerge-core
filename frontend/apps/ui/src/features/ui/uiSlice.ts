@@ -313,10 +313,6 @@ export interface UIState {
   /* current page (number) in secondary viewer */
   secondaryViewerCurrentPageNumber?: number
   viewerPageHaveChangedDialogVisibility?: DialogVisiblity
-  mainAuditLogList?: AuditLogPanelList
-  secondaryAuditLogList?: AuditLogPanelList
-  mainAuditLogDetails?: AuditLogPanelDetails
-  secondaryAuditLogDetails?: AuditLogPanelDetails
   mainRoleList?: RolePanelList
   secondaryRoleList?: RolePanelList
   mainRoleDetails?: RolePanelDetails
@@ -481,28 +477,9 @@ const uiSlice = createSlice({
     },
     secondaryPanelComponentUpdated(
       state,
-      action: PayloadAction<PanelComponent>
+      action: PayloadAction<PanelComponent | undefined>
     ) {
       state.secondaryPanelComponent = action.payload
-    },
-    mainPanelAuditLogDetailsUpdated(state, action: PayloadAction<string>) {
-      const auditLogID = action.payload
-      state.mainPanelComponent = "auditLogDetails"
-      state.mainAuditLogDetails = {id: auditLogID}
-    },
-    secondaryPanelAuditLogDetailsUpdated(
-      state,
-      action: PayloadAction<string | undefined>
-    ) {
-      const auditLogID = action.payload
-
-      if (auditLogID) {
-        state.secondaryPanelComponent = "auditLogDetails"
-        state.secondaryAuditLogDetails = {id: auditLogID}
-      } else {
-        state.secondaryPanelComponent = undefined
-        state.secondaryAuditLogDetails = undefined
-      }
     },
     mainPanelRoleDetailsUpdated(state, action: PayloadAction<string>) {
       const roleID = action.payload
@@ -973,198 +950,6 @@ const uiSlice = createSlice({
     ) {
       const newVisibility = action.payload.visibility
       state.viewerPageHaveChangedDialogVisibility = newVisibility
-    },
-    auditLogTableFiltersUpdated(
-      state,
-      action: PayloadAction<{
-        mode: PanelMode
-        timestampFilterValue?: TimestampFilterType
-        tableNameFilterValue?: Array<string>
-        operationFilterValue?: Array<AuditOperation>
-        usernameFilterValue?: Array<string>
-        freeTextFilterValue?: string
-      }>
-    ) {
-      const {
-        mode,
-        tableNameFilterValue,
-        operationFilterValue,
-        timestampFilterValue,
-        usernameFilterValue,
-        freeTextFilterValue
-      } = action.payload
-      if (mode == "main") {
-        state.mainAuditLogList = {
-          ...state.mainAuditLogList,
-          tableNameFilterValue,
-          operationFilterValue,
-          timestampFilterValue,
-          usernameFilterValue,
-          freeTextFilterValue
-        }
-        return
-      }
-
-      state.secondaryAuditLogList = {
-        ...state.secondaryAuditLogList,
-        tableNameFilterValue,
-        operationFilterValue,
-        timestampFilterValue,
-        usernameFilterValue,
-        freeTextFilterValue
-      }
-    },
-    auditLogPaginationUpdated(
-      state,
-      action: PayloadAction<{mode: PanelMode; value: Pagination}>
-    ) {
-      const {mode, value} = action.payload
-      // initialize `newValue` with whatever is in current state
-      // i.e. depending on the `mode`, use value from `mainAuditLog` or from
-      // `secondaryAuditLog`
-      let newValue: Pagination = {
-        pageSize:
-          mode == "main"
-            ? state.mainAuditLogList?.pageSize
-            : state.secondaryAuditLogList?.pageSize,
-        pageNumber:
-          mode == "main"
-            ? state.mainAuditLogList?.pageSize
-            : state.secondaryAuditLogList?.pageSize
-      }
-      // if non empty value received as parameter - use it
-      // to update the state
-      if (value.pageNumber) {
-        newValue.pageNumber = value.pageNumber
-      }
-
-      if (value.pageSize) {
-        newValue.pageSize = value.pageSize
-      }
-
-      if (mode == "main") {
-        state.mainAuditLogList = {
-          ...state.mainAuditLogList,
-          ...newValue
-        }
-        return
-      }
-
-      state.secondaryAuditLogList = {
-        ...state.secondaryAuditLogList,
-        ...newValue
-      }
-    },
-    auditLogPageNumberValueUpdated(
-      state,
-      action: PayloadAction<{mode: PanelMode; value: number}>
-    ) {
-      const {mode, value} = action.payload
-      if (mode == "main") {
-        state.mainAuditLogList = {
-          ...state.mainAuditLogList,
-          pageNumber: value
-        }
-        return
-      }
-
-      state.secondaryAuditLogList = {
-        ...state.secondaryAuditLogList,
-        pageNumber: value
-      }
-    },
-    auditLogSortingUpdated(
-      state,
-      action: PayloadAction<{mode: PanelMode; value: SortState}>
-    ) {
-      const {mode, value} = action.payload
-      if (mode == "main") {
-        state.mainAuditLogList = {
-          ...state.mainAuditLogList,
-          sorting: value
-        }
-        return
-      }
-
-      state.secondaryAuditLogList = {
-        ...state.secondaryAuditLogList,
-        sorting: value
-      }
-    },
-    auditLogVisibleColumnsUpdated(
-      state,
-      action: PayloadAction<{mode: PanelMode; value: Array<string>}>
-    ) {
-      const {mode, value} = action.payload
-      if (mode == "main") {
-        state.mainAuditLogList = {
-          ...state.mainAuditLogList,
-          visibleColumns: value
-        }
-        return
-      }
-
-      state.secondaryAuditLogList = {
-        ...state.secondaryAuditLogList,
-        visibleColumns: value
-      }
-    },
-    rolesTableFiltersUpdated(
-      state,
-      action: PayloadAction<{
-        mode: PanelMode
-        freeTextFilterValue?: string
-      }>
-    ) {
-      const {mode, freeTextFilterValue} = action.payload
-      if (mode == "main") {
-        state.mainRoleList = {
-          ...state.mainRoleList,
-          freeTextFilterValue
-        }
-        return
-      }
-
-      state.secondaryRoleList = {
-        ...state.secondaryRoleList,
-        freeTextFilterValue
-      }
-    },
-    roleListSortingUpdated(
-      state,
-      action: PayloadAction<{mode: PanelMode; value: SortState}>
-    ) {
-      const {mode, value} = action.payload
-      if (mode == "main") {
-        state.mainRoleList = {
-          ...state.mainRoleList,
-          sorting: value
-        }
-        return
-      }
-
-      state.secondaryRoleList = {
-        ...state.secondaryRoleList,
-        sorting: value
-      }
-    },
-    roleListVisibleColumnsUpdated(
-      state,
-      action: PayloadAction<{mode: PanelMode; value: Array<string>}>
-    ) {
-      const {mode, value} = action.payload
-      if (mode == "main") {
-        state.mainRoleList = {
-          ...state.mainRoleList,
-          visibleColumns: value
-        }
-        return
-      }
-
-      state.secondaryRoleList = {
-        ...state.secondaryRoleList,
-        visibleColumns: value
-      }
     }
   }
 })
@@ -1182,8 +967,6 @@ export const {
   currentSharedNodeRootChanged,
   mainPanelComponentUpdated,
   secondaryPanelComponentUpdated,
-  mainPanelAuditLogDetailsUpdated,
-  secondaryPanelAuditLogDetailsUpdated,
   searchResultsLastPageSizeUpdated,
   mainPanelRoleDetailsUpdated,
   /* Main panel switched to show search results.
@@ -1220,15 +1003,7 @@ export const {
   documentsByTypeCommanderColumnVisibilityToggled,
   lastHomeUpdated,
   lastInboxUpdated,
-  viewerPageHaveChangedDialogVisibilityChanged,
-  auditLogTableFiltersUpdated,
-  auditLogPaginationUpdated,
-  auditLogPageNumberValueUpdated,
-  auditLogSortingUpdated,
-  auditLogVisibleColumnsUpdated,
-  roleListSortingUpdated,
-  roleListVisibleColumnsUpdated,
-  rolesTableFiltersUpdated
+  viewerPageHaveChangedDialogVisibilityChanged
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -1628,154 +1403,6 @@ export const selectViewerPagesHaveChangedDialogVisibility = (
   state: RootState
 ) => {
   return state.ui.viewerPageHaveChangedDialogVisibility || "closed"
-}
-
-export const selectAuditLogTimestampFilterValue = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.ui.mainAuditLogList?.timestampFilterValue
-  }
-
-  return state.ui.secondaryAuditLogList?.timestampFilterValue
-}
-
-export const selectAuditLogOperationFilterValue = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.ui.mainAuditLogList?.operationFilterValue
-  }
-
-  return state.ui.secondaryAuditLogList?.operationFilterValue
-}
-
-export const selectAuditLogTableNameFilterValue = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.ui.mainAuditLogList?.tableNameFilterValue
-  }
-
-  return state.ui.secondaryAuditLogList?.tableNameFilterValue
-}
-
-export const selectAuditLogUsernameFilterValue = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.ui.mainAuditLogList?.usernameFilterValue
-  }
-
-  return state.ui.secondaryAuditLogList?.usernameFilterValue
-}
-
-export const selectAuditLogFreeTextFilterValue = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.ui.mainAuditLogList?.freeTextFilterValue
-  }
-
-  return state.ui.secondaryAuditLogList?.freeTextFilterValue
-}
-
-export const selectAuditLogPageSize = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainAuditLogList?.pageSize
-  }
-
-  return state.ui.secondaryAuditLogList?.pageSize
-}
-
-export const selectAuditLogPageNumber = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainAuditLogList?.pageNumber
-  }
-
-  return state.ui.secondaryAuditLogList?.pageNumber
-}
-
-export const selectAuditLogSorting = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainAuditLogList?.sorting
-  }
-
-  return state.ui.secondaryAuditLogList?.sorting
-}
-
-export const selectAuditLogDetailsID = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainAuditLogDetails?.id
-  }
-
-  return state.ui.secondaryAuditLogDetails?.id
-}
-
-export const selectAuditLogVisibleColumns = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.ui.mainAuditLogList?.visibleColumns
-  }
-
-  return state.ui.secondaryAuditLogList?.visibleColumns
-}
-
-export const selectRolePageSize = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainRoleList?.pageSize
-  }
-
-  return state.ui.secondaryRoleList?.pageSize
-}
-
-export const selectRolePageNumber = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainRoleList?.pageNumber
-  }
-
-  return state.ui.secondaryRoleList?.pageNumber
-}
-export const selectRoleSorting = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainRoleList?.sorting
-  }
-
-  return state.ui.secondaryRoleList?.sorting
-}
-
-export const selectRoleDetailsID = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainRoleDetails?.id
-  }
-
-  return state.ui.secondaryRoleDetails?.id
-}
-
-export const selectRoleVisibleColumns = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainRoleList?.visibleColumns
-  }
-
-  return state.ui.secondaryRoleList?.visibleColumns
-}
-
-export const selectRoleFreeTextFilterValue = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.ui.mainRoleList?.freeTextFilterValue
-  }
-
-  return state.ui.secondaryRoleList?.freeTextFilterValue
 }
 
 /* Load initial collapse state value from cookie */

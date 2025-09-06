@@ -1,4 +1,5 @@
 import {apiSlice} from "@/features/api/slice"
+import auditLogsReducer from "@/features/audit/storage/audit"
 import authSliceReducer from "@/features/auth/slice"
 import customFieldsReducer from "@/features/custom-fields/customFieldsSlice"
 import documentTypesReducer from "@/features/document-types/documentTypesSlice"
@@ -12,7 +13,7 @@ import filesReducer from "@/features/files/filesSlice"
 import groupsReducer from "@/features/groups/groupsSlice"
 import nodesReducer from "@/features/nodes/nodesSlice"
 import thumbnailObjects from "@/features/nodes/thumbnailObjectsSlice"
-import rolesReducer from "@/features/roles/rolesSlice"
+import rolesReducer from "@/features/roles/storage/role"
 import searchReducer from "@/features/search/searchSlice"
 import sharedNodesReducer from "@/features/shared_nodes/store/sharedNodesSlice"
 import tagsReducer from "@/features/tags/tagsSlice"
@@ -29,6 +30,7 @@ export const store = configureStore({
     tags: tagsReducer,
     groups: groupsReducer,
     roles: rolesReducer,
+    auditLogs: auditLogsReducer,
     customFields: customFieldsReducer,
     documentTypes: documentTypesReducer,
     users: usersReducer,
@@ -43,6 +45,7 @@ export const store = configureStore({
     docVers: docVersReducer,
     docs: docsReducer,
     files: filesReducer,
+
     [apiSlice.reducerPath]: apiSlice.reducer
   },
   middleware: getDefaultMiddleware =>

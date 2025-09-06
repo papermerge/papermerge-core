@@ -15,7 +15,7 @@ import {useForm} from "@mantine/form"
 import {UserEditableFields} from "@/types"
 
 import {useGetGroupsQuery} from "@/features/groups/apiSlice"
-import {useGetRolesQuery} from "@/features/roles/apiSlice"
+import {useGetRolesQuery} from "@/features/roles/storage/api"
 import {useAddNewUserMutation} from "@/features/users/apiSlice"
 import {makeRandomString} from "@/utils"
 import {useTranslation} from "react-i18next"

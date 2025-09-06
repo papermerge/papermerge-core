@@ -37,7 +37,7 @@ async def get_roles(
     sort_by: Optional[str] = None,
     sort_direction: Optional[str] = None,
     filters: Optional[Dict[str, Dict[str, Any]]] = None
-) -> schema.PaginatedResponse[schema.Role]:
+) -> schema.PaginatedResponse[schema.RoleEx]:
     """
     Get paginated roles with filtering and sorting support.
 
@@ -62,7 +62,6 @@ async def get_roles(
     # Create user aliases for joins
     created_user = aliased(orm.User, name='created_user')
     updated_user = aliased(orm.User, name='updated_user')
-
 
     # Build base query with joins for user data
     base_query = (
@@ -135,12 +134,12 @@ async def get_roles(
                 username=row.updated_by_username
             )
         }
-        items.append(schema.Role(**role_data))
+        items.append(schema.RoleEx(**role_data))
 
     # Calculate total pages
     total_pages = math.ceil(total_roles / page_size) if total_roles > 0 else 1
 
-    return schema.PaginatedResponse[schema.Role](
+    return schema.PaginatedResponse[schema.RoleEx](
         items=items,
         page_size=page_size,
         page_number=page_number,

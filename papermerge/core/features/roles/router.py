@@ -41,13 +41,13 @@ async def get_roles_without_pagination(
     return result
 
 
-@router.get("/", response_model=schema.PaginatedResponse[schema.Role])
+@router.get("/", response_model=schema.PaginatedResponse[schema.RoleEx])
 @utils.docstring_parameter(scope=scopes.ROLE_VIEW)
 async def get_roles(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.ROLE_VIEW])],
     params: RoleParams = Depends(),
     db_session: AsyncSession = Depends(get_db),
-) -> schema.PaginatedResponse[schema.Role]:
+) -> schema.PaginatedResponse[schema.RoleEx]:
     """Get all (paginated) roles
 
     Required scope: `{scope}`

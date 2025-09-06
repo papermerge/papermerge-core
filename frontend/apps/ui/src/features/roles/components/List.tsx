@@ -7,18 +7,22 @@ import {
   selectLastPageSize,
   selectSelectedIds
 } from "@/features/roles/rolesSlice"
+import {roleListSortingUpdated} from "@/features/ui/uiSlice"
 import {isHTTP403Forbidden} from "@/services/helpers"
 import {Center, Group, Loader, Stack} from "@mantine/core"
+import type {SortState} from "kommon"
 import {DataTable, TablePagination} from "kommon"
 import {useDispatch, useSelector} from "react-redux"
 import {useNavigate} from "react-router-dom"
 import roleColumns from "./roleColumns"
 
+import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
 import ActionButtons from "./ActionButtons"
 
 export default function RolesList() {
   const {t} = useTranslation()
+  const mode = usePanelMode()
   const selectedIds = useSelector(selectSelectedIds)
   const dispatch = useDispatch()
   const lastPageSize = useSelector(selectLastPageSize)
@@ -27,6 +31,10 @@ export default function RolesList() {
 
   const {isError, data, queryParams, error, isLoading, isFetching} =
     useRoleTable()
+
+  const handleSortChange = (value: SortState) => {
+    dispatch(roleListSortingUpdated({mode, value}))
+  }
 
   const onCheckAll = (checked: boolean) => {
     if (!data) {
@@ -47,29 +55,9 @@ export default function RolesList() {
     navigate(ERRORS_403_ACCESS_FORBIDDEN)
   }
 
-  if (isLoading || !data) {
-    return (
-      <Stack>
-        <ActionButtons />
-        <Center>
-          <Loader type="bars" />
-        </Center>
-      </Stack>
-    )
-  }
-
-  if (data.items.length == 0) {
-    return (
-      <div>
-        <ActionButtons />
-        <Empty />
-      </div>
-    )
-  }
-
   return (
     <Stack>
-      <Group>
+      <Group w={"100%"}>
         <ActionButtons /> {isFetching && <Loader size={"sm"} />}
       </Group>
 
@@ -80,6 +68,7 @@ export default function RolesList() {
           column: queryParams.sort_by,
           direction: queryParams.sort_direction || null
         }}
+        onSortChange={handleSortChange}
         loading={isLoading || isFetching}
         emptyMessage={t?.("auditLog.noAuditLogsFound") || "No audit logs found"}
       />

@@ -1108,6 +1108,42 @@ const uiSlice = createSlice({
         ...state.secondaryAuditLogList,
         visibleColumns: value
       }
+    },
+    roleListSortingUpdated(
+      state,
+      action: PayloadAction<{mode: PanelMode; value: SortState}>
+    ) {
+      const {mode, value} = action.payload
+      if (mode == "main") {
+        state.mainRoleList = {
+          ...state.mainRoleList,
+          sorting: value
+        }
+        return
+      }
+
+      state.secondaryRoleList = {
+        ...state.secondaryRoleList,
+        sorting: value
+      }
+    },
+    roleListVisibleColumnsUpdated(
+      state,
+      action: PayloadAction<{mode: PanelMode; value: Array<string>}>
+    ) {
+      const {mode, value} = action.payload
+      if (mode == "main") {
+        state.mainRoleList = {
+          ...state.mainRoleList,
+          visibleColumns: value
+        }
+        return
+      }
+
+      state.secondaryRoleList = {
+        ...state.secondaryRoleList,
+        visibleColumns: value
+      }
     }
   }
 })
@@ -1168,7 +1204,9 @@ export const {
   auditLogPaginationUpdated,
   auditLogPageNumberValueUpdated,
   auditLogSortingUpdated,
-  auditLogVisibleColumnsUpdated
+  auditLogVisibleColumnsUpdated,
+  roleListSortingUpdated,
+  roleListVisibleColumnsUpdated
 } = uiSlice.actions
 export default uiSlice.reducer
 

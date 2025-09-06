@@ -96,7 +96,7 @@ export default function AuditLogsList() {
 
   return (
     <Stack gap="xs">
-      <Group ref={actionButtonsRef} justify={"space-between"} align="center">
+      <Group ref={actionButtonsRef} justify={"end"} align="center">
         <Search />
         <ColumnSelector />
       </Group>

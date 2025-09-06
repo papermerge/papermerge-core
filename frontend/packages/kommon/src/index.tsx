@@ -11,6 +11,7 @@ import CopyableTextArea from "./components/CopyableTextArea"
 import CopyableTextInput from "./components/CopyableTextInput"
 import RoleForm from "./components/RoleForm"
 import RoleFormModal from "./components/RoleFormModal"
+import SearchContainer from "./components/SearchContainer"
 import SubmitButton from "./components/SubmitButton/SubmitButton"
 import {ColumnSelector, DataTable, TablePagination} from "./components/Table"
 import type {
@@ -29,6 +30,7 @@ export {
   EditNodeTitleModal,
   RoleForm,
   RoleFormModal,
+  SearchContainer,
   SubmitButton,
   TablePagination
 }

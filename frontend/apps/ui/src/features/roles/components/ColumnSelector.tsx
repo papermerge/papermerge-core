@@ -1,22 +1,20 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {
-  auditLogVisibleColumnsUpdated,
-  selectAuditLogVisibleColumns
+  roleListVisibleColumnsUpdated,
+  selectRoleVisibleColumns
 } from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {ColumnConfig, ColumnSelector} from "kommon"
 import {useTranslation} from "react-i18next"
-import {AuditLogItem} from "../types"
-import auditLogColumns from "./auditLogColumns"
+import {RoleItem} from "../types"
+import roleColumns from "./roleColumns"
 
 export default function ColumnSelectorContainer() {
   const mode = usePanelMode()
   const {t} = useTranslation()
   const dispatch = useAppDispatch()
-  const visibleColumns = useAppSelector(s =>
-    selectAuditLogVisibleColumns(s, mode)
-  )
-  const allColumns = auditLogColumns(t).map(c => {
+  const visibleColumns = useAppSelector(s => selectRoleVisibleColumns(s, mode))
+  const allColumns = roleColumns(t).map(c => {
     if (!visibleColumns) {
       return {...c, visible: c.visible !== false}
     }
@@ -31,19 +29,19 @@ export default function ColumnSelectorContainer() {
     return {...c, visible: false}
   })
 
-  const onColumnChange = (columns: ColumnConfig<AuditLogItem>[]) => {
+  const onColumnChange = (columns: ColumnConfig<RoleItem>[]) => {
     const newVisibleColumns = columns
       .filter(c => Boolean(c.visible !== false))
       .map(c => c.key)
 
-    dispatch(auditLogVisibleColumnsUpdated({mode, value: newVisibleColumns}))
+    dispatch(roleListVisibleColumnsUpdated({mode, value: newVisibleColumns}))
   }
 
   return (
     <ColumnSelector
       t={t}
-      i18NPrefix="auditLogColumns"
       columns={allColumns}
+      i18NPrefix="roleColumns"
       onColumnsChange={onColumnChange}
     />
   )

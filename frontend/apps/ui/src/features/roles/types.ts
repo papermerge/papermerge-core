@@ -3,8 +3,8 @@ import type {PaginatedArgs} from "@/types"
 export type SortBy = "name" | "created_at" | "created_by"
 
 export interface RoleQueryParams extends Partial<PaginatedArgs> {
-  page_number: number
-  page_size: number
+  page_number?: number
+  page_size?: number
 
   // Sorting
   sort_by?: SortBy
@@ -17,11 +17,16 @@ export interface RoleQueryParams extends Partial<PaginatedArgs> {
   filter_free_text?: string
 }
 
+export interface ByUser {
+  id: string
+  username: string
+}
+
 export interface RoleItem {
   id: string
   name: string
   created_at: string
   updated_at: string
-  created_by: string
-  updated_by: string
+  created_by: ByUser
+  updated_by: ByUser
 }

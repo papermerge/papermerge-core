@@ -58,6 +58,8 @@ async def get_roles(
             db_session,
             page_size=params.page_size,
             page_number=params.page_number,
+            sort_by=params.sort_by,
+            sort_direction=params.sort_direction,
             filters=filters
         )
     except ValueError as e:

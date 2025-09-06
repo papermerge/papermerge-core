@@ -4,7 +4,7 @@ import {IconCheck, IconColumns2, IconCopy} from "@tabler/icons-react"
 import {TFunction} from "i18next"
 import type {ColumnConfig} from "kommon"
 import {useCallback, useState} from "react"
-import type {RoleItem} from "../types"
+import type {ByUser, RoleItem} from "../types"
 
 const STATIC_STYLES = {
   clickableIcon: {opacity: 0, cursor: "pointer"},
@@ -116,7 +116,6 @@ export default function roleColumns(t?: TFunction) {
       minWidth: 100,
       render: value => <Text size="sm">{value as string}</Text>
     },
-
     {
       key: "id",
       label: t?.("roleColumns.id") || "ID",
@@ -126,6 +125,46 @@ export default function roleColumns(t?: TFunction) {
       width: 200,
       minWidth: 100,
       render: value => <TruncatedTextWithCopy value={value as string} />
+    },
+    {
+      key: "created_at",
+      label: t?.("roleColumns.created_at") || "Created At",
+      sortable: true,
+      filterable: true,
+      visible: true,
+      width: 200,
+      minWidth: 100,
+      render: value => <Text size="sm">{value as string}</Text>
+    },
+    {
+      key: "created_by",
+      label: t?.("roleColumns.created_by") || "Created By",
+      sortable: true,
+      filterable: true,
+      visible: true,
+      width: 200,
+      minWidth: 100,
+      render: value => <Text size="sm">{(value as ByUser).username}</Text>
+    },
+    {
+      key: "updated_at",
+      label: t?.("roleColumns.updated_at") || "Updated At",
+      sortable: true,
+      filterable: true,
+      visible: false,
+      width: 200,
+      minWidth: 100,
+      render: value => <Text size="sm">{value as string}</Text>
+    },
+    {
+      key: "updated_by",
+      label: t?.("roleColumns.updated_by") || "updated By",
+      sortable: true,
+      filterable: true,
+      visible: false,
+      width: 200,
+      minWidth: 100,
+      render: value => <Text size="sm">{(value as ByUser).username}</Text>
     }
   ]
   return columns

@@ -352,7 +352,6 @@ def _build_filter_conditions(
 def _apply_sorting(query, sort_by: str, sort_direction: str, created_user, updated_user):
     """Apply sorting to the query."""
     sort_column = None
-
     # Map sort_by to actual columns
     if sort_by == "id":
         sort_column = orm.Role.id

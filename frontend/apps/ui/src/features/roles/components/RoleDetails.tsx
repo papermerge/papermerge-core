@@ -1,13 +1,13 @@
 import {Box, Breadcrumbs, Group, Loader, LoadingOverlay} from "@mantine/core"
 import {Link, useNavigation} from "react-router-dom"
 
-import {useGetRoleQuery} from "@/features/roles/apiSlice"
+import useI18NText from "@/features/roles/hooks/useRoleFormI18NText"
+import {useGetRoleQuery} from "@/features/roles/storage/api"
+import {server2clientPerms} from "@/features/roles/utils"
 import type {RoleDetails} from "@/types"
+import {RoleForm} from "kommon"
 import {DeleteRoleButton} from "./DeleteButton"
 import EditButton from "./EditButton"
-import {RoleForm} from "kommon"
-import {server2clientPerms} from "@/features/roles/utils"
-import useI18NText from "@/features/roles/hooks/useRoleFormI18NText"
 
 interface RoleDetailsArgs {
   roleId: string

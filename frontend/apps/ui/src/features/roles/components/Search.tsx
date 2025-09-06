@@ -1,12 +1,9 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import type {AuditOperation, TimestampFilterType} from "@/features/audit/types"
+import type {TimestampFilterType} from "@/features/audit/types"
 import {
   rolesTableFiltersUpdated,
-  selectAuditLogOperationFilterValue,
-  selectAuditLogTableNameFilterValue,
-  selectAuditLogUsernameFilterValue,
   selectRoleFreeTextFilterValue
-} from "@/features/ui/uiSlice"
+} from "@/features/roles/storage/role"
 import {usePanelMode} from "@/hooks"
 import {SearchContainer} from "kommon"
 import {useEffect, useState} from "react"
@@ -19,23 +16,9 @@ export default function Search() {
   const mode = usePanelMode()
 
   const dispatch = useAppDispatch()
-  const tableNames = useAppSelector(s =>
-    selectAuditLogTableNameFilterValue(s, mode)
-  )
-  const operations = useAppSelector(s =>
-    selectAuditLogOperationFilterValue(s, mode)
-  )
-  const users = useAppSelector(s => selectAuditLogUsernameFilterValue(s, mode))
-  const searchText = useAppSelector(s => selectRoleFreeTextFilterValue(s, mode))
-  const [localTableNames, setLocalTableNames] = useState<string[]>(
-    tableNames || []
-  )
 
-  const [localOperations, setLocalOperations] = useState<AuditOperation[]>(
-    operations || []
-  )
+  const searchText = useAppSelector(s => selectRoleFreeTextFilterValue(s, mode))
   const [localRange, setLocalRange] = useState<TimestampFilterType>()
-  const [localUsers, setLocalUsers] = useState<string[]>(users || [])
   const [localSearchTextValue, setSearchTextValue] = useState(searchText || "")
   const [debouncedSearchTextValue, setDebouncedSearchTextValue] = useState(
     searchText || ""
@@ -58,26 +41,11 @@ export default function Search() {
     setSearchTextValue(e.currentTarget.value)
   }
 
-  const onLocalTableNamesChange = (values: string[]) => {
-    setLocalTableNames(values)
-  }
-
-  const onLocalOperationChange = (values: string[]) => {
-    setLocalOperations(values as AuditOperation[])
-  }
-
   const onLocalRangeChange = (value: TimestampFilterType) => {
     setLocalRange(value)
   }
 
-  const onLocalUserChange = (value: string[] | null) => {
-    if (value) {
-      console.log(value)
-      setLocalUsers(value)
-    } else {
-      setLocalUsers([])
-    }
-  }
+  const onLocalUserChange = (value: string[] | null) => {}
 
   const onClearSearchText = () => {
     setSearchTextValue("")
@@ -93,11 +61,6 @@ export default function Search() {
   }
 
   const onClear = () => {
-    setLocalTableNames([])
-    setLocalOperations([])
-    setLocalRange({from: null, to: null})
-    setLocalUsers([])
-
     dispatch(
       rolesTableFiltersUpdated({
         mode,

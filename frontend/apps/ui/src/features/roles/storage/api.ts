@@ -1,6 +1,6 @@
 import {apiSlice} from "@/features/api/slice"
+import type {RoleItem, RoleQueryParams} from "@/features/roles/types"
 import type {NewRole, Paginated, Role, RoleUpdate} from "@/types"
-import type {RoleItem, RoleQueryParams} from "./types"
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 

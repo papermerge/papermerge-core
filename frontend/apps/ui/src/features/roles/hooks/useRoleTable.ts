@@ -1,13 +1,13 @@
 import {useAppSelector} from "@/app/hooks"
-import type {RoleQueryParams, SortBy} from "@/features/roles/types"
 import {
   selectRoleFreeTextFilterValue,
   selectRolePageNumber,
   selectRolePageSize,
   selectRoleSorting
-} from "@/features/ui/uiSlice"
+} from "@/features/roles/storage/role"
+import type {RoleQueryParams, SortBy} from "@/features/roles/types"
 import {usePanelMode} from "@/hooks"
-import {useGetPaginatedRolesQuery} from "../apiSlice"
+import {useGetPaginatedRolesQuery} from "../storage/api"
 
 function useQueryParams(): RoleQueryParams {
   const mode = usePanelMode()

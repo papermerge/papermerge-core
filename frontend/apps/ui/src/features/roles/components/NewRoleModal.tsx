@@ -1,11 +1,11 @@
 import {useState} from "react"
 
-import {useAddNewRoleMutation} from "@/features/roles/apiSlice"
-import {useTranslation} from "react-i18next"
-import {RoleFormModal} from "kommon"
-import {CheckedNodeStatus} from "@mantine/core"
-import {client2serverPerms} from "@/features/roles/utils"
 import useI18NText from "@/features/roles/hooks/useRoleFormI18NText"
+import {useAddNewRoleMutation} from "@/features/roles/storage/api"
+import {client2serverPerms} from "@/features/roles/utils"
+import {CheckedNodeStatus} from "@mantine/core"
+import {RoleFormModal} from "kommon"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   opened: boolean

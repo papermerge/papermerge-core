@@ -1,5 +1,5 @@
 import {useAppSelector} from "@/app/hooks"
-import {selectRoleVisibleColumns} from "@/features/ui/uiSlice"
+import {selectRoleVisibleColumns} from "@/features/roles/storage/role"
 import {usePanelMode} from "@/hooks"
 import {ColumnConfig} from "kommon"
 

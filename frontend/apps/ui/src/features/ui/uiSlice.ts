@@ -1108,63 +1108,6 @@ const uiSlice = createSlice({
         ...state.secondaryAuditLogList,
         visibleColumns: value
       }
-    },
-    rolesTableFiltersUpdated(
-      state,
-      action: PayloadAction<{
-        mode: PanelMode
-        freeTextFilterValue?: string
-      }>
-    ) {
-      const {mode, freeTextFilterValue} = action.payload
-      if (mode == "main") {
-        state.mainRoleList = {
-          ...state.mainRoleList,
-          freeTextFilterValue
-        }
-        return
-      }
-
-      state.secondaryRoleList = {
-        ...state.secondaryRoleList,
-        freeTextFilterValue
-      }
-    },
-    roleListSortingUpdated(
-      state,
-      action: PayloadAction<{mode: PanelMode; value: SortState}>
-    ) {
-      const {mode, value} = action.payload
-      if (mode == "main") {
-        state.mainRoleList = {
-          ...state.mainRoleList,
-          sorting: value
-        }
-        return
-      }
-
-      state.secondaryRoleList = {
-        ...state.secondaryRoleList,
-        sorting: value
-      }
-    },
-    roleListVisibleColumnsUpdated(
-      state,
-      action: PayloadAction<{mode: PanelMode; value: Array<string>}>
-    ) {
-      const {mode, value} = action.payload
-      if (mode == "main") {
-        state.mainRoleList = {
-          ...state.mainRoleList,
-          visibleColumns: value
-        }
-        return
-      }
-
-      state.secondaryRoleList = {
-        ...state.secondaryRoleList,
-        visibleColumns: value
-      }
     }
   }
 })
@@ -1225,10 +1168,7 @@ export const {
   auditLogPaginationUpdated,
   auditLogPageNumberValueUpdated,
   auditLogSortingUpdated,
-  auditLogVisibleColumnsUpdated,
-  roleListSortingUpdated,
-  roleListVisibleColumnsUpdated,
-  rolesTableFiltersUpdated
+  auditLogVisibleColumnsUpdated
 } = uiSlice.actions
 export default uiSlice.reducer
 
@@ -1726,56 +1666,6 @@ export const selectAuditLogVisibleColumns = (
   }
 
   return state.ui.secondaryAuditLogList?.visibleColumns
-}
-
-export const selectRolePageSize = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainRoleList?.pageSize
-  }
-
-  return state.ui.secondaryRoleList?.pageSize
-}
-
-export const selectRolePageNumber = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainRoleList?.pageNumber
-  }
-
-  return state.ui.secondaryRoleList?.pageNumber
-}
-export const selectRoleSorting = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainRoleList?.sorting
-  }
-
-  return state.ui.secondaryRoleList?.sorting
-}
-
-export const selectRoleDetailsID = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainRoleDetails?.id
-  }
-
-  return state.ui.secondaryRoleDetails?.id
-}
-
-export const selectRoleVisibleColumns = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainRoleList?.visibleColumns
-  }
-
-  return state.ui.secondaryRoleList?.visibleColumns
-}
-
-export const selectRoleFreeTextFilterValue = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.ui.mainRoleList?.freeTextFilterValue
-  }
-
-  return state.ui.secondaryRoleList?.freeTextFilterValue
 }
 
 /* Load initial collapse state value from cookie */

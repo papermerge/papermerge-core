@@ -1,4 +1,4 @@
-import {useGetRolesQuery} from "@/features/roles/apiSlice"
+import {useGetRolesQuery} from "@/features/roles/storage/api"
 import {MultiSelect, Skeleton, Stack} from "@mantine/core"
 import {useState} from "react"
 

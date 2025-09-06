@@ -1,4 +1,4 @@
-import {useGetRolesQuery} from "@/features/roles/apiSlice"
+import {useGetRolesQuery} from "@/features/roles/storage/api"
 import type {Group, User} from "@/types.d/shared_nodes"
 import {MultiSelect} from "@mantine/core"
 import {useEffect, useState} from "react"

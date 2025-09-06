@@ -38,7 +38,7 @@ from .features.custom_fields.schema import CustomField, UpdateCustomField, Custo
 from .features.tags.schema import Tag, UpdateTag, CreateTag
 from .features.document_types.schema import DocumentType, UpdateDocumentType, CreateDocumentType
 from .features.groups.schema import Group, GroupDetails, CreateGroup, UpdateGroup
-from .features.roles.schema import Role, RoleDetails, CreateRole, UpdateRole, Permission, ByUser
+from .features.roles.schema import Role, RoleEx, RoleDetails, CreateRole, UpdateRole, Permission, ByUser
 from .features.audit.schema import AuditLog, AuditLogDetails
 from .schemas.error import Error, AttrError
 from .schemas.common import PaginatedResponse
@@ -99,6 +99,7 @@ __all__ = [
     'UpdateGroup',
     'Permission',
     'Role',
+    'RoleEx',
     'RoleDetails',
     'ByUser',
     'CreateRole',

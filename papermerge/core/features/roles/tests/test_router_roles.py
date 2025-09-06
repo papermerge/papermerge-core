@@ -81,7 +81,7 @@ async def test_roles_paginated_result__8_items_first_page(
 
     assert response.status_code == 200, response.json()
 
-    paginated_items = schema.PaginatedResponse[schema.Role](**response.json())
+    paginated_items = schema.PaginatedResponse[schema.RoleEx](**response.json())
 
     assert paginated_items.page_size == 5
     assert paginated_items.page_number == 1
@@ -101,7 +101,7 @@ async def test_roles_paginated_result__8_items_second_page(
 
     assert response.status_code == 200, response.json()
 
-    paginated_items = schema.PaginatedResponse[schema.Role](**response.json())
+    paginated_items = schema.PaginatedResponse[schema.RoleEx](**response.json())
 
     assert paginated_items.page_size == 5
     assert paginated_items.page_number == 2
@@ -122,7 +122,7 @@ async def test_roles_paginated_result__8_items_4th_page(
 
     assert response.status_code == 200, response.json()
 
-    paginated_items = schema.PaginatedResponse[schema.Role](**response.json())
+    paginated_items = schema.PaginatedResponse[schema.RoleEx](**response.json())
 
     assert paginated_items.page_size == 5
     assert paginated_items.page_number == 4

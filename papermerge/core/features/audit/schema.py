@@ -53,7 +53,7 @@ class AuditLogParams(BaseModel):
     # Sorting parameters
     sort_by: Optional[str] = Query(
         None,
-        regex="^(timestamp|operation|table_name|username|record_id|user_id|id)$",
+        pattern="^(timestamp|operation|table_name|username|record_id|user_id|id)$",
         description="Column to sort by: timestamp, operation, table_name, username, record_id, user_id, id"
     )
     sort_direction: Optional[Literal["asc", "desc"]] = Query(

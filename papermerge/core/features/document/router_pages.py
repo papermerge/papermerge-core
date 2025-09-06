@@ -16,6 +16,7 @@ from papermerge.core.features.page_mngm.db.api import \
 from papermerge.core.features.page_mngm.db.api import \
     move_pages as api_move_pages
 from papermerge.core.db.engine import get_db
+from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 
 logger = logging.getLogger(__name__)
 config = get_settings()
@@ -54,7 +55,12 @@ async def apply_page_operations(
     When `angle` > 0 -> the rotation is clockwise.
     When `angle` < 0 -> the rotation is counterclockwise.
     """
-    new_doc = await apply_pages_op(db_session, items, user_id=user.id)
+    async with AsyncAuditContext(
+        db_session,
+        user_id=user.id,
+        username=user.username
+    ):
+        new_doc = await apply_pages_op(db_session, items, user_id=user.id)
 
     return schema.Document.model_validate(new_doc)
 
@@ -78,13 +84,18 @@ async def move_pages(
     moves all it's pages into the target, the returned source will
     be None.
     """
-    [source, target] = await api_move_pages(
+    async with AsyncAuditContext(
         db_session,
-        source_page_ids=arg.source_page_ids,
-        target_page_id=arg.target_page_id,
-        move_strategy=arg.move_strategy,
         user_id=user.id,
-    )
+        username=user.username
+    ):
+        [source, target] = await api_move_pages(
+            db_session,
+            source_page_ids=arg.source_page_ids,
+            target_page_id=arg.target_page_id,
+            move_strategy=arg.move_strategy,
+            user_id=user.id,
+        )
     if source is not None:
         source = await doc_dbapi.load_doc(db_session, doc_id=source.id)
     target = await doc_dbapi.load_doc(db_session, doc_id=target.id)
@@ -110,14 +121,19 @@ async def extract_pages(
     Source IDs are IDs of the pages to move.
     Target is the ID of the folder where to extract pages into.
     """
-    [source, target_docs] = await api_extract_pages(
+    async with AsyncAuditContext(
         db_session,
-        source_page_ids=arg.source_page_ids,
-        target_folder_id=arg.target_folder_id,
-        strategy=arg.strategy,
-        title_format=arg.title_format,
         user_id=user.id,
-    )
+        username=user.username
+    ):
+        [source, target_docs] = await api_extract_pages(
+            db_session,
+            source_page_ids=arg.source_page_ids,
+            target_folder_id=arg.target_folder_id,
+            strategy=arg.strategy,
+            title_format=arg.title_format,
+            user_id=user.id,
+        )
     stmt = select(orm.Document).where(
         orm.Document.id.in_([doc.id for doc in target_docs])
     )

@@ -7,8 +7,8 @@ from pydantic import BaseModel, ConfigDict
 
 
 class ByUser(BaseModel):
-    id: uuid.UUID
-    username: str
+    id: uuid.UUID | None = None
+    username: str | None = None
 
 
 class Permission(BaseModel):
@@ -21,6 +21,18 @@ class Permission(BaseModel):
 
 
 class Role(BaseModel):
+    id: uuid.UUID
+    name: str
+    created_at: datetime | None = None
+    created_by: uuid.UUID | None = None
+    updated_at: datetime | None = None
+    updated_by: uuid.UUID | None = None
+
+    # Config
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RoleEx(BaseModel):
     id: uuid.UUID
     name: str
     created_at: datetime
@@ -90,7 +102,7 @@ class RoleParams(BaseModel):
     # Sorting parameters
     sort_by: Optional[str] = Query(
         None,
-        regex="^(id|name|created_at|updated_at|created_by|updated_by)$",
+        pattern="^(id|name|created_at|updated_at|created_by|updated_by)$",
         description="Column to sort by: id, name, created_at, updated_at, created_by, updated_by"
     )
     sort_direction: Optional[Literal["asc", "desc"]] = Query(

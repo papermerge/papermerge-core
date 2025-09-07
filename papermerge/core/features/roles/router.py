@@ -2,7 +2,7 @@ import logging
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, HTTPException, Security, Query
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -168,6 +168,10 @@ async def create_role(
         404: {
             "description": """No role with specified ID found""",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+        400: {
+            "description": """Role has active user associations""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
         }
     },
 )
@@ -177,9 +181,14 @@ async def delete_role(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.ROLE_DELETE])
     ],
+    force: bool = Query(False, description="Force delete even if role has active user associations"),
     db_session: AsyncSession = Depends(get_db),
 ) -> None:
-    """Deletes role
+    """Deletes role (soft delete)
+
+    Soft deletes the role and removes all user associations.
+    Users will immediately lose permissions granted by this role.
+    Use ?force=true to delete roles with active user associations.
 
     Required scope: `{scope}`
     """
@@ -189,10 +198,95 @@ async def delete_role(
             user_id=user.id,
             username=user.username
         ):
-            await dbapi.delete_role(db_session, role_id)
+            await dbapi.delete_role(db_session, role_id, user.id, force_delete=force)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Role not found")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.patch(
+    "/{role_id}/archive",
+    status_code=204,
+    responses={
+        404: {
+            "description": """No role with specified ID found""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
+@utils.docstring_parameter(scope=scopes.ROLE_UPDATE)
+async def archive_role(
+    role_id: uuid.UUID,
+    user: Annotated[
+        schema.User, Security(get_current_user, scopes=[scopes.ROLE_UPDATE])
+    ],
+    db_session: AsyncSession = Depends(get_db),
+) -> None:
+    """Archives role
+
+    Archives the role, making it inactive for new assignments while preserving
+    existing user permissions. Archived roles are hidden from role selection
+    but users retain their current permissions.
+
+    Required scope: `{scope}`
+    """
+    try:
+        async with AsyncAuditContext(
+            db_session,
+            user_id=user.id,
+            username=user.username
+        ):
+            await dbapi.archive_role(db_session, role_id, user.id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Role not found")
 
+
+@router.patch(
+    "/{role_id}/restore",
+    status_code=204,
+    responses={
+        404: {
+            "description": """No role with specified ID found""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+        400: {
+            "description": """Role is not deleted""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
+@utils.docstring_parameter(scope=scopes.ROLE_UPDATE)
+async def restore_role(
+    role_id: uuid.UUID,
+    user: Annotated[
+        schema.User, Security(get_current_user, scopes=[scopes.ROLE_UPDATE])
+    ],
+    restore_user_associations: bool = Query(
+        True,
+        description="Whether to restore user associations along with the role"
+    ),
+    db_session: AsyncSession = Depends(get_db),
+) -> None:
+    """Restores a deleted role
+
+    Restores a soft-deleted role back to active status. Optionally restores
+    user associations that were deleted when the role was deleted.
+    Also unarchives the role if it was archived.
+
+    Required scope: `{scope}`
+    """
+    try:
+        async with AsyncAuditContext(
+            db_session,
+            user_id=user.id,
+            username=user.username
+        ):
+            await dbapi.restore_role(db_session, role_id, user.id, restore_user_associations)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Role not found")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.patch("/{role_id}", status_code=200, response_model=schema.Role)
 @utils.docstring_parameter(scope=scopes.ROLE_UPDATE)

@@ -3,11 +3,12 @@ import math
 import uuid
 from typing import Tuple, Optional, Dict, Any
 
-from sqlalchemy import delete, select, func, and_, or_
+from sqlalchemy import delete, select, func, and_, or_, update
 from sqlalchemy.orm import selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
+from papermerge.core.utils.tz import tz_aware_datetime_now
 from papermerge.core import schema, orm
 from papermerge.core.features.auth import scopes
 
@@ -233,16 +234,6 @@ async def update_role(
     return result
 
 
-async def delete_role(
-    db_session: AsyncSession,
-    role_id: uuid.UUID,
-):
-    stmt = select(orm.Role).where(orm.Role.id == role_id)
-    role = (await db_session.execute(stmt, params={"id": role_id})).scalars().one()
-    await db_session.delete(role)
-    await db_session.commit()
-
-
 async def get_perms(db_session: AsyncSession) -> list[schema.Permission]:
     db_perms = await db_session.execute(select(orm.Permission).order_by("codename"))
     model_perms = [
@@ -284,6 +275,172 @@ async def sync_perms(db_session: AsyncSession):
     await db_session.commit()
 
 
+async def delete_role(
+    db_session: AsyncSession,
+    role_id: uuid.UUID,
+    deleted_by_user_id: uuid.UUID,
+    force_delete: bool = False
+) -> bool:
+    """
+    Soft delete a role and its user associations.
+
+    Args:
+        db_session: Database session
+        role_id: ID of role to delete
+        deleted_by_user_id: ID of user performing the deletion
+        force_delete: If True, delete even if role has active user associations
+
+    Returns:
+        bool: True if deletion successful
+
+    Raises:
+        NoResultFound: If role doesn't exist
+        ValueError: If role has active users and force_delete=False
+    """
+    # Check if role exists and is not already deleted
+    stmt = select(orm.Role).where(
+        orm.Role.id == role_id,
+        orm.Role.deleted_at.is_(None)
+    )
+    result = await db_session.execute(stmt)
+    role = result.scalars().first()
+
+    if not role:
+        raise NoResultFound(f"Role with id {role_id} not found or already deleted")
+
+    # Check for active user associations if not forcing delete
+    if not force_delete:
+        user_count_stmt = select(orm.UserRole).where(
+            orm.UserRole.role_id == role_id,
+            orm.UserRole.deleted_at.is_(None)
+        )
+        result = await db_session.execute(user_count_stmt)
+        active_user_roles = result.scalars().all()
+
+        if active_user_roles:
+            raise ValueError(
+                f"Cannot delete role '{role.name}' - currently assigned to "
+                f"{len(active_user_roles)} users. Use force_delete=True to override "
+                f"or archive the role first."
+            )
+
+    # Soft delete all user-role associations
+    user_roles_update_stmt = update(orm.UserRole).where(
+        orm.UserRole.role_id == role_id,
+        orm.UserRole.deleted_at.is_(None)
+    ).values(
+        deleted_at=tz_aware_datetime_now(),
+        deleted_by=deleted_by_user_id,
+        updated_at=tz_aware_datetime_now(),
+        updated_by=deleted_by_user_id
+    )
+    await db_session.execute(user_roles_update_stmt)
+
+    # Soft delete the role
+    role.deleted_at = tz_aware_datetime_now()
+    role.deleted_by = deleted_by_user_id
+    role.updated_at = tz_aware_datetime_now()
+    role.updated_by = deleted_by_user_id
+
+    await db_session.commit()
+    return True
+
+
+async def archive_role(
+    db_session: AsyncSession,
+    role_id: uuid.UUID,
+    archived_by_user_id: uuid.UUID
+) -> bool:
+    """
+    Archive a role (keeps user permissions but hides from new assignments).
+
+    Args:
+        db_session: Database session
+        role_id: ID of role to archive
+        archived_by_user_id: ID of user performing the archival
+
+    Returns:
+        bool: True if archival successful
+
+    Raises:
+        NoResultFound: If role doesn't exist
+    """
+    stmt = select(orm.Role).where(
+        orm.Role.id == role_id,
+        orm.Role.deleted_at.is_(None),
+        orm.Role.archived_at.is_(None)
+    )
+    result = await db_session.execute(stmt)
+    role = result.scalars().first()
+
+    if not role:
+        raise NoResultFound(f"Role with id {role_id} not found or already archived/deleted")
+
+    # Archive the role (keep user associations intact)
+    role.archived_at = tz_aware_datetime_now()
+    role.archived_by = archived_by_user_id
+    role.updated_at = tz_aware_datetime_now()
+    role.updated_by = archived_by_user_id
+
+    await db_session.commit()
+    return True
+
+
+async def restore_role(
+    db_session: AsyncSession,
+    role_id: uuid.UUID,
+    restored_by_user_id: uuid.UUID,
+    restore_user_associations: bool = True
+) -> bool:
+    """
+    Restore a soft-deleted role and optionally its user associations.
+
+    Args:
+        db_session: Database session
+        role_id: ID of role to restore
+        restored_by_user_id: ID of user performing the restoration
+        restore_user_associations: Whether to restore user associations
+
+    Returns:
+        bool: True if restoration successful
+
+    Raises:
+        NoResultFound: If role doesn't exist
+        ValueError: If role is not deleted
+    """
+    stmt = select(orm.Role).where(orm.Role.id == role_id)
+    result = await db_session.execute(stmt)
+    role = result.scalars().first()
+
+    if not role:
+        raise NoResultFound(f"Role with id {role_id} not found")
+
+    if role.deleted_at is None:
+        raise ValueError(f"Role '{role.name}' is not deleted")
+
+    # Restore the role
+    role.deleted_at = None
+    role.deleted_by = None
+    role.archived_at = None  # Also unarchive if archived
+    role.archived_by = None
+    role.updated_at = tz_aware_datetime_now()
+    role.updated_by = restored_by_user_id
+
+    # Conditionally restore user associations
+    if restore_user_associations:
+        user_roles_restore_stmt = update(orm.UserRole).where(
+            orm.UserRole.role_id == role_id,
+            orm.UserRole.deleted_at.is_not(None)
+        ).values(
+            deleted_at=None,
+            deleted_by=None,
+            updated_at=tz_aware_datetime_now(),
+            updated_by=restored_by_user_id
+        )
+        await db_session.execute(user_roles_restore_stmt)
+
+    await db_session.commit()
+    return True
 
 def _build_filter_conditions(
         filters: Dict[str, Dict[str, Any]],

@@ -63,7 +63,9 @@ export default function RolesList() {
         }}
         onSortChange={handleSortChange}
         loading={isLoading || isFetching}
-        emptyMessage={t?.("rolesList.noRolesFound") || "No roles found"}
+        emptyMessage={t("rolesList.noRolesFound", {
+          defaultValue: "No roles found"
+        })}
         withCheckbox={true}
         selectedRows={selectedRowsSet}
         onSelectionChange={handleSelectionChange}

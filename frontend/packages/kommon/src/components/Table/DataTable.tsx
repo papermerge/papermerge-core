@@ -2,6 +2,7 @@ import type {MantineColorScheme, MantineTheme} from "@mantine/core"
 import {
   ActionIcon,
   Box,
+  Checkbox,
   Group,
   LoadingOverlay,
   Skeleton,
@@ -25,6 +26,11 @@ interface Args<T> {
   onRowClick?: (row: T, otherPanel: boolean) => void
   //the ID of the row to highlight
   highlightRowID?: string
+  // Checkbox functionality
+  withCheckbox?: boolean
+  selectedRows?: Set<string>
+  onSelectionChange?: (selectedRows: Set<string>) => void
+  getRowId?: (row: T) => string
 }
 
 export default function DataTable<T>({
@@ -36,7 +42,11 @@ export default function DataTable<T>({
   emptyMessage = "No data available",
   style,
   onRowClick,
-  highlightRowID
+  highlightRowID,
+  withCheckbox = false,
+  selectedRows = new Set(),
+  onSelectionChange,
+  getRowId = (row: T) => String((row as any).id)
 }: Args<T>) {
   const theme = useMantineTheme()
   const {colorScheme} = useMantineColorScheme()
@@ -69,8 +79,41 @@ export default function DataTable<T>({
     })
   }
 
+  const handleSelectAll = (checked: boolean) => {
+    if (!onSelectionChange) return
+
+    if (checked) {
+      const allIds = new Set(data.map(getRowId))
+      onSelectionChange(allIds)
+    } else {
+      onSelectionChange(new Set())
+    }
+  }
+
+  const handleRowSelect = (rowId: string, checked: boolean) => {
+    if (!onSelectionChange) return
+
+    const newSelection = new Set(selectedRows)
+    if (checked) {
+      newSelection.add(rowId)
+    } else {
+      newSelection.delete(rowId)
+    }
+    onSelectionChange(newSelection)
+  }
+
+  const isAllSelected = data.length > 0 && selectedRows.size === data.length
+  const isIndeterminate =
+    selectedRows.size > 0 && selectedRows.size < data.length
+
   if (loading && data.length === 0) {
-    return <LoadingTable visibleColumns={visibleColumns} loading={loading} />
+    return (
+      <LoadingTable
+        visibleColumns={visibleColumns}
+        loading={loading}
+        withCheckbox={withCheckbox}
+      />
+    )
   }
 
   return (
@@ -81,6 +124,10 @@ export default function DataTable<T>({
           visibleColumns={visibleColumns}
           sorting={sorting}
           handleSort={handleSort}
+          withCheckbox={withCheckbox}
+          isAllSelected={isAllSelected}
+          isIndeterminate={isIndeterminate}
+          onSelectAll={handleSelectAll}
         />
 
         <TableBody
@@ -92,6 +139,10 @@ export default function DataTable<T>({
           theme={theme}
           colorScheme={colorScheme}
           highlightColors={highlightColors}
+          withCheckbox={withCheckbox}
+          selectedRows={selectedRows}
+          onRowSelect={handleRowSelect}
+          getRowId={getRowId}
         />
       </Table>
     </Box>
@@ -126,16 +177,20 @@ const TableCell = function TableCell({
 interface EmptyRowArgs {
   message: string
   visibleColumnsCount: number
+  withCheckbox?: boolean
 }
 
 const EmptyTableBody = function EmptyTableBody({
   message,
-  visibleColumnsCount
+  visibleColumnsCount,
+  withCheckbox = false
 }: EmptyRowArgs) {
+  const colSpan = withCheckbox ? visibleColumnsCount + 1 : visibleColumnsCount
+
   return (
     <Table.Tr>
       <Table.Td
-        colSpan={visibleColumnsCount}
+        colSpan={colSpan}
         style={{textAlign: "center", padding: "3rem"}}
       >
         <Text c="dimmed">{message}</Text>
@@ -158,6 +213,10 @@ interface RowArgs<T> {
   visibleColumns: ColumnConfig<T>[]
   onRowClick?: (row: T, otherPanel: boolean) => void
   highlightColors: {backgroundColor: string; borderColor: string}
+  withCheckbox?: boolean
+  selectedRows?: Set<string>
+  onRowSelect?: (rowId: string, checked: boolean) => void
+  getRowId?: (row: T) => string
 }
 
 const TableRow = <T,>({
@@ -165,15 +224,25 @@ const TableRow = <T,>({
   visibleColumns,
   onRowClick,
   highlightRowID,
-  highlightColors
+  highlightColors,
+  withCheckbox = false,
+  selectedRows = new Set(),
+  onRowSelect,
+  getRowId = (row: T) => String((row as any).id)
 }: RowArgs<T>) => {
   const highlighted = isRowHighlighted(row, highlightRowID)
+  const rowId = getRowId(row)
+  const isSelected = selectedRows.has(rowId)
 
   const rowStyle = {
     backgroundColor: highlighted ? highlightColors.backgroundColor : undefined,
     borderLeft: highlighted
       ? `3px solid ${highlightColors.borderColor}`
       : undefined
+  }
+
+  const handleCheckboxChange = (checked: boolean) => {
+    onRowSelect?.(rowId, checked)
   }
 
   const renderedColumns = visibleColumns.map(column => {
@@ -203,7 +272,22 @@ const TableRow = <T,>({
     )
   })
 
-  return <Table.Tr style={rowStyle}>{renderedColumns}</Table.Tr>
+  return (
+    <Table.Tr style={rowStyle}>
+      {withCheckbox && (
+        <Table.Td style={{width: 40, minWidth: 40}}>
+          <Checkbox
+            checked={isSelected}
+            onChange={event =>
+              handleCheckboxChange(event.currentTarget.checked)
+            }
+            aria-label={`Select row ${rowId}`}
+          />
+        </Table.Td>
+      )}
+      {renderedColumns}
+    </Table.Tr>
+  )
 }
 
 interface TBodyArgs<T> {
@@ -215,6 +299,10 @@ interface TBodyArgs<T> {
   theme: MantineTheme
   colorScheme: MantineColorScheme
   highlightColors: {backgroundColor: string; borderColor: string}
+  withCheckbox?: boolean
+  selectedRows?: Set<string>
+  onRowSelect?: (rowId: string, checked: boolean) => void
+  getRowId?: (row: T) => string
 }
 
 function TableBody<T>({
@@ -223,7 +311,11 @@ function TableBody<T>({
   highlightRowID,
   visibleColumns,
   onRowClick,
-  highlightColors
+  highlightColors,
+  withCheckbox = false,
+  selectedRows = new Set(),
+  onRowSelect,
+  getRowId = (row: T) => String((row as any).id)
 }: TBodyArgs<T>) {
   if (data.length === 0) {
     return (
@@ -231,6 +323,7 @@ function TableBody<T>({
         <EmptyTableBody
           message={emptyMessage}
           visibleColumnsCount={visibleColumns.length}
+          withCheckbox={withCheckbox}
         />
       </Table.Tbody>
     )
@@ -238,12 +331,16 @@ function TableBody<T>({
 
   const rows = data.map(row => (
     <TableRow
-      key={(row as any).id || JSON.stringify(row)}
+      key={getRowId(row)}
       visibleColumns={visibleColumns}
       row={row}
       highlightRowID={highlightRowID}
       onRowClick={onRowClick}
       highlightColors={highlightColors}
+      withCheckbox={withCheckbox}
+      selectedRows={selectedRows}
+      onRowSelect={onRowSelect}
+      getRowId={getRowId}
     />
   ))
 
@@ -253,9 +350,14 @@ function TableBody<T>({
 interface LoadingTableArgs<T> {
   visibleColumns: ColumnConfig<T>[]
   loading: boolean
+  withCheckbox?: boolean
 }
 
-const LoadingTable = <T,>({visibleColumns, loading}: LoadingTableArgs<T>) => {
+const LoadingTable = <T,>({
+  visibleColumns,
+  loading,
+  withCheckbox = false
+}: LoadingTableArgs<T>) => {
   const headerColumns = visibleColumns.map(column => (
     <Table.Th key={String(column.key)}>
       <Skeleton height={20} />
@@ -264,6 +366,11 @@ const LoadingTable = <T,>({visibleColumns, loading}: LoadingTableArgs<T>) => {
 
   const bodyColumns = Array.from({length: 5}).map((_, index) => (
     <Table.Tr key={index}>
+      {withCheckbox && (
+        <Table.Td>
+          <Skeleton height={16} width={16} />
+        </Table.Td>
+      )}
       {visibleColumns.map(column => (
         <Table.Td key={String(column.key)}>
           <Skeleton height={16} />
@@ -277,7 +384,14 @@ const LoadingTable = <T,>({visibleColumns, loading}: LoadingTableArgs<T>) => {
       <LoadingOverlay visible={loading} />
       <Table>
         <Table.Thead>
-          <Table.Tr>{headerColumns}</Table.Tr>
+          <Table.Tr>
+            {withCheckbox && (
+              <Table.Th style={{width: 40, minWidth: 40}}>
+                <Skeleton height={20} width={16} />
+              </Table.Th>
+            )}
+            {headerColumns}
+          </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{bodyColumns}</Table.Tbody>
       </Table>
@@ -348,12 +462,20 @@ interface TableHeaderArgs<T> {
   visibleColumns: ColumnConfig<T>[]
   sorting: SortState
   handleSort: (columnKey: string) => void
+  withCheckbox?: boolean
+  isAllSelected?: boolean
+  isIndeterminate?: boolean
+  onSelectAll?: (checked: boolean) => void
 }
 
 const TableHeader = function TableHeader<T>({
   visibleColumns,
   sorting,
-  handleSort
+  handleSort,
+  withCheckbox = false,
+  isAllSelected = false,
+  isIndeterminate = false,
+  onSelectAll
 }: TableHeaderArgs<T>) {
   const columns = visibleColumns.map(column => (
     <TableTh
@@ -366,7 +488,19 @@ const TableHeader = function TableHeader<T>({
 
   return (
     <Table.Thead>
-      <Table.Tr>{columns}</Table.Tr>
+      <Table.Tr>
+        {withCheckbox && (
+          <Table.Th style={{width: 40, minWidth: 40}}>
+            <Checkbox
+              checked={isAllSelected}
+              indeterminate={isIndeterminate}
+              onChange={event => onSelectAll?.(event.currentTarget.checked)}
+              aria-label="Select all rows"
+            />
+          </Table.Th>
+        )}
+        {columns}
+      </Table.Tr>
     </Table.Thead>
   )
 }

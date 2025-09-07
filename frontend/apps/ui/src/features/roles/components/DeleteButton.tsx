@@ -1,11 +1,10 @@
-import {useAppSelector} from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {Button} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconTrash} from "@tabler/icons-react"
-import {useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
-import {selectSelectedIDs} from "@/features/roles/storage/role"
+import {clearSelection, selectSelectedIDs} from "@/features/roles/storage/role"
 
 import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
@@ -39,17 +38,17 @@ export function DeleteRoleButton({roleId}: {roleId: string}) {
 export function DeleteRolesButton() {
   const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
   const mode = usePanelMode()
   const selectedRowIDs = useAppSelector(s => selectSelectedIDs(s, mode))
 
   const onSubmit = () => {
-    //dispatch(clearSelection())
+    dispatch(clearSelection({mode}))
     close()
   }
 
   const onCancel = () => {
-    //dispatch(clearSelection())
+    dispatch(clearSelection({mode}))
     close()
   }
 

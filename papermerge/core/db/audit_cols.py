@@ -20,11 +20,11 @@ class AuditColumns:
         onupdate=func.now(),
         nullable=False
     )
-    deleted_at: Mapped[datetime] = mapped_column(
+    deleted_at: Mapped[datetime | None] = mapped_column(
         TIMESTAMP(timezone=True),
         nullable=True
     )
-    archived_at: Mapped[datetime] = mapped_column(
+    archived_at: Mapped[datetime | None] = mapped_column(
         TIMESTAMP(timezone=True),
         nullable=True
     )
@@ -38,11 +38,11 @@ class AuditColumns:
         ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True
     )
-    deleted_by: Mapped[UUID] = mapped_column(
+    deleted_by: Mapped[UUID | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True
     )
-    archived_by: Mapped[UUID] = mapped_column(
+    archived_by: Mapped[UUID | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True
     )

@@ -39,19 +39,25 @@ class RoleEx(BaseModel):
     created_by: ByUser
     updated_at: datetime
     updated_by: ByUser
+    archived_at: datetime
+    archived_by: ByUser
+    deleted_at: datetime
+    deleted_by: ByUser
 
     # Config
     model_config = ConfigDict(from_attributes=True)
 
     @classmethod
-    def from_db_with_users(cls, role_row) -> "Role":
-        """Create Role schema from database row with user data."""
+    def from_db_with_users(cls, role_row) -> "RoleEx":
+        """Create RoleEx schema from database row with user data."""
         role = role_row[0]  # The Role object
         return cls(
             id=role.id,
             name=role.name,
             created_at=role.created_at,
             updated_at=role.updated_at,
+            archived_at=role.created_at,
+            deleted_at=role.updated_at,
             created_by=ByUser(
                 id=role_row.created_by_id,
                 username=role_row.created_by_username
@@ -59,6 +65,14 @@ class RoleEx(BaseModel):
             updated_by=ByUser(
                 id=role_row.updated_by_id,
                 username=role_row.updated_by_username
+            ),
+            archived_by=ByUser(
+                id=role_row.archived_by_id,
+                username=role_row.archived_by_username
+            ),
+            deleted_by=ByUser(
+                id=role_row.deleted_by_id,
+                username=role_row.deleted_by_username
             )
         )
 

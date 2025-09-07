@@ -29,7 +29,6 @@ async def get_role(db_session: AsyncSession, role_id: uuid.UUID) -> schema.RoleD
 
     return result
 
-
 async def get_roles(
     db_session: AsyncSession,
     *,
@@ -37,7 +36,9 @@ async def get_roles(
     page_number: int,
     sort_by: Optional[str] = None,
     sort_direction: Optional[str] = None,
-    filters: Optional[Dict[str, Dict[str, Any]]] = None
+    filters: Optional[Dict[str, Dict[str, Any]]] = None,
+    include_deleted: bool = False,
+    include_archived: bool = True
 ) -> schema.PaginatedResponse[schema.RoleEx]:
     """
     Get paginated roles with filtering and sorting support.
@@ -55,26 +56,43 @@ async def get_roles(
                     "operator": "in" | "like" | "eq" | "free_text"
                 }
             }
+        include_deleted: Whether to include soft-deleted roles
+        include_archived: Whether to include archived roles
 
     Returns:
-        Paginated response with roles
+        Paginated response with roles including full audit trail
     """
 
-    # Create user aliases for joins
+    # Create user aliases for all audit trail joins
     created_user = aliased(orm.User, name='created_user')
     updated_user = aliased(orm.User, name='updated_user')
+    deleted_user = aliased(orm.User, name='deleted_user')
+    archived_user = aliased(orm.User, name='archived_user')
 
-    # Build base query with joins for user data
+    # Build base query with joins for all audit user data
     base_query = (
         select(orm.Role)
         .join(created_user, orm.Role.created_by == created_user.id, isouter=True)
         .join(updated_user, orm.Role.updated_by == updated_user.id, isouter=True)
+        .join(deleted_user, orm.Role.deleted_by == deleted_user.id, isouter=True)
+        .join(archived_user, orm.Role.archived_by == archived_user.id, isouter=True)
     )
 
-    # Apply filters
+    # Apply default visibility filters
     where_conditions = []
+
+    if not include_deleted:
+        where_conditions.append(orm.Role.deleted_at.is_(None))
+
+    if not include_archived:
+        where_conditions.append(orm.Role.archived_at.is_(None))
+
+    # Apply custom filters
     if filters:
-        where_conditions = _build_filter_conditions(filters, created_user, updated_user)
+        filter_conditions = _build_filter_conditions(
+            filters, created_user, updated_user, deleted_user, archived_user
+        )
+        where_conditions.extend(filter_conditions)
 
     if where_conditions:
         base_query = base_query.where(and_(*where_conditions))
@@ -84,6 +102,8 @@ async def get_roles(
         select(func.count(orm.Role.id))
         .join(created_user, orm.Role.created_by == created_user.id, isouter=True)
         .join(updated_user, orm.Role.updated_by == updated_user.id, isouter=True)
+        .join(deleted_user, orm.Role.deleted_by == deleted_user.id, isouter=True)
+        .join(archived_user, orm.Role.archived_by == archived_user.id, isouter=True)
     )
 
     if where_conditions:
@@ -93,7 +113,10 @@ async def get_roles(
 
     # Apply sorting
     if sort_by and sort_direction:
-        base_query = _apply_sorting(base_query, sort_by, sort_direction, created_user, updated_user)
+        base_query = _apply_sorting(
+            base_query, sort_by, sort_direction,
+            created_user, updated_user, deleted_user, archived_user
+        )
     else:
         # Default sorting by created_at desc
         base_query = base_query.order_by(orm.Role.created_at.desc())
@@ -101,14 +124,22 @@ async def get_roles(
     # Apply pagination
     offset = page_size * (page_number - 1)
 
-    # Modify query to include user data we need
+    # Modify query to include all audit user data
     paginated_query_with_users = (
         base_query
         .add_columns(
+            # Created by user
             created_user.id.label('created_by_id'),
             created_user.username.label('created_by_username'),
+            # Updated by user
             updated_user.id.label('updated_by_id'),
-            updated_user.username.label('updated_by_username')
+            updated_user.username.label('updated_by_username'),
+            # Deleted by user
+            deleted_user.id.label('deleted_by_id'),
+            deleted_user.username.label('deleted_by_username'),
+            # Archived by user
+            archived_user.id.label('archived_by_id'),
+            archived_user.username.label('archived_by_username')
         )
         .limit(page_size)
         .offset(offset)
@@ -117,23 +148,51 @@ async def get_roles(
     # Execute query - get tuples with role and user data
     results = (await db_session.execute(paginated_query_with_users)).all()
 
-    # Convert to schema models with proper user data
+    # Convert to schema models with complete audit trail
     items = []
     for row in results:
         role = row[0]  # The Role object
+
+        # Build audit user objects (handle None values)
+        created_by = None
+        if row.created_by_id:
+            created_by = schema.ByUser(
+                id=row.created_by_id,
+                username=row.created_by_username
+            )
+
+        updated_by = None
+        if row.updated_by_id:
+            updated_by = schema.ByUser(
+                id=row.updated_by_id,
+                username=row.updated_by_username
+            )
+
+        deleted_by = None
+        if row.deleted_by_id:
+            deleted_by = schema.ByUser(
+                id=row.deleted_by_id,
+                username=row.deleted_by_username
+            )
+
+        archived_by = None
+        if row.archived_by_id:
+            archived_by = schema.ByUser(
+                id=row.archived_by_id,
+                username=row.archived_by_username
+            )
+
         role_data = {
             "id": role.id,
             "name": role.name,
             "created_at": role.created_at,
             "updated_at": role.updated_at,
-            "created_by": schema.ByUser(
-                id=row.created_by_id,
-                username=row.created_by_username
-            ),
-            "updated_by": schema.ByUser(
-                id=row.updated_by_id,
-                username=row.updated_by_username
-            )
+            "deleted_at": role.deleted_at,
+            "archived_at": role.archived_at,
+            "created_by": created_by,
+            "updated_by": updated_by,
+            "deleted_by": deleted_by,
+            "archived_by": archived_by
         }
         items.append(schema.RoleEx(**role_data))
 
@@ -146,7 +205,6 @@ async def get_roles(
         page_number=page_number,
         num_pages=total_pages
     )
-
 
 async def get_roles_without_pagination(db_session: AsyncSession) -> list[schema.Role]:
     stmt = select(orm.Role)
@@ -443,9 +501,11 @@ async def restore_role(
     return True
 
 def _build_filter_conditions(
-        filters: Dict[str, Dict[str, Any]],
-        created_user,
-        updated_user
+    filters: Dict[str, Dict[str, Any]],
+    created_user,
+    updated_user,
+    deleted_user,
+    archived_user
 ) -> list:
     """Build SQLAlchemy WHERE conditions from filters dictionary."""
     conditions = []

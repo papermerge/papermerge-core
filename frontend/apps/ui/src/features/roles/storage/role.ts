@@ -1,60 +1,59 @@
 import {AppStartListening} from "@/app/listenerMiddleware"
 import {RootState} from "@/app/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
-import type {
-  Paginated,
-  PaginationType,
-  PanelMode,
-  ServerErrorType
-} from "@/types"
+import type {PanelMode, ServerErrorType} from "@/types"
 import type {PanelListBase} from "@/types.d/panel"
 import {notifications} from "@mantine/notifications"
 import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit"
 import {t} from "i18next"
 import type {SortState} from "kommon"
-import type {RoleItem} from "../types"
 import {apiSliceWithRoles} from "./api"
 
-interface RolePanelList extends PanelListBase {}
+interface RolePanelList extends PanelListBase {
+  selectedIDs?: Array<string>
+}
 interface RolePanelDetails {
   id: string
 }
 
 export type RoleSlice = {
-  selectedIds: Array<string>
-  pagination: PaginationType | null
-  lastPageSize: number
   mainRoleList?: RolePanelList
   secondaryRoleList?: RolePanelList
   mainRoleDetails?: RolePanelDetails
   secondaryRoleDetails?: RolePanelDetails
 }
 
-export const initialState: RoleSlice = {
-  selectedIds: [],
-  pagination: null,
-  lastPageSize: PAGINATION_DEFAULT_ITEMS_PER_PAGES
-}
+export const initialState: RoleSlice = {}
 
 const rolesSlice = createSlice({
   name: "roles",
   initialState,
   reducers: {
-    selectionAdd: (state, action: PayloadAction<string>) => {
-      state.selectedIds.push(action.payload)
+    selectionSet: (
+      state,
+      action: PayloadAction<{ids: string[]; mode: PanelMode}>
+    ) => {
+      const {mode, ids} = action.payload
+      const listKey = mode === "main" ? "mainRoleList" : "secondaryRoleList"
+
+      const existingList = state[listKey]
+
+      state[listKey] = {
+        ...existingList,
+        selectedIDs: ids
+      }
     },
-    selectionAddMany: (state, action: PayloadAction<Array<string>>) => {
-      state.selectedIds = action.payload
-    },
-    selectionRemove: (state, action: PayloadAction<string>) => {
-      const newSelectedIds = state.selectedIds.filter(i => i != action.payload)
-      state.selectedIds = newSelectedIds
-    },
-    clearSelection: state => {
-      state.selectedIds = []
-    },
-    lastPageSizeUpdate: (state, action: PayloadAction<number>) => {
-      state.lastPageSize = action.payload
+
+    clearSelection: (state, action: PayloadAction<{mode: PanelMode}>) => {
+      const {mode} = action.payload
+      const listKey = mode === "main" ? "mainRoleList" : "secondaryRoleList"
+
+      const existingList = state[listKey]
+
+      state[listKey] = {
+        ...existingList,
+        selectedIDs: []
+      }
     },
     rolesTableFiltersUpdated(
       state,
@@ -113,29 +112,12 @@ const rolesSlice = createSlice({
         visibleColumns: value
       }
     }
-  },
-  extraReducers(builder) {
-    builder.addMatcher(
-      apiSliceWithRoles.endpoints.getPaginatedRoles.matchFulfilled,
-      (state, action) => {
-        const payload: Paginated<RoleItem> = action.payload
-        state.pagination = {
-          pageNumber: payload.page_number,
-          pageSize: payload.page_size,
-          numPages: payload.num_pages
-        }
-        state.lastPageSize = payload.page_size
-      }
-    )
   }
 })
 
 export const {
-  selectionAdd,
-  selectionAddMany,
-  selectionRemove,
+  selectionSet,
   clearSelection,
-  lastPageSizeUpdate,
   roleListSortingUpdated,
   roleListVisibleColumnsUpdated,
   rolesTableFiltersUpdated
@@ -160,14 +142,25 @@ export const selectRoleById = createSelector(
   }
 )
 
-export const selectSelectedIds = (state: RootState) => state.roles.selectedIds
+export const selectSelectedIDs = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.roles.mainRoleList?.selectedIDs
+  }
 
-export const selectPagination = (state: RootState): PaginationType | null => {
-  return state.roles.pagination
+  return state.roles.secondaryRoleList?.selectedIDs
 }
 
-export const selectLastPageSize = (state: RootState): number => {
-  return state.roles.lastPageSize
+export const selectPageSize = (state: RootState, mode: PanelMode): number => {
+  if (mode == "main") {
+    return (
+      state.roles.mainRoleList?.pageSize || PAGINATION_DEFAULT_ITEMS_PER_PAGES
+    )
+  }
+
+  return (
+    state.roles.secondaryRoleList?.pageSize ||
+    PAGINATION_DEFAULT_ITEMS_PER_PAGES
+  )
 }
 
 export const selectRolePageSize = (state: RootState, mode: PanelMode) => {

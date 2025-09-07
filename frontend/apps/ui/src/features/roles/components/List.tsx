@@ -1,19 +1,19 @@
+import {useAppSelector} from "@/app/hooks"
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
 import useRoleTable from "@/features/roles/hooks/useRoleTable"
 import useVisibleColumns from "@/features/roles/hooks/useVisibleColumns"
 import {
-  clearSelection,
   roleListSortingUpdated,
-  selectionAddMany,
-  selectLastPageSize,
-  selectSelectedIds
+  selectionSet,
+  selectSelectedIDs
 } from "@/features/roles/storage/role"
 import {isHTTP403Forbidden} from "@/services/helpers"
-import {Center, Group, Loader, Stack} from "@mantine/core"
+import {Group, Loader, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
 import {DataTable, TablePagination} from "kommon"
-import {useDispatch, useSelector} from "react-redux"
+import {useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
+import type {RoleItem} from "../types"
 import roleColumns from "./roleColumns"
 
 import {usePanelMode} from "@/hooks"
@@ -23,9 +23,10 @@ import ActionButtons from "./ActionButtons"
 export default function RolesList() {
   const {t} = useTranslation()
   const mode = usePanelMode()
-  const selectedIds = useSelector(selectSelectedIds)
+  const selectedRowIDs = useAppSelector(s => selectSelectedIDs(s, mode))
+  const selectedRowsSet = new Set(selectedRowIDs || [])
   const dispatch = useDispatch()
-  const lastPageSize = useSelector(selectLastPageSize)
+  //const lastPageSize = useAppSelector(s => selectPageSize(s, mode))
   const navigate = useNavigate()
   const visibleColumns = useVisibleColumns(roleColumns(t))
 
@@ -36,20 +37,12 @@ export default function RolesList() {
     dispatch(roleListSortingUpdated({mode, value}))
   }
 
-  const onCheckAll = (checked: boolean) => {
-    if (!data) {
-      console.log(`undefined data`)
-      return
-    }
-
-    if (checked) {
-      // check all/select all role items
-      dispatch(selectionAddMany(data.items.map(i => i.id)))
-    } else {
-      // uncheck all/unselect all role items
-      dispatch(clearSelection())
-    }
+  const handleSelectionChange = (newSelection: Set<string>) => {
+    const newIds = Array.from(newSelection)
+    dispatch(selectionSet({ids: newIds, mode}))
   }
+
+  const getRowId = (row: RoleItem) => row.id
 
   if (isError && isHTTP403Forbidden(error)) {
     navigate(ERRORS_403_ACCESS_FORBIDDEN)
@@ -70,7 +63,13 @@ export default function RolesList() {
         }}
         onSortChange={handleSortChange}
         loading={isLoading || isFetching}
-        emptyMessage={t?.("rolesList.noRolesFound") || "No roles found"}
+        emptyMessage={t("rolesList.noRolesFound", {
+          defaultValue: "No roles found"
+        })}
+        withCheckbox={true}
+        selectedRows={selectedRowsSet}
+        onSelectionChange={handleSelectionChange}
+        getRowId={getRowId}
       />
 
       <TablePagination
@@ -81,16 +80,5 @@ export default function RolesList() {
         t={t}
       />
     </Stack>
-  )
-}
-
-function Empty() {
-  const {t} = useTranslation()
-  return (
-    <Center>
-      <Stack align="center">
-        <div>{t("roles.list.empty")}</div>
-      </Stack>
-    </Center>
   )
 }

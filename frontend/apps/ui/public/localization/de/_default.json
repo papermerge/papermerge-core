@@ -162,6 +162,9 @@
     "updated_at": "Aktualisiert am",
     "updated_by": "Aktualisiert von"
   },
+  "rolesList": {
+    "noRolesFound": "Keine Rollen gefunden"
+  },
   "searchRoles": "Rollen suchen...",
   "load-more": "Mehr anzeigen",
   "app.version": "Version",

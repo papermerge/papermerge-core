@@ -1,21 +1,33 @@
-import {selectSelectedIds} from "@/features/roles/storage/role"
+import {useAppSelector} from "@/app/hooks"
+import {selectSelectedIDs} from "@/features/roles/storage/role"
 import {Group} from "@mantine/core"
-import {useSelector} from "react-redux"
 import ColumnSelectorContainer from "./ColumnSelector"
 import {DeleteRolesButton} from "./DeleteButton"
 import EditButton from "./EditButton"
 import NewButton from "./NewButton"
+
+import {usePanelMode} from "@/hooks"
+
 import Search from "./Search"
 
 export default function ActionButtons() {
-  const selectedIds = useSelector(selectSelectedIds)
+  const mode = usePanelMode()
+  const selectedRowIDs = useAppSelector(s => selectSelectedIDs(s, mode))
 
   return (
     <Group justify="space-between" w={"100%"}>
       <Group>
         <NewButton />
-        {selectedIds.length == 1 ? <EditButton roleId={selectedIds[0]} /> : ""}
-        {selectedIds.length >= 1 ? <DeleteRolesButton /> : ""}
+        {selectedRowIDs && selectedRowIDs.length == 1 ? (
+          <EditButton roleId={selectedRowIDs[0]} />
+        ) : (
+          ""
+        )}
+        {selectedRowIDs && selectedRowIDs.length >= 1 ? (
+          <DeleteRolesButton />
+        ) : (
+          ""
+        )}
       </Group>
       <Group>
         <Search />

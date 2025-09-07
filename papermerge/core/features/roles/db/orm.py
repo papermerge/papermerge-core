@@ -20,19 +20,22 @@ roles_permissions_association = Table(
     ),
 )
 
-users_roles_association = Table(
-    "users_roles",
-    Base.metadata,
-    Column(
-        "role_id",
-        ForeignKey("roles.id"),
-    ),
-    Column(
-        "user_id",
-        ForeignKey("users.id"),
-    ),
-)
+class UserRole(Base, AuditColumns):
+    __tablename__ = "users_roles"
 
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    role_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("roles.id"))
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
+
+    # Relationships
+    role: Mapped["Role"] = relationship(
+        "Role",
+        foreign_keys=[role_id]
+    )
+    user: Mapped["User"] = relationship(
+        "User",
+        foreign_keys=[user_id]
+    )
 
 class Permission(Base):
     __tablename__ = "permissions"
@@ -56,9 +59,15 @@ class Role(Base, AuditColumns):
     permissions: Mapped[list["Permission"]] = relationship(
         secondary=roles_permissions_association, back_populates="roles"
     )
-    users: Mapped[list["User"]] = relationship(  # noqa: F821
-        secondary=users_roles_association, back_populates="roles"
+
+    user_roles: Mapped[list["UserRole"]] = relationship(
+        "UserRole", back_populates="role"
     )
+
+    # Convenience property to get active users
+    @property
+    def active_users(self):
+        return [ur.user for ur in self.user_roles if ur.deleted_at is None]
 
     __table_args__ = (
         CheckConstraint("char_length(trim(name)) > 0", name="role_name_not_empty"),

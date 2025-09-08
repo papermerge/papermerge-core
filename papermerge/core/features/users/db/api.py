@@ -106,27 +106,37 @@ async def get_user_group_inboxes(
 
     return models, None
 
-
 async def get_user_details(
-    db_session: AsyncSession, user_id: uuid.UUID
+        db_session: AsyncSession, user_id: uuid.UUID
 ) -> Tuple[schema.UserDetails | None, err_schema.Error | None]:
     stmt = select(User).options(
-        selectinload(User.roles).selectinload(orm.Role.permissions),
+        selectinload(User.user_roles)
+        .selectinload(orm.UserRole.role)
+        .selectinload(orm.Role.permissions),
         selectinload(orm.User.groups)
     ).where(User.id == user_id)
 
-    params = {"id": user_id}
-
     try:
-        db_user = (await db_session.scalars(stmt, params)).one()
+        db_user = (await db_session.scalars(stmt)).one()
     except Exception as e:
         error = err_schema.Error(messages=[str(e)])
         return None, error
 
+    test_stmt = select(orm.UserRole).where(orm.UserRole.user_id == user_id)
+    test_user_roles = list(await db_session.scalars(test_stmt))
+
+    print(f"UserRoles found: {len(test_user_roles)}")
+    print(f"db_user.user_roles length: {len(db_user.user_roles)}")
+    print(f"db_user.user_roles: {db_user.user_roles}")
+
     scopes = set()
-    for role in db_user.roles:
-        for perm in role.permissions:
-            scopes.add(perm.codename)
+    active_roles = []
+
+    for user_role in db_user.user_roles:
+        if user_role.deleted_at is None:  # Only active roles
+            active_roles.append(user_role.role)
+            for perm in user_role.role.permissions:
+                scopes.add(perm.codename)
 
     result = schema.UserDetails(
         id=db_user.id,
@@ -140,7 +150,7 @@ async def get_user_details(
         is_active=db_user.is_active,
         scopes=sorted(scopes),
         groups=db_user.groups,
-        roles=db_user.roles,
+        roles=active_roles,  # Role objects, not UserRole objects
     )
 
     model_user = schema.UserDetails.model_validate(result)
@@ -254,7 +264,7 @@ async def create_user(
         if groups:
             user.groups = list(groups)
         if roles:
-            user.roles = list(roles)
+            user.user_roles = list(roles)
 
         db_session.add_all([user, home, inbox])
         await db_session.flush()
@@ -275,8 +285,8 @@ async def update_user(
     scopes = set()
 
     stmt = select(orm.User).options(
-        selectinload(orm.User.roles),
-        selectinload(orm.User.roles).selectinload(orm.Role.permissions),
+        selectinload(orm.User.user_roles),
+        selectinload(orm.User.user_roles).selectinload(orm.Role.permissions),
         selectinload(orm.User.groups)
     ).where(orm.User.id == user_id)
 
@@ -301,7 +311,7 @@ async def update_user(
     if attrs.role_ids is not None:
         stmt = select(orm.Role).where(orm.Role.id.in_(attrs.role_ids))
         roles = (await db_session.execute(stmt)).scalars().all()
-        user.roles = roles
+        user.user_roles = roles
 
     if attrs.password is not None:
         user.password = pbkdf2_sha256.hash(attrs.password)
@@ -314,19 +324,19 @@ async def update_user(
         return None, error
 
     stmt = select(orm.User).options(
-        selectinload(orm.User.roles),
-        selectinload(orm.User.roles).selectinload(orm.Role.permissions),
+        selectinload(orm.User.user_roles),
+        selectinload(orm.User.user_roles).selectinload(orm.Role.permissions),
         selectinload(orm.User.groups)
     ).where(orm.User.id == user_id)
 
     user = (await db_session.execute(stmt)).scalar_one()
 
-    for role in list(user.roles):
+    for role in list(user.user_roles):
         for perm in list(role.permissions):
             scopes.add(perm.codename)
 
     stmt = select(orm.User).options(
-        selectinload(orm.User.roles), selectinload(orm.User.groups)
+        selectinload(orm.User.user_roles), selectinload(orm.User.groups)
     ).where(
         orm.User.id == user_id
     )
@@ -391,7 +401,7 @@ async def get_users_count(db_session: AsyncSession) -> int:
 async def change_password(
     db_session: AsyncSession, user_id: uuid.UUID, password: str
 ) -> Tuple[schema.User | None, err_schema.Error | None]:
-    stmt = select(orm.User).options(selectinload(orm.User.roles), selectinload(orm.User.groups)).where(
+    stmt = select(orm.User).options(selectinload(orm.User.user_roles), selectinload(orm.User.groups)).where(
         orm.User.id == user_id)
     db_user = (await db_session.execute(stmt)).scalar()
     db_user.password = pbkdf2_sha256.hash(password)

@@ -51,7 +51,7 @@ class User(Base, AuditColumns):
     user_roles: Mapped[list["UserRole"]] = relationship(
         "UserRole",
         back_populates="user",
-        foreign_keys="UserRole.user_id"  # Specify which FK to use
+        foreign_keys="UserRole.user_id"
     )
 
     groups: Mapped[list["Group"]] = relationship(  # noqa: F821
@@ -62,5 +62,8 @@ class User(Base, AuditColumns):
     @property
     def active_roles(self):
         return [ur.role for ur in self.user_roles if ur.deleted_at is None]
+
+    def __repr__(self):
+        return f"User({self.id=}, {self.username=})"
 
     __mapper_args__ = {"confirm_deleted_rows": False}

@@ -30,12 +30,18 @@ class UserRole(Base, AuditColumns):
     # Relationships
     role: Mapped["Role"] = relationship(
         "Role",
+        back_populates="user_roles",
         foreign_keys=[role_id]
     )
     user: Mapped["User"] = relationship(
         "User",
+        back_populates="user_roles",
         foreign_keys=[user_id]
     )
+
+    def __repr__(self):
+        return f"UserRole({self.id=}, {self.role=}, {self.user=})"
+
 
 class Permission(Base):
     __tablename__ = "permissions"
@@ -68,6 +74,9 @@ class Role(Base, AuditColumns):
     @property
     def active_users(self):
         return [ur.user for ur in self.user_roles if ur.deleted_at is None]
+
+    def __repr__(self):
+        return f"Role({self.id=}, {self.name=})"
 
     __table_args__ = (
         CheckConstraint("char_length(trim(name)) > 0", name="role_name_not_empty"),

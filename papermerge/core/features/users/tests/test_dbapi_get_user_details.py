@@ -1,4 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from papermerge.core import orm, dbapi
 
 
@@ -22,9 +23,9 @@ async def test_user_roles(db_session: AsyncSession, make_user, make_role):
     user: orm.User = await make_user("momo", is_superuser=False)
     role: orm.Role = await make_role("employee")
 
-    db_session.add_all([user, role])
-    user.roles.append(role)
-    db_session.add(user)
+    user_role = orm.UserRole(user=user, role=role)
+    db_session.add_all([user, role, user_role])
+
     await db_session.commit()
 
     user_details, err = await dbapi.get_user_details(db_session, user.id)
@@ -39,10 +40,10 @@ async def test_user_scopes(db_session: AsyncSession, make_user, make_role):
     user: orm.User = await make_user("momo", is_superuser=False)
     role: orm.Role = await make_role("employee", scopes=["node.create", "node.view"])
 
-    user.roles.append(role)
-    db_session.add(user)
-    await db_session.commit()
+    user_role = orm.UserRole(user=user, role=role)
+    db_session.add_all([user, role, user_role])
 
+    await db_session.commit()
     user_details, err = await dbapi.get_user_details(db_session, user.id)
 
     assert err is None

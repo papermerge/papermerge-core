@@ -316,7 +316,17 @@ async def setup_database():
     yield
 
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        # Hard delete any soft-deleted records that might exist
+        #await conn.execute(text("DELETE FROM nodes WHERE deleted_at IS NOT NULL"))
+        #await conn.execute(text("DELETE FROM users WHERE deleted_at IS NOT NULL"))
+        # Now drop_all should work
+        #await conn.run_sync(Base.metadata.drop_all)
+        # Drop schema with CASCADE to handle all foreign key dependencies
+        await conn.execute(text("DROP SCHEMA public CASCADE"))
+        await conn.execute(text("CREATE SCHEMA public"))
+        # Restore default permissions
+        await conn.execute(text("GRANT ALL ON SCHEMA public TO postgres"))
+        await conn.execute(text("GRANT ALL ON SCHEMA public TO public"))
 
 
 @pytest.fixture(scope="function")
@@ -502,7 +512,7 @@ async def make_user(db_session: AsyncSession):
             selectinload(orm.User.home_folder),
             selectinload(orm.User.inbox_folder),
             selectinload(orm.User.groups),
-            selectinload(orm.User.roles)
+            selectinload(orm.User.user_roles)
         ).where(orm.User.id == user_id)
 
         result = await db_session.execute(stmt)

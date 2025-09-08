@@ -1,6 +1,5 @@
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from papermerge.core import orm, schema, dbapi
 
@@ -88,7 +87,8 @@ async def test_user_update(db_session: AsyncSession, make_user):
 async def test_update_user_roles(db_session: AsyncSession, make_user, make_role):
     """
     Assign to the user initially 2 roles.
-    Afterwords assign only 1 role.
+    Afterwards assign only 1 role.
+    Verify that old roles are soft-deleted, not hard-deleted.
     """
     await dbapi.sync_perms(db_session)
     user: orm.User = await make_user("momo", is_superuser=False)
@@ -96,27 +96,50 @@ async def test_update_user_roles(db_session: AsyncSession, make_user, make_role)
     role1 = await make_role(name="guest1", scopes=["node.create", "node.view"])
     role2 = await make_role(name="guest2", scopes=["tags.create", "tags.view"])
 
+    # First update: assign 2 roles
     attrs = schema.UpdateUser(is_superuser=True, role_ids=[role1.id, role2.id])
-    await dbapi.update_user(db_session, user_id=user.id, attrs=attrs)
+    updated_user_details, err = await dbapi.update_user(db_session, user_id=user.id, attrs=attrs)
 
-    stmt = select(orm.User).options(
-        selectinload(orm.User.roles)
-    ).where(orm.User.id == user.id)
+    assert err is None
+    assert len(updated_user_details.roles) == 2
+    assert updated_user_details.is_superuser is True
 
-    updated_user = (await db_session.execute(stmt)).scalar_one()
+    # Verify the roles are correctly assigned
+    role_names = [role.name for role in updated_user_details.roles]
+    assert "guest1" in role_names
+    assert "guest2" in role_names
 
-    assert len(updated_user.roles) == 2
+    # Second update: assign only 1 role (role1)
+    attrs = schema.UpdateUser(role_ids=[role1.id])
+    updated_user_details, err = await dbapi.update_user(db_session, user_id=user.id, attrs=attrs)
 
-    attrs = schema.UpdateUser(is_superuser=True, role_ids=[role1.id])
-    await dbapi.update_user(db_session, user_id=user.id, attrs=attrs)
+    assert err is None
+    assert len(updated_user_details.roles) == 1
+    assert updated_user_details.roles[0].name == "guest1"
 
-    stmt = select(orm.User).options(
-        selectinload(orm.User.roles)
-    ).where(orm.User.id == user.id)
+    # Verify soft delete: Check that UserRole entries exist but one is soft-deleted
+    stmt = select(orm.UserRole).where(orm.UserRole.user_id == user.id)
+    result = await db_session.execute(stmt)
+    all_user_roles = list(result.scalars())
 
-    updated_user = (await db_session.execute(stmt)).scalar_one()
+    # Should have 3 total UserRole entries:
+    # - 2 from first assignment (one will be soft-deleted)
+    # - 1 new one from second assignment
+    assert len(all_user_roles) == 3
 
-    assert len(updated_user.roles) == 1
+    # Count active vs deleted
+    active_user_roles = [ur for ur in all_user_roles if ur.deleted_at is None]
+    deleted_user_roles = [ur for ur in all_user_roles if ur.deleted_at is not None]
+
+    assert len(active_user_roles) == 1  # Only role1 should be active
+    assert len(deleted_user_roles) == 2  # Two should be soft-deleted
+
+    # Verify the active role is role1
+    assert active_user_roles[0].role.name == "guest1"
+
+    # Verify scopes are correctly calculated from active roles only
+    expected_scopes = ["node.create", "node.view"]  # Only from role1
+    assert sorted(updated_user_details.scopes) == sorted(expected_scopes)
 
 
 async def test_change_password(db_session: AsyncSession, make_user):

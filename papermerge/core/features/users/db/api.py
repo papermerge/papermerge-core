@@ -122,13 +122,6 @@ async def get_user_details(
         error = err_schema.Error(messages=[str(e)])
         return None, error
 
-    test_stmt = select(orm.UserRole).where(orm.UserRole.user_id == user_id)
-    test_user_roles = list(await db_session.scalars(test_stmt))
-
-    print(f"UserRoles found: {len(test_user_roles)}")
-    print(f"db_user.user_roles length: {len(db_user.user_roles)}")
-    print(f"db_user.user_roles: {db_user.user_roles}")
-
     scopes = set()
     active_roles = []
 
@@ -278,19 +271,24 @@ async def create_user(
 
 
 async def update_user(
-    db_session: AsyncSession, user_id: uuid.UUID, attrs: schema.UpdateUser
+        db_session: AsyncSession, user_id: uuid.UUID, attrs: schema.UpdateUser
 ) -> Tuple[schema.UserDetails | None, err_schema.Error | None]:
-    groups = []
-    roles = []
-    scopes = set()
 
+    # Load user with proper relationship loading
     stmt = select(orm.User).options(
-        selectinload(orm.User.user_roles),
-        selectinload(orm.User.user_roles).selectinload(orm.Role.permissions),
+        selectinload(orm.User.user_roles)
+        .selectinload(orm.UserRole.role)
+        .selectinload(orm.Role.permissions),
         selectinload(orm.User.groups)
     ).where(orm.User.id == user_id)
 
-    user = (await db_session.execute(stmt)).scalar_one()
+    try:
+        user = (await db_session.execute(stmt)).scalar_one()
+    except Exception as e:
+        error = err_schema.Error(messages=[str(e)])
+        return None, error
+
+    # Update basic user attributes
     if attrs.username is not None:
         user.username = attrs.username
 
@@ -303,18 +301,30 @@ async def update_user(
     if attrs.is_active is not None:
         user.is_active = attrs.is_active
 
-    if attrs.group_ids is not None:
-        stmt = select(orm.Group).where(orm.Group.id.in_(attrs.group_ids))
-        groups = (await db_session.execute(stmt)).scalars().all()
-        user.groups = groups
-
-    if attrs.role_ids is not None:
-        stmt = select(orm.Role).where(orm.Role.id.in_(attrs.role_ids))
-        roles = (await db_session.execute(stmt)).scalars().all()
-        user.user_roles = roles
-
     if attrs.password is not None:
         user.password = pbkdf2_sha256.hash(attrs.password)
+
+    # Update groups (this works as before since groups don't use soft delete)
+    if attrs.group_ids is not None:
+        stmt = select(orm.Group).where(orm.Group.id.in_(attrs.group_ids))
+        groups = list((await db_session.execute(stmt)).scalars().all())
+        user.groups = groups
+
+    # Update roles - Handle soft delete properly
+    if attrs.role_ids is not None:
+        # Soft delete existing user_roles by setting deleted_at
+        for existing_user_role in user.user_roles:
+            if existing_user_role.deleted_at is None:  # Only mark active ones as deleted
+                existing_user_role.deleted_at = func.now()
+
+        # Create new UserRole entries for the new roles
+        if attrs.role_ids:  # Only if there are new roles to add
+            stmt = select(orm.Role).where(orm.Role.id.in_(attrs.role_ids))
+            new_roles = list((await db_session.execute(stmt)).scalars().all())
+
+            for role in new_roles:
+                new_user_role = orm.UserRole(user=user, role=role)
+                db_session.add(new_user_role)
 
     try:
         await db_session.commit()
@@ -323,27 +333,43 @@ async def update_user(
         error = err_schema.Error(messages=[str(e)])
         return None, error
 
+    # Reload user with fresh data to get the updated relationships
     stmt = select(orm.User).options(
-        selectinload(orm.User.user_roles),
-        selectinload(orm.User.user_roles).selectinload(orm.Role.permissions),
+        selectinload(orm.User.user_roles)
+        .selectinload(orm.UserRole.role)
+        .selectinload(orm.Role.permissions),
         selectinload(orm.User.groups)
     ).where(orm.User.id == user_id)
 
     user = (await db_session.execute(stmt)).scalar_one()
 
-    for role in list(user.user_roles):
-        for perm in list(role.permissions):
-            scopes.add(perm.codename)
+    # Collect scopes from active roles only
+    scopes = set()
+    active_roles = []
 
-    stmt = select(orm.User).options(
-        selectinload(orm.User.user_roles), selectinload(orm.User.groups)
-    ).where(
-        orm.User.id == user_id
+    for user_role in user.user_roles:
+        if user_role.deleted_at is None:  # Only active roles
+            active_roles.append(user_role.role)
+            for perm in user_role.role.permissions:
+                scopes.add(perm.codename)
+
+    # Create the response
+    result = schema.UserDetails(
+        id=user.id,
+        username=user.username,
+        email=user.email,
+        created_at=user.created_at,
+        updated_at=user.updated_at,
+        home_folder_id=user.home_folder_id,
+        inbox_folder_id=user.inbox_folder_id,
+        is_superuser=user.is_superuser,
+        is_active=user.is_active,
+        scopes=sorted(scopes),
+        groups=user.groups,
+        roles=active_roles,
     )
-    db_user = (await db_session.execute(stmt)).scalar_one()
 
-    model_user = schema.UserDetails.model_validate(db_user)
-
+    model_user = schema.UserDetails.model_validate(result)
     return model_user, None
 
 

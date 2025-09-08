@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Column, ForeignKey, Table
+from sqlalchemy import Column, ForeignKey, Table, Index, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import CheckConstraint
 
@@ -55,7 +55,7 @@ class Role(Base, AuditColumns):
     __tablename__ = "roles"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False)
     permissions: Mapped[list["Permission"]] = relationship(
         secondary=roles_permissions_association, back_populates="roles"
     )
@@ -71,4 +71,11 @@ class Role(Base, AuditColumns):
 
     __table_args__ = (
         CheckConstraint("char_length(trim(name)) > 0", name="role_name_not_empty"),
+        # partially unique index: unique only for records where `deleted_at IS NULL`
+        Index(
+            'idx_roles_name_active_unique',
+            'name',
+            unique=True,
+            postgresql_where=text('deleted_at IS NULL')
+        ),
     )

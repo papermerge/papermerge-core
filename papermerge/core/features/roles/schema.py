@@ -39,10 +39,10 @@ class RoleEx(BaseModel):
     created_by: ByUser
     updated_at: datetime
     updated_by: ByUser
-    archived_at: datetime
-    archived_by: ByUser
-    deleted_at: datetime
-    deleted_by: ByUser
+    archived_at: datetime | None = None
+    archived_by: ByUser | None = None
+    deleted_at: datetime | None = None
+    deleted_by: ByUser | None = None
 
     # Config
     model_config = ConfigDict(from_attributes=True)

@@ -751,15 +751,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/form@npm:^8.2.7":
-  version: 8.2.7
-  resolution: "@mantine/form@npm:8.2.7"
+"@mantine/form@npm:^8.3.0":
+  version: 8.3.0
+  resolution: "@mantine/form@npm:8.3.0"
   dependencies:
     fast-deep-equal: "npm:^3.1.3"
     klona: "npm:^2.0.6"
   peerDependencies:
     react: ^18.x || ^19.x
-  checksum: 10c0/4fcd2726e65a281ed64af880c593f72dc35d2ca8d48edd61e6365362f683a33e555c2782fadf395a77d7b3c3440b40e1328ad4674490dd5a0623c16fc2e973fd
+  checksum: 10c0/e59039e6e6fc90308c87417b171662129f50da0a7326b43240636c59a7f0d3b5a435b2a834092ed6892d414863288ca1ea1f1c1369c82161fc8866e2fda4ad1c
   languageName: node
   linkType: hard
 
@@ -4257,7 +4257,7 @@ __metadata:
   dependencies:
     "@mantine/core": "npm:^8.2.8"
     "@mantine/dates": "npm:^8.2.8"
-    "@mantine/form": "npm:^8.2.7"
+    "@mantine/form": "npm:^8.3.0"
     "@mantine/hooks": "npm:^8.2.8"
     "@mantine/notifications": "npm:^8.2.8"
     "@reduxjs/toolkit": "npm:^2.8.2"

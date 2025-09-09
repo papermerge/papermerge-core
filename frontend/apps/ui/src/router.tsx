@@ -36,6 +36,7 @@ import {AccessForbidden, NotFound, UnprocessableContent} from "@/pages/errors"
 
 import {loader as auditLogDetailsLoader} from "@/features/audit/pages/Details"
 import {loader as auditLogsListLoader} from "@/features/audit/pages/List"
+import {loader as rolesDetailsLoader} from "@/features/roles/pages/Details"
 import {loader as rolesListLoader} from "@/features/roles/pages/List"
 import {loader as documentLoader} from "@/pages/Document"
 
@@ -140,7 +141,8 @@ const router = createBrowserRouter([
       },
       {
         path: "/roles/:roleId",
-        element: <RoleDetails />
+        element: <RoleDetails />,
+        loader: rolesDetailsLoader
       },
       {
         path: "/users",

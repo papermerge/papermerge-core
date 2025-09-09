@@ -29,6 +29,22 @@ const rolesSlice = createSlice({
   name: "roles",
   initialState,
   reducers: {
+    mainPanelRoleDetailsUpdated(state, action: PayloadAction<string>) {
+      const roleID = action.payload
+      state.mainRoleDetails = {id: roleID}
+    },
+    secondaryPanelRoleDetailsUpdated(
+      state,
+      action: PayloadAction<string | undefined>
+    ) {
+      const roleID = action.payload
+
+      if (roleID) {
+        state.secondaryRoleDetails = {id: roleID}
+      } else {
+        state.secondaryRoleDetails = undefined
+      }
+    },
     selectionSet: (
       state,
       action: PayloadAction<{ids: string[]; mode: PanelMode}>
@@ -43,7 +59,6 @@ const rolesSlice = createSlice({
         selectedIDs: ids
       }
     },
-
     clearSelection: (state, action: PayloadAction<{mode: PanelMode}>) => {
       const {mode} = action.payload
       const listKey = mode === "main" ? "mainRoleList" : "secondaryRoleList"
@@ -116,6 +131,8 @@ const rolesSlice = createSlice({
 })
 
 export const {
+  mainPanelRoleDetailsUpdated,
+  secondaryPanelRoleDetailsUpdated,
   selectionSet,
   clearSelection,
   roleListSortingUpdated,

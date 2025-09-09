@@ -7,7 +7,7 @@ import {usePanelMode} from "@/hooks"
 import {ColumnConfig, ColumnSelector} from "kommon"
 import {useTranslation} from "react-i18next"
 import {RoleItem} from "../types"
-import roleColumns from "./roleColumns"
+import roleColumns from "./columns"
 
 export default function ColumnSelectorContainer() {
   const mode = usePanelMode()

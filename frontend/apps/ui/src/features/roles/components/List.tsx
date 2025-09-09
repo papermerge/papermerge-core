@@ -1,20 +1,22 @@
-import {useAppSelector} from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
 import useRoleTable from "@/features/roles/hooks/useRoleTable"
 import useVisibleColumns from "@/features/roles/hooks/useVisibleColumns"
 import {
   roleListSortingUpdated,
+  rolePaginationUpdated,
   selectionSet,
+  selectRoleDetailsID,
   selectSelectedIDs
 } from "@/features/roles/storage/role"
+import {showRoleDetailsInSecondaryPanel} from "@/features/roles/storage/thunks"
 import {isHTTP403Forbidden} from "@/services/helpers"
 import {Group, Loader, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
 import {DataTable, TablePagination} from "kommon"
-import {useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
 import type {RoleItem} from "../types"
-import roleColumns from "./roleColumns"
+import roleColumns from "./columns"
 
 import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
@@ -25,10 +27,10 @@ export default function RolesList() {
   const mode = usePanelMode()
   const selectedRowIDs = useAppSelector(s => selectSelectedIDs(s, mode))
   const selectedRowsSet = new Set(selectedRowIDs || [])
-  const dispatch = useDispatch()
-  //const lastPageSize = useAppSelector(s => selectPageSize(s, mode))
+  const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const visibleColumns = useVisibleColumns(roleColumns(t))
+  const roleDetailsID = useAppSelector(s => selectRoleDetailsID(s, "secondary"))
 
   const {isError, data, queryParams, error, isLoading, isFetching} =
     useRoleTable()
@@ -42,7 +44,31 @@ export default function RolesList() {
     dispatch(selectionSet({ids: newIds, mode}))
   }
 
+  const handlePageSizeChange = (newValue: number) => {
+    dispatch(
+      rolePaginationUpdated({
+        mode,
+        value: {
+          pageSize: newValue,
+          pageNumber: 1
+        }
+      })
+    )
+  }
+
+  const handlePageNumberChange = (pageNumber: number) => {
+    dispatch(rolePaginationUpdated({mode, value: {pageNumber}}))
+  }
+
   const getRowId = (row: RoleItem) => row.id
+
+  const onTableRowClick = (row: RoleItem, openInSecondaryPanel: boolean) => {
+    if (openInSecondaryPanel) {
+      dispatch(showRoleDetailsInSecondaryPanel(row.id))
+    } else {
+      navigate(`/roles/${row.id}`)
+    }
+  }
 
   if (isError && isHTTP403Forbidden(error)) {
     navigate(ERRORS_403_ACCESS_FORBIDDEN)
@@ -69,13 +95,17 @@ export default function RolesList() {
         withCheckbox={true}
         selectedRows={selectedRowsSet}
         onSelectionChange={handleSelectionChange}
+        onRowClick={onTableRowClick}
         getRowId={getRowId}
+        highlightRowID={roleDetailsID}
       />
 
       <TablePagination
         currentPage={data?.page_number || 1}
         totalPages={data?.num_pages || 0}
         pageSize={data?.page_size || 15}
+        onPageChange={handlePageNumberChange}
+        onPageSizeChange={handlePageSizeChange}
         totalItems={data?.total_items}
         t={t}
       />

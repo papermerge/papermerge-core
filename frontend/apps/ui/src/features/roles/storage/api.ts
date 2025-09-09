@@ -1,6 +1,6 @@
 import {apiSlice} from "@/features/api/slice"
 import type {RoleItem, RoleQueryParams} from "@/features/roles/types"
-import type {NewRole, Paginated, Role, RoleUpdate} from "@/types"
+import type {NewRole, Paginated, Role, RoleDetails, RoleUpdate} from "@/types"
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
@@ -36,7 +36,7 @@ export const apiSliceWithRoles = apiSlice.injectEndpoints({
         ...result.map(({id}) => ({type: "Role", id}) as const)
       ]
     }),
-    getRole: builder.query<RoleItem, string>({
+    getRole: builder.query<RoleDetails, string>({
       query: roleID => `/roles/${roleID}`,
       providesTags: (_result, _error, arg) => [{type: "Role", id: arg}]
     }),

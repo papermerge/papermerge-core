@@ -6,6 +6,11 @@ export interface PaginatedResponse<T> {
   items: T[]
 }
 
+export interface Pagination {
+  pageNumber?: number
+  pageSize?: number
+}
+
 export type SortDirection = "asc" | "desc"
 
 export interface SortState {

@@ -207,7 +207,8 @@ async def get_roles(
         items=items,
         page_size=page_size,
         page_number=page_number,
-        num_pages=total_pages
+        num_pages=total_pages,
+        total_items=total_roles
     )
 
 async def get_roles_without_pagination(db_session: AsyncSession) -> list[schema.Role]:

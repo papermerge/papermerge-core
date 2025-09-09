@@ -1,18 +1,20 @@
 import {
-  TextInput,
   Box,
+  Button,
+  Checkbox,
+  CheckedNodeStatus,
+  Group,
   LoadingOverlay,
+  RenderTreeNodePayload,
+  ScrollArea,
+  Stack,
+  TextInput,
   Tree,
   useTree,
-  Stack,
-  CheckedNodeStatus,
-  Button,
-  UseTreeReturnType,
-  ScrollArea
+  UseTreeReturnType
 } from "@mantine/core"
 import {IconChevronDown} from "@tabler/icons-react"
-import {Checkbox, Group, RenderTreeNodePayload} from "@mantine/core"
-import {useCallback, useMemo, useEffect, useState} from "react"
+import {useCallback, useEffect, useMemo, useState} from "react"
 import type {
   I18NCheckButton,
   I18NCollapseButton,
@@ -155,7 +157,7 @@ export default function RoleForm({
 
   return (
     <>
-      <Box pos="relative">
+      <Box pos="relative" style={{flex: 1, minHeight: 0}}>
         <LoadingOverlay
           visible={isLoading}
           zIndex={1000}

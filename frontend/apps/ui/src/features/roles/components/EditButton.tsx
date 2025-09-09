@@ -2,8 +2,8 @@ import {Button} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconEdit} from "@tabler/icons-react"
 
-import EditRoleModal from "./EditRoleModal"
 import {useTranslation} from "react-i18next"
+import EditRoleModal from "./EditRoleModal"
 
 interface Args {
   roleId: string
@@ -23,7 +23,12 @@ export default function EditButton({roleId}: Args) {
 
   return (
     <>
-      <Button leftSection={<IconEdit />} variant={"default"} onClick={open}>
+      <Button
+        leftSection={<IconEdit />}
+        variant={"filled"}
+        color={"teal"}
+        onClick={open}
+      >
         {t("common.edit")}
       </Button>
       <EditRoleModal

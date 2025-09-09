@@ -140,7 +140,7 @@ const router = createBrowserRouter([
         loader: rolesListLoader
       },
       {
-        path: "/roles/:roleId",
+        path: "/roles/:id",
         element: <RoleDetails />,
         loader: rolesDetailsLoader
       },

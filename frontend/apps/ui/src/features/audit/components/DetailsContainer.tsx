@@ -4,7 +4,7 @@ import {useGetAuditLogQuery} from "@/features/audit/storage/api"
 import {selectAuditLogDetailsID} from "@/features/audit/storage/audit"
 import {closeAuditLogDetailsSecondaryPanel} from "@/features/audit/storage/thunks"
 import {usePanelMode} from "@/hooks"
-import {Group, Stack} from "@mantine/core"
+import {Group, Paper, Stack} from "@mantine/core"
 import {useTranslation} from "react-i18next"
 import AuditLogDetailsBreadcrumb from "./auditLogDetailsBreadcrumb"
 import AuditLogDetails from "./Details"
@@ -27,14 +27,16 @@ export default function AuditLogDetailsContainer() {
   }
 
   return (
-    <Stack>
-      <Group justify="space-between">
-        <AuditLogDetailsBreadcrumb t={t} auditLogID={data.id} mode={mode} />
-        <CloseSecondaryPanel
-          onClick={() => dispatch(closeAuditLogDetailsSecondaryPanel())}
-        />
-      </Group>
-      <AuditLogDetails t={t} auditLog={data} />
-    </Stack>
+    <Paper p="md" withBorder>
+      <Stack>
+        <Group justify="space-between">
+          <AuditLogDetailsBreadcrumb t={t} auditLogID={data.id} mode={mode} />
+          <CloseSecondaryPanel
+            onClick={() => dispatch(closeAuditLogDetailsSecondaryPanel())}
+          />
+        </Group>
+        <AuditLogDetails t={t} auditLog={data} />
+      </Stack>
+    </Paper>
   )
 }

@@ -22,7 +22,12 @@ export function DeleteRoleButton({roleId}: {roleId: string}) {
 
   return (
     <>
-      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
+      <Button
+        leftSection={<IconTrash />}
+        onClick={open}
+        variant={"filled"}
+        color={"red"}
+      >
         {t("common.delete")}
       </Button>
       <RemoveRoleModal
@@ -54,7 +59,12 @@ export function DeleteRolesButton() {
 
   return (
     <>
-      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
+      <Button
+        leftSection={<IconTrash />}
+        variant={"filled"}
+        color={"red"}
+        onClick={open}
+      >
         {t("common.delete")}
       </Button>
       {selectedRowIDs && (

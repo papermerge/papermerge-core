@@ -6,7 +6,7 @@ import type {PanelListBase} from "@/types.d/panel"
 import {notifications} from "@mantine/notifications"
 import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit"
 import {t} from "i18next"
-import type {SortState} from "kommon"
+import type {Pagination, SortState} from "kommon"
 import {apiSliceWithRoles} from "./api"
 
 interface RolePanelList extends PanelListBase {
@@ -91,6 +91,65 @@ const rolesSlice = createSlice({
         freeTextFilterValue
       }
     },
+    rolePaginationUpdated(
+      state,
+      action: PayloadAction<{mode: PanelMode; value: Pagination}>
+    ) {
+      const {mode, value} = action.payload
+      // initialize `newValue` with whatever is in current state
+      // i.e. depending on the `mode`, use value from `mainAuditLog` or from
+      // `secondaryAuditLog`
+      let newValue: Pagination = {
+        pageSize:
+          mode == "main"
+            ? state.mainRoleList?.pageSize
+            : state.secondaryRoleList?.pageSize,
+        pageNumber:
+          mode == "main"
+            ? state.mainRoleList?.pageSize
+            : state.secondaryRoleList?.pageSize
+      }
+      // if non empty value received as parameter - use it
+      // to update the state
+      if (value.pageNumber) {
+        newValue.pageNumber = value.pageNumber
+      }
+
+      if (value.pageSize) {
+        newValue.pageSize = value.pageSize
+      }
+
+      if (mode == "main") {
+        state.mainRoleList = {
+          ...state.mainRoleList,
+          ...newValue
+        }
+        return
+      }
+
+      state.secondaryRoleList = {
+        ...state.secondaryRoleList,
+        ...newValue
+      }
+    },
+    rolePageNumberValueUpdated(
+      state,
+      action: PayloadAction<{mode: PanelMode; value: number}>
+    ) {
+      const {mode, value} = action.payload
+      if (mode == "main") {
+        state.mainRoleList = {
+          ...state.mainRoleList,
+          pageNumber: value
+        }
+        return
+      }
+
+      state.secondaryRoleList = {
+        ...state.secondaryRoleList,
+        pageNumber: value
+      }
+    },
     roleListSortingUpdated(
       state,
       action: PayloadAction<{mode: PanelMode; value: SortState}>
@@ -133,6 +192,8 @@ const rolesSlice = createSlice({
 export const {
   mainPanelRoleDetailsUpdated,
   secondaryPanelRoleDetailsUpdated,
+  rolePageNumberValueUpdated,
+  rolePaginationUpdated,
   selectionSet,
   clearSelection,
   roleListSortingUpdated,

@@ -4,7 +4,9 @@ import useRoleTable from "@/features/roles/hooks/useRoleTable"
 import useVisibleColumns from "@/features/roles/hooks/useVisibleColumns"
 import {
   roleListSortingUpdated,
+  rolePaginationUpdated,
   selectionSet,
+  selectRoleDetailsID,
   selectSelectedIDs
 } from "@/features/roles/storage/role"
 import {showRoleDetailsInSecondaryPanel} from "@/features/roles/storage/thunks"
@@ -26,9 +28,9 @@ export default function RolesList() {
   const selectedRowIDs = useAppSelector(s => selectSelectedIDs(s, mode))
   const selectedRowsSet = new Set(selectedRowIDs || [])
   const dispatch = useAppDispatch()
-  //const lastPageSize = useAppSelector(s => selectPageSize(s, mode))
   const navigate = useNavigate()
   const visibleColumns = useVisibleColumns(roleColumns(t))
+  const roleDetailsID = useAppSelector(s => selectRoleDetailsID(s, "secondary"))
 
   const {isError, data, queryParams, error, isLoading, isFetching} =
     useRoleTable()
@@ -40,6 +42,22 @@ export default function RolesList() {
   const handleSelectionChange = (newSelection: Set<string>) => {
     const newIds = Array.from(newSelection)
     dispatch(selectionSet({ids: newIds, mode}))
+  }
+
+  const handlePageSizeChange = (newValue: number) => {
+    dispatch(
+      rolePaginationUpdated({
+        mode,
+        value: {
+          pageSize: newValue,
+          pageNumber: 1
+        }
+      })
+    )
+  }
+
+  const handlePageNumberChange = (pageNumber: number) => {
+    dispatch(rolePaginationUpdated({mode, value: {pageNumber}}))
   }
 
   const getRowId = (row: RoleItem) => row.id
@@ -79,12 +97,15 @@ export default function RolesList() {
         onSelectionChange={handleSelectionChange}
         onRowClick={onTableRowClick}
         getRowId={getRowId}
+        highlightRowID={roleDetailsID}
       />
 
       <TablePagination
         currentPage={data?.page_number || 1}
         totalPages={data?.num_pages || 0}
         pageSize={data?.page_size || 15}
+        onPageChange={handlePageNumberChange}
+        onPageSizeChange={handlePageSizeChange}
         totalItems={data?.total_items}
         t={t}
       />

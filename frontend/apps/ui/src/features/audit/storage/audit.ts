@@ -2,13 +2,8 @@ import type {RootState} from "@/app/types"
 import {PanelMode} from "@/types"
 import type {PanelListBase} from "@/types.d/panel"
 import {createSlice, PayloadAction} from "@reduxjs/toolkit"
-import {SortState} from "kommon"
+import type {Pagination, SortState} from "kommon"
 import {AuditOperation, TimestampFilterType} from "../types"
-
-interface Pagination {
-  pageNumber?: number
-  pageSize?: number
-}
 
 interface AuditLogPanelList extends PanelListBase {
   timestampFilterValue?: TimestampFilterType

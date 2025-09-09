@@ -3,8 +3,16 @@ import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
 import {useGetRoleQuery} from "@/features/roles/storage/api"
 import {selectRoleDetailsID} from "@/features/roles/storage/role"
 import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
+import {server2clientPerms} from "@/features/roles/utils"
 import {usePanelMode} from "@/hooks"
-import {Group, Stack} from "@mantine/core"
+import type {PanelMode} from "@/types"
+import {Breadcrumbs, Group, Loader, Paper, Stack} from "@mantine/core"
+import {RoleForm} from "kommon"
+import {Link, useNavigation} from "react-router-dom"
+import {DeleteRoleButton} from "./DeleteButton"
+import EditButton from "./EditButton"
+
+import type {RoleDetails} from "@/types"
 
 export default function RoleDetailsContainer() {
   const mode = usePanelMode()
@@ -14,14 +22,62 @@ export default function RoleDetailsContainer() {
     skip: !roleID
   })
 
+  if (isLoading) return <div>Loading...</div>
+
+  if (error) return <div>Error loading role</div>
+
+  if (!data) {
+    return <div>Loading...</div>
+  }
+
   return (
-    <Stack>
-      <Group justify="space-between">
-        <CloseSecondaryPanel
-          onClick={() => dispatch(closeRoleDetailsSecondaryPanel())}
+    <Paper p="md" withBorder>
+      <Stack>
+        <Group justify="space-between" style={{flexShrink: 0}}>
+          <Path role={data} mode={mode} />
+          <Group>
+            <DeleteRoleButton roleId={data.id} />
+            <EditButton roleId={data.id} />
+            <CloseSecondaryPanel
+              onClick={() => dispatch(closeRoleDetailsSecondaryPanel())}
+            />
+          </Group>
+        </Group>
+
+        <RoleForm
+          key={`${data.id}-${data?.scopes?.join(",")}`}
+          initialCheckedState={server2clientPerms(data.scopes)}
+          name={data.name}
+          isLoading={false}
+          readOnly={true}
         />
+      </Stack>
+    </Paper>
+  )
+}
+
+function Path({role, mode}: {role: RoleDetails | null; mode: PanelMode}) {
+  const navigation = useNavigation()
+
+  if (mode == "main") {
+    return (
+      <Group>
+        <Breadcrumbs>
+          <Link to="/roles/">Roles</Link>
+          <Link to={`/roles/${role?.id}`}>{role?.name}</Link>
+        </Breadcrumbs>
+        {navigation.state == "loading" && <Loader size="sm" />}
       </Group>
-      {data?.id}
-    </Stack>
+    )
+  }
+
+  return (
+    <Group>
+      <Breadcrumbs>
+        <div>Roles</div>
+        <div>{role?.name}</div>
+      </Breadcrumbs>
+      {navigation.state == "loading" && <Loader size="sm" />}
+    </Group>
   )
 }

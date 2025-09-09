@@ -1,6 +1,7 @@
+import LeadColumn from "@/components/LeadColumn"
 import {ActionIcon, Group, Text, Tooltip} from "@mantine/core"
 import {useClipboard} from "@mantine/hooks"
-import {IconCheck, IconColumns2, IconCopy} from "@tabler/icons-react"
+import {IconCheck, IconCopy} from "@tabler/icons-react"
 import {TFunction} from "i18next"
 import type {ColumnConfig} from "kommon"
 import {useCallback, useState} from "react"
@@ -62,49 +63,6 @@ const TruncatedTextWithCopy = ({
   )
 }
 
-type ClickableFunc<T> = (row: T, details: boolean) => void
-
-interface ClickableProps<T> {
-  onClickHandler?: ClickableFunc<T>
-  row: T
-  children: React.ReactNode
-}
-
-const Clickable = <T,>({onClickHandler, row, children}: ClickableProps<T>) => {
-  // Memoize handlers to prevent recreation
-  const handleDetailsClick = useCallback(
-    () => onClickHandler?.(row, true),
-    [onClickHandler, row]
-  )
-  const handleMainClick = useCallback(
-    () => onClickHandler?.(row, false),
-    [onClickHandler, row]
-  )
-
-  const handleMouseEnter = useCallback((e: React.MouseEvent<SVGElement>) => {
-    e.currentTarget.style.opacity = "0.6"
-  }, [])
-
-  const handleMouseLeave = useCallback((e: React.MouseEvent<SVGElement>) => {
-    e.currentTarget.style.opacity = "0"
-  }, [])
-
-  return (
-    <Group gap="xs">
-      <IconColumns2
-        size={14}
-        style={STATIC_STYLES.clickableIcon}
-        onClick={handleDetailsClick}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      />
-      <div style={STATIC_STYLES.clickableDiv} onClick={handleMainClick}>
-        {children}
-      </div>
-    </Group>
-  )
-}
-
 export default function roleColumns(t?: TFunction) {
   const columns: ColumnConfig<RoleItem>[] = [
     {
@@ -114,7 +72,13 @@ export default function roleColumns(t?: TFunction) {
       filterable: true,
       width: 120,
       minWidth: 100,
-      render: value => <Text size="sm">{value as string}</Text>
+      render: (value, row, onClick) => {
+        return (
+          <LeadColumn row={row} onClickHandler={onClick}>
+            <Text component="a">{value as string}</Text>
+          </LeadColumn>
+        )
+      }
     },
     {
       key: "id",

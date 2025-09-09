@@ -14,7 +14,7 @@ import {DataTable, TablePagination} from "kommon"
 import {useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
 import type {RoleItem} from "../types"
-import roleColumns from "./roleColumns"
+import roleColumns from "./columns"
 
 import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"

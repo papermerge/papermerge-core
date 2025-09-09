@@ -178,6 +178,7 @@ async def get_users_without_pagination(db_session: AsyncSession) -> list[schema.
 
     return items
 
+
 async def create_user(
     db_session: AsyncSession,
     username: str,
@@ -191,9 +192,8 @@ async def create_user(
 ) -> Tuple[schema.User | None, err_schema.Error | None]:
     group_ids = group_ids or []
     role_ids = role_ids or []
-    _user_id = user_id or uuid.uuid4()
+    _user_id = user_id or uuid.uuid4()  # Fixed variable name
     await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
-
     try:
         home_folder_id = uuid.uuid4()
         inbox_folder_id = uuid.uuid4()
@@ -216,32 +216,38 @@ async def create_user(
         # Associate groups if provided
         groups = []
         if group_ids:
-            # Fetch groups by IDs
+            # Fetch active groups by IDs
             groups_result = await db_session.execute(
-                select(orm.Group).where(orm.Group.id.in_(group_ids))
+                select(orm.Group).where(
+                    orm.Group.id.in_(group_ids),
+                    orm.Group.deleted_at.is_(None)  # Only fetch active groups
+                )
             )
-            groups = groups_result.scalars().all()
+            groups = list(groups_result.scalars().all())
 
             # Check if all requested groups were found
             found_group_ids = {group.id for group in groups}
             missing_group_ids = set(group_ids) - found_group_ids
             if missing_group_ids:
-                raise ValueError(f"Groups not found: {missing_group_ids}")
+                raise ValueError(f"Groups not found or inactive: {missing_group_ids}")
 
         # Associate roles if provided
         roles = []
         if role_ids:
-            # Fetch roles by IDs
+            # Fetch active roles by IDs
             roles_result = await db_session.execute(
-                select(orm.Role).where(orm.Role.id.in_(role_ids))
+                select(orm.Role).where(
+                    orm.Role.id.in_(role_ids),
+                    orm.Role.deleted_at.is_(None)  # Only fetch active roles
+                )
             )
-            roles = roles_result.scalars().all()
+            roles = list(roles_result.scalars().all())
 
             # Check if all requested roles were found
             found_role_ids = {role.id for role in roles}
             missing_role_ids = set(role_ids) - found_role_ids
             if missing_role_ids:
-                raise ValueError(f"Roles not found: {missing_role_ids}")
+                raise ValueError(f"Roles not found or inactive: {missing_role_ids}")
 
         user = orm.User(
             id=_user_id,
@@ -250,16 +256,26 @@ async def create_user(
             password=pbkdf2_sha256.hash(password),
             is_superuser=is_superuser,
             is_active=is_active,
-            home_folder_id=home_folder_id,  # Set immediately
-            inbox_folder_id=inbox_folder_id,  # Set immediately
+            home_folder_id=home_folder_id,
+            inbox_folder_id=inbox_folder_id,
         )
-            # Set relationships before adding to session
-        if groups:
-            user.groups = list(groups)
-        if roles:
-            user.user_roles = list(roles)
 
-        db_session.add_all([user, home, inbox])
+        # Set group relationships before adding to session
+        if groups:
+            user.groups = groups
+
+        # Create UserRole associations for roles (fixed the main issue)
+        user_roles = []
+        if roles:
+            for role in roles:
+                user_role = orm.UserRole(
+                    user_id=_user_id,
+                    role_id=role.id
+                )
+                user_roles.append(user_role)
+
+        # Add all objects to session
+        db_session.add_all([user, home, inbox] + user_roles)
         await db_session.flush()
         await db_session.commit()
         await db_session.refresh(user)

@@ -15,6 +15,7 @@ from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from core.utils.tz import tz_aware_datetime_now
 from papermerge.core.tests.resource_file import ResourceFile
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core import constants
@@ -311,22 +312,30 @@ def get_app_with_routes():
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database():
     async with engine.begin() as conn:
+        # Drop tables in reverse dependency order
+        tables_to_drop = ["nodes", "users", "users_roles", "roles"]  # Add other tables as needed
+        for table in tables_to_drop:
+            try:
+                await conn.execute(text(f"DROP TABLE IF EXISTS {table} CASCADE"))
+            except Exception:
+                pass
+
         await conn.run_sync(Base.metadata.create_all)
 
     yield
 
     async with engine.begin() as conn:
-        # Hard delete any soft-deleted records that might exist
-        #await conn.execute(text("DELETE FROM nodes WHERE deleted_at IS NOT NULL"))
-        #await conn.execute(text("DELETE FROM users WHERE deleted_at IS NOT NULL"))
-        # Now drop_all should work
-        #await conn.run_sync(Base.metadata.drop_all)
-        # Drop schema with CASCADE to handle all foreign key dependencies
-        await conn.execute(text("DROP SCHEMA public CASCADE"))
-        await conn.execute(text("CREATE SCHEMA public"))
-        # Restore default permissions
-        await conn.execute(text("GRANT ALL ON SCHEMA public TO postgres"))
-        await conn.execute(text("GRANT ALL ON SCHEMA public TO public"))
+        await conn.execute(text("DELETE FROM nodes WHERE deleted_at IS NOT NULL"))
+        await conn.execute(text("DELETE FROM users WHERE deleted_at IS NOT NULL"))
+        await conn.execute(text("DELETE FROM users_roles WHERE deleted_at IS NOT NULL"))
+        await conn.execute(text("DELETE FROM roles WHERE deleted_at IS NOT NULL"))
+
+        # Drop tables with CASCADE
+        for table in tables_to_drop:
+            try:
+                await conn.execute(text(f"DROP TABLE IF EXISTS {table} CASCADE"))
+            except Exception:
+                pass
 
 
 @pytest.fixture(scope="function")
@@ -775,14 +784,28 @@ def make_group(db_session: AsyncSession):
 
 
 @pytest.fixture()
-def make_role(db_session):
-    async def _maker(name: str, scopes: list[str] | None = None):
+def make_role(db_session, make_user, random_string):
+    async def _maker(
+        name: str,
+        scopes: list[str] | None = None,
+        user: orm.User | None = None
+    ):
         if scopes is None:
             scopes = []
 
+        if user is None:
+            user = await make_user(username=random_string())
+
         stmt = select(orm.Permission).where(orm.Permission.codename.in_(scopes))
         perms = (await db_session.execute(stmt)).scalars().all()
-        role = orm.Role(name=name, permissions=perms)
+        role = orm.Role(
+            name=name,
+            permissions=perms,
+            created_by=user.id,
+            created_at=tz_aware_datetime_now(),
+            updated_by=user.id,
+            updated_at=tz_aware_datetime_now()
+        )
         db_session.add(role)
         await db_session.commit()
 
@@ -793,11 +816,10 @@ def make_role(db_session):
 
 @pytest.fixture()
 def random_string():
-    from random import choice
-    from string import ascii_uppercase
-
-    ret = "".join(choice(ascii_uppercase) for i in range(12))
-    return ret
+    """Generate a fresh random string each time it's called"""
+    def _generator():
+        return uuid.uuid4().hex[:12].upper()
+    return _generator
 
 
 @pytest.fixture

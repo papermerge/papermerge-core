@@ -194,6 +194,7 @@ async def get_roles(
             "deleted_by": deleted_by,
             "archived_by": archived_by
         }
+
         items.append(schema.RoleEx(**role_data))
 
     # Calculate total pages

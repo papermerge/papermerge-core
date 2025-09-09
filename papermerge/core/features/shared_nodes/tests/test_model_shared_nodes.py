@@ -26,4 +26,4 @@ async def test_basic_create_shared_node(db_session: AsyncSession, make_user, mak
 
     assert len(shared_nodes) == 1
 
-    await dbapi.delete_role(db_session, role.id)
+    await dbapi.delete_role(db_session, role.id, deleted_by_user_id=john.id)

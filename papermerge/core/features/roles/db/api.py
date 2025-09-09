@@ -115,7 +115,10 @@ async def get_roles(
     if sort_by and sort_direction:
         base_query = _apply_sorting(
             base_query, sort_by, sort_direction,
-            created_user, updated_user, deleted_user, archived_user
+            created_user=created_user,
+            updated_user=updated_user,
+            deleted_user=deleted_user,
+            archived_user=archived_user
         )
     else:
         # Default sorting by created_at desc
@@ -569,7 +572,15 @@ def _build_filter_conditions(
     return conditions
 
 
-def _apply_sorting(query, sort_by: str, sort_direction: str, created_user, updated_user):
+def _apply_sorting(
+    query,
+    sort_by: str,
+    sort_direction: str,
+    created_user,
+    updated_user,
+    deleted_user,
+    archived_user,
+):
     """Apply sorting to the query."""
     sort_column = None
     # Map sort_by to actual columns
@@ -587,6 +598,10 @@ def _apply_sorting(query, sort_by: str, sort_direction: str, created_user, updat
     elif sort_by == "updated_by":
         # Sort by username of updater
         sort_column = updated_user.username
+    elif sort_by == "deleted_by":
+        sort_column = deleted_user.username
+    elif sort_by == "archived_by":
+        sort_column = archived_user.username
 
     if sort_column is not None:
         if sort_direction.lower() == "desc":

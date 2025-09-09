@@ -17,7 +17,7 @@
     "@mantine/core": "^8.3.0",
     "@mantine/dates": "^8.3.0",
     "@mantine/form": "^8.3.0",
-    "@mantine/hooks": "^8.2.8",
+    "@mantine/hooks": "^8.3.0",
     "@mantine/notifications": "^8.3.0",
     "@reduxjs/toolkit": "^2.8.2",
     "@tabler/icons-react": "^3.34.1",

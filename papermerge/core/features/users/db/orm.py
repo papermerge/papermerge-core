@@ -8,7 +8,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.db.base import Base
 from papermerge.core.features.groups.db.orm import user_groups_association
-from papermerge.core.features.roles.db.orm import users_roles_association
 from papermerge.core import constants as const
 
 
@@ -48,14 +47,23 @@ class User(Base, AuditColumns):
         cascade="delete",
     )
     date_joined: Mapped[datetime] = mapped_column(insert_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(
-        insert_default=func.now(), onupdate=func.now()
+
+    user_roles: Mapped[list["UserRole"]] = relationship(
+        "UserRole",
+        back_populates="user",
+        foreign_keys="UserRole.user_id"
     )
-    roles: Mapped[list["Role"]] = relationship(  # noqa: F821
-        secondary=users_roles_association, back_populates="users"
-    )
+
     groups: Mapped[list["Group"]] = relationship(  # noqa: F821
         secondary=user_groups_association, back_populates="users"
     )
+
+    # Convenience property to get active roles
+    @property
+    def active_roles(self):
+        return [ur.role for ur in self.user_roles if ur.deleted_at is None]
+
+    def __repr__(self):
+        return f"User({self.id=}, {self.username=})"
 
     __mapper_args__ = {"confirm_deleted_rows": False}

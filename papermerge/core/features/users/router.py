@@ -5,8 +5,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
-from papermerge.core import schema, dbapi
+from papermerge.core import schema, dbapi, orm
 from papermerge.core import utils
 from papermerge.core.features import auth
 from papermerge.core.features.auth import scopes
@@ -128,6 +129,22 @@ async def create_user(
 
     Required scope: `{scope}`
     """
+    if pyuser.role_ids:
+        # Validate roles exist and are active
+        roles_result = await db_session.execute(
+            select(orm.Role.id).where(
+                orm.Role.id.in_(pyuser.role_ids),
+                orm.Role.deleted_at.is_(None)
+            )
+        )
+        found_role_ids = set(roles_result.scalars().all())
+        missing_roles = set(pyuser.role_ids) - found_role_ids
+        if missing_roles:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid or inactive role IDs: {missing_roles}"
+            )
+
     async with AsyncAuditContext(
         db_session,
         user_id=cur_user.id,

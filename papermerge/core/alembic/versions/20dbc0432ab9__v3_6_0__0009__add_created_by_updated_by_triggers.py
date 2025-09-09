@@ -1,4 +1,4 @@
-"""v3.6.0: 0008 -- add created_by, updated_by triggers
+"""v3.6.0: 0009 -- add created_by, updated_by triggers
 
 Revision ID: 20dbc0432ab9
 Revises: 426a0ec94034

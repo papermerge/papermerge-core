@@ -26,10 +26,10 @@ async def test_list_users_without_pagination(make_user, auth_api_client: AuthTes
 
 
 async def test_create_user(
-    db_session: AsyncSession,
-    make_group,
-    make_role,
-    auth_api_client: AuthTestClient
+        db_session: AsyncSession,
+        make_group,
+        make_role,
+        auth_api_client: AuthTestClient
 ):
     await dbapi.sync_perms(db_session)
     role = await make_role(name="guest", scopes=["node.create", "node.view"])
@@ -44,14 +44,19 @@ async def test_create_user(
         "password": "blah",
     }
     response = await auth_api_client.post("/users/", json=data)
+
+    # Check response status first
+    assert response.status_code == 201, f"Expected 201, got {response.status_code}: {response.json()}"
+
     created_user_data = response.json()
     user_id = created_user_data["id"]
 
+    # Fixed: Use user_roles relationship instead of roles
     result = await db_session.execute(
         select(orm.User)
         .options(
             selectinload(orm.User.groups),
-            selectinload(orm.User.roles)
+            selectinload(orm.User.user_roles).selectinload(orm.UserRole.role)
         )
         .where(orm.User.id == user_id)
     )
@@ -62,10 +67,17 @@ async def test_create_user(
     assert created_user.groups[0].id == group.id
     assert created_user.groups[0].name == "demo"
 
-    # Assert user has the expected role
-    assert len(created_user.roles) == 1
-    assert created_user.roles[0].id == role.id
-    assert created_user.roles[0].name == "guest"
+    # Fixed: Assert user has the expected role through user_roles relationship
+    assert len(created_user.user_roles) == 1
+    user_role = created_user.user_roles[0]
+    assert user_role.role.id == role.id
+    assert user_role.role.name == "guest"
+    assert user_role.deleted_at is None  # Ensure it's an active role assignment
+
+    # Alternative: Use the active_roles property if you prefer
+    # assert len(created_user.active_roles) == 1
+    # assert created_user.active_roles[0].id == role.id
+    # assert created_user.active_roles[0].name == "guest"
 
     # Additional assertions for user properties
     assert created_user.username == "friedrich"
@@ -73,7 +85,6 @@ async def test_create_user(
     assert created_user.is_active == True
     assert created_user.is_superuser == False
 
-    assert response.status_code == 201, response.json()
 
 
 async def test_update_user_roles(
@@ -144,8 +155,9 @@ async def test_change_user_password(
     make_user, auth_api_client: AuthTestClient, random_string, db_session: AsyncSession
 ):
     user = await make_user(username="Karl")
+    my_password = random_string()
 
-    data = {"userId": str(user.id), "password": random_string}
+    data = {"userId": str(user.id), "password": my_password}
 
     response = await auth_api_client.post(f"/users/{user.id}/change-password", json=data)
 
@@ -153,7 +165,7 @@ async def test_change_user_password(
     stmt = select(orm.User).where(orm.User.id == user.id)
     db_user = (await db_session.execute(stmt)).scalar()
 
-    assert verify_password(random_string, db_user.password)
+    assert verify_password(my_password, db_user.password)
 
 
 async def test_users_paginated_result__9_items_first_page(

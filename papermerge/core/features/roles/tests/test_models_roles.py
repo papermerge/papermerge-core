@@ -1,11 +1,13 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.features.roles import schema
+from papermerge.core import orm
 from papermerge.core.features.roles.db import api as dbapi
 
 
-async def test_role_create(db_session: AsyncSession):
+async def test_role_create(db_session: AsyncSession, make_user):
     await dbapi.sync_perms(db_session)
+    user: orm.User = await make_user("momo", is_superuser=False)
 
     scopes = {"tag.update", "tag.create", "tag.delete"}
 
@@ -15,7 +17,7 @@ async def test_role_create(db_session: AsyncSession):
     assert role_details.name == "G1"
     assert set(role_details.scopes) == scopes
 
-    await dbapi.delete_role(db_session, role.id)
+    await dbapi.delete_role(db_session, role.id, deleted_by_user_id=user.id)
 
 async def test_role_create_with_some_unknown_scopes(db_session: AsyncSession):
     """
@@ -58,15 +60,20 @@ async def test_roles_with_name_as_empty_string(db_session: AsyncSession):
     assert "Role name cannot be empty" in error
 
 
-async def test_role_create_and_delete(db_session: AsyncSession):
+async def test_role_create_and_delete(db_session: AsyncSession, make_user):
     """Deleting a role should preserve existing permission models"""
     await dbapi.sync_perms(db_session)
+    user: orm.User = await make_user("momo", is_superuser=False)
     initial_perms_count = len(await dbapi.get_perms(db_session))
 
     scopes = {"tag.update", "tag.create", "tag.delete"}
 
     role, _ = await dbapi.create_role(db_session, "G1", scopes=list(scopes))
-    await dbapi.delete_role(db_session, role_id=role.id)
+    await dbapi.delete_role(
+        db_session,
+        role_id=role.id,
+        deleted_by_user_id=user.id
+    )
 
     perms_count = len(await dbapi.get_perms(db_session))
     # the `db.delete_role` should not affect
@@ -74,12 +81,13 @@ async def test_role_create_and_delete(db_session: AsyncSession):
     assert perms_count == initial_perms_count
 
 
-async def test_update_role_twice(db_session: AsyncSession):
+async def test_update_role_twice(db_session: AsyncSession, make_user):
     """Update role twice
 
     There should be no error when update role second time with same scopes.
     """
     await dbapi.sync_perms(db_session)
+    user: orm.User = await make_user("momo", is_superuser=False)
 
     scopes = {"tag.update", "tag.create", "tag.delete"}
 
@@ -91,12 +99,18 @@ async def test_update_role_twice(db_session: AsyncSession):
         attrs=schema.UpdateRole(name=role.name, scopes=list(scopes)),
     )
 
-    await dbapi.delete_role(db_session, role_id=role.id)
+    await dbapi.delete_role(
+        db_session,
+        role_id=role.id,
+        deleted_by_user_id=user.id
+    )
 
 
-async def test_remove_permissions_from_role(db_session: AsyncSession):
+async def test_remove_permissions_from_role(db_session: AsyncSession, make_user):
     """Remove permissions from role"""
     await dbapi.sync_perms(db_session)
+    user: orm.User = await make_user("momo", is_superuser=False)
+
 
     scopes = {"tag.update", "tag.create", "tag.delete"}
 
@@ -118,4 +132,8 @@ async def test_remove_permissions_from_role(db_session: AsyncSession):
     # Indeed? Only one scope?
     assert role_details.scopes == ["tag.update"]
 
-    await dbapi.delete_role(db_session, role_id=role.id)
+    await dbapi.delete_role(
+        db_session,
+        role_id=role.id,
+        deleted_by_user_id=user.id
+    )

@@ -44,7 +44,6 @@ class SharedNode(Base, AuditColumns):
             "roles.id",
             use_alter=True,
             name="shared_nodes_role_id_fkey",
-            ondelete="CASCADE",
         ),
         nullable=False,
     )

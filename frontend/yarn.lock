@@ -1414,12 +1414,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^19.1.11":
-  version: 19.1.11
-  resolution: "@types/react@npm:19.1.11"
+"@types/react@npm:^19.1.12":
+  version: 19.1.12
+  resolution: "@types/react@npm:19.1.12"
   dependencies:
     csstype: "npm:^3.0.2"
-  checksum: 10c0/639b225c2bbcd4b8a30e1ea7a73aec81ae5b952a4c432460b48c9881c9d12e76645c9032d24f15eefae9985a12d5cb26557fe10e9850b2da0fabfb0a1e2d16bd
+  checksum: 10c0/e35912b43da0caaab5252444bab87a31ca22950cde2822b3b3dc32e39c2d42dad1a4cf7b5dde9783aa2d007f0b2cba6ab9563fc6d2dbcaaa833b35178118767c
   languageName: node
   linkType: hard
 
@@ -1889,7 +1889,7 @@ __metadata:
     "@mantine/core": "npm:^8.3.0"
     "@mantine/hooks": "npm:^8.2.8"
     "@tabler/icons-react": "npm:^3.34.1"
-    "@types/react": "npm:^19.1.11"
+    "@types/react": "npm:^19.1.12"
     "@types/react-dom": "npm:^19.1.7"
     "@vitejs/plugin-react": "npm:^5.0.1"
     clsx: "npm:^2.1.1"
@@ -2725,7 +2725,7 @@ __metadata:
   resolution: "hooks.dev@workspace:apps/hooks.dev"
   dependencies:
     "@eslint/js": "npm:^9.34.0"
-    "@types/react": "npm:^19.1.11"
+    "@types/react": "npm:^19.1.12"
     "@types/react-dom": "npm:^19.1.7"
     "@vitejs/plugin-react": "npm:^5.0.1"
     eslint: "npm:^9.34.0"
@@ -2745,7 +2745,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "hooks@workspace:packages/hooks"
   dependencies:
-    "@types/react": "npm:^19.1.11"
+    "@types/react": "npm:^19.1.12"
     "@types/react-dom": "npm:^19.1.7"
     react: "npm:^19.1.1"
     typescript: "npm:^5.9.2"
@@ -3078,7 +3078,7 @@ __metadata:
     "@mantine/core": "npm:^8.3.0"
     "@mantine/hooks": "npm:^8.2.8"
     "@tabler/icons-react": "npm:^3.34.1"
-    "@types/react": "npm:^19.1.11"
+    "@types/react": "npm:^19.1.12"
     "@types/react-dom": "npm:^19.1.7"
     "@vitejs/plugin-react": "npm:^5.0.1"
     clsx: "npm:^2.1.1"
@@ -4263,7 +4263,7 @@ __metadata:
     "@reduxjs/toolkit": "npm:^2.8.2"
     "@tabler/icons-react": "npm:^3.34.1"
     "@types/js-cookie": "npm:^3.0.6"
-    "@types/react": "npm:^19.1.11"
+    "@types/react": "npm:^19.1.12"
     "@types/react-dom": "npm:^19.1.7"
     "@types/react-router-dom": "npm:^5.3.3"
     "@vitejs/plugin-react": "npm:^5.0.1"
@@ -4441,7 +4441,7 @@ __metadata:
     "@mantine/core": "npm:^8.3.0"
     "@mantine/hooks": "npm:^8.2.8"
     "@tabler/icons-react": "npm:^3.34.1"
-    "@types/react": "npm:^19.1.11"
+    "@types/react": "npm:^19.1.12"
     "@types/react-dom": "npm:^19.1.7"
     "@vitejs/plugin-react": "npm:^5.0.1"
     clsx: "npm:^2.1.1"

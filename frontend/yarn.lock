@@ -2032,7 +2032,7 @@ __metadata:
     react-router: "npm:^7.8.2"
     typescript: "npm:^5.9.2"
     typescript-eslint: "npm:^8.43.0"
-    vite: "npm:^7.1.4"
+    vite: "npm:^7.1.5"
     vite-tsconfig-paths: "npm:^5.1.4"
   languageName: unknown
   linkType: soft
@@ -2864,7 +2864,7 @@ __metadata:
     react-dom: "npm:^19.1.1"
     typescript: "npm:~5.9.2"
     typescript-eslint: "npm:^8.43.0"
-    vite: "npm:^7.1.4"
+    vite: "npm:^7.1.5"
     vite-tsconfig-paths: "npm:^5.1.4"
   languageName: unknown
   linkType: soft
@@ -3227,7 +3227,7 @@ __metadata:
     react-router: "npm:^7.8.2"
     typescript: "npm:^5.9.2"
     typescript-eslint: "npm:^8.43.0"
-    vite: "npm:^7.1.4"
+    vite: "npm:^7.1.5"
     vite-tsconfig-paths: "npm:^5.1.4"
   languageName: unknown
   linkType: soft
@@ -4296,6 +4296,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tinyglobby@npm:^0.2.15":
+  version: 0.2.15
+  resolution: "tinyglobby@npm:0.2.15"
+  dependencies:
+    fdir: "npm:^6.5.0"
+    picomatch: "npm:^4.0.3"
+  checksum: 10c0/869c31490d0d88eedb8305d178d4c75e7463e820df5a9b9d388291daf93e8b1eb5de1dad1c1e139767e4269fe75f3b10d5009b2cc14db96ff98986920a186844
+  languageName: node
+  linkType: hard
+
 "to-regex-range@npm:^5.0.1":
   version: 5.0.1
   resolution: "to-regex-range@npm:5.0.1"
@@ -4426,7 +4436,7 @@ __metadata:
     typescript: "npm:^5.9.2"
     use-immer: "npm:^0.11.0"
     viewer: "workspace:*"
-    vite: "npm:^7.1.4"
+    vite: "npm:^7.1.5"
     vite-plugin-static-copy: "npm:^3.1.2"
     vite-tsconfig-paths: "npm:^5.1.4"
   languageName: unknown
@@ -4591,7 +4601,7 @@ __metadata:
     typescript: "npm:^5.9.2"
     typescript-eslint: "npm:^8.43.0"
     viewer: "workspace:*"
-    vite: "npm:^7.1.4"
+    vite: "npm:^7.1.5"
     vite-tsconfig-paths: "npm:^5.1.4"
   languageName: unknown
   linkType: soft
@@ -4641,9 +4651,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^7.1.4":
-  version: 7.1.4
-  resolution: "vite@npm:7.1.4"
+"vite@npm:^7.1.5":
+  version: 7.1.5
+  resolution: "vite@npm:7.1.5"
   dependencies:
     esbuild: "npm:^0.25.0"
     fdir: "npm:^6.5.0"
@@ -4651,7 +4661,7 @@ __metadata:
     picomatch: "npm:^4.0.3"
     postcss: "npm:^8.5.6"
     rollup: "npm:^4.43.0"
-    tinyglobby: "npm:^0.2.14"
+    tinyglobby: "npm:^0.2.15"
   peerDependencies:
     "@types/node": ^20.19.0 || >=22.12.0
     jiti: ">=1.21.0"
@@ -4692,7 +4702,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10c0/dbe2ba29926ffe8985c93d1b3718dcc9040080b7fa10a74c82a52aad7449136a391ba17b265288ff03b864e6f1033b9b537247521a96d5491a9d4af90ac04702
+  checksum: 10c0/782d2f20c25541b26d1fb39bef5f194149caff39dc25b7836e25f049ca919f2e2ce186bddb21f3f20f6195354b3579ec637a8ca08d65b117f8b6f81e3e730a9c
   languageName: node
   linkType: hard
 

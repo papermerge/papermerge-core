@@ -1,14 +1,11 @@
-import {AppShell} from "@mantine/core"
 import "@mantine/core/styles.css"
 import "@mantine/dates/styles.css"
-import {useViewportSize} from "@mantine/hooks"
-import {useEffect, useRef} from "react"
-import {useDispatch, useSelector} from "react-redux"
+import {useEffect} from "react"
+import {useSelector} from "react-redux"
 import {Outlet, useLocation, useNavigate} from "react-router-dom"
 
 import Header from "@/components/Header/Header"
 import NavBar from "@/components/NavBar"
-import {updateOutlet} from "@/features/ui/uiSlice"
 import {
   selectCurrentUser,
   selectCurrentUserError,
@@ -16,19 +13,14 @@ import {
 } from "@/slices/currentUser"
 
 import Uploader from "@/components/Uploader"
-import {selectNavBarWidth} from "@/features/ui/uiSlice"
 import "./App.css"
 
 function App() {
-  const {height, width} = useViewportSize()
   const navigate = useNavigate()
   const location = useLocation()
-  const dispatch = useDispatch()
   const status = useSelector(selectCurrentUserStatus)
   const error = useSelector(selectCurrentUserError)
-  const navBarWidth = useSelector(selectNavBarWidth)
   const user = useSelector(selectCurrentUser)
-  const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     /* notice *EXACT match* of the root route.
@@ -54,42 +46,24 @@ function App() {
     }
   }, [status])
 
-  useEffect(() => {
-    if (ref?.current) {
-      let value = 0
-      const styles = window.getComputedStyle(ref?.current)
-      value = parseInt(styles.marginTop)
-      value += parseInt(styles.paddingTop)
-      dispatch(updateOutlet(value))
-    }
-  }, [width, height])
-
   if (status == "failed") {
     return <>{error}</>
   }
 
   return (
     <>
-      <AppShell
-        header={{height: 60}}
-        navbar={{
-          width: navBarWidth,
-          breakpoint: 0
-        }}
-      >
-        <AppShell.Header>
-          <Header />
-        </AppShell.Header>
-
-        <AppShell.Navbar>
+      <div className="header">
+        <Header />
+      </div>
+      <div className="container">
+        <div className="nav-sidebar">
           <NavBar />
-        </AppShell.Navbar>
-
-        <AppShell.Main ref={ref}>
+        </div>
+        <main className="main-content">
           <Outlet />
-          <Uploader />
-        </AppShell.Main>
-      </AppShell>
+        </main>
+        <Uploader />
+      </div>
     </>
   )
 }

@@ -2,6 +2,31 @@
   margin: 0;
   padding: 0;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Container for sidebar and main content - fills remaining space */
+.container {
+  display: flex;
+  flex: 1; /* Takes all remaining space after header */
+  overflow: hidden; /* Prevents container from growing beyond viewport */
+}
+
+/* Vertical navigation sidebar */
+.nav-sidebar {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow-y: auto;
+}
+
+.nav-sidebar .navbar {
+  flex-shrink: 0; /* Sidebar keeps fixed width */
+  padding: 2rem 0;
+  overflow-y: auto; /* Allow scrolling if nav items are too many */
 }
 
 .mantine-Modal-inner {
@@ -9,8 +34,21 @@
   right: 0;
 }
 
-main {
+main.main-content {
   margin: 0.5rem;
+  flex: 1; /* Takes all remaining space after sidebar */
+  overflow-y: auto; /* Enable vertical scrolling for content only */
+  display: flex;
+  flex-direction: row;
+}
+
+.main-panel,
+.secondary-panel {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto; /* Each panel scrolls independently when needed */
+  display: flex;
+  flex-direction: column;
 }
 
 .borderline-top {

@@ -28,7 +28,6 @@ import {
 import {
   currentDocVerUpdated,
   currentNodeChanged,
-  selectContentHeight,
   selectThumbnailsPanelOpen
 } from "@/features/ui/uiSlice"
 import {selectCurrentUser} from "@/slices/currentUser"
@@ -53,7 +52,6 @@ export default function Viewer() {
   const mode: PanelMode = useContext(PanelContext)
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const height = useAppSelector(s => selectContentHeight(s, mode))
   /* generate first batch of previews: for pages and for their thumbnails */
   const allPreviewsAreAvailable = useGeneratePreviews({
     docVer: docVer,
@@ -194,7 +192,7 @@ export default function Viewer() {
         <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
         <DocumentDetailsToggle />
       </Group>
-      <Flex className={classes.inner} style={{height: `${height}px`}}>
+      <Flex className={classes.inner}>
         {thumbnailsIsOpen && <ThumbnailList />}
         <ThumbnailsToggle />
         <PageList />

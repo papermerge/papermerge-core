@@ -2,12 +2,10 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {
   selectOneSelectedSharedNode,
   selectSelectedNodeIds,
-  selectSelectedNodesCount,
-  updateActionPanel
+  selectSelectedNodesCount
 } from "@/features/ui/uiSlice"
 import {Group} from "@mantine/core"
-import {useViewportSize} from "@mantine/hooks"
-import {useContext, useEffect, useRef, useState} from "react"
+import {useContext, useRef, useState} from "react"
 
 import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
 import type {PanelMode} from "@/types"
@@ -29,7 +27,6 @@ import UploadButton from "./UploadButton"
 
 export default function FolderNodeActions() {
   const [filterText, selectFilterText] = useState<string>()
-  const {height, width} = useViewportSize()
   const dispatch = useAppDispatch()
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
@@ -50,19 +47,6 @@ export default function FolderNodeActions() {
     selectFilterText(value)
     dispatch(filterUpdated({mode, filter: value}))
   }
-
-  useEffect(() => {
-    if (ref?.current) {
-      let value = 0
-      const styles = window.getComputedStyle(ref?.current)
-      value = parseInt(styles.marginTop)
-      value += parseInt(styles.marginBottom)
-      value += parseInt(styles.paddingBottom)
-      value += parseInt(styles.paddingTop)
-      value += parseInt(styles.height)
-      dispatch(updateActionPanel({mode, value}))
-    }
-  }, [width, height])
 
   return (
     <Group ref={ref} justify="space-between">

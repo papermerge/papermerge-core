@@ -11,7 +11,6 @@ import {
   currentNodeChanged,
   searchResultsLastPageSizeUpdated,
   selectOpenResultItemInOtherPanel,
-  selectSearchContentHeight,
   selectSearchLastPageSize,
   selectSearchQuery,
   viewerCurrentPageUpdated
@@ -29,7 +28,6 @@ export default function SearchResults() {
   const [nodeIDs, setNodeIDs] = useState<string[] | null>(null)
 
   const dispatch = useAppDispatch()
-  const height = useAppSelector(selectSearchContentHeight)
   const query = useAppSelector(selectSearchQuery)
   const openItemInOtherPanel = useAppSelector(selectOpenResultItemInOtherPanel)
   const {data, isLoading} = useGetPaginatedSearchResultsQuery({
@@ -108,11 +106,7 @@ export default function SearchResults() {
   return (
     <div>
       <ActionButtons />
-      <Stack
-        className={classes.content}
-        justify={"space-between"}
-        style={{height: `${height}px`}}
-      >
+      <Stack className={classes.content} justify={"space-between"}>
         <SearchResultItems items={data.items} onClick={onClick} />
 
         <Pagination

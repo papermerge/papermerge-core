@@ -9,12 +9,10 @@ import {
   MenuItem,
   Skeleton
 } from "@mantine/core"
-import {randomId, useViewportSize} from "@mantine/hooks"
+import {randomId} from "@mantine/hooks"
 import {IconChevronDown, IconHome, IconInbox} from "@tabler/icons-react"
-import {useContext, useEffect, useRef} from "react"
+import {useContext, useRef} from "react"
 import classes from "./Breadcrumbs.module.css"
-
-import {updateBreadcrumb} from "@/features/ui/uiSlice"
 
 import type {NType, PanelMode, UserDetails} from "@/types"
 
@@ -41,31 +39,15 @@ export default function BreadcrumbsComponent({
   breadcrumb,
   isFetching
 }: Args) {
-  const dispatch = useAppDispatch()
-  const {height, width} = useViewportSize()
   const ref = useRef<HTMLDivElement>(null)
-  const mode: PanelMode = useContext(PanelContext)
 
   const onRootElementClick = (n: NType) => {
     onClick(n)
   }
 
-  useEffect(() => {
-    if (ref?.current) {
-      let value = 0
-      const styles = window.getComputedStyle(ref?.current)
-      value = parseInt(styles.marginTop)
-      value += parseInt(styles.marginBottom)
-      value += parseInt(styles.paddingBottom)
-      value += parseInt(styles.paddingTop)
-      value += parseInt(styles.height)
-      dispatch(updateBreadcrumb({mode, value}))
-    }
-  }, [width, height])
-
   if (!breadcrumb) {
     return (
-      <Skeleton ref={ref} width={"25%"} my="md">
+      <Skeleton width={"25%"} my="md">
         <Breadcrumbs>{["one", "two"]}</Breadcrumbs>
       </Skeleton>
     )

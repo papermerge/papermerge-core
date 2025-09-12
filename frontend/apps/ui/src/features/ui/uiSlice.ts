@@ -131,14 +131,6 @@ interface PanelSizes {
   breadcrumbHeight: number
 }
 
-interface SizesState {
-  outletTopMarginAndPadding: number
-  windowInnerHeight: number
-  main: PanelSizes
-  secondary?: PanelSizes
-  search?: SearchPanelSizes
-}
-
 interface CurrentNodeArgs {
   id: string
   ctype: CType
@@ -254,7 +246,6 @@ interface RolePanelDetails {
 export interface UIState {
   uploader: UploaderState
   navbar: NavBarState
-  sizes: SizesState
   search?: SearchState
   searchLastPageSize?: number
   dragndrop?: DragNDropState
@@ -328,14 +319,6 @@ const initialState: UIState = {
     collapsed: initial_collapse_value(),
     width: initial_width_value()
   },
-  sizes: {
-    outletTopMarginAndPadding: 0,
-    windowInnerHeight: window.innerHeight,
-    main: {
-      actionPanelHeight: 0,
-      breadcrumbHeight: 0
-    }
-  },
   mainViewerThumbnailsPanelOpen: mainThumbnailsPanelInitialState(),
   secondaryViewerThumbnailsPanelOpen: secondaryThumbnailsPanelInitialState(),
   mainViewerDocumentDetailsPanelOpen: mainDocumentDetailsPanelInitialState(),
@@ -400,58 +383,6 @@ const uiSlice = createSlice({
         state.navbar.width = COLLAPSED_WIDTH
         Cookies.set(NAVBAR_COLLAPSED_COOKIE, "true")
         Cookies.set(NAVBAR_WIDTH_COOKIE, `${COLLAPSED_WIDTH}`)
-      }
-    },
-    updateOutlet(state, action: PayloadAction<number>) {
-      state.sizes.windowInnerHeight = window.innerHeight
-      state.sizes.outletTopMarginAndPadding = action.payload
-    },
-    updateActionPanel(state, action: PayloadAction<DualArg>) {
-      const {value, mode} = action.payload
-
-      state.sizes.windowInnerHeight = window.innerHeight
-      if (mode == "main") {
-        // main panel
-        state.sizes.main.actionPanelHeight = value
-      } else if (mode == "secondary") {
-        // secondary panel
-        if (state.sizes.secondary) {
-          state.sizes.secondary.actionPanelHeight = value
-        } else {
-          state.sizes.secondary = {
-            breadcrumbHeight: 0,
-            actionPanelHeight: value
-          }
-        }
-      }
-    },
-    updateBreadcrumb(state, action: PayloadAction<DualArg>) {
-      const {value, mode} = action.payload
-
-      state.sizes.windowInnerHeight = window.innerHeight
-      if (mode == "main") {
-        // main panel
-        state.sizes.main.breadcrumbHeight = value
-      } else if (mode == "secondary") {
-        // secondary panel
-        if (state.sizes.secondary) {
-          state.sizes.secondary.breadcrumbHeight = value
-        } else {
-          state.sizes.secondary = {
-            breadcrumbHeight: value,
-            actionPanelHeight: 0
-          }
-        }
-      }
-    },
-    updateSearchActionPanel(state, action: PayloadAction<number>) {
-      state.sizes.windowInnerHeight = window.innerHeight
-      if (state.sizes.search) {
-        state.sizes.search.actionPanelHeight = action.payload
-      } else {
-        state.sizes.search = {
-          actionPanelHeight: action.payload
-        }
       }
     },
     searchResultsLastPageSizeUpdated(state, action: PayloadAction<number>) {
@@ -958,10 +889,6 @@ export const {
   closeUploader,
   uploaderFileItemUpdated,
   toggleNavBar,
-  updateOutlet,
-  updateActionPanel,
-  updateSearchActionPanel,
-  updateBreadcrumb,
   currentNodeChanged,
   currentSharedNodeChanged,
   currentSharedNodeRootChanged,
@@ -1016,41 +943,6 @@ export const selectFiles = (state: RootState): Array<FileItemType> =>
 export const selectNavBarCollapsed = (state: RootState) =>
   state.ui.navbar.collapsed
 export const selectNavBarWidth = (state: RootState) => state.ui.navbar.width
-
-export const selectContentHeight = (state: RootState, mode: PanelMode) => {
-  let height: number = state.ui.sizes.windowInnerHeight
-
-  height -= state.ui.sizes.outletTopMarginAndPadding
-
-  if (mode == "main") {
-    height -= state.ui.sizes.main.actionPanelHeight
-    height -= state.ui.sizes.main.breadcrumbHeight
-  } else if (mode == "secondary") {
-    if (state.ui.sizes.secondary) {
-      height -= state.ui.sizes.secondary.actionPanelHeight
-      height -= state.ui.sizes.secondary.breadcrumbHeight
-    }
-  }
-
-  /* Let there be a small margin at the bottom of the viewport */
-  height -= SMALL_BOTTOM_MARGIN
-  return height
-}
-
-export const selectSearchContentHeight = (state: RootState) => {
-  let height: number = state.ui.sizes.windowInnerHeight
-
-  height -= state.ui.sizes.outletTopMarginAndPadding
-
-  if (state.ui.sizes.search) {
-    height -= state.ui.sizes.search.actionPanelHeight
-  }
-
-  /* Let there be a small margin at the bottom of the viewport */
-  height -= SMALL_BOTTOM_MARGIN
-
-  return height
-}
 
 export const selectCurrentNode = (
   state: RootState,

@@ -7,7 +7,6 @@ import {useNavigate} from "react-router-dom"
 import {
   currentDocVerUpdated,
   currentSharedNodeRootChanged,
-  selectContentHeight,
   selectCurrentSharedNodeID,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
@@ -42,7 +41,7 @@ export default function SharedViewer() {
   const mode: PanelMode = useContext(PanelContext)
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const height = useAppSelector(s => selectContentHeight(s, mode))
+
   /* generate first batch of previews: for pages and for their thumbnails */
   const allPreviewsAreAvailable = useGeneratePreviews({
     docVer: docVer,
@@ -103,7 +102,7 @@ export default function SharedViewer() {
         <SharedBreadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
         <DocumentDetailsToggle />
       </Group>
-      <Flex ref={ref} className={classes.inner} style={{height: `${height}px`}}>
+      <Flex ref={ref} className={classes.inner}>
         <ThumbnailList />
         <ThumbnailsToggle />
         <PageList />

@@ -30,7 +30,11 @@ const PANEL_COMPONENTS_SAFE = {
   roleDetails: RoleDetails
 } satisfies Record<PanelComponent, React.ComponentType>
 
-export default function SinglePanel() {
+interface Args {
+  className: string
+}
+
+export default function SinglePanel({className}: Args) {
   const mode: PanelMode = useContext(PanelContext)
   const panelComponent = useAppSelector(s => selectPanelComponent(s, mode))
 
@@ -39,5 +43,9 @@ export default function SinglePanel() {
   }
 
   const Component = PANEL_COMPONENTS_SAFE[panelComponent]
-  return <Component />
+  return (
+    <div className={className}>
+      <Component />
+    </div>
+  )
 }

@@ -26,7 +26,6 @@ import {
   currentDocVerUpdated,
   selectCommanderSortMenuColumn,
   selectCommanderSortMenuDir,
-  selectContentHeight,
   selectLastPageSize
 } from "@/features/ui/uiSlice"
 import classes from "./Commander.module.scss"
@@ -38,7 +37,6 @@ import FolderNodeActions from "./FolderNodeActions"
 
 export default function SharedCommander() {
   const mode: PanelMode = useContext(PanelContext)
-  const height = useAppSelector(s => selectContentHeight(s, mode))
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
@@ -167,11 +165,7 @@ export default function SharedCommander() {
           onClick={onClick}
           isFetching={isFetching}
         />
-        <Stack
-          className={classes.content}
-          justify={"space-between"}
-          style={{height: `${height}px`}}
-        >
+        <Stack className={classes.content} justify={"space-between"}>
           {commanderContent}
         </Stack>
       </Box>

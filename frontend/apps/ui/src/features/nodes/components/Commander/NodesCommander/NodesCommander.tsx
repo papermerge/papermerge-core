@@ -39,7 +39,6 @@ import {
   currentDocVerUpdated,
   selectCommanderSortMenuColumn,
   selectCommanderSortMenuDir,
-  selectContentHeight,
   selectDraggedNodes,
   selectDraggedNodesSourceFolderID,
   selectDraggedPages,
@@ -81,7 +80,6 @@ export default function Commander() {
     useDisclosure(false)
   const [dragOver, setDragOver] = useState<boolean>(false)
   const mode: PanelMode = useContext(PanelContext)
-  const height = useAppSelector(s => selectContentHeight(s, mode))
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
@@ -301,11 +299,7 @@ export default function Commander() {
           onClick={onClick}
           isFetching={isFetching}
         />
-        <Stack
-          className={classes.content}
-          justify={"space-between"}
-          style={{height: `${height}px`}}
-        >
+        <Stack className={classes.content} justify={"space-between"}>
           {commanderContent}
         </Stack>
       </Box>

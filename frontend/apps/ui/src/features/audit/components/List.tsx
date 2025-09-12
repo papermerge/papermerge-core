@@ -1,6 +1,5 @@
 import useAuditLogTable from "@/features/audit/hooks/useAuditLogTable"
-import {useDynamicHeight} from "@/hooks/useDynamicHeight"
-import {Container, Group, ScrollArea, Stack} from "@mantine/core"
+import {Container, Group, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
 import {useMemo, useRef} from "react"
 import {useTranslation} from "react-i18next"
@@ -42,8 +41,6 @@ export default function AuditLogsList() {
       return totalWidth + minWidth
     }, 0)
   }, [visibleColumns])
-
-  const remainingHeight = useDynamicHeight([actionButtonsRef])
 
   const handleSortChange = (value: SortState) => {
     dispatch(auditLogSortingUpdated({mode, value}))
@@ -100,24 +97,22 @@ export default function AuditLogsList() {
         <Search />
         <ColumnSelector />
       </Group>
-      <ScrollArea mt={"md"} h={remainingHeight} type="auto">
-        <DataTable
-          data={data?.items || []}
-          columns={visibleColumns}
-          sorting={{
-            column: queryParams.sort_by,
-            direction: queryParams.sort_direction || null
-          }}
-          onSortChange={handleSortChange}
-          loading={isLoading || isFetching}
-          emptyMessage={
-            t?.("auditLog.noAuditLogsFound") || "No audit logs found"
-          }
-          style={{minWidth: `${calculateMinTableWidth}px`}}
-          onRowClick={onTableRowClick}
-          highlightRowID={auditLogDetailsID}
-        />
-      </ScrollArea>
+
+      <DataTable
+        data={data?.items || []}
+        columns={visibleColumns}
+        sorting={{
+          column: queryParams.sort_by,
+          direction: queryParams.sort_direction || null
+        }}
+        onSortChange={handleSortChange}
+        loading={isLoading || isFetching}
+        emptyMessage={t?.("auditLog.noAuditLogsFound") || "No audit logs found"}
+        style={{minWidth: `${calculateMinTableWidth}px`}}
+        onRowClick={onTableRowClick}
+        highlightRowID={auditLogDetailsID}
+      />
+
       <TablePagination
         currentPage={data?.page_number || 1}
         totalPages={data?.num_pages || 0}

@@ -27,8 +27,8 @@ export default function AuditLogDetailsContainer() {
   }
 
   return (
-    <Paper p="md" withBorder>
-      <Stack>
+    <Paper p="md" withBorder style={{height: "100%"}}>
+      <Stack style={{height: "100%"}}>
         <Group justify="space-between">
           <AuditLogDetailsBreadcrumb t={t} auditLogID={data.id} mode={mode} />
           <CloseSecondaryPanel

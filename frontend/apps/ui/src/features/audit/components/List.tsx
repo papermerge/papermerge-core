@@ -1,7 +1,6 @@
 import useAuditLogTable from "@/features/audit/hooks/useAuditLogTable"
 import {Container, Group, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
-import {useMemo, useRef} from "react"
 import {useTranslation} from "react-i18next"
 import type {AuditLogItem} from "../types"
 import Search from "./Search"
@@ -27,20 +26,12 @@ export default function AuditLogsList() {
   const navigate = useNavigate()
   const {isError, data, queryParams, error, isLoading, isFetching} =
     useAuditLogTable()
-  const actionButtonsRef = useRef<HTMLDivElement>(null)
+
   const auditLogDetailsID = useAppSelector(s =>
     selectAuditLogDetailsID(s, "secondary")
   )
 
   const visibleColumns = useVisibleColumns(auditLogColumns(t))
-
-  const calculateMinTableWidth = useMemo(() => {
-    return visibleColumns.reduce((totalWidth, column) => {
-      // Assuming your column definition has a minWidth property
-      const minWidth = column.minWidth || 150 // fallback to 150px if not defined
-      return totalWidth + minWidth
-    }, 0)
-  }, [visibleColumns])
 
   const handleSortChange = (value: SortState) => {
     dispatch(auditLogSortingUpdated({mode, value}))
@@ -92,8 +83,8 @@ export default function AuditLogsList() {
   }
 
   return (
-    <Stack gap="xs">
-      <Group ref={actionButtonsRef} justify={"end"} align="center">
+    <Stack gap="xs" style={{height: "100%"}}>
+      <Group justify={"end"} align="center">
         <Search />
         <ColumnSelector />
       </Group>
@@ -108,7 +99,6 @@ export default function AuditLogsList() {
         onSortChange={handleSortChange}
         loading={isLoading || isFetching}
         emptyMessage={t?.("auditLog.noAuditLogsFound") || "No audit logs found"}
-        style={{minWidth: `${calculateMinTableWidth}px`}}
         onRowClick={onTableRowClick}
         highlightRowID={auditLogDetailsID}
       />

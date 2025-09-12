@@ -22,7 +22,6 @@ interface Args<T> {
   onSortChange?: (sort: SortState) => void
   loading?: boolean
   emptyMessage?: string
-  style?: React.CSSProperties
   onRowClick?: (row: T, otherPanel: boolean) => void
   //the ID of the row to highlight
   highlightRowID?: string
@@ -40,7 +39,6 @@ export default function DataTable<T>({
   onSortChange,
   loading = false,
   emptyMessage = "No data available",
-  style,
   onRowClick,
   highlightRowID,
   withCheckbox = false,
@@ -117,9 +115,27 @@ export default function DataTable<T>({
   }
 
   return (
-    <Box pos="relative">
+    <Box
+      style={{
+        height: "100%",
+        overflow: "hidden",
+        overflowX: "auto",
+        overflowY: "hidden"
+      }}
+    >
       <LoadingOverlay visible={loading} />
-      <Table striped highlightOnHover withTableBorder style={style}>
+      <Table
+        striped
+        highlightOnHover
+        withTableBorder
+        style={{
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          width: "max-content",
+          minWidth: "100%"
+        }}
+      >
         <TableHeader
           visibleColumns={visibleColumns}
           sorting={sorting}
@@ -235,6 +251,9 @@ const TableRow = <T,>({
   const isSelected = selectedRows.has(rowId)
 
   const rowStyle = {
+    display: "flex",
+    width: "100%",
+    justifyContent: "space-between",
     backgroundColor: highlighted ? highlightColors.backgroundColor : undefined,
     borderLeft: highlighted
       ? `3px solid ${highlightColors.borderColor}`
@@ -344,7 +363,14 @@ function TableBody<T>({
     />
   ))
 
-  return <Table.Tbody>{rows}</Table.Tbody>
+  return (
+    <Table.Tbody
+      className="scrollable-xy"
+      style={{height: "100%", display: "flex", flexDirection: "column"}}
+    >
+      {rows}
+    </Table.Tbody>
+  )
 }
 
 interface LoadingTableArgs<T> {
@@ -365,7 +391,10 @@ const LoadingTable = <T,>({
   ))
 
   const bodyColumns = Array.from({length: 5}).map((_, index) => (
-    <Table.Tr key={index}>
+    <Table.Tr
+      key={index}
+      style={{display: "flex", width: "100%", justifyContent: "space-between"}}
+    >
       {withCheckbox && (
         <Table.Td>
           <Skeleton height={16} width={16} />
@@ -380,11 +409,17 @@ const LoadingTable = <T,>({
   ))
 
   return (
-    <Box pos="relative" mih={400}>
+    <Box>
       <LoadingOverlay visible={loading} />
       <Table>
         <Table.Thead>
-          <Table.Tr>
+          <Table.Tr
+            style={{
+              display: "flex",
+              width: "100%",
+              justifyContent: "space-between"
+            }}
+          >
             {withCheckbox && (
               <Table.Th style={{width: 40, minWidth: 40}}>
                 <Skeleton height={20} width={16} />
@@ -393,7 +428,7 @@ const LoadingTable = <T,>({
             {headerColumns}
           </Table.Tr>
         </Table.Thead>
-        <Table.Tbody>{bodyColumns}</Table.Tbody>
+        <Table.Tbody className="scrollable-xy">{bodyColumns}</Table.Tbody>
       </Table>
     </Box>
   )
@@ -488,7 +523,13 @@ const TableHeader = function TableHeader<T>({
 
   return (
     <Table.Thead>
-      <Table.Tr>
+      <Table.Tr
+        style={{
+          display: "flex",
+          width: "100%",
+          justifyContent: "space-between"
+        }}
+      >
         {withCheckbox && (
           <Table.Th style={{width: 40, minWidth: 40}}>
             <Checkbox

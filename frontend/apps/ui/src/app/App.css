@@ -46,9 +46,20 @@ main.main-content {
 .secondary-panel {
   flex: 1;
   padding: 1rem;
-  overflow-y: auto; /* Each panel scrolls independently when needed */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.scrollable-y {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.scrollable-xy {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
 }
 
 .borderline-top {

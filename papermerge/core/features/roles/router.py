@@ -2,7 +2,8 @@ import logging
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Security, Query
+from fastapi import APIRouter, Depends, HTTPException, Security, Query, Path, \
+    Body
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -289,19 +290,73 @@ async def restore_role(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.patch("/{role_id}", status_code=200, response_model=schema.RoleDetails)
+@router.patch(
+    "/{role_id}",
+    status_code=200,
+    response_model=schema.RoleDetails,
+    responses={
+        400: {
+            "description": "Bad Request - Invalid permissions or request data",
+            "content": {"application/json": {}}
+        },
+        401: {
+            "description": "Unauthorized - Authentication required",
+            "content": {
+                "application/json": {}
+            }
+        },
+        403: {
+            "description": "Forbidden - Insufficient permissions",
+            "content": {"application/json": {}}
+        },
+        404: {
+            "description": "Not Found - Role does not exist",
+            "content": {"application/json": {}}
+        },
+        409: {
+            "description": "Conflict - Role name already exists",
+            "content": {"application/json": {}}
+        },
+        422: {
+            "description": "Unprocessable Entity - Request validation failed",
+            "content": {
+                "application/json": {}
+            }
+        }
+    }
+)
 @utils.docstring_parameter(scope=scopes.ROLE_UPDATE)
 async def update_role(
-    role_id: uuid.UUID,
-    attrs: schema.UpdateRole,
+    role_id: Annotated[
+        uuid.UUID,
+        Path(description="The unique identifier of the role to update")
+    ],
+    attrs: Annotated[
+        schema.UpdateRole,
+        Body(description="Role update data containing name and permissions")
+    ],
     cur_user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.ROLE_UPDATE])
+        schema.User,
+        Security(
+            get_current_user,
+            scopes=[scopes.ROLE_UPDATE]
+        )
     ],
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.RoleDetails:
-    """Updates role
+    """Updates an existing role with new name and permissions.
 
-    Required scope: `{scope}`
+    This endpoint allows updating a role's name and associated permissions.
+    The role is identified by its UUID and will be updated with the provided
+    attributes. All changes are audited and tracked.
+
+    **Required scope:** `{scope}`
+
+    **Validation Rules:**
+    - Role name cannot be empty or whitespace-only
+    - Role name must be unique among active (non-deleted) roles
+    - All specified permission scopes must exist in the system
+    - Role must exist and not be soft-deleted
     """
     try:
         async with AsyncAuditContext(

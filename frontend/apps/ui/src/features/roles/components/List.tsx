@@ -75,7 +75,7 @@ export default function RolesList() {
   }
 
   return (
-    <Stack>
+    <Stack style={{height: "100%"}}>
       <Group w={"100%"}>
         <ActionButtons /> {isFetching && <Loader size={"sm"} />}
       </Group>

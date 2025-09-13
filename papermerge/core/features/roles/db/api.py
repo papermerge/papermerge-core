@@ -16,18 +16,57 @@ logger = logging.getLogger(__name__)
 
 
 async def get_role(db_session: AsyncSession, role_id: uuid.UUID) -> schema.RoleDetails:
+    # Create aliases for the user tables to avoid conflicts
+    created_by_user = aliased(orm.User)
+    updated_by_user = aliased(orm.User)
 
     stmt = (
-        select(orm.Role)
+        select(
+            orm.Role,
+            created_by_user.id.label('created_by_id'),
+            created_by_user.username.label('created_by_username'),
+            updated_by_user.id.label('updated_by_id'),
+            updated_by_user.username.label('updated_by_username')
+        )
         .options(selectinload(orm.Role.permissions))
+        .outerjoin(created_by_user, orm.Role.created_by == created_by_user.id)
+        .outerjoin(updated_by_user, orm.Role.updated_by == updated_by_user.id)
         .where(orm.Role.id == role_id)
     )
-    db_item = (await db_session.scalars(stmt)).unique().one()
+
+    result = (await db_session.execute(stmt)).one()
+    db_item = result[0]  # The Role object
+
+    # Set scopes as before
     db_item.scopes = sorted([p.codename for p in db_item.permissions])
 
-    result = schema.RoleDetails.model_validate(db_item)
+    created_by = None
+    if result.created_by_id:
+        created_by = schema.ByUser(
+            id=result.created_by_id,
+            username=result.created_by_username
+        )
 
-    return result
+    updated_by = None
+    if result.updated_by_id:
+        updated_by = schema.ByUser(
+            id=result.updated_by_id,
+            username=result.updated_by_username
+        )
+
+    # Create the response manually to include the ByUser data
+    role_details = schema.RoleDetails(
+        id=db_item.id,
+        name=db_item.name,
+        scopes=db_item.scopes,
+        created_at=db_item.created_at,
+        created_by=created_by,
+        updated_at=db_item.updated_at,
+        updated_by=updated_by
+    )
+
+    return role_details
+
 
 async def get_roles(
     db_session: AsyncSession,
@@ -277,24 +316,50 @@ async def create_role(
 
 
 async def update_role(
-    db_session: AsyncSession, role_id: uuid.UUID, attrs: schema.UpdateRole
+    db_session: AsyncSession,
+    role_id: uuid.UUID,
+    attrs: schema.UpdateRole
 ) -> schema.RoleDetails:
+    # Validate permissions exist
     stmt = select(orm.Permission).where(orm.Permission.codename.in_(attrs.scopes))
     perms = (await db_session.execute(stmt)).scalars().all()
 
-    stmt = select(orm.Role).options(selectinload(orm.Role.permissions)).where(orm.Role.id == role_id)
-    role = (await db_session.execute(stmt, params={"id": role_id})).scalars().one()
-    db_session.add_all([role, *perms])
+    # Check if all requested permissions were found
+    found_codenames = {p.codename for p in perms}
+    requested_codenames = set(attrs.scopes)
+    if missing := requested_codenames - found_codenames:
+        raise ValueError(f"Permissions not found: {missing}")
+
+    # Get role with permissions
+    stmt = select(orm.Role).options(
+        selectinload(orm.Role.permissions)
+    ).where(
+        orm.Role.id == role_id
+    )
+    role = (await db_session.execute(stmt)).scalars().one_or_none()
+
+    if not role:
+        raise ValueError(f"Role with id {role_id} not found")
+
+    # Update role
     role.name = attrs.name
-    role.permissions = perms
+    role.permissions = perms  # type: ignore
 
-    await db_session.commit()
+    try:
+        await db_session.commit()
+    except IntegrityError as e:
+        await db_session.rollback()
+        # Handle unique constraint violation on role name
+        if "idx_roles_name_active_unique" in str(e):
+            raise ValueError(f"Role name '{attrs.name}' already exists")
+        raise
 
-    result = schema.RoleDetails(
-        id=role.id, name=role.name, scopes=[p.codename for p in perms]
+    return schema.RoleDetails(
+        id=role.id,
+        name=role.name,  # type: ignore
+        scopes=[p.codename for p in role.permissions]  # Use role.permissions for consistency
     )
 
-    return result
 
 
 async def get_perms(db_session: AsyncSession) -> list[schema.Permission]:

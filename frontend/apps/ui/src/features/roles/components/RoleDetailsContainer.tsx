@@ -7,16 +7,18 @@ import {server2clientPerms} from "@/features/roles/utils"
 import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
 import {Breadcrumbs, Group, Loader, Paper, Stack} from "@mantine/core"
-import {RoleForm} from "kommon"
+import {CopyableTextInput, RoleForm} from "kommon"
 import {Link, useNavigation} from "react-router-dom"
 import {DeleteRoleButton} from "./DeleteButton"
 import EditButton from "./EditButton"
 
 import type {RoleDetails} from "@/types"
+import {useTranslation} from "react-i18next"
 
 export default function RoleDetailsContainer() {
   const mode = usePanelMode()
   const dispatch = useAppDispatch()
+  const {t} = useTranslation()
   const roleID = useAppSelector(s => selectRoleDetailsID(s, mode))
   const {data, isLoading, error} = useGetRoleQuery(roleID || "", {
     skip: !roleID
@@ -43,14 +45,31 @@ export default function RoleDetailsContainer() {
             />
           </Group>
         </Group>
-
-        <RoleForm
-          key={`${data.id}-${data?.scopes?.join(",")}`}
-          initialCheckedState={server2clientPerms(data.scopes)}
-          name={data.name}
-          isLoading={false}
-          readOnly={true}
-        />
+        <Stack style={{overflowY: "auto"}}>
+          <RoleForm
+            key={`${data.id}-${data?.scopes?.join(",")}`}
+            initialCheckedState={server2clientPerms(data.scopes)}
+            name={data.name}
+            isLoading={false}
+            readOnly={true}
+          />
+          <CopyableTextInput
+            value={data.updated_at}
+            label={t?.("updated_at", {defaultValue: "Updated at"})}
+          />
+          <CopyableTextInput
+            value={data.updated_by.username}
+            label={t?.("updated_by", {defaultValue: "Updated by"})}
+          />
+          <CopyableTextInput
+            value={data.created_at}
+            label={t?.("created_at", {defaultValue: "Created at"})}
+          />
+          <CopyableTextInput
+            value={data.created_by.username}
+            label={t?.("created_by", {defaultValue: "Created by"})}
+          />
+        </Stack>
       </Stack>
     </Paper>
   )

@@ -152,7 +152,7 @@ export default function RoleForm({
 
   return (
     <>
-      <Box pos="relative" style={{flex: 1, height: "100%"}}>
+      <Box pos="relative">
         <LoadingOverlay
           visible={isLoading}
           zIndex={1000}
@@ -172,7 +172,6 @@ export default function RoleForm({
           <Tree
             data={data}
             tree={tree}
-            className="scrollable-y"
             levelOffset={40}
             expandOnClick={false}
             style={{height: "100%"}}

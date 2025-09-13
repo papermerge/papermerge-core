@@ -6,7 +6,6 @@ import {
   Group,
   LoadingOverlay,
   RenderTreeNodePayload,
-  ScrollArea,
   Stack,
   TextInput,
   Tree,
@@ -34,8 +33,6 @@ interface Args {
   }
   onPermissionsChange?: (checkedPermissions: CheckedNodeStatus[]) => void
   onNameChange?: (value: string) => void
-  withScrollArea?: boolean
-  scrollAreaHeight?: number
 }
 
 // Define permission dependencies type
@@ -50,9 +47,7 @@ export default function RoleForm({
   name,
   initialCheckedState,
   isLoading,
-  readOnly = false,
-  withScrollArea = true,
-  scrollAreaHeight = 480
+  readOnly = false
 }: Args) {
   const data = useMemo(() => getPermissionTree(txt?.permissionTree), [])
 
@@ -157,13 +152,13 @@ export default function RoleForm({
 
   return (
     <>
-      <Box pos="relative" style={{flex: 1, minHeight: 0}}>
+      <Box pos="relative" style={{flex: 1, height: "100%"}}>
         <LoadingOverlay
           visible={isLoading}
           zIndex={1000}
           overlayProps={{radius: "sm", blur: 2}}
         />
-        <Stack>
+        <Stack style={{height: "100%"}}>
           <TextInput
             value={name}
             onChange={onLocalNameChange}
@@ -174,26 +169,15 @@ export default function RoleForm({
             <CollapseToggle txt={txt?.collapseButton} tree={tree} />
             {!readOnly && <CheckAllToggle txt={txt?.checkButton} tree={tree} />}
           </Group>
-          {!withScrollArea && (
-            <Tree
-              data={data}
-              tree={tree}
-              levelOffset={40}
-              expandOnClick={false}
-              renderNode={renderTreeNode}
-            />
-          )}
-          {withScrollArea && (
-            <ScrollArea h={scrollAreaHeight}>
-              <Tree
-                data={data}
-                tree={tree}
-                levelOffset={40}
-                expandOnClick={false}
-                renderNode={renderTreeNode}
-              />
-            </ScrollArea>
-          )}
+          <Tree
+            data={data}
+            tree={tree}
+            className="scrollable-y"
+            levelOffset={40}
+            expandOnClick={false}
+            style={{height: "100%"}}
+            renderNode={renderTreeNode}
+          />
         </Stack>
       </Box>
     </>

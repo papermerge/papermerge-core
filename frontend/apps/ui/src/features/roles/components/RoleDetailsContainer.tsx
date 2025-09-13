@@ -31,8 +31,8 @@ export default function RoleDetailsContainer() {
   }
 
   return (
-    <Paper p="md" withBorder>
-      <Stack>
+    <Paper p="md" withBorder style={{height: "100%"}}>
+      <Stack style={{height: "100%", overflow: "hidden"}}>
         <Group justify="space-between" style={{flexShrink: 0}}>
           <Path role={data} mode={mode} />
           <Group>

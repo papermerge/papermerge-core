@@ -16,18 +16,57 @@ logger = logging.getLogger(__name__)
 
 
 async def get_role(db_session: AsyncSession, role_id: uuid.UUID) -> schema.RoleDetails:
+    # Create aliases for the user tables to avoid conflicts
+    created_by_user = aliased(orm.User)
+    updated_by_user = aliased(orm.User)
 
     stmt = (
-        select(orm.Role)
+        select(
+            orm.Role,
+            created_by_user.id.label('created_by_id'),
+            created_by_user.username.label('created_by_username'),
+            updated_by_user.id.label('updated_by_id'),
+            updated_by_user.username.label('updated_by_username')
+        )
         .options(selectinload(orm.Role.permissions))
+        .outerjoin(created_by_user, orm.Role.created_by == created_by_user.id)
+        .outerjoin(updated_by_user, orm.Role.updated_by == updated_by_user.id)
         .where(orm.Role.id == role_id)
     )
-    db_item = (await db_session.scalars(stmt)).unique().one()
+
+    result = (await db_session.execute(stmt)).one()
+    db_item = result[0]  # The Role object
+
+    # Set scopes as before
     db_item.scopes = sorted([p.codename for p in db_item.permissions])
 
-    result = schema.RoleDetails.model_validate(db_item)
+    created_by = None
+    if result.created_by_id:
+        created_by = schema.ByUser(
+            id=result.created_by_id,
+            username=result.created_by_username
+        )
 
-    return result
+    updated_by = None
+    if result.updated_by_id:
+        updated_by = schema.ByUser(
+            id=result.updated_by_id,
+            username=result.updated_by_username
+        )
+
+    # Create the response manually to include the ByUser data
+    role_details = schema.RoleDetails(
+        id=db_item.id,
+        name=db_item.name,
+        scopes=db_item.scopes,
+        created_at=db_item.created_at,
+        created_by=created_by,
+        updated_at=db_item.updated_at,
+        updated_by=updated_by
+    )
+
+    return role_details
+
 
 async def get_roles(
     db_session: AsyncSession,

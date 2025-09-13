@@ -81,6 +81,10 @@ class RoleDetails(BaseModel):
     id: uuid.UUID
     name: str
     scopes: list[str]
+    created_at: datetime | None = None
+    created_by: ByUser | None = None
+    updated_at: datetime | None = None
+    updated_by: ByUser | None = None
 
     # Config
     model_config = ConfigDict(from_attributes=True)

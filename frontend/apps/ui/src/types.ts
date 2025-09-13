@@ -1,6 +1,11 @@
 import type {Group} from "@/types.d/groups"
 import {DocumentType} from "./features/document/types"
 
+export type ByUser = {
+  username: string
+  id: string
+}
+
 export type State<T> = {
   is_loading: boolean
   error: string | null
@@ -230,6 +235,10 @@ export type RoleDetails = {
   id: string
   name: string
   scopes: Array<string>
+  created_at: string
+  created_by: ByUser
+  updated_at: string
+  updated_by: ByUser
 }
 
 export type RoleUpdate = Pick<Role, "id" | "name" | "scopes">

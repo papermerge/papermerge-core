@@ -288,7 +288,8 @@ async def restore_role(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.patch("/{role_id}", status_code=200, response_model=schema.Role)
+
+@router.patch("/{role_id}", status_code=200, response_model=schema.RoleDetails)
 @utils.docstring_parameter(scope=scopes.ROLE_UPDATE)
 async def update_role(
     role_id: uuid.UUID,
@@ -308,10 +309,18 @@ async def update_role(
             user_id=cur_user.id,
             username=cur_user.username
         ):
-            role: schema.RoleDetails = await dbapi.update_role(
+            role = await dbapi.update_role(
                 db_session, role_id=role_id, attrs=attrs
             )
-    except NoResultFound:
-        raise HTTPException(status_code=404, detail="Role not found")
+    except ValueError as e:
+        error_msg = str(e)
+        if "not found" in error_msg:
+            raise HTTPException(status_code=404, detail="Role not found")
+        elif "already exists" in error_msg:
+            raise HTTPException(status_code=409, detail=error_msg)
+        elif "Permissions not found" in error_msg:
+            raise HTTPException(status_code=400, detail=error_msg)
+        else:
+            raise HTTPException(status_code=400, detail="Invalid request")
 
     return role

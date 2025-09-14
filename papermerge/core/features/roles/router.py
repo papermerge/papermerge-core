@@ -44,7 +44,7 @@ async def get_roles_without_pagination(
 
 @router.get("/scopes/all")
 @utils.docstring_parameter(scope=scopes.ROLE_SELECT)
-async def get_roles_without_pagination(
+async def get_scopes_all(
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.ROLE_SELECT])
     ],

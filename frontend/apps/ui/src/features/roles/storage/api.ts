@@ -105,5 +105,13 @@ function buildQueryString(params: RoleQueryParams = {}): string {
     searchParams.append("filter_free_text", params.filter_free_text)
   }
 
+  if (params.filter_include_scopes) {
+    searchParams.append("filter_include_scopes", params.filter_include_scopes)
+  }
+
+  if (params.filter_exclude_scopes) {
+    searchParams.append("filter_exclude_scopes", params.filter_exclude_scopes)
+  }
+
   return searchParams.toString()
 }

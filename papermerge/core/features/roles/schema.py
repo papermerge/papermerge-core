@@ -146,6 +146,16 @@ class RoleParams(BaseModel):
         description="Filter by free text"
     )
 
+    filter_include_scopes: Optional[str] = Query(
+        None,
+        description="Comma-separated list of scopes included in role"
+    )
+
+    filter_exclude_scopes: Optional[str] = Query(
+        None,
+        description="Comma-separated list of scopes excluded from role"
+    )
+
     def to_filters(self) -> Optional[Dict[str, Dict[str, Any]]]:
         filters = {}
 
@@ -172,5 +182,18 @@ class RoleParams(BaseModel):
                 "value": self.filter_free_text,
                 "operator": "free_text"
             }
+
+        if self.filter_include_scopes:
+            filters["include_scopes"] = {
+                "value": self.filter_include_scopes.split(","),
+                "operator": "in"
+            }
+
+        if self.filter_exclude_scopes:
+            filters["exclude_scopes"] = {
+                "value": self.filter_exclude_scopes.split(","),
+                "operator": "in"
+            }
+
 
         return filters if filters else None

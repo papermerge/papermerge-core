@@ -360,11 +360,11 @@
     "nextPage": "Nächste Seite"
   },
   "scopes": {
-    "node.create": "Ordner erstellen",
-    "node.view": "Ordner anzeigen",
-    "node.update": "Ordner bearbeiten",
-    "node.delete": "Ordner löschen",
-    "node.move": "Ordner verschieben",
+    "node.create": "Ordner und Dokumente erstellen",
+    "node.view": "Ordner und Dokumente anzeigen",
+    "node.update": "Ordner und Dokumente bearbeiten",
+    "node.delete": "Ordner und Dokumente löschen",
+    "node.move": "Ordner und Dokumente verschieben",
 
     "document.upload": "Dokumente hochladen",
     "document.download": "Dokumente herunterladen",

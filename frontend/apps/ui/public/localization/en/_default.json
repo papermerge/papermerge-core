@@ -360,11 +360,11 @@
     "nextPage": "Next page"
   },
   "scopes": {
-    "node.create": "Create Nodes",
-    "node.view": "View Nodes",
-    "node.update": "Update Nodes",
-    "node.delete": "Delete Nodes",
-    "node.move": "Move Nodes",
+    "node.create": "Create Folders",
+    "node.view": "View Folders and Documents",
+    "node.update": "Update Folders and Documents",
+    "node.delete": "Delete Folders and Documents",
+    "node.move": "Move Folders and Documents",
 
     "document.upload": "Upload Documents",
     "document.download": "Download Documents",

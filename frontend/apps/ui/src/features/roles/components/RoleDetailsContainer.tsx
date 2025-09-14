@@ -1,13 +1,18 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
 import {useGetRoleQuery} from "@/features/roles/storage/api"
-import {selectRoleDetailsID} from "@/features/roles/storage/role"
+import {
+  selectRoleDetailsID,
+  selectRoleFormExpandedNodes,
+  setRoleFormExpandedNodes
+} from "@/features/roles/storage/role"
 import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
 import {server2clientPerms} from "@/features/roles/utils"
 import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
 import {Breadcrumbs, Group, Loader, Paper, Stack} from "@mantine/core"
 import {CopyableTextInput, RoleForm} from "kommon"
+import {useCallback} from "react"
 import {Link, useNavigation} from "react-router-dom"
 import {DeleteRoleButton} from "./DeleteButton"
 import EditButton from "./EditButton"
@@ -23,6 +28,21 @@ export default function RoleDetailsContainer() {
   const {data, isLoading, error} = useGetRoleQuery(roleID || "", {
     skip: !roleID
   })
+  const expandedNodes = useAppSelector(s =>
+    selectRoleFormExpandedNodes(s, mode)
+  )
+
+  const handleExpandedStateChange = useCallback(
+    (expandedNodes: string[]) => {
+      dispatch(
+        setRoleFormExpandedNodes({
+          mode,
+          expandedNodes
+        })
+      )
+    },
+    [dispatch, mode]
+  )
 
   if (isLoading) return <div>Loading...</div>
 
@@ -52,6 +72,8 @@ export default function RoleDetailsContainer() {
             name={data.name}
             isLoading={false}
             readOnly={true}
+            initialExpandedState={expandedNodes}
+            onExpandedStateChange={handleExpandedStateChange}
           />
           <CopyableTextInput
             value={data.updated_at}

@@ -13,7 +13,7 @@ import {
   UseTreeReturnType
 } from "@mantine/core"
 import {IconChevronDown} from "@tabler/icons-react"
-import {useCallback, useEffect, useMemo, useState} from "react"
+import {useCallback, useEffect, useMemo} from "react"
 import type {
   I18NCheckButton,
   I18NCollapseButton,
@@ -23,6 +23,7 @@ import type {
 interface Args {
   readOnly?: boolean
   initialCheckedState: string[]
+  initialExpandedState?: string[]
   name?: string
   isLoading: boolean
   txt?: {
@@ -33,6 +34,7 @@ interface Args {
   }
   onPermissionsChange?: (checkedPermissions: CheckedNodeStatus[]) => void
   onNameChange?: (value: string) => void
+  onExpandedStateChange?: (expandedNodes: string[]) => void
 }
 
 // Define permission dependencies type
@@ -44,8 +46,10 @@ export default function RoleForm({
   txt,
   onPermissionsChange,
   onNameChange,
+  onExpandedStateChange,
   name,
   initialCheckedState,
+  initialExpandedState = [],
   isLoading,
   readOnly = false
 }: Args) {
@@ -86,9 +90,31 @@ export default function RoleForm({
     [permissionDependencies]
   )
 
+  const initialExpandedStateObject = useMemo(() => {
+    return initialExpandedState.reduce(
+      (acc, nodeValue) => {
+        acc[nodeValue] = true
+        return acc
+      },
+      {} as Record<string, boolean>
+    )
+  }, [initialExpandedState])
+
   const tree = useTree({
-    initialCheckedState: initialCheckedState
+    initialCheckedState: initialCheckedState,
+    initialExpandedState: initialExpandedStateObject
   })
+
+  // Watch for expanded state changes and notify parent
+  useEffect(() => {
+    if (onExpandedStateChange) {
+      // Convert expandedState object to array of strings
+      const expandedNodes = Object.keys(tree.expandedState).filter(
+        key => tree.expandedState[key]
+      )
+      onExpandedStateChange(expandedNodes)
+    }
+  }, [tree.expandedState, onExpandedStateChange])
 
   useEffect(() => {
     if (onPermissionsChange) {
@@ -147,7 +173,7 @@ export default function RoleForm({
         </Group>
       )
     },
-    [readOnly, getAllDependencies] // Fixed: Added missing dependencies
+    [readOnly, getAllDependencies]
   )
 
   return (
@@ -363,29 +389,22 @@ interface CollapseToggleArgs {
 }
 
 function CollapseToggle({tree, txt}: CollapseToggleArgs) {
-  const [expanded, setExpanded] = useState<boolean>(false)
+  // Derive expanded state from tree instead of local state
+  const hasExpandedNodes = Object.values(tree.expandedState).some(Boolean)
 
   const handleClick = () => {
-    if (expanded) {
+    if (hasExpandedNodes) {
       tree.collapseAllNodes()
-      setExpanded(false)
     } else {
       tree.expandAllNodes()
-      setExpanded(true)
     }
-  }
-
-  if (expanded) {
-    return (
-      <Button variant="light" size={"xs"} onClick={handleClick}>
-        {txt?.collapseAll || "Collapse All"}
-      </Button>
-    )
   }
 
   return (
     <Button variant="light" size={"xs"} onClick={handleClick}>
-      {txt?.expandAll || "Expand All"}
+      {hasExpandedNodes
+        ? txt?.collapseAll || "Collapse All"
+        : txt?.expandAll || "Expand All"}
     </Button>
   )
 }
@@ -396,29 +415,22 @@ interface CheckAllToggleArgs {
 }
 
 function CheckAllToggle({tree, txt}: CheckAllToggleArgs) {
-  const [allChecked, setAllChecked] = useState<boolean>(false)
+  // Derive checked state from tree instead of local state
+  const hasCheckedNodes = tree.getCheckedNodes().length > 0
 
   const handleClick = () => {
-    if (allChecked) {
+    if (hasCheckedNodes) {
       tree.uncheckAllNodes()
-      setAllChecked(false)
     } else {
       tree.checkAllNodes()
-      setAllChecked(true)
     }
-  }
-
-  if (allChecked) {
-    return (
-      <Button variant="light" size={"xs"} onClick={handleClick}>
-        {txt?.uncheckAll || "Uncheck All"}
-      </Button>
-    )
   }
 
   return (
     <Button variant="light" size={"xs"} onClick={handleClick}>
-      {txt?.checkAll || "Check All"}
+      {hasCheckedNodes
+        ? txt?.uncheckAll || "Uncheck All"
+        : txt?.checkAll || "Check All"}
     </Button>
   )
 }

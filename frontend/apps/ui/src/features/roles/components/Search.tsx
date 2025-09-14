@@ -8,6 +8,8 @@ import {usePanelMode} from "@/hooks"
 import {SearchContainer} from "kommon"
 import {useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
+import InScopeFilter from "./InScopeFilter"
+import NotInScopeFilter from "./NotInScopeFilter"
 
 const DEBOUNCE_MS = 300 // 300 miliseconds
 
@@ -79,7 +81,8 @@ export default function Search() {
       t={t}
       placeholder={t?.("searchRoles") || "Search roles..."}
     >
-      {"Filters here"}
+      <InScopeFilter t={t} />
+      <NotInScopeFilter t={t} />
     </SearchContainer>
   )
 }

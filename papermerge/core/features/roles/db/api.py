@@ -595,6 +595,10 @@ def _build_filter_conditions(
                 condition = orm.Role.permissions.any(
                     orm.Permission.codename.in_(value)
                 )
+            elif operator == "not_in" and isinstance(value, list):
+                condition = ~orm.Role.permissions.any(
+                    orm.Permission.codename.in_(value)
+                )
 
         elif filter_name == "created_by_username":
             if operator == "in" and isinstance(value, list):

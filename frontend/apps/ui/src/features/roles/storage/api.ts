@@ -36,6 +36,10 @@ export const apiSliceWithRoles = apiSlice.injectEndpoints({
         ...result.map(({id}) => ({type: "Role", id}) as const)
       ]
     }),
+    getAllScopes: builder.query<string[], void>({
+      query: _users => "/roles/scopes/all",
+      providesTags: ["Scope"]
+    }),
     getRole: builder.query<RoleDetails, string>({
       query: roleID => `/roles/${roleID}`,
       providesTags: (_result, _error, arg) => [{type: "Role", id: arg}]
@@ -72,6 +76,7 @@ export const apiSliceWithRoles = apiSlice.injectEndpoints({
 export const {
   useGetPaginatedRolesQuery,
   useGetRolesQuery,
+  useGetAllScopesQuery,
   useGetRoleQuery,
   useEditRoleMutation,
   useDeleteRoleMutation,

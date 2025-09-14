@@ -287,7 +287,14 @@
   "users.delete.many.title": "Delete Users",
   "users.delete.many.description": "Are you sure you want to delete selected users?",
   "roles": {
-    "create_new_role": "New"
+    "create_new_role": "New",
+    "scopeFilter": {
+      "error": "Error loading scopes",
+      "noScopesFound": "No scopes found",
+      "pickValue": "Pick scopes",
+      "label.includes": "Includes these scopes",
+      "label.excludes": "Excludes these scopes"
+    }
   },
   "roles.name": "Roles",
   "roles.new.title": "New Role",
@@ -351,5 +358,76 @@
     "lastPage": "Last page",
     "previousPage": "Previous page",
     "nextPage": "Next page"
+  },
+  "scopes": {
+    "node.create": "Create Nodes",
+    "node.view": "View Nodes",
+    "node.update": "Update Nodes",
+    "node.delete": "Delete Nodes",
+    "node.move": "Move Nodes",
+
+    "document.upload": "Upload Documents",
+    "document.download": "Download Documents",
+    "document.download.all_versions": "Download All Document Versions",
+    "document.download.last_version_only": "Download Last Document Version Only",
+    "document.update.title": "Update Document Title",
+    "document.update.tags": "Update Document Tags",
+    "document.update.custom_fields": "Update Document Custom Fields",
+    "document.update.document_type": "Update Document Category",
+
+    "tag.select": "Select Tags",
+    "tag.create": "Create Tags",
+    "tag.view": "View Tags",
+    "tag.update": "Update Tags",
+    "tag.delete": "Delete Tags",
+
+    "user.create": "Create Users",
+    "user.select": "Select Users",
+    "user.view": "View Users",
+    "user.update": "Update Users",
+    "user.delete": "Delete Users",
+    "user.me": "Access Own User Profile",
+
+    "group.create": "Create Groups",
+    "group.select": "Select Groups",
+    "group.view": "View Groups",
+    "group.update": "Update Groups",
+    "group.delete": "Delete Groups",
+
+    "role.create": "Create Roles",
+    "role.view": "View Roles",
+    "role.select": "Select Roles",
+    "role.update": "Update Roles",
+    "role.delete": "Delete Roles",
+
+    "task.ocr": "Execute OCR Tasks",
+
+    "ocrlang.view": "View OCR Languages",
+
+    "page.view": "View Pages",
+    "page.update": "Update Pages",
+    "page.reorder": "Reorder Pages",
+    "page.rotate": "Rotate Pages",
+    "page.move": "Move Pages",
+    "page.extract": "Extract Pages",
+    "page.delete": "Delete Pages",
+
+    "custom_field.create": "Create Custom Fields",
+    "custom_field.view": "View Custom Fields",
+    "custom_field.update": "Update Custom Fields",
+    "custom_field.delete": "Delete Custom Fields",
+
+    "document_type.create": "Create Document Types",
+    "document_type.view": "View Document Types",
+    "document_type.select": "Select Document Types",
+    "document_type.update": "Update Document Types",
+    "document_type.delete": "Delete Document Types",
+
+    "shared_node.create": "Create Shared Nodes",
+    "shared_node.view": "View Shared Nodes",
+    "shared_node.update": "Update Shared Nodes",
+    "shared_node.delete": "Delete Shared Nodes",
+
+    "audit_log.view": "View Audit Logs"
   }
 }

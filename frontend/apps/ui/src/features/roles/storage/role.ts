@@ -21,9 +21,14 @@ export type RoleSlice = {
   secondaryRoleList?: RolePanelList
   mainRoleDetails?: RolePanelDetails
   secondaryRoleDetails?: RolePanelDetails
+  mainRoleFormExpandedNodes?: string[]
+  secondaryRoleFormExpandedNodes?: string[]
 }
 
-export const initialState: RoleSlice = {}
+export const initialState: RoleSlice = {
+  mainRoleFormExpandedNodes: [],
+  secondaryRoleFormExpandedNodes: []
+}
 
 const rolesSlice = createSlice({
   name: "roles",
@@ -185,6 +190,33 @@ const rolesSlice = createSlice({
         ...state.secondaryRoleList,
         visibleColumns: value
       }
+    },
+    setRoleFormExpandedNodes: (
+      state,
+      action: PayloadAction<{
+        mode: PanelMode
+        expandedNodes: string[]
+      }>
+    ) => {
+      const {mode, expandedNodes} = action.payload
+
+      if (mode === "main") {
+        state.mainRoleFormExpandedNodes = expandedNodes
+      } else {
+        state.secondaryRoleFormExpandedNodes = expandedNodes
+      }
+    },
+    clearRoleFormExpandedNodes: (
+      state,
+      action: PayloadAction<{mode: PanelMode}>
+    ) => {
+      const {mode} = action.payload
+
+      if (mode === "main") {
+        state.mainRoleFormExpandedNodes = []
+      } else {
+        state.secondaryRoleFormExpandedNodes = []
+      }
     }
   }
 })
@@ -198,7 +230,9 @@ export const {
   clearSelection,
   roleListSortingUpdated,
   roleListVisibleColumnsUpdated,
-  rolesTableFiltersUpdated
+  rolesTableFiltersUpdated,
+  setRoleFormExpandedNodes,
+  clearRoleFormExpandedNodes
 } = rolesSlice.actions
 export default rolesSlice.reducer
 
@@ -289,6 +323,17 @@ export const selectRoleFreeTextFilterValue = (
   }
 
   return state.roles.secondaryRoleList?.freeTextFilterValue
+}
+
+export const selectRoleFormExpandedNodes = (
+  state: RootState,
+  mode: PanelMode
+): string[] => {
+  if (mode === "main") {
+    return state.roles.mainRoleFormExpandedNodes || []
+  }
+
+  return state.roles.secondaryRoleFormExpandedNodes || []
 }
 
 export const roleCRUDListeners = (startAppListening: AppStartListening) => {

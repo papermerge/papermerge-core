@@ -1,5 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
+import useI18NText from "@/features/roles/hooks/useRoleFormI18NText"
 import {useGetRoleQuery} from "@/features/roles/storage/api"
 import {
   selectRoleDetailsID,
@@ -31,6 +32,7 @@ export default function RoleDetailsContainer() {
   const expandedNodes = useAppSelector(s =>
     selectRoleFormExpandedNodes(s, mode)
   )
+  const txt = useI18NText()
 
   const handleExpandedStateChange = useCallback(
     (expandedNodes: string[]) => {
@@ -72,6 +74,7 @@ export default function RoleDetailsContainer() {
             name={data.name}
             isLoading={false}
             readOnly={true}
+            txt={txt?.roleForm}
             initialExpandedState={expandedNodes}
             onExpandedStateChange={handleExpandedStateChange}
           />

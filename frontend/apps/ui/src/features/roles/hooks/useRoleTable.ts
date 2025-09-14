@@ -1,6 +1,8 @@
 import {useAppSelector} from "@/app/hooks"
 import {
+  selectRoleExcludeScopeFilterValue,
   selectRoleFreeTextFilterValue,
+  selectRoleIncludeScopeFilterValue,
   selectRolePageNumber,
   selectRolePageSize,
   selectRoleSorting
@@ -16,13 +18,21 @@ function useQueryParams(): RoleQueryParams {
   const sorting = useAppSelector(s => selectRoleSorting(s, mode))
   const column = sorting?.column as SortBy | undefined
   const free_text = useAppSelector(s => selectRoleFreeTextFilterValue(s, mode))
+  const include_scopes = useAppSelector(s =>
+    selectRoleIncludeScopeFilterValue(s, mode)
+  )
+  const exclude_scopes = useAppSelector(s =>
+    selectRoleExcludeScopeFilterValue(s, mode)
+  )
 
   const queryParams: RoleQueryParams = {
     page_size: pageSize,
     page_number: pageNumber,
     sort_by: column,
     sort_direction: sorting?.direction || undefined,
-    filter_free_text: free_text
+    filter_free_text: free_text,
+    filter_include_scopes: include_scopes?.join(","),
+    filter_exclude_scopes: exclude_scopes?.join(",")
   }
 
   return queryParams

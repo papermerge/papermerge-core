@@ -15,6 +15,8 @@ export interface RoleQueryParams extends Partial<PaginatedArgs> {
   filter_created_by?: string
   filter_created_at?: string // ISO string format
   filter_free_text?: string
+  filter_include_scopes?: string
+  filter_exclude_scopes?: string
 }
 
 export interface ByUser {

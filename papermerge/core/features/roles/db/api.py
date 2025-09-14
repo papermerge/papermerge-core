@@ -589,10 +589,14 @@ def _build_filter_conditions(
 
         condition = None
 
-        if filter_name == "scope":
-            # Filter by permissions/scopes - assuming you have a permissions relationship
+        if filter_name == "include_scopes":
             if operator == "in" and isinstance(value, list):
                 condition = orm.Role.permissions.any(
+                    orm.Permission.codename.in_(value)
+                )
+        elif filter_name == "exclude_scopes":
+            if operator == "in" and isinstance(value, list):
+                condition = ~orm.Role.permissions.any(
                     orm.Permission.codename.in_(value)
                 )
 

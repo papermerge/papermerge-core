@@ -55,6 +55,7 @@ export const apiSlice = createApi({
   keepUnusedDataFor: getKeepUnusedDataFor(),
   tagTypes: [
     "Role",
+    "Scope",
     "Group",
     "GroupHome",
     "GroupInbox",

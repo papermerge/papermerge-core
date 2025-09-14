@@ -287,7 +287,14 @@
   "users.delete.many.title": "Benutzer löschen",
   "users.delete.many.description": "Benutzer löschen?",
   "roles": {
-    "create_new_role": "Rolle Erstellen"
+    "create_new_role": "Rolle Erstellen",
+    "scopeFilter": {
+      "error": "Fehler beim Laden der Berechtigungen",
+      "noScopesFound": "Keine Berechtigungen gefunden",
+      "pickValue": "Berechtigungen auswählen",
+      "label.includes": "Enthält diese Berechtigungen",
+      "label.excludes": "Schließt diese Berechtigungen aus"
+    }
   },
   "roles.name": "Rollen",
   "roles.new.title": "Neue Rolle",
@@ -351,5 +358,76 @@
     "lastPage": "Letzte Seite",
     "previousPage": "Vorherige Seite",
     "nextPage": "Nächste Seite"
+  },
+  "scopes": {
+    "node.create": "Ordner und Dokumente erstellen",
+    "node.view": "Ordner und Dokumente anzeigen",
+    "node.update": "Ordner und Dokumente bearbeiten",
+    "node.delete": "Ordner und Dokumente löschen",
+    "node.move": "Ordner und Dokumente verschieben",
+
+    "document.upload": "Dokumente hochladen",
+    "document.download": "Dokumente herunterladen",
+    "document.download.all_versions": "Alle Dokumentversionen herunterladen",
+    "document.download.last_version_only": "Nur letzte Dokumentversion herunterladen",
+    "document.update.title": "Dokumenttitel bearbeiten",
+    "document.update.tags": "Dokument-Schlagwörter bearbeiten",
+    "document.update.custom_fields": "Benutzerdefinierte Dokumentfelder bearbeiten",
+    "document.update.document_type": "Dokumentkategorie bearbeiten",
+
+    "tag.select": "Schlagwörter auswählen",
+    "tag.create": "Schlagwörter erstellen",
+    "tag.view": "Schlagwörter anzeigen",
+    "tag.update": "Schlagwörter bearbeiten",
+    "tag.delete": "Schlagwörter löschen",
+
+    "user.create": "Benutzer erstellen",
+    "user.select": "Benutzer auswählen",
+    "user.view": "Benutzer anzeigen",
+    "user.update": "Benutzer bearbeiten",
+    "user.delete": "Benutzer löschen",
+    "user.me": "Eigenes Benutzerprofil anzeigen",
+
+    "group.create": "Gruppen erstellen",
+    "group.select": "Gruppen auswählen",
+    "group.view": "Gruppen anzeigen",
+    "group.update": "Gruppen bearbeiten",
+    "group.delete": "Gruppen löschen",
+
+    "role.create": "Rollen erstellen",
+    "role.view": "Rollen anzeigen",
+    "role.select": "Rollen auswählen",
+    "role.update": "Rollen bearbeiten",
+    "role.delete": "Rollen löschen",
+
+    "task.ocr": "OCR-Aufgaben ausführen",
+
+    "ocrlang.view": "OCR-Sprachen anzeigen",
+
+    "page.view": "Seiten anzeigen",
+    "page.update": "Seiten bearbeiten",
+    "page.reorder": "Seiten neu anordnen",
+    "page.rotate": "Seiten drehen",
+    "page.move": "Seiten verschieben",
+    "page.extract": "Seiten extrahieren",
+    "page.delete": "Seiten löschen",
+
+    "custom_field.create": "Benutzerdefinierte Felder erstellen",
+    "custom_field.view": "Benutzerdefinierte Felder anzeigen",
+    "custom_field.update": "Benutzerdefinierte Felder bearbeiten",
+    "custom_field.delete": "Benutzerdefinierte Felder löschen",
+
+    "document_type.create": "Dokumenttypen erstellen",
+    "document_type.view": "Dokumenttypen anzeigen",
+    "document_type.select": "Dokumenttypen auswählen",
+    "document_type.update": "Dokumenttypen bearbeiten",
+    "document_type.delete": "Dokumenttypen löschen",
+
+    "shared_node.create": "Geteilte Knoten erstellen",
+    "shared_node.view": "Geteilte Knoten anzeigen",
+    "shared_node.update": "Geteilte Knoten bearbeiten",
+    "shared_node.delete": "Geteilte Knoten löschen",
+
+    "audit_log.view": "Audit-Protokolle anzeigen"
   }
 }

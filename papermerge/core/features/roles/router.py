@@ -42,6 +42,21 @@ async def get_roles_without_pagination(
     return result
 
 
+@router.get("/scopes/all")
+@utils.docstring_parameter(scope=scopes.ROLE_SELECT)
+async def get_scopes_all(
+    user: Annotated[
+        schema.User, Security(get_current_user, scopes=[scopes.ROLE_SELECT])
+    ],
+    db_session: AsyncSession = Depends(get_db),
+) -> list[str]:
+    """Get all available scopes without pagination/filtering/sorting
+
+    Required scope: `{scope}`
+    """
+    return sorted(scopes.Scopes().all_scopes())
+
+
 @router.get("/", response_model=schema.PaginatedResponse[schema.RoleEx])
 @utils.docstring_parameter(scope=scopes.ROLE_VIEW)
 async def get_roles(

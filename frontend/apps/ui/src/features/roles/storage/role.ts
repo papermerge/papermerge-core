@@ -11,6 +11,8 @@ import {apiSliceWithRoles} from "./api"
 
 interface RolePanelList extends PanelListBase {
   selectedIDs?: Array<string>
+  includeScopeFilterValue?: Array<string>
+  excludeScopeFilterValue?: Array<string>
 }
 interface RolePanelDetails {
   id: string
@@ -80,20 +82,31 @@ const rolesSlice = createSlice({
       action: PayloadAction<{
         mode: PanelMode
         freeTextFilterValue?: string
+        includeScopeFilterValue?: string[]
+        excludeScopeFilterValue?: string[]
       }>
     ) {
-      const {mode, freeTextFilterValue} = action.payload
+      const {
+        mode,
+        freeTextFilterValue,
+        includeScopeFilterValue,
+        excludeScopeFilterValue
+      } = action.payload
       if (mode == "main") {
         state.mainRoleList = {
           ...state.mainRoleList,
-          freeTextFilterValue
+          freeTextFilterValue,
+          includeScopeFilterValue,
+          excludeScopeFilterValue
         }
         return
       }
 
       state.secondaryRoleList = {
         ...state.secondaryRoleList,
-        freeTextFilterValue
+        freeTextFilterValue,
+        includeScopeFilterValue,
+        excludeScopeFilterValue
       }
     },
     rolePaginationUpdated(
@@ -323,6 +336,28 @@ export const selectRoleFreeTextFilterValue = (
   }
 
   return state.roles.secondaryRoleList?.freeTextFilterValue
+}
+
+export const selectRoleIncludeScopeFilterValue = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.roles.mainRoleList?.includeScopeFilterValue
+  }
+
+  return state.roles.secondaryRoleList?.includeScopeFilterValue
+}
+
+export const selectRoleExcludeScopeFilterValue = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.roles.mainRoleList?.excludeScopeFilterValue
+  }
+
+  return state.roles.secondaryRoleList?.excludeScopeFilterValue
 }
 
 export const selectRoleFormExpandedNodes = (

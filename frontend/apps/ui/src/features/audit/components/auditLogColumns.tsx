@@ -1,71 +1,14 @@
-import LeadColumn from "@/components/LeadColumn"
-import {ActionIcon, Badge, Group, Text, Tooltip} from "@mantine/core"
-import {useClipboard} from "@mantine/hooks"
-import {IconCheck, IconCopy} from "@tabler/icons-react"
+import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
+import {Badge, Box, Text} from "@mantine/core"
 import {TFunction} from "i18next"
 import type {ColumnConfig} from "kommon"
-import {useCallback, useState} from "react"
 import type {AuditLogItem} from "../types"
-
-const STATIC_STYLES = {
-  dbIcon: {opacity: 0.6},
-  userIcon: {opacity: 0.6},
-  copyIcon: (isVisible: boolean, copied: boolean) => ({
-    opacity: isVisible || copied ? 1 : 0,
-    transition: "opacity 0.1s ease" // Reduced from 0.2s
-  })
-} as const
 
 const OPERATION_COLORS = {
   INSERT: "green",
   UPDATE: "blue",
   DELETE: "red"
 } as const
-
-// Only use complex component when user actually hovers/interacts
-const TruncatedTextWithCopy = ({
-  value,
-  maxLength = 8
-}: {
-  value: string
-  maxLength?: number
-}) => {
-  const clipboard = useClipboard({timeout: 1000}) // Reduced timeout
-  const [isHovered, setIsHovered] = useState(false)
-  const truncatedValue = value.substring(0, maxLength) + "..."
-
-  // Memoize handlers
-  const handleMouseEnter = useCallback(() => setIsHovered(true), [])
-  const handleMouseLeave = useCallback(() => setIsHovered(false), [])
-  const handleCopy = useCallback(
-    () => clipboard.copy(value),
-    [clipboard, value]
-  )
-
-  return (
-    <Group
-      gap="xs"
-      wrap="nowrap"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <Text size="xs" ff="monospace" title={value}>
-        {truncatedValue}
-      </Text>
-      <Tooltip label={clipboard.copied ? "Copied!" : "Copy"}>
-        <ActionIcon
-          size="xs"
-          variant="subtle"
-          color={clipboard.copied ? "green" : "gray"}
-          onClick={handleCopy}
-          style={STATIC_STYLES.copyIcon(isHovered, clipboard.copied)}
-        >
-          {clipboard.copied ? <IconCheck size={12} /> : <IconCopy size={12} />}
-        </ActionIcon>
-      </Tooltip>
-    </Group>
-  )
-}
 
 // Pre-process date formatting to avoid repeated Date() calls
 const formatTimestamp = (timestamp: string) => {
@@ -87,16 +30,18 @@ export default function auditLogColumns(t?: TFunction) {
       minWidth: 180,
       render: (value, row, onClick) => {
         const {date, time} = formatTimestamp(value as string)
-
         return (
-          <LeadColumn row={row} onClickHandler={onClick}>
+          <Box
+            style={{cursor: "pointer"}}
+            onClick={() => onClick?.(row, false)}
+          >
             <Text component="a" size="xs">
               {date}
             </Text>
             <Text size="xs" c="dimmed">
               {time}
             </Text>
-          </LeadColumn>
+          </Box>
         )
       }
     },

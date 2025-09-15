@@ -1,10 +1,13 @@
-import type {MantineColorScheme, MantineTheme} from "@mantine/core"
+import type {
+  MantineColorScheme,
+  MantineStyleProp,
+  MantineTheme
+} from "@mantine/core"
 import {
   ActionIcon,
   Box,
   Group,
   LoadingOverlay,
-  Skeleton,
   Table,
   Text,
   useMantineColorScheme,
@@ -12,6 +15,7 @@ import {
 } from "@mantine/core"
 import {IconChevronDown, IconChevronUp, IconSelector} from "@tabler/icons-react"
 import React from "react"
+import EmptyTableBody from "./EmptyTableBody"
 import LeadColumnBody from "./LeadColumnBody"
 import LeadColumnHeader from "./LeadColumnHeader"
 import {ColumnConfig, SortState} from "./types"
@@ -105,23 +109,14 @@ export default function DataTable<T>({
   const isIndeterminate =
     selectedRows.size > 0 && selectedRows.size < data.length
 
-  if (loading && data.length === 0) {
-    return (
-      <LoadingTable
-        visibleColumns={visibleColumns}
-        loading={loading}
-        withCheckbox={withCheckbox}
-      />
-    )
-  }
-
   return (
     <Box
       style={{
         height: "100%",
         overflow: "hidden",
         overflowX: "auto",
-        overflowY: "hidden"
+        overflowY: "hidden",
+        position: "relative"
       }}
     >
       <LoadingOverlay visible={loading} />
@@ -189,31 +184,6 @@ const TableCell = function TableCell({
   }
 
   return <Table.Td style={style}>{value}</Table.Td>
-}
-
-interface EmptyRowArgs {
-  message: string
-  visibleColumnsCount: number
-  withCheckbox?: boolean
-}
-
-const EmptyTableBody = function EmptyTableBody({
-  message,
-  visibleColumnsCount,
-  withCheckbox = false
-}: EmptyRowArgs) {
-  const colSpan = withCheckbox ? visibleColumnsCount + 1 : visibleColumnsCount
-
-  return (
-    <Table.Tr>
-      <Table.Td
-        colSpan={colSpan}
-        style={{textAlign: "center", padding: "3rem"}}
-      >
-        <Text c="dimmed">{message}</Text>
-      </Table.Td>
-    </Table.Tr>
-  )
 }
 
 function isRowHighlighted<T>(row: T, highlightRowID?: string): boolean {
@@ -330,16 +300,13 @@ function TableBody<T>({
   onRowSelect,
   getRowId = (row: T) => String((row as any).id)
 }: TBodyArgs<T>) {
+  const fullWidthFlex: MantineStyleProp = {
+    height: "100%",
+    display: "flex",
+    flexDirection: "column"
+  }
   if (data.length === 0) {
-    return (
-      <Table.Tbody>
-        <EmptyTableBody
-          message={emptyMessage}
-          visibleColumnsCount={visibleColumns.length}
-          withCheckbox={withCheckbox}
-        />
-      </Table.Tbody>
-    )
+    return <EmptyTableBody style={fullWidthFlex} message={emptyMessage} />
   }
 
   const rows = data.map(row => (
@@ -358,73 +325,9 @@ function TableBody<T>({
   ))
 
   return (
-    <Table.Tbody
-      className="scrollable-xy"
-      style={{height: "100%", display: "flex", flexDirection: "column"}}
-    >
+    <Table.Tbody className="scrollable-xy" style={fullWidthFlex}>
       {rows}
     </Table.Tbody>
-  )
-}
-
-interface LoadingTableArgs<T> {
-  visibleColumns: ColumnConfig<T>[]
-  loading: boolean
-  withCheckbox?: boolean
-}
-
-const LoadingTable = <T,>({
-  visibleColumns,
-  loading,
-  withCheckbox = false
-}: LoadingTableArgs<T>) => {
-  const headerColumns = visibleColumns.map(column => (
-    <Table.Th key={String(column.key)}>
-      <Skeleton height={20} />
-    </Table.Th>
-  ))
-
-  const bodyColumns = Array.from({length: 5}).map((_, index) => (
-    <Table.Tr
-      key={index}
-      style={{display: "flex", width: "100%", justifyContent: "space-between"}}
-    >
-      {withCheckbox && (
-        <Table.Td>
-          <Skeleton height={16} width={16} />
-        </Table.Td>
-      )}
-      {visibleColumns.map(column => (
-        <Table.Td key={String(column.key)}>
-          <Skeleton height={16} />
-        </Table.Td>
-      ))}
-    </Table.Tr>
-  ))
-
-  return (
-    <Box>
-      <LoadingOverlay visible={loading} />
-      <Table>
-        <Table.Thead>
-          <Table.Tr
-            style={{
-              display: "flex",
-              width: "100%",
-              justifyContent: "space-between"
-            }}
-          >
-            {withCheckbox && (
-              <Table.Th style={{width: 40, minWidth: 40}}>
-                <Skeleton height={20} width={16} />
-              </Table.Th>
-            )}
-            {headerColumns}
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody className="scrollable-xy">{bodyColumns}</Table.Tbody>
-      </Table>
-    </Box>
   )
 }
 

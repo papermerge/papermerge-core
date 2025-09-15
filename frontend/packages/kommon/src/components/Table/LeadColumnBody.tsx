@@ -1,0 +1,58 @@
+import type {MantineStyleProp} from "@mantine/core"
+import {Checkbox, Table} from "@mantine/core"
+import {IconColumns2} from "@tabler/icons-react"
+
+interface LeadColumnBodyArgs<T> {
+  rowId: string
+  isSelected: boolean
+  row: T
+  withCheckbox: boolean
+  onRowClick?: (row: T, otherPanel: boolean) => void
+  onRowSelect?: (rowId: string, checked: boolean) => void
+}
+
+export default function LeadColumnBody<T>({
+  isSelected,
+  rowId,
+  row,
+  withCheckbox,
+  onRowClick,
+  onRowSelect
+}: LeadColumnBodyArgs<T>) {
+  const style: MantineStyleProp = {
+    width: 100,
+    minWidth: 100,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center"
+  }
+
+  if (withCheckbox) {
+    return (
+      <Table.Td style={style}>
+        <Checkbox
+          checked={isSelected}
+          onChange={event => onRowSelect?.(rowId, event.currentTarget.checked)}
+          aria-label={`Select row ${rowId}`}
+        />
+
+        <IconColumns2
+          size={14}
+          onClick={() => onRowClick?.(row, true)}
+          style={{opacity: 0.5, cursor: "pointer"}}
+        />
+      </Table.Td>
+    )
+  }
+
+  return (
+    <Table.Td style={style}>
+      <IconColumns2
+        size={14}
+        onClick={() => onRowClick?.(row, true)}
+        style={{opacity: 0.5, cursor: "pointer"}}
+      />
+    </Table.Td>
+  )
+}

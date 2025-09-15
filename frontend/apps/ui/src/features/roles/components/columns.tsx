@@ -1,5 +1,4 @@
-import LeadColumn from "@/components/LeadColumn"
-import {ActionIcon, Group, Text, Tooltip} from "@mantine/core"
+import {ActionIcon, Box, Group, Text, Tooltip} from "@mantine/core"
 import {useClipboard} from "@mantine/hooks"
 import {IconCheck, IconCopy} from "@tabler/icons-react"
 import {TFunction} from "i18next"
@@ -74,9 +73,12 @@ export default function roleColumns(t?: TFunction) {
       minWidth: 100,
       render: (value, row, onClick) => {
         return (
-          <LeadColumn row={row} onClickHandler={onClick}>
+          <Box
+            style={{cursor: "pointer"}}
+            onClick={() => onClick?.(row, false)}
+          >
             <Text component="a">{value as string}</Text>
-          </LeadColumn>
+          </Box>
         )
       }
     },

@@ -2,7 +2,6 @@ import type {MantineColorScheme, MantineTheme} from "@mantine/core"
 import {
   ActionIcon,
   Box,
-  Checkbox,
   Group,
   LoadingOverlay,
   Skeleton,
@@ -13,6 +12,8 @@ import {
 } from "@mantine/core"
 import {IconChevronDown, IconChevronUp, IconSelector} from "@tabler/icons-react"
 import React from "react"
+import LeadColumnBody from "./LeadColumnBody"
+import LeadColumnHeader from "./LeadColumnHeader"
 import {ColumnConfig, SortState} from "./types"
 
 interface Args<T> {
@@ -260,10 +261,6 @@ const TableRow = <T,>({
       : undefined
   }
 
-  const handleCheckboxChange = (checked: boolean) => {
-    onRowSelect?.(rowId, checked)
-  }
-
   const renderedColumns = visibleColumns.map(column => {
     const value = row[column.key]
     const renderedValue = column.render
@@ -293,17 +290,14 @@ const TableRow = <T,>({
 
   return (
     <Table.Tr style={rowStyle}>
-      {withCheckbox && (
-        <Table.Td style={{width: 40, minWidth: 40}}>
-          <Checkbox
-            checked={isSelected}
-            onChange={event =>
-              handleCheckboxChange(event.currentTarget.checked)
-            }
-            aria-label={`Select row ${rowId}`}
-          />
-        </Table.Td>
-      )}
+      <LeadColumnBody
+        rowId={rowId}
+        isSelected={isSelected}
+        row={row}
+        withCheckbox={withCheckbox}
+        onRowClick={onRowClick}
+        onRowSelect={onRowSelect}
+      />
       {renderedColumns}
     </Table.Tr>
   )
@@ -530,16 +524,13 @@ const TableHeader = function TableHeader<T>({
           justifyContent: "space-between"
         }}
       >
-        {withCheckbox && (
-          <Table.Th style={{width: 40, minWidth: 40}}>
-            <Checkbox
-              checked={isAllSelected}
-              indeterminate={isIndeterminate}
-              onChange={event => onSelectAll?.(event.currentTarget.checked)}
-              aria-label="Select all rows"
-            />
-          </Table.Th>
-        )}
+        <LeadColumnHeader
+          withCheckbox={withCheckbox}
+          isAllSelected={isAllSelected}
+          isIndeterminate={isIndeterminate}
+          onSelectAll={onSelectAll}
+        />
+
         {columns}
       </Table.Tr>
     </Table.Thead>

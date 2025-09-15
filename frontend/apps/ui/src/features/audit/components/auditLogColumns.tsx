@@ -1,5 +1,4 @@
-import LeadColumn from "@/components/LeadColumn"
-import {ActionIcon, Badge, Group, Text, Tooltip} from "@mantine/core"
+import {ActionIcon, Badge, Box, Group, Text, Tooltip} from "@mantine/core"
 import {useClipboard} from "@mantine/hooks"
 import {IconCheck, IconCopy} from "@tabler/icons-react"
 import {TFunction} from "i18next"
@@ -87,16 +86,18 @@ export default function auditLogColumns(t?: TFunction) {
       minWidth: 180,
       render: (value, row, onClick) => {
         const {date, time} = formatTimestamp(value as string)
-
         return (
-          <LeadColumn row={row} onClickHandler={onClick}>
+          <Box
+            style={{cursor: "pointer"}}
+            onClick={() => onClick?.(row, false)}
+          >
             <Text component="a" size="xs">
               {date}
             </Text>
             <Text size="xs" c="dimmed">
               {time}
             </Text>
-          </LeadColumn>
+          </Box>
         )
       }
     },

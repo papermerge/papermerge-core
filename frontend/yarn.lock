@@ -747,18 +747,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/dates@npm:^8.2.7":
-  version: 8.2.7
-  resolution: "@mantine/dates@npm:8.2.7"
+"@mantine/dates@npm:^8.3.1":
+  version: 8.3.1
+  resolution: "@mantine/dates@npm:8.3.1"
   dependencies:
     clsx: "npm:^2.1.1"
   peerDependencies:
-    "@mantine/core": 8.2.7
-    "@mantine/hooks": 8.2.7
+    "@mantine/core": 8.3.1
+    "@mantine/hooks": 8.3.1
     dayjs: ">=1.0.0"
     react: ^18.x || ^19.x
     react-dom: ^18.x || ^19.x
-  checksum: 10c0/04490d6282b8e8828600f0f29e7197f4ee3b535529cfdefb7ce09ae22c59a38cae77587e95f3ddda92722d5f950e2b10b0648383f4a193bfcfe90de2dd9a219f
+  checksum: 10c0/9b451f14704b640b01ec7a51eaa113bd4e3d2f44568d9e9eff331487505ddf51f6730caa7ae8ea4cda59c7d33c6a100095cc33bec1d4e3ed33a076fe1087bdb4
   languageName: node
   linkType: hard
 
@@ -4405,7 +4405,7 @@ __metadata:
   resolution: "ui@workspace:apps/ui"
   dependencies:
     "@mantine/core": "npm:^8.3.1"
-    "@mantine/dates": "npm:^8.2.7"
+    "@mantine/dates": "npm:^8.3.1"
     "@mantine/form": "npm:^8.3.1"
     "@mantine/hooks": "npm:^8.3.0"
     "@mantine/notifications": "npm:^8.3.0"

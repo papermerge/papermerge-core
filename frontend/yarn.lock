@@ -1483,7 +1483,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/parser@npm:8.43.0":
+"@typescript-eslint/parser@npm:8.43.0, @typescript-eslint/parser@npm:^8.43.0":
   version: 8.43.0
   resolution: "@typescript-eslint/parser@npm:8.43.0"
   dependencies:
@@ -1496,22 +1496,6 @@ __metadata:
     eslint: ^8.57.0 || ^9.0.0
     typescript: ">=4.8.4 <6.0.0"
   checksum: 10c0/b8296d3fac08f6e03c931843264a4219469a6a7d5c4d269fb14fe4c1547477a0dd1c259e6929c749efa043fb4e272436adfc94afdf07039d3b1d9e6956a6a0ea
-  languageName: node
-  linkType: hard
-
-"@typescript-eslint/parser@npm:^8.41.0":
-  version: 8.41.0
-  resolution: "@typescript-eslint/parser@npm:8.41.0"
-  dependencies:
-    "@typescript-eslint/scope-manager": "npm:8.41.0"
-    "@typescript-eslint/types": "npm:8.41.0"
-    "@typescript-eslint/typescript-estree": "npm:8.41.0"
-    "@typescript-eslint/visitor-keys": "npm:8.41.0"
-    debug: "npm:^4.3.4"
-  peerDependencies:
-    eslint: ^8.57.0 || ^9.0.0
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: 10c0/ca13ff505e9253aee761741f96714cd65a296bbfcac961efbbf7a909ff3d180b2142a23db0a2a5e50b928fa56586528b7e47ba6301089dd850945018dbf2ef50
   languageName: node
   linkType: hard
 
@@ -1736,7 +1720,7 @@ __metadata:
   resolution: "Papermerge DMS UI@workspace:."
   dependencies:
     "@typescript-eslint/eslint-plugin": "npm:^8.41.0"
-    "@typescript-eslint/parser": "npm:^8.41.0"
+    "@typescript-eslint/parser": "npm:^8.43.0"
     eslint: "npm:^9.35.0"
     eslint-plugin-unused-imports: "npm:^4.2.0"
     prettier: "npm:^3.6.2"

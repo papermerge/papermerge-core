@@ -1,3 +1,4 @@
-import Users from "./List"
+import UsersList from "./List"
+import UserDetails from "./UserDetailsContainer"
 
-export default Users
+export {UserDetails, UsersList}

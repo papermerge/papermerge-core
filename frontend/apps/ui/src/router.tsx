@@ -38,6 +38,7 @@ import {loader as auditLogDetailsLoader} from "@/features/audit/pages/Details"
 import {loader as auditLogsListLoader} from "@/features/audit/pages/List"
 import {loader as rolesDetailsLoader} from "@/features/roles/pages/Details"
 import {loader as rolesListLoader} from "@/features/roles/pages/List"
+import {loader as usersListLoader} from "@/features/users/pages/List"
 import {loader as documentLoader} from "@/pages/Document"
 
 import ErrorPage from "@/pages/Error.tsx"
@@ -146,7 +147,8 @@ const router = createBrowserRouter([
       },
       {
         path: "/users",
-        element: <UsersList />
+        element: <UsersList />,
+        loader: usersListLoader
       },
       {
         path: "/users/:userId",

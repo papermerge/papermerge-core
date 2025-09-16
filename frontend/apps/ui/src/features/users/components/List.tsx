@@ -1,63 +1,70 @@
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
-import {useGetPaginatedUsersQuery} from "@/features/users/apiSlice"
+import useUserTable from "@/features/users/hooks/useUserTable"
 import {
-  clearSelection,
-  lastPageSizeUpdate,
-  selectionAddMany,
-  selectLastPageSize,
-  selectSelectedIds
-} from "@/features/users/usersSlice"
+  selectionSet,
+  selectSelectedIDs,
+  selectUserDetailsID,
+  userListSortingUpdated,
+  userPaginationUpdated
+} from "@/features/users/storage/user"
+import type {SortState} from "kommon"
+import {DataTable, TablePagination} from "kommon"
+import {useTranslation} from "react-i18next"
+
+import {showUserDetailsInSecondaryPanel} from "@/features/users/storage/thunks"
+import {usePanelMode} from "@/hooks"
 import {isHTTP403Forbidden} from "@/services/helpers"
-import {Center, Checkbox, Group, Loader, Stack, Table} from "@mantine/core"
-import {useState} from "react"
-import {useDispatch, useSelector} from "react-redux"
+import {Group, Stack} from "@mantine/core"
 import {useNavigate} from "react-router-dom"
-
-import Pagination from "@/components/Pagination"
-
+import type {UserItem} from "../types"
 import ActionButtons from "./ActionButtons"
-import UserRow from "./UserRow"
 
 export default function UsersList() {
-  const selectedIds = useSelector(selectSelectedIds)
-  const lastPageSize = useSelector(selectLastPageSize)
-  const dispatch = useDispatch()
+  const {t} = useTranslation()
+  const mode = usePanelMode()
+  const selectedRowIDs = useAppSelector(s => selectSelectedIDs(s, mode))
+  const selectedRowsSet = new Set(selectedRowIDs || [])
+
+  const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const roleDetailsID = useAppSelector(s => selectUserDetailsID(s, "secondary"))
 
-  const [page, setPage] = useState<number>(1)
-  const [pageSize, setPageSize] = useState<number>(lastPageSize)
+  const {isError, data, queryParams, error, isLoading, isFetching} =
+    useUserTable()
 
-  const {data, isLoading, isFetching, isError, error} =
-    useGetPaginatedUsersQuery({
-      page_number: page,
-      page_size: pageSize
-    })
+  const handleSortChange = (value: SortState) => {
+    dispatch(userListSortingUpdated({mode, value}))
+  }
 
-  const onCheckAll = (checked: boolean) => {
-    if (!data) {
-      console.log(`undefined data`)
-      return
-    }
+  const handleSelectionChange = (newSelection: Set<string>) => {
+    const newIds = Array.from(newSelection)
+    dispatch(selectionSet({ids: newIds, mode}))
+  }
 
-    if (checked) {
-      // check all/select all group items
-      dispatch(selectionAddMany(data.items.map(i => i.id)))
+  const handlePageSizeChange = (newValue: number) => {
+    dispatch(
+      userPaginationUpdated({
+        mode,
+        value: {
+          pageSize: newValue,
+          pageNumber: 1
+        }
+      })
+    )
+  }
+
+  const handlePageNumberChange = (pageNumber: number) => {
+    dispatch(userPaginationUpdated({mode, value: {pageNumber}}))
+  }
+
+  const getRowId = (row: UserItem) => row.id
+
+  const onTableRowClick = (row: UserItem, openInSecondaryPanel: boolean) => {
+    if (openInSecondaryPanel) {
+      dispatch(showUserDetailsInSecondaryPanel(row.id))
     } else {
-      // uncheck all/unselect all group items
-      dispatch(clearSelection())
-    }
-  }
-
-  const onPageNumberChange = (page: number) => {
-    setPage(page)
-  }
-
-  const onPageSizeChange = (value: string | null) => {
-    if (value) {
-      const pageSize = parseInt(value)
-
-      dispatch(lastPageSizeUpdate(pageSize))
-      setPageSize(pageSize)
+      navigate(`/users/${row.id}`)
     }
   }
 
@@ -65,69 +72,41 @@ export default function UsersList() {
     navigate(ERRORS_403_ACCESS_FORBIDDEN)
   }
 
-  if (isLoading || !data) {
-    return (
-      <Stack>
-        <ActionButtons />
-        <Center>
-          <Loader type="bars" />
-        </Center>
-      </Stack>
-    )
-  }
-
-  if (data.items.length == 0) {
-    return (
-      <div>
-        <ActionButtons />
-        <Empty />
-      </div>
-    )
-  }
-
-  const userRows = data.items.map(u => <UserRow key={u.id} user={u} />)
-
   return (
-    <Stack>
-      <Group>
-        <ActionButtons /> {isFetching && <Loader size="sm" />}
+    <Stack style={{height: "100%"}}>
+      <Group w={"100%"}>
+        <ActionButtons />
       </Group>
-      <Table>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>
-              <Checkbox
-                checked={data.items.length == selectedIds.length}
-                onChange={e => onCheckAll(e.currentTarget.checked)}
-              />
-            </Table.Th>
-            <Table.Th>Username</Table.Th>
-            <Table.Th>Email</Table.Th>
-            <Table.Th>ID</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{userRows}</Table.Tbody>
-      </Table>
-      <Pagination
-        pagination={{
-          pageNumber: page,
-          pageSize: pageSize,
-          numPages: data.num_pages
+
+      <DataTable
+        data={data?.items || []}
+        columns={visibleColumns}
+        sorting={{
+          column: queryParams.sort_by,
+          direction: queryParams.sort_direction || null
         }}
-        onPageNumberChange={onPageNumberChange}
-        onPageSizeChange={onPageSizeChange}
-        lastPageSize={lastPageSize}
+        onSortChange={handleSortChange}
+        loading={isLoading || isFetching}
+        emptyMessage={t("rolesList.noRolesFound", {
+          defaultValue: "No roles found"
+        })}
+        withCheckbox={true}
+        selectedRows={selectedRowsSet}
+        onSelectionChange={handleSelectionChange}
+        onRowClick={onTableRowClick}
+        getRowId={getRowId}
+        highlightRowID={roleDetailsID}
+      />
+
+      <TablePagination
+        currentPage={data?.page_number || 1}
+        totalPages={data?.num_pages || 0}
+        pageSize={data?.page_size || 15}
+        onPageChange={handlePageNumberChange}
+        onPageSizeChange={handlePageSizeChange}
+        totalItems={data?.total_items}
+        t={t}
       />
     </Stack>
-  )
-}
-
-function Empty() {
-  return (
-    <Center>
-      <Stack align="center">
-        <div>Currently there are no users</div>
-      </Stack>
-    </Center>
   )
 }

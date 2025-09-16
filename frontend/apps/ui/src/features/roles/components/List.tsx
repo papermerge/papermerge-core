@@ -11,7 +11,7 @@ import {
 } from "@/features/roles/storage/role"
 import {showRoleDetailsInSecondaryPanel} from "@/features/roles/storage/thunks"
 import {isHTTP403Forbidden} from "@/services/helpers"
-import {Group, Loader, Stack} from "@mantine/core"
+import {Group, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
 import {DataTable, TablePagination} from "kommon"
 import {useNavigate} from "react-router-dom"
@@ -77,7 +77,7 @@ export default function RolesList() {
   return (
     <Stack style={{height: "100%"}}>
       <Group w={"100%"}>
-        <ActionButtons /> {isFetching && <Loader size={"sm"} />}
+        <ActionButtons />
       </Group>
 
       <DataTable

@@ -11,13 +11,21 @@ import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
 import {server2clientPerms} from "@/features/roles/utils"
 import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
-import {Breadcrumbs, Group, Loader, Paper, Stack} from "@mantine/core"
+import {
+  Breadcrumbs,
+  Group,
+  Loader,
+  LoadingOverlay,
+  Paper,
+  Stack
+} from "@mantine/core"
 import {CopyableTextInput, RoleForm} from "kommon"
 import {useCallback} from "react"
 import {Link, useNavigation} from "react-router-dom"
 import {DeleteRoleButton} from "./DeleteButton"
 import EditButton from "./EditButton"
 
+import LoadingPanel from "@/components/LoadingPanel"
 import type {RoleDetails} from "@/types"
 import {useTranslation} from "react-i18next"
 
@@ -26,7 +34,7 @@ export default function RoleDetailsContainer() {
   const dispatch = useAppDispatch()
   const {t} = useTranslation()
   const roleID = useAppSelector(s => selectRoleDetailsID(s, mode))
-  const {data, isLoading, error} = useGetRoleQuery(roleID || "", {
+  const {data, isLoading, isFetching, error} = useGetRoleQuery(roleID || "", {
     skip: !roleID
   })
   const expandedNodes = useAppSelector(s =>
@@ -46,16 +54,16 @@ export default function RoleDetailsContainer() {
     [dispatch, mode]
   )
 
-  if (isLoading) return <div>Loading...</div>
-
+  if (isLoading) return <LoadingPanel />
   if (error) return <div>Error loading role</div>
 
   if (!data) {
-    return <div>Loading...</div>
+    return <LoadingPanel />
   }
 
   return (
-    <Paper p="md" withBorder style={{height: "100%"}}>
+    <Paper p="md" withBorder style={{height: "100%", position: "relative"}}>
+      <LoadingOverlay visible={isFetching} />
       <Stack style={{height: "100%", overflow: "hidden"}}>
         <Group justify="space-between" style={{flexShrink: 0}}>
           <Path role={data} mode={mode} />

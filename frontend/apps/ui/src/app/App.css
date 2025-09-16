@@ -73,3 +73,7 @@ main.main-content {
 .dragged {
   opacity: 0.3;
 }
+
+.row-hover:hover .hover-icon {
+  visibility: visible !important;
+}

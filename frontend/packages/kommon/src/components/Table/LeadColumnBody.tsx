@@ -27,6 +27,11 @@ export default function LeadColumnBody<T>({
     justifyContent: "space-around",
     alignItems: "center"
   }
+  const iconStyle = {
+    opacity: 0.5,
+    cursor: "pointer",
+    visibility: "hidden" as const
+  }
 
   if (withCheckbox) {
     return (
@@ -40,7 +45,8 @@ export default function LeadColumnBody<T>({
         <IconColumns2
           size={14}
           onClick={() => onRowClick?.(row, true)}
-          style={{opacity: 0.5, cursor: "pointer"}}
+          style={iconStyle}
+          className="hover-icon"
         />
       </Table.Td>
     )
@@ -51,7 +57,8 @@ export default function LeadColumnBody<T>({
       <IconColumns2
         size={14}
         onClick={() => onRowClick?.(row, true)}
-        style={{opacity: 0.5, cursor: "pointer"}}
+        style={iconStyle}
+        className="hover-icon"
       />
     </Table.Td>
   )

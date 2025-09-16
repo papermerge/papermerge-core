@@ -259,7 +259,7 @@ const TableRow = <T,>({
   })
 
   return (
-    <Table.Tr style={rowStyle}>
+    <Table.Tr style={rowStyle} className="row-hover">
       <LeadColumnBody
         rowId={rowId}
         isSelected={isSelected}

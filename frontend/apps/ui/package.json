@@ -21,7 +21,7 @@
     "@mantine/notifications": "^8.3.0",
     "@reduxjs/toolkit": "^2.9.0",
     "@tabler/icons-react": "^3.34.1",
-    "axios": "^1.12.0",
+    "axios": "^1.12.2",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.18",
     "hooks": "workspace:*",

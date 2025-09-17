@@ -290,7 +290,7 @@
   "users.delete.many.title": "Benutzer löschen",
   "users.delete.many.description": "Benutzer löschen?",
   "roles": {
-    "create_new_role": "Rolle Erstellen",
+    "addNewRole": "Rolle Erstellen",
     "scopeFilter": {
       "error": "Fehler beim Laden der Berechtigungen",
       "noScopesFound": "Keine Berechtigungen gefunden",
@@ -298,6 +298,9 @@
       "label.includes": "Enthält diese Berechtigungen",
       "label.excludes": "Schließt diese Berechtigungen aus"
     }
+  },
+  "users": {
+    "addNewUser": "Hinzufügen"
   },
   "roles.name": "Rollen",
   "roles.new.title": "Neue Rolle",

@@ -290,7 +290,7 @@
   "users.delete.many.title": "Delete Users",
   "users.delete.many.description": "Are you sure you want to delete selected users?",
   "roles": {
-    "create_new_role": "New",
+    "addNewRole": "Add",
     "scopeFilter": {
       "error": "Error loading scopes",
       "noScopesFound": "No scopes found",
@@ -298,6 +298,9 @@
       "label.includes": "Includes these scopes",
       "label.excludes": "Excludes these scopes"
     }
+  },
+  "users": {
+    "addNewUser": "Add"
   },
   "roles.name": "Roles",
   "roles.new.title": "New Role",

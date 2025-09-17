@@ -290,7 +290,7 @@
   "users.delete.many.title": "Benutzer löschen",
   "users.delete.many.description": "Benutzer löschen?",
   "roles": {
-    "addNewRole": "Rolle Erstellen",
+    "addNewRole": "Hinzufügen",
     "scopeFilter": {
       "error": "Fehler beim Laden der Berechtigungen",
       "noScopesFound": "Keine Berechtigungen gefunden",
@@ -301,6 +301,15 @@
   },
   "users": {
     "addNewUser": "Hinzufügen"
+  },
+  "userColumns": {
+    "username": "Benutzername",
+    "id": "ID",
+    "email": "E-Mail",
+    "created_at": "Erstellt am",
+    "created_by": "Erstellt von",
+    "updated_at": "Aktualisiert am",
+    "updated_by": "Aktualisiert von"
   },
   "roles.name": "Rollen",
   "roles.new.title": "Neue Rolle",

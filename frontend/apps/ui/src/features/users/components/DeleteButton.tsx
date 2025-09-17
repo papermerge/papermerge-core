@@ -1,13 +1,14 @@
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {Button} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconTrash} from "@tabler/icons-react"
-import {useDispatch, useSelector} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
-import {selectSelectedIds, clearSelection} from "@/features/users/usersSlice"
+import {clearSelection, selectSelectedIDs} from "@/features/users/storage/user"
 
-import {RemoveUserModal, RemoveUsersModal} from "./DeleteModal"
+import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
+import {RemoveUserModal, RemoveUsersModal} from "./DeleteModal"
 
 export function DeleteUserButton({userId}: {userId: string}) {
   const {t} = useTranslation()
@@ -36,18 +37,19 @@ export function DeleteUserButton({userId}: {userId: string}) {
 /* Deletes one or multiple users (with confirmation) */
 export function DeleteUsersButton() {
   const {t} = useTranslation()
+  const mode = usePanelMode()
   const [opened, {open, close}] = useDisclosure(false)
-  const dispatch = useDispatch()
-  const selectedIds = useSelector(selectSelectedIds)
+  const dispatch = useAppDispatch()
+  const selectedIds = useAppSelector(s => selectSelectedIDs(s, mode))
 
   const onSubmit = () => {
     close()
-    dispatch(clearSelection())
+    dispatch(clearSelection({mode}))
   }
 
   const onCancel = () => {
     close()
-    dispatch(clearSelection())
+    dispatch(clearSelection({mode}))
   }
 
   return (

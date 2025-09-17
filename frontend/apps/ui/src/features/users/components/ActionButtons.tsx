@@ -1,24 +1,26 @@
-import {useSelector} from "react-redux"
+import {useAppSelector} from "@/app/hooks"
+import {selectSelectedIDs} from "@/features/users/storage/user"
 import {Group} from "@mantine/core"
-import {selectSelectedIds} from "@/features/users/usersSlice"
 
-import NewButton from "./NewButton"
+import {usePanelMode} from "@/hooks"
 import ChangePasswordButton from "./ChangePasswordButton"
 import {DeleteUsersButton} from "./DeleteButton"
 import EditButton from "./EditButton"
+import NewButton from "./NewButton"
 
 export default function ActionButtons() {
-  const selectedIds = useSelector(selectSelectedIds)
+  const mode = usePanelMode()
+  const selectedIds = useAppSelector(s => selectSelectedIDs(s, mode)) || []
 
   return (
     <Group>
       <NewButton />
-      {selectedIds.length == 1 ? (
+      {selectedIds?.length == 1 ? (
         <ChangePasswordButton userId={selectedIds[0]} />
       ) : (
         ""
       )}
-      {selectedIds.length == 1 ? <EditButton userId={selectedIds[0]} /> : ""}
+      {selectedIds?.length == 1 ? <EditButton userId={selectedIds[0]} /> : ""}
       {selectedIds.length >= 1 ? <DeleteUsersButton /> : ""}
     </Group>
   )

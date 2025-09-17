@@ -1,4 +1,4 @@
-import {useGetUsersQuery} from "@/features/users/apiSlice"
+import {useGetUsersQuery} from "@/features/users/storage/api"
 import {Loader, MultiSelect} from "@mantine/core"
 import {TFunction} from "i18next"
 import {useState} from "react"

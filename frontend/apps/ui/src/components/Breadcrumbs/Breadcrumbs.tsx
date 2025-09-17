@@ -21,7 +21,7 @@ import {lastHomeUpdated, lastInboxUpdated} from "@/features/ui/uiSlice"
 import {
   useGetUserGroupHomesQuery,
   useGetUserGroupInboxesQuery
-} from "@/features/users/apiSlice"
+} from "@/features/users/storage/api"
 import {selectCurrentUser} from "@/slices/currentUser"
 import {equalUUIDs} from "@/utils"
 import {useTranslation} from "react-i18next"

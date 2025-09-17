@@ -8,7 +8,7 @@ export default function userColumns(t?: TFunction) {
   const columns: ColumnConfig<UserItem>[] = [
     {
       key: "username",
-      label: t?.("userColumns.username") || "Username",
+      label: t?.("username") || "Username",
       sortable: true,
       filterable: true,
       width: 200,
@@ -26,7 +26,7 @@ export default function userColumns(t?: TFunction) {
     },
     {
       key: "email",
-      label: t?.("userColumns.email") || "EMail",
+      label: t?.("email") || "EMail",
       sortable: true,
       filterable: true,
       width: 200,
@@ -44,7 +44,7 @@ export default function userColumns(t?: TFunction) {
     },
     {
       key: "id",
-      label: t?.("userColumns.id") || "ID",
+      label: t?.("id") || "ID",
       sortable: true,
       filterable: true,
       visible: true,
@@ -54,7 +54,7 @@ export default function userColumns(t?: TFunction) {
     },
     {
       key: "created_at",
-      label: t?.("userColumns.created_at") || "Created At",
+      label: t?.("created_at") || "Created At",
       sortable: true,
       filterable: true,
       visible: true,
@@ -64,7 +64,7 @@ export default function userColumns(t?: TFunction) {
     },
     {
       key: "created_by",
-      label: t?.("userColumns.created_by") || "Created By",
+      label: t?.("created_by") || "Created By",
       sortable: true,
       filterable: true,
       visible: true,
@@ -74,7 +74,7 @@ export default function userColumns(t?: TFunction) {
     },
     {
       key: "updated_at",
-      label: t?.("userColumns.updated_at") || "Updated At",
+      label: t?.("updated_at") || "Updated At",
       sortable: true,
       filterable: true,
       visible: false,
@@ -84,7 +84,7 @@ export default function userColumns(t?: TFunction) {
     },
     {
       key: "updated_by",
-      label: t?.("userColumns.updated_by") || "updated By",
+      label: t?.("updated_by") || "updated By",
       sortable: true,
       filterable: true,
       visible: false,

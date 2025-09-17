@@ -165,6 +165,9 @@
   "rolesList": {
     "noRolesFound": "Keine Rollen gefunden"
   },
+  "id": "ID",
+  "username": "Benutzername",
+  "email": "E-Mail",
   "created_at": "Erstellt am",
   "created_by": "Erstellt von",
   "updated_at": "Aktualisiert am",

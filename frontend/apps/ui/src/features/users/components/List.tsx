@@ -1,6 +1,7 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
 import useUserTable from "@/features/users/hooks/useUserTable"
+import useVisibleColumns from "@/features/users/hooks/useVisibleColumns"
 import {
   selectionSet,
   selectSelectedIDs,
@@ -19,6 +20,7 @@ import {Group, Stack} from "@mantine/core"
 import {useNavigate} from "react-router-dom"
 import type {UserItem} from "../types"
 import ActionButtons from "./ActionButtons"
+import userColumns from "./columns"
 
 export default function UsersList() {
   const {t} = useTranslation()
@@ -28,6 +30,7 @@ export default function UsersList() {
 
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const visibleColumns = useVisibleColumns(userColumns(t))
   const roleDetailsID = useAppSelector(s => selectUserDetailsID(s, "secondary"))
 
   const {isError, data, queryParams, error, isLoading, isFetching} =

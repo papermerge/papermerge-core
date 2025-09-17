@@ -24,7 +24,8 @@ export interface ByUser {
 
 export interface UserItem {
   id: string
-  name: string
+  username: string
+  email: string
   created_at: string
   updated_at: string
   created_by: ByUser

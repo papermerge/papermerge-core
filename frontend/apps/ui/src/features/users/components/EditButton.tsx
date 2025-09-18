@@ -1,11 +1,12 @@
-import {useDisclosure} from "@mantine/hooks"
 import {Button} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
 import {IconEdit} from "@tabler/icons-react"
 
-import EditUserModal from "./EditUserModal"
+import EditButton from "@/components/EditButton"
 import {useTranslation} from "react-i18next"
+import EditUserModal from "./EditUserModal"
 
-export default function EditButton({userId}: {userId?: string}) {
+export default function EditButtonContainer({userId}: {userId?: string}) {
   const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
 
@@ -19,9 +20,10 @@ export default function EditButton({userId}: {userId?: string}) {
 
   return (
     <>
-      <Button leftSection={<IconEdit />} variant={"default"} onClick={open}>
-        {t("common.edit")}
-      </Button>
+      <EditButton
+        onClick={open}
+        text={t("common.edit", {defaultValue: "Edit"})}
+      />
       <EditUserModal
         opened={opened}
         userId={userId}

@@ -15,7 +15,10 @@ from papermerge.core.features.auth import scopes
 logger = logging.getLogger(__name__)
 
 
-async def get_role(db_session: AsyncSession, role_id: uuid.UUID) -> schema.RoleDetails:
+async def get_role(
+    db_session: AsyncSession,
+    role_id: uuid.UUID
+) -> schema.RoleDetails:
     # Create aliases for the user tables to avoid conflicts
     created_by_user = aliased(orm.User)
     updated_by_user = aliased(orm.User)

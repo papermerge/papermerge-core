@@ -6,6 +6,7 @@ import {useNavigate} from "react-router-dom"
 
 import {clearSelection, selectSelectedIDs} from "@/features/users/storage/user"
 
+import DeleteButton from "@/components/DeleteButton"
 import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
 import {RemoveUserModal, RemoveUsersModal} from "./DeleteModal"
@@ -21,9 +22,10 @@ export function DeleteUserButton({userId}: {userId: string}) {
 
   return (
     <>
-      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        {t("common.delete")}
-      </Button>
+      <DeleteButton
+        onClick={open}
+        text={t("common.delete", {defaultValue: "Delete"})}
+      />
       <RemoveUserModal
         opened={opened}
         onSubmit={onSubmit}

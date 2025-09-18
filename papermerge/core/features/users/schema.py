@@ -76,6 +76,10 @@ class UserDetails(BaseModel):
     scopes: list[str] = []
     groups: list[Group] = []
     roles: list[Role] = []
+    created_at: datetime | None = None
+    created_by: ByUser | None = None
+    updated_at: datetime | None = None
+    updated_by: ByUser | None = None
 
     # Config
     model_config = {

@@ -12,7 +12,10 @@ import {
 } from "@mantine/core"
 import {useForm} from "@mantine/form"
 
-import {useEditUserMutation, useGetUserQuery} from "@/features/users/apiSlice"
+import {
+  useEditUserMutation,
+  useGetUserQuery
+} from "@/features/users/storage/api"
 import {UserEditableFields} from "@/types"
 
 import {useGetGroupsQuery} from "@/features/groups/apiSlice"

@@ -1,12 +1,12 @@
+import {Box, Breadcrumbs, Group, Loader, LoadingOverlay} from "@mantine/core"
 import {Link, useNavigation} from "react-router-dom"
-import {Breadcrumbs, Box, LoadingOverlay, Group, Loader} from "@mantine/core"
 
-import {useGetUserQuery} from "@/features/users/apiSlice"
+import {useGetUserQuery} from "@/features/users/storage/api"
 import type {UserDetails} from "@/types"
-import UserForm from "./UserForm"
-import EditButton from "./EditButton"
-import {DeleteUserButton} from "./DeleteButton"
 import ChangePasswordButton from "./ChangePasswordButton"
+import {DeleteUserButton} from "./DeleteButton"
+import EditButton from "./EditButton"
+import UserForm from "./UserForm"
 
 interface UserDetailsArgs {
   userId: string

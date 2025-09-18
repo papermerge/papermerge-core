@@ -1,12 +1,13 @@
 import uuid
 import math
 import logging
-from typing import Tuple
+from typing import Tuple, Optional, Dict, Any
 
 from passlib.hash import pbkdf2_sha256
-from sqlalchemy import select, func, text
-from sqlalchemy.orm import selectinload
+from sqlalchemy import select, func, text, and_, or_
+from sqlalchemy.orm import selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import orm, schema
 from papermerge.core.utils.misc import is_valid_uuid
@@ -106,22 +107,50 @@ async def get_user_group_inboxes(
 
     return models, None
 
+
 async def get_user_details(
-        db_session: AsyncSession, user_id: uuid.UUID
+        db_session: AsyncSession,
+        user_id: uuid.UUID
 ) -> Tuple[schema.UserDetails | None, err_schema.Error | None]:
-    stmt = select(User).options(
-        selectinload(User.user_roles)
+    created_by_user = aliased(orm.User)
+    updated_by_user = aliased(orm.User)
+
+    stmt = select(
+        orm.User,
+        created_by_user.id.label('created_by_id'),
+        created_by_user.username.label('created_by_username'),
+        updated_by_user.id.label('updated_by_id'),
+        updated_by_user.username.label('updated_by_username')
+    ).options(
+        selectinload(orm.User.user_roles)
         .selectinload(orm.UserRole.role)
         .selectinload(orm.Role.permissions),
         selectinload(orm.User.groups)
-    ).where(User.id == user_id)
+    ).outerjoin(
+        created_by_user, orm.User.created_by == created_by_user.id
+    ).outerjoin(
+        updated_by_user, orm.User.updated_by == updated_by_user.id
+    ).where(orm.User.id == user_id)
 
     try:
-        db_user = (await db_session.scalars(stmt)).one()
+        result = await db_session.execute(stmt)
+        row = result.one()
+        db_user = row[0]  # The User object is the first element
+
+        # Extract the joined data
+        created_by_id = row.created_by_id
+        created_by_username = row.created_by_username
+        updated_by_id = row.updated_by_id
+        updated_by_username = row.updated_by_username
+
+    except NoResultFound:
+        error = err_schema.Error(messages=[f"User with ID {user_id} not found"])
+        return None, error
     except Exception as e:
-        error = err_schema.Error(messages=[str(e)])
+        error = err_schema.Error(messages=[f"Database error: {str(e)}"])
         return None, error
 
+    # Collect scopes and active roles
     scopes = set()
     active_roles = []
 
@@ -129,46 +158,202 @@ async def get_user_details(
         if user_role.deleted_at is None:  # Only active roles
             active_roles.append(user_role.role)
             for perm in user_role.role.permissions:
-                scopes.add(perm.codename)
+                if perm.deleted_at is None:  # Only active permissions
+                    scopes.add(perm.codename)
 
-    result = schema.UserDetails(
+    # Build created_by info
+    created_by = None
+    if created_by_id:
+        created_by = schema.ByUser(
+            id=created_by_id,
+            username=created_by_username
+        )
+
+    # Build updated_by info
+    updated_by = None
+    if updated_by_id:
+        updated_by = schema.ByUser(
+            id=updated_by_id,
+            username=updated_by_username
+        )
+
+    # Create the result object
+    user_details = schema.UserDetails(
         id=db_user.id,
         username=db_user.username,
         email=db_user.email,
-        created_at=db_user.created_at,
-        updated_at=db_user.updated_at,
         home_folder_id=db_user.home_folder_id,
         inbox_folder_id=db_user.inbox_folder_id,
         is_superuser=db_user.is_superuser,
         is_active=db_user.is_active,
         scopes=sorted(scopes),
         groups=db_user.groups,
-        roles=active_roles,  # Role objects, not UserRole objects
+        roles=active_roles,
+        created_at=db_user.created_at,
+        created_by=created_by,
+        updated_at=db_user.updated_at,
+        updated_by=updated_by
     )
 
-    model_user = schema.UserDetails.model_validate(result)
-
-    return model_user, None
+    return user_details, None
 
 
 async def get_users(
-    db_session: AsyncSession, *, page_size: int, page_number: int
-) -> schema.PaginatedResponse[schema.User]:
-    stmt_total_users = select(func.count(orm.User.id))
-    total_users = (await db_session.execute(stmt_total_users)).scalar()
+    db_session: AsyncSession,
+    *,
+    page_size: int,
+    page_number: int,
+    sort_by: Optional[str] = None,
+    sort_direction: Optional[str] = None,
+    filters: Optional[Dict[str, Dict[str, Any]]] = None,
+    include_deleted: bool = False,
+    include_archived: bool = True
+) -> schema.PaginatedResponse[schema.UserEx]:
+    # Create user aliases for all audit trail joins
+    created_user = aliased(orm.User, name='created_user')
+    updated_user = aliased(orm.User, name='updated_user')
+    deleted_user = aliased(orm.User, name='deleted_user')
+    archived_user = aliased(orm.User, name='archived_user')
 
-    offset = page_size * (page_number - 1)
-    stmt = select(orm.User).limit(page_size).offset(offset)
-
-    db_users = (await db_session.scalars(stmt)).all()
-    items = [schema.User.model_validate(db_user) for db_user in db_users]
-
-    total_pages = math.ceil(total_users / page_size)
-
-    return schema.PaginatedResponse[schema.User](
-        items=items, page_size=page_size, page_number=page_number, num_pages=total_pages
+    # Build base query with joins for all audit user data
+    base_query = (
+        select(orm.User)
+        .join(created_user, orm.User.created_by == created_user.id, isouter=True)
+        .join(updated_user, orm.User.updated_by == updated_user.id, isouter=True)
+        .join(deleted_user, orm.User.deleted_by == deleted_user.id, isouter=True)
+        .join(archived_user, orm.User.archived_by == archived_user.id, isouter=True)
     )
 
+    where_conditions = []
+
+    if not include_deleted:
+        where_conditions.append(orm.User.deleted_at.is_(None))
+
+    if not include_archived:
+        where_conditions.append(orm.User.archived_at.is_(None))
+
+    if filters:
+        filter_conditions = _build_filter_conditions(
+            filters, created_user, updated_user, deleted_user, archived_user
+        )
+        where_conditions.extend(filter_conditions)
+
+    if where_conditions:
+        base_query = base_query.where(and_(*where_conditions))
+
+    # Count total items (using the same filters)
+    count_query = (
+        select(func.count(orm.User.id))
+        .join(created_user, orm.User.created_by == created_user.id, isouter=True)
+        .join(updated_user, orm.User.updated_by == updated_user.id, isouter=True)
+        .join(deleted_user, orm.User.deleted_by == deleted_user.id, isouter=True)
+        .join(archived_user, orm.User.archived_by == archived_user.id, isouter=True)
+    )
+
+    if where_conditions:
+        count_query = count_query.where(and_(*where_conditions))
+
+    total_users = (await db_session.execute(count_query)).scalar()
+
+    if sort_by and sort_direction:
+        base_query = _apply_sorting(
+            base_query, sort_by, sort_direction,
+            created_user=created_user,
+            updated_user=updated_user,
+            deleted_user=deleted_user,
+            archived_user=archived_user
+        )
+    else:
+        # Default sorting by created_at desc
+        base_query = base_query.order_by(orm.User.created_at.desc())
+
+    # Apply pagination
+    offset = page_size * (page_number - 1)
+
+    # Modify query to include all audit user data
+    paginated_query_with_users = (
+        base_query
+        .add_columns(
+            # Created by user
+            created_user.id.label('created_by_id'),
+            created_user.username.label('created_by_username'),
+            # Updated by user
+            updated_user.id.label('updated_by_id'),
+            updated_user.username.label('updated_by_username'),
+            # Deleted by user
+            deleted_user.id.label('deleted_by_id'),
+            deleted_user.username.label('deleted_by_username'),
+            # Archived by user
+            archived_user.id.label('archived_by_id'),
+            archived_user.username.label('archived_by_username')
+        )
+        .limit(page_size)
+        .offset(offset)
+    )
+    # Execute query - get tuples with role and user data
+    results = (await db_session.execute(paginated_query_with_users)).all()
+
+    # Convert to schema models with complete audit trail
+    items = []
+    for row in results:
+        user = row[0]  # The Role object
+
+        # Build audit user objects (handle None values)
+        created_by = None
+        if row.created_by_id:
+            created_by = schema.ByUser(
+                id=row.created_by_id,
+                username=row.created_by_username
+            )
+
+        updated_by = None
+        if row.updated_by_id:
+            updated_by = schema.ByUser(
+                id=row.updated_by_id,
+                username=row.updated_by_username
+            )
+
+        deleted_by = None
+        if row.deleted_by_id:
+            deleted_by = schema.ByUser(
+                id=row.deleted_by_id,
+                username=row.deleted_by_username
+            )
+
+        archived_by = None
+        if row.archived_by_id:
+            archived_by = schema.ByUser(
+                id=row.archived_by_id,
+                username=row.archived_by_username
+            )
+
+        user_data = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "home_folder_id": user.home_folder_id,
+            "inbox_folder_id": user.inbox_folder_id,
+            "created_at": user.created_at,
+            "updated_at": user.updated_at,
+            "deleted_at": user.deleted_at,
+            "archived_at": user.archived_at,
+            "created_by": created_by,
+            "updated_by": updated_by,
+            "deleted_by": deleted_by,
+            "archived_by": archived_by
+        }
+
+        items.append(schema.UserEx(**user_data))
+
+    total_pages = math.ceil(total_users / page_size) if total_users > 0 else 1
+
+    return schema.PaginatedResponse[schema.UserEx](
+        items=items,
+        page_size=page_size,
+        page_number=page_number,
+        num_pages=total_pages,
+        total_items=total_users
+    )
 
 async def get_users_without_pagination(db_session: AsyncSession) -> list[schema.User]:
     stmt = select(orm.User).order_by(orm.User.username.asc())
@@ -474,3 +659,80 @@ async def user_belongs_to(
     )
     result = (await db_session.execute(stmt)).scalar()
     return result > 0
+
+
+def _build_filter_conditions(
+    filters: Dict[str, Dict[str, Any]],
+    created_user,
+    updated_user,
+    deleted_user,
+    archived_user
+) -> list:
+    """Build SQLAlchemy WHERE conditions from filters dictionary."""
+    conditions = []
+
+    for filter_name, filter_config in filters.items():
+        value = filter_config.get("value")
+
+        if not value:
+            continue
+
+        condition = None
+
+        if filter_name == "free_text":
+            search_term = f"%{value}%"
+
+            condition = or_(
+                orm.User.username.ilike(search_term),
+                orm.User.email.ilike(search_term),
+                created_user.username.ilike(search_term),
+                updated_user.username.ilike(search_term),
+                created_user.first_name.ilike(search_term),
+                created_user.last_name.ilike(search_term),
+                updated_user.first_name.ilike(search_term),
+                updated_user.last_name.ilike(search_term),
+            )
+
+        if condition is not None:
+            conditions.append(condition)
+
+    return conditions
+
+
+def _apply_sorting(
+    query,
+    sort_by: str,
+    sort_direction: str,
+    created_user,
+    updated_user,
+    deleted_user,
+    archived_user,
+):
+    sort_column = None
+
+    if sort_by == "id":
+        sort_column = orm.User.id
+    elif sort_by == "username":
+        sort_column = orm.User.username
+    elif sort_by == "email":
+        sort_column = orm.User.email
+    elif sort_by == "created_at":
+        sort_column = orm.Role.created_at
+    elif sort_by == "updated_at":
+        sort_column = orm.Role.updated_at
+    elif sort_by == "created_by":
+        sort_column = created_user.username
+    elif sort_by == "updated_by":
+        sort_column = updated_user.username
+    elif sort_by == "deleted_by":
+        sort_column = deleted_user.username
+    elif sort_by == "archived_by":
+        sort_column = archived_user.username
+
+    if sort_column is not None:
+        if sort_direction.lower() == "desc":
+            query = query.order_by(sort_column.desc())
+        else:
+            query = query.order_by(sort_column.asc())
+
+    return query

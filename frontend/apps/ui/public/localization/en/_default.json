@@ -165,6 +165,9 @@
   "rolesList": {
     "noRolesFound": "No roles found"
   },
+  "id": "ID",
+  "username": "Username",
+  "email": "E-Mail",
   "created_at": "Created At",
   "created_by": "Created By",
   "updated_at": "Updated At",
@@ -287,7 +290,7 @@
   "users.delete.many.title": "Delete Users",
   "users.delete.many.description": "Are you sure you want to delete selected users?",
   "roles": {
-    "create_new_role": "New",
+    "addNewRole": "Add",
     "scopeFilter": {
       "error": "Error loading scopes",
       "noScopesFound": "No scopes found",
@@ -295,6 +298,18 @@
       "label.includes": "Includes these scopes",
       "label.excludes": "Excludes these scopes"
     }
+  },
+  "users": {
+    "addNewUser": "Add"
+  },
+  "userColumns": {
+    "username": "Username",
+    "id": "ID",
+    "email": "EMail",
+    "created_at": "Created At",
+    "created_by": "Created By",
+    "updated_at": "Updated At",
+    "updated_by": "Updated By"
   },
   "roles.name": "Roles",
   "roles.new.title": "New Role",

@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 from typing import Generic, TypeVar
+import uuid
 
 from pydantic import BaseModel, ConfigDict
 
@@ -14,3 +15,8 @@ class PaginatedResponse(BaseModel, Generic[T]):
     items: Sequence[T]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ByUser(BaseModel):
+    id: uuid.UUID | None = None
+    username: str | None = None

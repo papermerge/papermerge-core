@@ -5,10 +5,7 @@ from typing import Optional, Dict, Any, Literal
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict
 
-
-class ByUser(BaseModel):
-    id: uuid.UUID | None = None
-    username: str | None = None
+from papermerge.core.schemas.common import ByUser
 
 
 class Permission(BaseModel):

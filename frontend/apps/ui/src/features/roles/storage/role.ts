@@ -14,6 +14,7 @@ interface RolePanelList extends PanelListBase {
   includeScopeFilterValue?: Array<string>
   excludeScopeFilterValue?: Array<string>
 }
+
 interface RolePanelDetails {
   id: string
 }

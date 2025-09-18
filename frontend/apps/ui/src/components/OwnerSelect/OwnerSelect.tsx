@@ -1,4 +1,4 @@
-import {useGetUserGroupHomesQuery} from "@/features/users/apiSlice"
+import {useGetUserGroupHomesQuery} from "@/features/users/storage/api"
 
 import {ComboboxItem, ComboboxItemGroup, Select, Skeleton} from "@mantine/core"
 

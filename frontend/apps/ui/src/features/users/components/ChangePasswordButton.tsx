@@ -1,4 +1,4 @@
-import {useChangePasswordMutation} from "@/features/users/apiSlice"
+import {useChangePasswordMutation} from "@/features/users/storage/api"
 import {Box, Button, Group, Loader, Modal, PasswordInput} from "@mantine/core"
 import {useForm} from "@mantine/form"
 import {useDisclosure} from "@mantine/hooks"

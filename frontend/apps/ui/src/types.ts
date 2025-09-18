@@ -55,6 +55,10 @@ export type UserDetails = User & {
   scopes: string[]
   is_superuser: boolean
   is_active: boolean
+  created_at: string
+  created_by: ByUser
+  updated_at: string
+  updated_by: ByUser
 }
 
 export type UserEditableFields = {

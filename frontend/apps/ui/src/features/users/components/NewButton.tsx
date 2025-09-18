@@ -1,18 +1,18 @@
+import NewButton from "@/components/NewButton"
 import {useDisclosure} from "@mantine/hooks"
-import {Button} from "@mantine/core"
-import {IconPlus} from "@tabler/icons-react"
-import NewUserModal from "./NewUserModal"
 import {useTranslation} from "react-i18next"
+import NewUserModal from "./NewUserModal"
 
-export default function NewButton() {
+export default function NewButtonContainer() {
   const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
 
   return (
     <>
-      <Button leftSection={<IconPlus />} onClick={open} variant="default">
-        {t("common.new")}
-      </Button>
+      <NewButton
+        onClick={open}
+        text={t("users.addNewUser", {defaultValue: "Add"})}
+      />
       <NewUserModal opened={opened} onSubmit={close} onCancel={close} />
     </>
   )

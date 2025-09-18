@@ -1,12 +1,12 @@
 import {
   Box,
   Button,
+  CheckedNodeStatus,
   Group,
   Modal,
-  Space,
   ScrollArea,
-  Text,
-  CheckedNodeStatus
+  Space,
+  Text
 } from "@mantine/core"
 import {I18NRoleFormModal, RoleForm, SubmitButton} from "kommon"
 
@@ -57,7 +57,6 @@ export default function RoleFormModal({
           <RoleForm
             name={name}
             isLoading={inProgress}
-            withScrollArea={false}
             txt={txt?.roleForm}
             initialCheckedState={initialCheckedState}
             onPermissionsChange={onPermissionsChange}

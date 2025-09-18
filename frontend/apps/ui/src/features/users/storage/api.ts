@@ -2,11 +2,11 @@ import {apiSlice} from "@/features/api/slice"
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
+import {UserItem, UserQueryParams} from "@/features/users/types"
 import type {
   ChangePassword,
   CreateUser,
   Paginated,
-  PaginatedArgs,
   User,
   UserDetails,
   UserUpdate
@@ -15,14 +15,22 @@ import type {GroupHome, GroupInbox} from "@/types.d/groups"
 
 export const apiSliceWithUsers = apiSlice.injectEndpoints({
   endpoints: builder => ({
-    getPaginatedUsers: builder.query<Paginated<User>, PaginatedArgs | void>({
-      query: ({
-        page_number = 1,
-        page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES
-      }: PaginatedArgs) =>
-        `/users/?page_number=${page_number}&page_size=${page_size}`,
+    getPaginatedUsers: builder.query<
+      Paginated<UserItem>,
+      UserQueryParams | void
+    >({
+      query: (params = {}) => {
+        const queryString = buildQueryString(params || {})
+        return `/users/?${queryString}`
+      },
       providesTags: (
-        result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
+        result = {
+          page_number: 1,
+          page_size: 1,
+          num_pages: 1,
+          items: [],
+          total_items: 1
+        },
         _error,
         _arg
       ) => [
@@ -99,3 +107,28 @@ export const {
   useDeleteUserMutation,
   useChangePasswordMutation
 } = apiSliceWithUsers
+
+function buildQueryString(params: UserQueryParams = {}): string {
+  const searchParams = new URLSearchParams()
+
+  // Always include pagination with defaults
+  searchParams.append("page_number", String(params.page_number || 1))
+  searchParams.append(
+    "page_size",
+    String(params.page_size || PAGINATION_DEFAULT_ITEMS_PER_PAGES)
+  )
+
+  // Add sorting if provided
+  if (params.sort_by) {
+    searchParams.append("sort_by", params.sort_by)
+  }
+  if (params.sort_direction) {
+    searchParams.append("sort_direction", params.sort_direction)
+  }
+
+  if (params.filter_free_text) {
+    searchParams.append("filter_free_text", params.filter_free_text)
+  }
+
+  return searchParams.toString()
+}

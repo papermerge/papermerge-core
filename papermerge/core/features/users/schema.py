@@ -1,7 +1,9 @@
 import uuid
 from datetime import datetime
 from uuid import UUID
+from typing import Optional, Dict, Any, Literal
 
+from fastapi import Query
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -12,6 +14,7 @@ from pydantic import (
 
 from papermerge.core.features.groups.schema import Group
 from papermerge.core.features.roles.schema import Role
+from papermerge.core.schemas.common import ByUser
 
 
 class RemoteUser(BaseModel):
@@ -49,6 +52,17 @@ class User(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class UserEx(User):
+    created_at: datetime
+    created_by: ByUser
+    updated_at: datetime
+    updated_by: ByUser
+    archived_at: datetime | None = None
+    archived_by: ByUser | None = None
+    deleted_at: datetime | None = None
+    deleted_by: ByUser | None = None
+
+
 class UserDetails(BaseModel):
     id: UUID | str
     username: str
@@ -62,6 +76,10 @@ class UserDetails(BaseModel):
     scopes: list[str] = []
     groups: list[Group] = []
     roles: list[Role] = []
+    created_at: datetime | None = None
+    created_by: ByUser | None = None
+    updated_at: datetime | None = None
+    updated_by: ByUser | None = None
 
     # Config
     model_config = {
@@ -134,3 +152,45 @@ class UserInbox(BaseModel):
 
 class UserInboxes(BaseModel):
     inboxes: list[UserInbox]
+
+
+class UserParams(BaseModel):
+    page_size: int = Query(
+        15,
+        ge=1,
+        le=100,
+        description="Number of items per page"
+    )
+    page_number: int = Query(
+        1,
+        ge=1,
+        description="Page number (1-based)"
+    )
+
+    # Sorting parameters
+    sort_by: Optional[str] = Query(
+        None,
+        pattern="^(id|username|email|created_at|updated_at|created_by|updated_by)$",
+        description="Column to sort by: id, username, email, created_at, updated_at, created_by, updated_by"
+    )
+    sort_direction: Optional[Literal["asc", "desc"]] = Query(
+        None,
+        description="Sort direction: asc or desc"
+    )
+
+    filter_free_text: Optional[str] = Query(
+        None,
+        description="Filter by free text"
+    )
+
+    def to_filters(self) -> Optional[Dict[str, Dict[str, Any]]]:
+        filters = {}
+
+        if self.filter_free_text:
+            filters["free_text"] = {
+                "value": self.filter_free_text,
+                "operator": "free_text"
+            }
+
+
+        return filters if filters else None

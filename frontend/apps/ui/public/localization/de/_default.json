@@ -165,6 +165,9 @@
   "rolesList": {
     "noRolesFound": "Keine Rollen gefunden"
   },
+  "id": "ID",
+  "username": "Benutzername",
+  "email": "E-Mail",
   "created_at": "Erstellt am",
   "created_by": "Erstellt von",
   "updated_at": "Aktualisiert am",
@@ -287,7 +290,7 @@
   "users.delete.many.title": "Benutzer löschen",
   "users.delete.many.description": "Benutzer löschen?",
   "roles": {
-    "create_new_role": "Rolle Erstellen",
+    "addNewRole": "Hinzufügen",
     "scopeFilter": {
       "error": "Fehler beim Laden der Berechtigungen",
       "noScopesFound": "Keine Berechtigungen gefunden",
@@ -295,6 +298,18 @@
       "label.includes": "Enthält diese Berechtigungen",
       "label.excludes": "Schließt diese Berechtigungen aus"
     }
+  },
+  "users": {
+    "addNewUser": "Hinzufügen"
+  },
+  "userColumns": {
+    "username": "Benutzername",
+    "id": "ID",
+    "email": "E-Mail",
+    "created_at": "Erstellt am",
+    "created_by": "Erstellt von",
+    "updated_at": "Aktualisiert am",
+    "updated_by": "Aktualisiert von"
   },
   "roles.name": "Rollen",
   "roles.new.title": "Neue Rolle",

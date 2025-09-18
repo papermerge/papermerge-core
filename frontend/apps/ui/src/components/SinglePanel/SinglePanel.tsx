@@ -14,6 +14,7 @@ import {RoleDetails, RolesList} from "@/features/roles/components"
 import SearchResults from "@/features/search/components/SearchResults"
 import SharedCommander from "@/features/shared_nodes/components/SharedCommander"
 import SharedViewer from "@/features/shared_nodes/components/SharedViewer"
+import {UserDetails, UsersList} from "@/features/users/components"
 import type {PanelComponent} from "@/types.d/ui"
 
 import {selectPanelComponent} from "@/features/ui/uiSlice"
@@ -27,7 +28,9 @@ const PANEL_COMPONENTS_SAFE = {
   auditLogDetails: AuditLogDetails,
   auditLogList: AuditLogsList,
   rolesList: RolesList,
-  roleDetails: RoleDetails
+  roleDetails: RoleDetails,
+  usersList: UsersList,
+  userDetails: UserDetails
 } satisfies Record<PanelComponent, React.ComponentType>
 
 interface Args {

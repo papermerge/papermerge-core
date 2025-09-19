@@ -54,9 +54,13 @@ class User(BaseModel):
 
 class UserEx(User):
     created_at: datetime
-    created_by: ByUser
+    # Both `created_by` and `updated_by`  should be optional.
+    # The problem is that both columns are updated via a postgres trigger
+    # which gets user details via AuditContext and the audit
+    # context is missing in many parts of the tests.
+    created_by: ByUser | None = None
     updated_at: datetime
-    updated_by: ByUser
+    updated_by: ByUser | None = None
     archived_at: datetime | None = None
     archived_by: ByUser | None = None
     deleted_at: datetime | None = None

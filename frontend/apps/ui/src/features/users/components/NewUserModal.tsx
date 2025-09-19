@@ -7,13 +7,13 @@ import {
   Loader,
   LoadingOverlay,
   Modal,
-  MultiSelect,
   TextInput
 } from "@mantine/core"
 import {useForm} from "@mantine/form"
 
 import {UserEditableFields} from "@/types"
 
+import LazyMultiSelect from "@/components/LazyMultiSelect"
 import {useGetGroupsQuery} from "@/features/groups/apiSlice"
 import {useGetRolesQuery} from "@/features/roles/storage/api"
 import {useAddNewUserMutation} from "@/features/users/storage/api"
@@ -33,8 +33,32 @@ export default function NewUserModal({
   opened
 }: NewUserModalArgs) {
   const {t} = useTranslation()
-  const {data: groupsData = []} = useGetGroupsQuery()
-  const {data: rolesData = []} = useGetRolesQuery()
+  const [isGroupsDropdownOpen, setIsGroupsDropdownOpen] = useState(false)
+  const [isRolesDropdownOpen, setIsRolesDropdownOpen] = useState(false)
+
+  const {
+    data: groupsData = [],
+    isLoading: isGroupsLoading,
+    isError: isGroupsError
+  } = useGetGroupsQuery(undefined, {
+    skip: !isGroupsDropdownOpen
+  })
+  const {
+    data: rolesData = [],
+    isLoading: isRolesLoading,
+    isError: isRolesError
+  } = useGetRolesQuery(undefined, {
+    skip: !isRolesDropdownOpen
+  })
+  const groupItems =
+    groupsData.map(g => {
+      return {value: g.id, label: g.name}
+    }) || []
+  const roleItems =
+    rolesData.map(r => {
+      return {value: r.id, label: r.name}
+    }) || []
+
   const [addNewUser, {isLoading, isSuccess}] = useAddNewUserMutation()
 
   const [groups, setGroups] = useState<string[]>([])
@@ -50,11 +74,10 @@ export default function NewUserModal({
 
   const onLocalSubmit = async (userFields: UserEditableFields) => {
     const group_ids = groupsData
-      .filter(g => groups.includes(g.name))
+      .filter(g => groups.includes(g.id))
       .map(g => g.id)
-    const role_ids = rolesData
-      .filter(r => roles.includes(r.name))
-      .map(r => r.id)
+    const role_ids = rolesData.filter(r => roles.includes(r.id)).map(r => r.id)
+
     const newUserData = {
       username: userFields.username,
       email: userFields.email,
@@ -118,21 +141,25 @@ export default function NewUserModal({
           key={form.key("is_active")}
           {...form.getInputProps("is_active", {type: "checkbox"})}
         />
-        <MultiSelect
-          mt="sm"
-          label={t("users.form.groups")}
-          placeholder={t("users.form.groups.placeholder")}
-          onChange={setGroups}
-          value={groups}
-          data={groupsData.map(g => g.name) || []}
+        <LazyMultiSelect
+          label={t("users.form.groups", {defaultValue: "Groups"})}
+          isLoading={isGroupsLoading}
+          isError={isGroupsError}
+          onDropdownOpen={() => setIsGroupsDropdownOpen(true)}
+          onChange={(values: string[]) => setGroups(values)}
+          selectedItems={groups}
+          items={groupItems}
+          t={t}
         />
-        <MultiSelect
-          mt="sm"
-          label={t("users.form.roles")}
-          placeholder={t("users.form.roles.placeholder")}
-          onChange={setRoles}
-          value={roles}
-          data={rolesData.map(r => r.name) || []}
+        <LazyMultiSelect
+          label={t("users.form.roles", {defaultValue: "Roles"})}
+          isLoading={isRolesLoading}
+          onDropdownOpen={() => setIsRolesDropdownOpen(true)}
+          isError={isRolesError}
+          onChange={(values: string[]) => setRoles(values)}
+          selectedItems={roles}
+          items={roleItems}
+          t={t}
         />
         <Group justify="space-between" mt="md">
           <Button variant="default" onClick={onLocalCancel}>

@@ -109,8 +109,8 @@ async def get_user_group_inboxes(
 
 
 async def get_user_details(
-        db_session: AsyncSession,
-        user_id: uuid.UUID
+    db_session: AsyncSession,
+    user_id: uuid.UUID
 ) -> Tuple[schema.UserDetails | None, err_schema.Error | None]:
     created_by_user = aliased(orm.User)
     updated_by_user = aliased(orm.User)
@@ -150,16 +150,14 @@ async def get_user_details(
         error = err_schema.Error(messages=[f"Database error: {str(e)}"])
         return None, error
 
-    # Collect scopes and active roles
     scopes = set()
     active_roles = []
 
     for user_role in db_user.user_roles:
-        if user_role.deleted_at is None:  # Only active roles
+        if user_role.deleted_at is None:
             active_roles.append(user_role.role)
             for perm in user_role.role.permissions:
-                if perm.deleted_at is None:  # Only active permissions
-                    scopes.add(perm.codename)
+                scopes.add(perm.codename)
 
     # Build created_by info
     created_by = None

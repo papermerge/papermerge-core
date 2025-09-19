@@ -39,7 +39,10 @@ async def get_groups(
 
 
 async def get_groups_without_pagination(db_session: AsyncSession) -> list[schema.Group]:
-    stmt = select(orm.Group)
+    stmt = select(orm.Group).where(
+        orm.Group.archived_at.is_(None),
+        orm.Group.deleted_at.is_(None),
+    ).order_by(orm.Group.name.asc())
 
     db_groups = (await db_session.scalars(stmt)).all()
     items = [schema.Group.model_validate(db_group) for db_group in db_groups]

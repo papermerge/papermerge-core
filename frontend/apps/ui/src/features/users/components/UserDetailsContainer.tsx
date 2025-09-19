@@ -55,6 +55,16 @@ export default function UserDetailsContainer() {
         </Group>
         <Stack style={{overflowY: "auto"}}>
           <UserForm key={`${data.id}-${data?.scopes?.join(",")}`} user={data} />
+
+          <CopyableTextInput
+            value={data.home_folder_id}
+            label={t?.("user.HomeFolderID", {defaultValue: "Home Folder ID"})}
+          />
+          <CopyableTextInput
+            value={data.inbox_folder_id}
+            label={t?.("user.InboxFolderID", {defaultValue: "Inbox Folder ID"})}
+          />
+
           <CopyableTextInput
             value={data.updated_at}
             label={t?.("updated_at", {defaultValue: "Updated at"})}

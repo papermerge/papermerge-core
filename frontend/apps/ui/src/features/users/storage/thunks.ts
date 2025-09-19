@@ -27,7 +27,7 @@ export const showUserDetailsInMainPanel = (
   }
 }
 
-export const closeRoleDetailsSecondaryPanel = (): ThunkAction<
+export const closeUserDetailsSecondaryPanel = (): ThunkAction<
   void,
   RootState,
   undefined,

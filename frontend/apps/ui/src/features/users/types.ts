@@ -15,6 +15,12 @@ export interface UserQueryParams extends Partial<PaginatedArgs> {
   filter_created_by?: string
   filter_created_at?: string // ISO string format
   filter_free_text?: string
+  filter_with_roles?: string
+  filter_without_roles?: string
+  filter_with_groups?: string
+  filter_without_groups?: string
+  filter_with_scopes?: string
+  filter_without_scopes?: string
 }
 
 export interface ByUser {

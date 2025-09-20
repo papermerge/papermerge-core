@@ -29,18 +29,21 @@ async def get_role(
             created_by_user.id.label('created_by_id'),
             created_by_user.username.label('created_by_username'),
             updated_by_user.id.label('updated_by_id'),
+            updated_by_user.username.label('updated_by_username'),
             updated_by_user.username.label('updated_by_username')
         )
-        .options(selectinload(orm.Role.permissions))
+        .options(
+            selectinload(orm.Role.permissions),
+            selectinload(orm.Role.user_roles).selectinload(orm.UserRole.user)
+        )
         .outerjoin(created_by_user, orm.Role.created_by == created_by_user.id)
         .outerjoin(updated_by_user, orm.Role.updated_by == updated_by_user.id)
         .where(orm.Role.id == role_id)
     )
 
     result = (await db_session.execute(stmt)).one()
-    db_item = result[0]  # The Role object
+    db_item = result[0]
 
-    # Set scopes as before
     db_item.scopes = sorted([p.codename for p in db_item.permissions])
 
     created_by = None
@@ -57,7 +60,12 @@ async def get_role(
             username=result.updated_by_username
         )
 
-    # Create the response manually to include the ByUser data
+    used_by = [
+        schema.ByUser(id=ur.user.id, username=ur.user.username)
+        for ur in db_item.user_roles
+        if ur.deleted_at is None
+    ]
+
     role_details = schema.RoleDetails(
         id=db_item.id,
         name=db_item.name,
@@ -65,7 +73,8 @@ async def get_role(
         created_at=db_item.created_at,
         created_by=created_by,
         updated_at=db_item.updated_at,
-        updated_by=updated_by
+        updated_by=updated_by,
+        used_by=used_by
     )
 
     return role_details

@@ -8,6 +8,7 @@ import ColumnSelector from "./ColumnSelector"
 import {DeleteUsersButton} from "./DeleteButton"
 import EditButton from "./EditButton"
 import NewButton from "./NewButton"
+import Search from "./Search"
 
 export default function ActionButtons() {
   const mode = usePanelMode()
@@ -26,6 +27,7 @@ export default function ActionButtons() {
         {selectedIds.length >= 1 ? <DeleteUsersButton /> : ""}
       </Group>
       <Group>
+        <Search />
         <ColumnSelector />
       </Group>
     </Group>

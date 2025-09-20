@@ -14,7 +14,6 @@ from papermerge.core.utils.misc import is_valid_uuid
 from papermerge.core.features.auth import scopes
 from papermerge.core import constants
 from papermerge.core.schemas import error as err_schema
-from papermerge.core.features.groups.db.orm import user_groups_association
 from .orm import User
 
 DATETIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
@@ -49,17 +48,17 @@ async def get_user_group_homes(
     FROM groups g
     JOIN users_groups ug ON ug.group_id = g.id
     WHERE ug.user_id = <user_id>
+    AND ug.deleted_at IS NULL  -- Only active group memberships
+    AND g.deleted_at IS NULL   -- Only active groups
     """
     stmt = (
-        select(
-            orm.Group.name, orm.Group.id, orm.Group.home_folder_id
-        )  # Selecting only `Group.name` (since `home_folder_id` isn't defined in Group)
-        .join(
-            user_groups_association, user_groups_association.c.group_id == orm.Group.id
-        )
+        select(orm.Group.name, orm.Group.id, orm.Group.home_folder_id)
+        .join(orm.UserGroup, orm.UserGroup.group_id == orm.Group.id)
         .where(
-            user_groups_association.c.user_id == user_id,
-            orm.Group.home_folder_id != None,
+            orm.UserGroup.user_id == user_id,
+            orm.UserGroup.deleted_at.is_(None),  # Only active user-group relationships
+            orm.Group.deleted_at.is_(None),      # Only active groups
+            orm.Group.home_folder_id.is_not(None),  # Only groups with home folders
         )
     )
 
@@ -68,7 +67,9 @@ async def get_user_group_homes(
     models = []
     for group_name, group_id, home_folder_id in results:
         home = schema.UserHome(
-            group_name=group_name, group_id=group_id, home_id=home_folder_id
+            group_name=group_name,
+            group_id=group_id,
+            home_id=home_folder_id
         )
         models.append(schema.UserHome.model_validate(home))
 
@@ -77,22 +78,24 @@ async def get_user_group_homes(
 
 async def get_user_group_inboxes(
     db_session: AsyncSession, user_id: uuid.UUID
-) -> Tuple[list[schema.UserHome] | None, str | None]:
+) -> Tuple[list[schema.UserInbox] | None, str | None]:
     """Gets user group inboxes
 
     SELECT g.name, g.inbox_folder_id
     FROM groups g
     JOIN users_groups ug ON ug.group_id = g.id
     WHERE ug.user_id = <user_id>
+    AND ug.deleted_at IS NULL  -- Only active group memberships
+    AND g.deleted_at IS NULL   -- Only active groups
     """
     stmt = (
         select(orm.Group.name, orm.Group.id, orm.Group.inbox_folder_id)
-        .join(
-            user_groups_association, user_groups_association.c.group_id == orm.Group.id
-        )
+        .join(orm.UserGroup, orm.UserGroup.group_id == orm.Group.id)
         .where(
-            user_groups_association.c.user_id == user_id,
-            orm.Group.inbox_folder_id != None,
+            orm.UserGroup.user_id == user_id,
+            orm.UserGroup.deleted_at.is_(None),  # Only active user-group relationships
+            orm.Group.deleted_at.is_(None),      # Only active groups
+            orm.Group.inbox_folder_id.is_not(None),  # Only groups with inbox folders
         )
     )
 
@@ -101,7 +104,9 @@ async def get_user_group_inboxes(
     models = []
     for group_name, group_id, inbox_folder_id in results:
         home = schema.UserInbox(
-            group_name=group_name, group_id=group_id, inbox_id=inbox_folder_id
+            group_name=group_name,
+            group_id=group_id,
+            inbox_id=inbox_folder_id
         )
         models.append(schema.UserInbox.model_validate(home))
 
@@ -125,7 +130,9 @@ async def get_user_details(
         selectinload(orm.User.user_roles)
         .selectinload(orm.UserRole.role)
         .selectinload(orm.Role.permissions),
-        selectinload(orm.User.groups)
+        selectinload(orm.User.user_groups)
+        .selectinload(orm.UserGroup.group)
+
     ).outerjoin(
         created_by_user, orm.User.created_by == created_by_user.id
     ).outerjoin(
@@ -159,6 +166,12 @@ async def get_user_details(
             for perm in user_role.role.permissions:
                 scopes.add(perm.codename)
 
+    active_groups = []
+
+    for user_group in db_user.user_groups:
+        if user_group.deleted_at is None:
+            active_groups.append(user_group.group)
+
     # Build created_by info
     created_by = None
     if created_by_id:
@@ -185,7 +198,7 @@ async def get_user_details(
         is_superuser=db_user.is_superuser,
         is_active=db_user.is_active,
         scopes=sorted(scopes),
-        groups=db_user.groups,
+        groups=active_groups,
         roles=active_roles,
         created_at=db_user.created_at,
         created_by=created_by,
@@ -197,15 +210,15 @@ async def get_user_details(
 
 
 async def get_users(
-    db_session: AsyncSession,
-    *,
-    page_size: int,
-    page_number: int,
-    sort_by: Optional[str] = None,
-    sort_direction: Optional[str] = None,
-    filters: Optional[Dict[str, Dict[str, Any]]] = None,
-    include_deleted: bool = False,
-    include_archived: bool = True
+        db_session: AsyncSession,
+        *,
+        page_size: int,
+        page_number: int,
+        sort_by: Optional[str] = None,
+        sort_direction: Optional[str] = None,
+        filters: Optional[Dict[str, Dict[str, Any]]] = None,
+        include_deleted: bool = False,
+        include_archived: bool = True
 ) -> schema.PaginatedResponse[schema.UserEx]:
     # Create user aliases for all audit trail joins
     created_user = aliased(orm.User, name='created_user')
@@ -248,10 +261,57 @@ async def get_users(
         .join(archived_user, orm.User.archived_by == archived_user.id, isouter=True)
     )
 
+    # Apply role/group/scope filters to count query as well
+    if filters:
+        # Check if we need to join with role/group/permission tables for filtering
+        needs_role_joins = any(filter_name in ['with_roles', 'without_roles', 'with_scopes', 'without_scopes']
+                               for filter_name in filters.keys())
+        needs_group_joins = any(filter_name in ['with_groups', 'without_groups']
+                                for filter_name in filters.keys())
+
+        if needs_role_joins:
+            count_query = (
+                count_query
+                .join(orm.UserRole, orm.User.id == orm.UserRole.user_id, isouter=True)
+                .join(orm.Role, orm.UserRole.role_id == orm.Role.id, isouter=True)
+                .join(orm.roles_permissions_association, orm.Role.id == orm.roles_permissions_association.c.role_id, isouter=True)
+                .join(orm.Permission, orm.roles_permissions_association.c.permission_id == orm.Permission.id, isouter=True)
+            )
+
+        if needs_group_joins:
+            count_query = (
+                count_query
+                .join(orm.UserGroup, orm.User.id == orm.UserGroup.user_id, isouter=True)
+                .join(orm.Group, orm.UserGroup.group_id == orm.Group.id, isouter=True)
+            )
+
     if where_conditions:
         count_query = count_query.where(and_(*where_conditions))
 
     total_users = (await db_session.execute(count_query)).scalar()
+
+    # Apply role/group/scope joins to main query if needed
+    if filters:
+        needs_role_joins = any(filter_name in ['with_roles', 'without_roles', 'with_scopes', 'without_scopes']
+                               for filter_name in filters.keys())
+        needs_group_joins = any(filter_name in ['with_groups', 'without_groups']
+                                for filter_name in filters.keys())
+
+        if needs_role_joins:
+            base_query = (
+                base_query
+                .join(orm.UserRole, orm.User.id == orm.UserRole.user_id, isouter=True)
+                .join(orm.Role, orm.UserRole.role_id == orm.Role.id, isouter=True)
+                .join(orm.roles_permissions_association, orm.Role.id == orm.roles_permissions_association.c.role_id, isouter=True)
+                .join(orm.Permission, orm.roles_permissions_association.c.permission_id == orm.Permission.id, isouter=True)
+            )
+
+        if needs_group_joins:
+            base_query = (
+                base_query
+                .join(orm.UserGroup, orm.User.id == orm.UserGroup.user_id, isouter=True)
+                .join(orm.Group, orm.UserGroup.group_id == orm.Group.id, isouter=True)
+            )
 
     if sort_by and sort_direction:
         base_query = _apply_sorting(
@@ -285,16 +345,18 @@ async def get_users(
             archived_user.id.label('archived_by_id'),
             archived_user.username.label('archived_by_username')
         )
+        .distinct()  # Add distinct to handle multiple role/group joins
         .limit(page_size)
         .offset(offset)
     )
+
     # Execute query - get tuples with role and user data
     results = (await db_session.execute(paginated_query_with_users)).all()
 
     # Convert to schema models with complete audit trail
     items = []
     for row in results:
-        user = row[0]  # The Role object
+        user = row[0]  # The User object
 
         # Build audit user objects (handle None values)
         created_by = None
@@ -646,13 +708,14 @@ async def change_password(
 async def user_belongs_to(
     db_session: AsyncSession, group_id: uuid.UUID, user_id: uuid.UUID
 ) -> bool:
-    """Does user belong to group?"""
+    """Does user belong to group? (active membership only)"""
     stmt = (
         select(func.count())
-        .select_from(user_groups_association)
+        .select_from(orm.UserGroup)
         .where(
-            user_groups_association.c.user_id == user_id,
-            user_groups_association.c.group_id == group_id,
+            orm.UserGroup.user_id == user_id,
+            orm.UserGroup.group_id == group_id,
+            orm.UserGroup.deleted_at.is_(None),  # Only active memberships
         )
     )
     result = (await db_session.execute(stmt)).scalar()
@@ -679,7 +742,6 @@ def _build_filter_conditions(
 
         if filter_name == "free_text":
             search_term = f"%{value}%"
-
             condition = or_(
                 orm.User.username.ilike(search_term),
                 orm.User.email.ilike(search_term),
@@ -691,11 +753,93 @@ def _build_filter_conditions(
                 updated_user.last_name.ilike(search_term),
             )
 
+        elif filter_name == "with_roles":
+            # Users who have ANY of the specified roles (active user roles only)
+            role_names = value if isinstance(value, list) else [value]
+            condition = and_(
+                orm.UserRole.user_id == orm.User.id,
+                orm.UserRole.deleted_at.is_(None),  # Only active user roles
+                orm.Role.deleted_at.is_(None),      # Only active roles
+                orm.Role.name.in_(role_names)
+            )
+
+        elif filter_name == "without_roles":
+            # Users who do NOT have ANY of the specified roles
+            role_names = value if isinstance(value, list) else [value]
+            # Subquery to find users who have these roles
+            users_with_roles_subquery = (
+                select(orm.UserRole.user_id)
+                .join(orm.Role, orm.UserRole.role_id == orm.Role.id)
+                .where(
+                    and_(
+                        orm.UserRole.deleted_at.is_(None),
+                        orm.Role.deleted_at.is_(None),
+                        orm.Role.name.in_(role_names)
+                    )
+                )
+            )
+            condition = orm.User.id.notin_(users_with_roles_subquery)
+
+        elif filter_name == "with_groups":
+            # Users who have ANY of the specified groups (active user groups only)
+            group_names = value if isinstance(value, list) else [value]
+            condition = and_(
+                orm.UserGroup.user_id == orm.User.id,
+                orm.UserGroup.deleted_at.is_(None),  # Only active user groups
+                orm.Group.deleted_at.is_(None),      # Only active groups
+                orm.Group.name.in_(group_names)
+            )
+
+        elif filter_name == "without_groups":
+            # Users who do NOT have ANY of the specified groups
+            group_names = value if isinstance(value, list) else [value]
+            # Subquery to find users who have these groups
+            users_with_groups_subquery = (
+                select(orm.UserGroup.user_id)
+                .join(orm.Group, orm.UserGroup.group_id == orm.Group.id)
+                .where(
+                    and_(
+                        orm.UserGroup.deleted_at.is_(None),
+                        orm.Group.deleted_at.is_(None),
+                        orm.Group.name.in_(group_names)
+                    )
+                )
+            )
+            condition = orm.User.id.notin_(users_with_groups_subquery)
+
+        elif filter_name == "with_scopes":
+            # Users who have ANY of the specified scopes (through roles)
+            scope_names = value if isinstance(value, list) else [value]
+            condition = and_(
+                orm.UserRole.user_id == orm.User.id,
+                orm.UserRole.deleted_at.is_(None),    # Only active user roles
+                orm.Role.deleted_at.is_(None),        # Only active roles
+                orm.Permission.codename.in_(scope_names)
+            )
+
+        elif filter_name == "without_scopes":
+            # Users who do NOT have ANY of the specified scopes
+            scope_names = value if isinstance(value, list) else [value]
+            # Subquery to find users who have these scopes through roles
+            users_with_scopes_subquery = (
+                select(orm.UserRole.user_id)
+                .join(orm.Role, orm.UserRole.role_id == orm.Role.id)
+                .join(orm.roles_permissions_association, orm.Role.id == orm.roles_permissions_association.c.role_id)
+                .join(orm.Permission, orm.roles_permissions_association.c.permission_id == orm.Permission.id)
+                .where(
+                    and_(
+                        orm.UserRole.deleted_at.is_(None),
+                        orm.Role.deleted_at.is_(None),
+                        orm.Permission.codename.in_(scope_names)
+                    )
+                )
+            )
+            condition = orm.User.id.notin_(users_with_scopes_subquery)
+
         if condition is not None:
             conditions.append(condition)
 
     return conditions
-
 
 def _apply_sorting(
     query,

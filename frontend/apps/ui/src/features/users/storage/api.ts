@@ -130,5 +130,29 @@ function buildQueryString(params: UserQueryParams = {}): string {
     searchParams.append("filter_free_text", params.filter_free_text)
   }
 
+  if (params.filter_with_roles) {
+    searchParams.append("filter_with_roles", params.filter_with_roles)
+  }
+
+  if (params.filter_without_roles) {
+    searchParams.append("filter_without_roles", params.filter_without_roles)
+  }
+
+  if (params.filter_with_groups) {
+    searchParams.append("filter_with_groups", params.filter_with_groups)
+  }
+
+  if (params.filter_without_groups) {
+    searchParams.append("filter_without_groups", params.filter_without_groups)
+  }
+
+  if (params.filter_with_scopes) {
+    searchParams.append("filter_with_scopes", params.filter_with_scopes)
+  }
+
+  if (params.filter_without_scopes) {
+    searchParams.append("filter_without_scopes", params.filter_without_scopes)
+  }
+
   return searchParams.toString()
 }

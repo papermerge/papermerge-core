@@ -1,4 +1,4 @@
-"""v3.6.0: 0010 -- make role name partially unique
+"""v3.6.0: 0011 -- make role name partially unique
 
 Revision ID: 2a80c098267f
 Revises: 1e2e365bb8c4

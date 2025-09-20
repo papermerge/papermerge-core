@@ -243,6 +243,7 @@ export type RoleDetails = {
   created_by: ByUser
   updated_at: string
   updated_by: ByUser
+  used_by: ByUser[]
 }
 
 export type RoleUpdate = Pick<Role, "id" | "name" | "scopes">

@@ -5,19 +5,18 @@ import LazyScopesSelect from "./LazyScopesSelect"
 interface Args {
   scopes?: string[]
   onChange?: (value: string[] | null) => void
+  label: string
   t?: TFunction
 }
 
-export default function InScopeFilter({scopes, onChange, t}: Args) {
+export default function FilterByScope({scopes, onChange, t, label}: Args) {
   return (
     <Paper
       onClick={e => e.stopPropagation()}
       onMouseDown={e => e.stopPropagation()}
     >
       <LazyScopesSelect
-        label={
-          t?.("roles.scopeFilter.label.includes") ?? "Includes these scopes"
-        }
+        label={label}
         t={t}
         selectedScopes={scopes}
         onChange={onChange}

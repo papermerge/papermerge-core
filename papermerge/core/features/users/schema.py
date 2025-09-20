@@ -187,6 +187,38 @@ class UserParams(BaseModel):
         description="Filter by free text"
     )
 
+    filter_with_roles: Optional[str] = Query(
+        None,
+        description="Comma-separated list of role names"
+    )
+
+    filter_without_roles: Optional[str] = Query(
+        None,
+        description="Comma-separated list of role names"
+    )
+
+    filter_with_groups: Optional[str] = Query(
+        None,
+        description="Comma-separated list of group names"
+    )
+
+    filter_without_groups: Optional[str] = Query(
+        None,
+        description="Comma-separated list of group names"
+    )
+
+    filter_with_scopes: Optional[str] = Query(
+        None,
+        description="Comma-separated list of scopes"
+    )
+
+    filter_without_scopes: Optional[str] = Query(
+        None,
+        description="Comma-separated list of scopes"
+    )
+
+
+
     def to_filters(self) -> Optional[Dict[str, Dict[str, Any]]]:
         filters = {}
 
@@ -195,6 +227,43 @@ class UserParams(BaseModel):
                 "value": self.filter_free_text,
                 "operator": "free_text"
             }
+
+        if self.filter_with_roles:
+            filters["with_roles"] = {
+                "value": self.filter_with_roles.split(","),
+                "operator": "in"
+            }
+
+        if self.filter_without_roles:
+            filters["without_roles"] = {
+                "value": self.filter_without_roles.split(","),
+                "operator": "in"
+            }
+
+        if self.filter_with_groups:
+            filters["with_groups"] = {
+                "value": self.filter_with_groups.split(","),
+                "operator": "in"
+            }
+
+        if self.filter_without_groups:
+            filters["without_groups"] = {
+                "value": self.filter_without_groups.split(","),
+                "operator": "in"
+            }
+
+        if self.filter_with_scopes:
+            filters["with_scopes"] = {
+                "value": self.filter_with_scopes.split(","),
+                "operator": "in"
+            }
+
+        if self.filter_without_scopes:
+            filters["without_scopes"] = {
+                "value": self.filter_without_scopes.split(","),
+                "operator": "in"
+            }
+
 
 
         return filters if filters else None

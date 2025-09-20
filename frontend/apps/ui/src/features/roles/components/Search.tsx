@@ -1,4 +1,5 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import FilterByScope from "@/components/FilterByScope"
 import {
   rolesTableFiltersUpdated,
   selectRoleExcludeScopeFilterValue,
@@ -9,8 +10,6 @@ import {usePanelMode} from "@/hooks"
 import {SearchContainer} from "kommon"
 import {useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
-import InScopeFilter from "./InScopeFilter"
-import NotInScopeFilter from "./NotInScopeFilter"
 
 const DEBOUNCE_MS = 300 // 300 miliseconds
 
@@ -103,13 +102,19 @@ export default function Search() {
       t={t}
       placeholder={t?.("searchRoles") || "Search roles..."}
     >
-      <InScopeFilter
+      <FilterByScope
         t={t}
         onChange={onLocalIncludeScopeChange}
         scopes={localIncludeScopes}
+        label={
+          t?.("roles.scopeFilter.label.includes") ?? "Includes these scopes"
+        }
       />
-      <NotInScopeFilter
+      <FilterByScope
         t={t}
+        label={
+          t?.("roles.scopeFilter.label.excludes") ?? "Excludes these scopes"
+        }
         onChange={onLocalExcludeScopeChange}
         scopes={localExcludeScopes}
       />

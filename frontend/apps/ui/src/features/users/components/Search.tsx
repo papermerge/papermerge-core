@@ -1,0 +1,207 @@
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import FilterByScope from "@/components/FilterByScope"
+import {
+  selectUserFreeTextFilterValue,
+  selectUserWithGroupsFilterValue,
+  selectUserWithRolesFilterValue,
+  selectUserWithScopesFilterValue,
+  selectUserWithoutGroupsFilterValue,
+  selectUserWithoutRolesFilterValue,
+  selectUserWithoutScopesFilterValue,
+  usersTableFiltersUpdated
+} from "@/features/users/storage/user"
+import {usePanelMode} from "@/hooks"
+import {SearchContainer} from "kommon"
+import {useEffect, useState} from "react"
+import {useTranslation} from "react-i18next"
+import FilterByGroups from "./FilterByGroups"
+import FilterByRoles from "./FilterByRoles"
+
+const DEBOUNCE_MS = 300 // 300 miliseconds
+
+export default function Search() {
+  const {t} = useTranslation()
+  const mode = usePanelMode()
+
+  const dispatch = useAppDispatch()
+
+  const searchText = useAppSelector(s => selectUserFreeTextFilterValue(s, mode))
+  const withRoles = useAppSelector(s => selectUserWithRolesFilterValue(s, mode))
+  const withoutRoles = useAppSelector(s =>
+    selectUserWithoutRolesFilterValue(s, mode)
+  )
+  const withGroups = useAppSelector(s =>
+    selectUserWithGroupsFilterValue(s, mode)
+  )
+  const withoutGroups = useAppSelector(s =>
+    selectUserWithoutGroupsFilterValue(s, mode)
+  )
+  const withScopes = useAppSelector(s =>
+    selectUserWithScopesFilterValue(s, mode)
+  )
+  const withoutScopes = useAppSelector(s =>
+    selectUserWithoutScopesFilterValue(s, mode)
+  )
+
+  const [localWithRoles, setLocalWithRoles] = useState<string[]>(
+    withRoles || []
+  )
+  const [localWithoutRoles, setLocalWithoutRoles] = useState<string[]>(
+    withoutRoles || []
+  )
+  const [localWithGroups, setLocalWithGroups] = useState<string[]>(
+    withGroups || []
+  )
+  const [localWithoutGroups, setLocalWithoutGroups] = useState<string[]>(
+    withoutGroups || []
+  )
+  const [localWithScopes, setLocalWithScopes] = useState<string[]>(
+    withScopes || []
+  )
+  const [localWithoutScopes, setLocalWithoutScopes] = useState<string[]>(
+    withoutScopes || []
+  )
+
+  const [localSearchTextValue, setSearchTextValue] = useState(searchText || "")
+  const [debouncedSearchTextValue, setDebouncedSearchTextValue] = useState(
+    searchText || ""
+  )
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTextValue(localSearchTextValue)
+    }, DEBOUNCE_MS)
+
+    return () => clearTimeout(timer)
+  }, [localSearchTextValue])
+
+  useEffect(() => {
+    onSearch?.()
+  }, [debouncedSearchTextValue])
+
+  const onLocalWithRoleChange = (value?: string[] | null) => {
+    setLocalWithRoles(value || [])
+  }
+
+  const onLocalWithoutRoleChange = (value?: string[] | null) => {
+    setLocalWithoutRoles(value || [])
+  }
+
+  const onLocalWithGroupChange = (value?: string[] | null) => {
+    setLocalWithGroups(value || [])
+  }
+
+  const onLocalWithoutGroupChange = (value?: string[] | null) => {
+    setLocalWithoutGroups(value || [])
+  }
+
+  const onLocalWithScopesChange = (value?: string[] | null) => {
+    setLocalWithScopes(value || [])
+  }
+
+  const onLocalWithoutScopesChange = (value?: string[] | null) => {
+    setLocalWithoutScopes(value || [])
+  }
+
+  const onTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTextValue(e.currentTarget.value)
+  }
+
+  const onClearSearchText = () => {
+    setSearchTextValue("")
+  }
+
+  const onSearch = () => {
+    dispatch(
+      usersTableFiltersUpdated({
+        mode,
+        freeTextFilterValue: debouncedSearchTextValue,
+        withRolesFilterValue: localWithRoles,
+        withoutRolesFilterValue: localWithoutRoles,
+        withGroupsFilterValue: localWithGroups,
+        withoutGroupsFilterValue: localWithoutGroups,
+        withScopesFilterValue: localWithScopes,
+        withoutScopesFilterValue: localWithoutScopes
+      })
+    )
+  }
+
+  const onClear = () => {
+    setLocalWithRoles([])
+    setLocalWithoutRoles([])
+    setLocalWithGroups([])
+    setLocalWithoutGroups([])
+    setLocalWithScopes([])
+    setLocalWithoutScopes([])
+
+    dispatch(
+      usersTableFiltersUpdated({
+        mode,
+        freeTextFilterValue: undefined,
+        withRolesFilterValue: undefined,
+        withoutRolesFilterValue: undefined,
+        withGroupsFilterValue: undefined,
+        withoutGroupsFilterValue: undefined,
+        withScopesFilterValue: undefined,
+        withoutScopesFilterValue: undefined
+      })
+    )
+  }
+
+  return (
+    <SearchContainer
+      onTextChange={onTextChange}
+      searchText={localSearchTextValue}
+      onClearSearchText={onClearSearchText}
+      onClear={onClear}
+      onSearch={onSearch}
+      t={t}
+      placeholder={t?.("searchUsers", {defaultValue: "Search users..."})}
+    >
+      <FilterByRoles
+        label={t?.("usersFilter.ByRole.WithRoles", {
+          defaultValue: "User has these roles"
+        })}
+        onChange={onLocalWithRoleChange}
+        roles={localWithRoles}
+      />
+      <FilterByRoles
+        label={t?.("usersFilter.ByRole.WithoutRoles", {
+          defaultValue: "User does NOT have these roles"
+        })}
+        onChange={onLocalWithoutRoleChange}
+        roles={localWithoutRoles}
+      />
+      <FilterByGroups
+        label={t?.("usersFilter.ByGroup.WithGroups", {
+          defaultValue: "User is part of these groups"
+        })}
+        onChange={onLocalWithGroupChange}
+        groups={localWithGroups}
+      />
+      <FilterByGroups
+        label={t?.("usersFilter.ByGroup.WithoutGroups", {
+          defaultValue: "User NOT is part of these groups"
+        })}
+        onChange={onLocalWithoutGroupChange}
+        groups={localWithoutGroups}
+      />
+      <FilterByScope
+        t={t}
+        onChange={onLocalWithScopesChange}
+        scopes={localWithScopes}
+        label={t?.("scopeFilter.label.hasTheseScopes", {
+          defaultValue: "Has these these scopes"
+        })}
+      />
+      <FilterByScope
+        t={t}
+        label={t?.("scopeFilter.label.doesNotHaveTheseScopes", {
+          defaultValue: "Does NOT have these scopes"
+        })}
+        onChange={onLocalWithoutScopesChange}
+        scopes={localWithoutScopes}
+      />
+    </SearchContainer>
+  )
+}

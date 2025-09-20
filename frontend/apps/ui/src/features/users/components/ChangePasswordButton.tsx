@@ -22,7 +22,8 @@ export default function ChangePasswordButton({
     return (
       <Button
         leftSection={<IconPassword />}
-        variant={"default"}
+        variant={"filled"}
+        color={"teal"}
         disabled={true}
       >
         {t("common.change_password")}
@@ -34,8 +35,9 @@ export default function ChangePasswordButton({
     <>
       <Button
         leftSection={<IconPassword />}
-        onClick={open} // only with userId defined and non-empty
-        variant={"default"}
+        onClick={open}
+        variant={"filled"}
+        color={"teal"}
       >
         {t("common.change_password")}
       </Button>

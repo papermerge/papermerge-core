@@ -9,8 +9,12 @@ import {RootState} from "@/app/types"
 
 interface UserPanelList extends PanelListBase {
   selectedIDs?: Array<string>
-  includeScopeFilterValue?: Array<string>
-  excludeScopeFilterValue?: Array<string>
+  withRolesFilterValue?: Array<string>
+  withoutRolesFilterValue?: Array<string>
+  withGroupsFilterValue?: Array<string>
+  withoutGroupsFilterValue?: Array<string>
+  withScopesFilterValue?: Array<string>
+  withoutScopesFilterValue?: Array<string>
 }
 
 interface UserPanelDetails {
@@ -76,22 +80,34 @@ const usersSlice = createSlice({
       action: PayloadAction<{
         mode: PanelMode
         freeTextFilterValue?: string
-        includeScopeFilterValue?: string[]
-        excludeScopeFilterValue?: string[]
+        withRolesFilterValue?: string[]
+        withoutRolesFilterValue?: string[]
+        withGroupsFilterValue?: string[]
+        withoutGroupsFilterValue?: string[]
+        withScopesFilterValue?: string[]
+        withoutScopesFilterValue?: string[]
       }>
     ) {
       const {
         mode,
         freeTextFilterValue,
-        includeScopeFilterValue,
-        excludeScopeFilterValue
+        withRolesFilterValue,
+        withoutRolesFilterValue,
+        withGroupsFilterValue,
+        withoutGroupsFilterValue,
+        withScopesFilterValue,
+        withoutScopesFilterValue
       } = action.payload
       if (mode == "main") {
         state.mainUserList = {
           ...state.mainUserList,
           freeTextFilterValue,
-          includeScopeFilterValue,
-          excludeScopeFilterValue
+          withRolesFilterValue,
+          withoutRolesFilterValue,
+          withGroupsFilterValue,
+          withoutGroupsFilterValue,
+          withScopesFilterValue,
+          withoutScopesFilterValue
         }
         return
       }
@@ -99,8 +115,12 @@ const usersSlice = createSlice({
       state.secondaryUserList = {
         ...state.secondaryUserList,
         freeTextFilterValue,
-        includeScopeFilterValue,
-        excludeScopeFilterValue
+        withRolesFilterValue,
+        withoutRolesFilterValue,
+        withGroupsFilterValue,
+        withoutGroupsFilterValue,
+        withScopesFilterValue,
+        withoutScopesFilterValue
       }
     },
     userPaginationUpdated(
@@ -298,4 +318,70 @@ export const selectUserFreeTextFilterValue = (
   }
 
   return state.users.secondaryUserList?.freeTextFilterValue
+}
+
+export const selectUserWithRolesFilterValue = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.users.mainUserList?.withRolesFilterValue
+  }
+
+  return state.users.secondaryUserList?.withRolesFilterValue
+}
+
+export const selectUserWithoutRolesFilterValue = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.users.mainUserList?.withoutRolesFilterValue
+  }
+
+  return state.users.secondaryUserList?.withoutRolesFilterValue
+}
+
+export const selectUserWithGroupsFilterValue = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.users.mainUserList?.withGroupsFilterValue
+  }
+
+  return state.users.secondaryUserList?.withGroupsFilterValue
+}
+
+export const selectUserWithoutGroupsFilterValue = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.users.mainUserList?.withoutGroupsFilterValue
+  }
+
+  return state.users.secondaryUserList?.withoutGroupsFilterValue
+}
+
+export const selectUserWithScopesFilterValue = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.users.mainUserList?.withScopesFilterValue
+  }
+
+  return state.users.secondaryUserList?.withScopesFilterValue
+}
+
+export const selectUserWithoutScopesFilterValue = (
+  state: RootState,
+  mode: PanelMode
+) => {
+  if (mode == "main") {
+    return state.users.mainUserList?.withoutScopesFilterValue
+  }
+
+  return state.users.secondaryUserList?.withoutScopesFilterValue
 }

@@ -5,7 +5,9 @@ import {
   selectUserPageNumber,
   selectUserPageSize,
   selectUserSorting,
+  selectUserWithGroupsFilterValue,
   selectUserWithRolesFilterValue,
+  selectUserWithoutGroupsFilterValue,
   selectUserWithoutRolesFilterValue
 } from "@/features/users/storage/user"
 import type {SortBy, UserQueryParams} from "@/features/users/types"
@@ -24,6 +26,12 @@ function useQueryParams(): UserQueryParams {
   const without_roles = useAppSelector(s =>
     selectUserWithoutRolesFilterValue(s, mode)
   )
+  const with_groups = useAppSelector(s =>
+    selectUserWithGroupsFilterValue(s, mode)
+  )
+  const without_groups = useAppSelector(s =>
+    selectUserWithoutGroupsFilterValue(s, mode)
+  )
 
   const queryParams: UserQueryParams = {
     page_size: pageSize,
@@ -32,7 +40,9 @@ function useQueryParams(): UserQueryParams {
     sort_direction: sorting?.direction || undefined,
     filter_free_text: free_text,
     filter_with_roles: with_roles?.join(","),
-    filter_without_roles: without_roles?.join(",")
+    filter_without_roles: without_roles?.join(","),
+    filter_with_groups: with_groups?.join(","),
+    filter_without_groups: without_groups?.join(",")
   }
 
   return queryParams

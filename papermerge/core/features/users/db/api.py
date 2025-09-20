@@ -14,7 +14,6 @@ from papermerge.core.utils.misc import is_valid_uuid
 from papermerge.core.features.auth import scopes
 from papermerge.core import constants
 from papermerge.core.schemas import error as err_schema
-from papermerge.core.features.groups.db.orm import user_groups_association
 from .orm import User
 
 DATETIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
@@ -49,17 +48,17 @@ async def get_user_group_homes(
     FROM groups g
     JOIN users_groups ug ON ug.group_id = g.id
     WHERE ug.user_id = <user_id>
+    AND ug.deleted_at IS NULL  -- Only active group memberships
+    AND g.deleted_at IS NULL   -- Only active groups
     """
     stmt = (
-        select(
-            orm.Group.name, orm.Group.id, orm.Group.home_folder_id
-        )  # Selecting only `Group.name` (since `home_folder_id` isn't defined in Group)
-        .join(
-            user_groups_association, user_groups_association.c.group_id == orm.Group.id
-        )
+        select(orm.Group.name, orm.Group.id, orm.Group.home_folder_id)
+        .join(orm.UserGroup, orm.UserGroup.group_id == orm.Group.id)
         .where(
-            user_groups_association.c.user_id == user_id,
-            orm.Group.home_folder_id != None,
+            orm.UserGroup.user_id == user_id,
+            orm.UserGroup.deleted_at.is_(None),  # Only active user-group relationships
+            orm.Group.deleted_at.is_(None),      # Only active groups
+            orm.Group.home_folder_id.is_not(None),  # Only groups with home folders
         )
     )
 
@@ -68,7 +67,9 @@ async def get_user_group_homes(
     models = []
     for group_name, group_id, home_folder_id in results:
         home = schema.UserHome(
-            group_name=group_name, group_id=group_id, home_id=home_folder_id
+            group_name=group_name,
+            group_id=group_id,
+            home_id=home_folder_id
         )
         models.append(schema.UserHome.model_validate(home))
 
@@ -77,22 +78,24 @@ async def get_user_group_homes(
 
 async def get_user_group_inboxes(
     db_session: AsyncSession, user_id: uuid.UUID
-) -> Tuple[list[schema.UserHome] | None, str | None]:
+) -> Tuple[list[schema.UserInbox] | None, str | None]:
     """Gets user group inboxes
 
     SELECT g.name, g.inbox_folder_id
     FROM groups g
     JOIN users_groups ug ON ug.group_id = g.id
     WHERE ug.user_id = <user_id>
+    AND ug.deleted_at IS NULL  -- Only active group memberships
+    AND g.deleted_at IS NULL   -- Only active groups
     """
     stmt = (
         select(orm.Group.name, orm.Group.id, orm.Group.inbox_folder_id)
-        .join(
-            user_groups_association, user_groups_association.c.group_id == orm.Group.id
-        )
+        .join(orm.UserGroup, orm.UserGroup.group_id == orm.Group.id)
         .where(
-            user_groups_association.c.user_id == user_id,
-            orm.Group.inbox_folder_id != None,
+            orm.UserGroup.user_id == user_id,
+            orm.UserGroup.deleted_at.is_(None),  # Only active user-group relationships
+            orm.Group.deleted_at.is_(None),      # Only active groups
+            orm.Group.inbox_folder_id.is_not(None),  # Only groups with inbox folders
         )
     )
 
@@ -101,7 +104,9 @@ async def get_user_group_inboxes(
     models = []
     for group_name, group_id, inbox_folder_id in results:
         home = schema.UserInbox(
-            group_name=group_name, group_id=group_id, inbox_id=inbox_folder_id
+            group_name=group_name,
+            group_id=group_id,
+            inbox_id=inbox_folder_id
         )
         models.append(schema.UserInbox.model_validate(home))
 
@@ -125,7 +130,9 @@ async def get_user_details(
         selectinload(orm.User.user_roles)
         .selectinload(orm.UserRole.role)
         .selectinload(orm.Role.permissions),
-        selectinload(orm.User.groups)
+        selectinload(orm.User.user_groups)
+        .selectinload(orm.UserGroup.group)
+
     ).outerjoin(
         created_by_user, orm.User.created_by == created_by_user.id
     ).outerjoin(
@@ -159,6 +166,12 @@ async def get_user_details(
             for perm in user_role.role.permissions:
                 scopes.add(perm.codename)
 
+    active_groups = []
+
+    for user_group in db_user.user_groups:
+        if user_group.deleted_at is None:
+            active_groups.append(user_group.group)
+
     # Build created_by info
     created_by = None
     if created_by_id:
@@ -185,7 +198,7 @@ async def get_user_details(
         is_superuser=db_user.is_superuser,
         is_active=db_user.is_active,
         scopes=sorted(scopes),
-        groups=db_user.groups,
+        groups=active_groups,
         roles=active_roles,
         created_at=db_user.created_at,
         created_by=created_by,
@@ -695,13 +708,14 @@ async def change_password(
 async def user_belongs_to(
     db_session: AsyncSession, group_id: uuid.UUID, user_id: uuid.UUID
 ) -> bool:
-    """Does user belong to group?"""
+    """Does user belong to group? (active membership only)"""
     stmt = (
         select(func.count())
-        .select_from(user_groups_association)
+        .select_from(orm.UserGroup)
         .where(
-            user_groups_association.c.user_id == user_id,
-            user_groups_association.c.group_id == group_id,
+            orm.UserGroup.user_id == user_id,
+            orm.UserGroup.group_id == group_id,
+            orm.UserGroup.deleted_at.is_(None),  # Only active memberships
         )
     )
     result = (await db_session.execute(stmt)).scalar()

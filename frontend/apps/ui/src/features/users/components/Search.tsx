@@ -1,7 +1,9 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {
   selectUserFreeTextFilterValue,
+  selectUserWithGroupsFilterValue,
   selectUserWithRolesFilterValue,
+  selectUserWithoutGroupsFilterValue,
   selectUserWithoutRolesFilterValue,
   usersTableFiltersUpdated
 } from "@/features/users/storage/user"
@@ -9,6 +11,7 @@ import {usePanelMode} from "@/hooks"
 import {SearchContainer} from "kommon"
 import {useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
+import FilterByGroups from "./FilterByGroups"
 import FilterByRoles from "./FilterByRoles"
 
 const DEBOUNCE_MS = 300 // 300 miliseconds
@@ -24,12 +27,24 @@ export default function Search() {
   const withoutRoles = useAppSelector(s =>
     selectUserWithoutRolesFilterValue(s, mode)
   )
+  const withGroups = useAppSelector(s =>
+    selectUserWithGroupsFilterValue(s, mode)
+  )
+  const withoutGroups = useAppSelector(s =>
+    selectUserWithoutGroupsFilterValue(s, mode)
+  )
 
   const [localWithRoles, setLocalWithRoles] = useState<string[]>(
     withRoles || []
   )
   const [localWithoutRoles, setLocalWithoutRoles] = useState<string[]>(
     withoutRoles || []
+  )
+  const [localWithGroups, setLocalWithGroups] = useState<string[]>(
+    withGroups || []
+  )
+  const [localWithoutGroups, setLocalWithoutGroups] = useState<string[]>(
+    withoutGroups || []
   )
 
   const [localSearchTextValue, setSearchTextValue] = useState(searchText || "")
@@ -57,6 +72,14 @@ export default function Search() {
     setLocalWithoutRoles(value || [])
   }
 
+  const onLocalWithGroupChange = (value?: string[] | null) => {
+    setLocalWithGroups(value || [])
+  }
+
+  const onLocalWithoutGroupChange = (value?: string[] | null) => {
+    setLocalWithoutGroups(value || [])
+  }
+
   const onTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTextValue(e.currentTarget.value)
   }
@@ -71,16 +94,27 @@ export default function Search() {
         mode,
         freeTextFilterValue: debouncedSearchTextValue,
         withRolesFilterValue: localWithRoles,
-        withoutRolesFilterValue: localWithoutRoles
+        withoutRolesFilterValue: localWithoutRoles,
+        withGroupsFilterValue: localWithGroups,
+        withoutGroupsFilterValue: localWithoutGroups
       })
     )
   }
 
   const onClear = () => {
+    setLocalWithRoles([])
+    setLocalWithoutRoles([])
+    setLocalWithGroups([])
+    setLocalWithoutGroups([])
+
     dispatch(
       usersTableFiltersUpdated({
         mode,
-        freeTextFilterValue: undefined
+        freeTextFilterValue: undefined,
+        withRolesFilterValue: undefined,
+        withoutRolesFilterValue: undefined,
+        withGroupsFilterValue: undefined,
+        withoutGroupsFilterValue: undefined
       })
     )
   }
@@ -108,6 +142,20 @@ export default function Search() {
         })}
         onChange={onLocalWithoutRoleChange}
         roles={localWithoutRoles}
+      />
+      <FilterByGroups
+        label={t?.("usersFilter.ByGroup.WithGroups", {
+          defaultValue: "User is part of these groups"
+        })}
+        onChange={onLocalWithGroupChange}
+        groups={localWithGroups}
+      />
+      <FilterByGroups
+        label={t?.("usersFilter.ByGroup.WithoutGroups", {
+          defaultValue: "User NOT is part of these groups"
+        })}
+        onChange={onLocalWithoutGroupChange}
+        groups={localWithoutGroups}
       />
     </SearchContainer>
   )

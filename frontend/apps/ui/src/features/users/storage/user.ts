@@ -353,7 +353,7 @@ export const selectUserWithGroupsFilterValue = (
   return state.users.secondaryUserList?.withGroupsFilterValue
 }
 
-export const selectWithoutGroupsFilterValue = (
+export const selectUserWithoutGroupsFilterValue = (
   state: RootState,
   mode: PanelMode
 ) => {

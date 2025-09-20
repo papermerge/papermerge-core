@@ -7,7 +7,7 @@ interface Args {
   onChange?: (value: string[] | null) => void
 }
 
-export default function WithRolesFilter({roles, onChange, label}: Args) {
+export default function FilterByRoles({roles, onChange, label}: Args) {
   return (
     <Paper
       onClick={e => e.stopPropagation()}

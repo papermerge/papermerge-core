@@ -35,9 +35,10 @@ class Node(Base, AuditColumns):
         nullable=True,
     )
     group: Mapped["Group"] = relationship(
+        "Group",
         back_populates="nodes",
         primaryjoin="Group.id == Node.group_id",
-        remote_side="Group.id",
+        foreign_keys="Node.group_id",  # Specify which foreign key to use
         cascade="delete",
     )
     group_id: Mapped[UUID] = mapped_column(
@@ -89,6 +90,23 @@ class Folder(Node):
         ForeignKey("nodes.id", ondelete="CASCADE"),
         primary_key=True,
         insert_default=uuid.uuid4,
+    )
+
+    # Add these relationships to support the Group home_folder and inbox_folder
+    home_group: Mapped["Group"] = relationship(
+        "Group",
+        primaryjoin="Folder.id == Group.home_folder_id",
+        foreign_keys="Group.home_folder_id",
+        back_populates="home_folder",
+        viewonly=True,
+    )
+
+    inbox_group: Mapped["Group"] = relationship(
+        "Group",
+        primaryjoin="Folder.id == Group.inbox_folder_id",
+        foreign_keys="Group.inbox_folder_id",
+        back_populates="inbox_folder",
+        viewonly=True,
     )
 
     __mapper_args__ = {

@@ -38,6 +38,7 @@ import {loader as auditLogDetailsLoader} from "@/features/audit/pages/Details"
 import {loader as auditLogsListLoader} from "@/features/audit/pages/List"
 import {loader as rolesDetailsLoader} from "@/features/roles/pages/Details"
 import {loader as rolesListLoader} from "@/features/roles/pages/List"
+import {loader as usersDetailsLoader} from "@/features/users/pages/Details"
 import {loader as usersListLoader} from "@/features/users/pages/List"
 import {loader as documentLoader} from "@/pages/Document"
 
@@ -151,8 +152,9 @@ const router = createBrowserRouter([
         loader: usersListLoader
       },
       {
-        path: "/users/:userId",
-        element: <UserDetails />
+        path: "/users/:id",
+        element: <UserDetails />,
+        loader: usersDetailsLoader
       },
       {
         path: "/audit-logs",

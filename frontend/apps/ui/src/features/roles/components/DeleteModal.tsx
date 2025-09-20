@@ -1,4 +1,7 @@
+import {useAppDispatch} from "@/app/hooks"
 import {useDeleteRoleMutation} from "@/features/roles/storage/api"
+import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
+import {usePanelMode} from "@/hooks"
 import {Button, Container, Group, Loader, Modal, Space} from "@mantine/core"
 import {useState} from "react"
 import {useTranslation} from "react-i18next"
@@ -20,10 +23,15 @@ export function RemoveRolesModal({
   const {t} = useTranslation()
   const [errorMessage, setErrorMessage] = useState("")
   const [deletedRole, {isLoading}] = useDeleteRoleMutation()
+  const mode = usePanelMode()
+  const dispatch = useAppDispatch()
 
   const handleSubmit = async () => {
     await Promise.all(roleIds.map(i => deletedRole(i)))
     onSubmit()
+    if (mode == "secondary") {
+      dispatch(closeRoleDetailsSecondaryPanel())
+    }
   }
 
   const handleCancel = () => {

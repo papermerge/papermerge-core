@@ -34,7 +34,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER set_created_by_updated_by_trigger
+CREATE TRIGGER set_created_by_updated_by_trigger_roles
     BEFORE INSERT OR UPDATE ON roles
+    FOR EACH ROW
+    EXECUTE FUNCTION set_created_by_updated_by();
+
+
+CREATE TRIGGER set_created_by_updated_by_trigger_users
+    BEFORE INSERT OR UPDATE ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION set_created_by_updated_by();
+
+
+CREATE TRIGGER set_created_by_updated_by_trigger_groups
+    BEFORE INSERT OR UPDATE ON groups
     FOR EACH ROW
     EXECUTE FUNCTION set_created_by_updated_by();

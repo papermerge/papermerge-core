@@ -254,7 +254,10 @@ async def get_roles(
     )
 
 async def get_roles_without_pagination(db_session: AsyncSession) -> list[schema.Role]:
-    stmt = select(orm.Role)
+    stmt = select(orm.Role).where(
+        orm.Role.deleted_at.is_(None),
+        orm.Role.archived_at.is_(None),
+    ).order_by(orm.Role.name.asc())
 
     db_roles = (await db_session.scalars(stmt)).all()
     items = [schema.Role.model_validate(db_role) for db_role in db_roles]

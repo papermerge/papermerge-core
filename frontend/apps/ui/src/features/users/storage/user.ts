@@ -369,13 +369,13 @@ export const selectUserWithScopesFilterValue = (
   mode: PanelMode
 ) => {
   if (mode == "main") {
-    return state.users.mainUserList?.withGroupsFilterValue
+    return state.users.mainUserList?.withScopesFilterValue
   }
 
-  return state.users.secondaryUserList?.withGroupsFilterValue
+  return state.users.secondaryUserList?.withScopesFilterValue
 }
 
-export const selectWithoutScopesFilterValue = (
+export const selectUserWithoutScopesFilterValue = (
   state: RootState,
   mode: PanelMode
 ) => {

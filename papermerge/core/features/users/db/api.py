@@ -814,7 +814,6 @@ def _build_filter_conditions(
                 orm.UserRole.user_id == orm.User.id,
                 orm.UserRole.deleted_at.is_(None),    # Only active user roles
                 orm.Role.deleted_at.is_(None),        # Only active roles
-                orm.Permission.deleted_at.is_(None),  # Only active permissions
                 orm.Permission.codename.in_(scope_names)
             )
 
@@ -831,7 +830,6 @@ def _build_filter_conditions(
                     and_(
                         orm.UserRole.deleted_at.is_(None),
                         orm.Role.deleted_at.is_(None),
-                        orm.Permission.deleted_at.is_(None),
                         orm.Permission.codename.in_(scope_names)
                     )
                 )

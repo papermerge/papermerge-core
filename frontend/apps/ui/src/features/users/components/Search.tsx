@@ -1,10 +1,13 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import FilterByScope from "@/components/FilterByScope"
 import {
   selectUserFreeTextFilterValue,
   selectUserWithGroupsFilterValue,
   selectUserWithRolesFilterValue,
+  selectUserWithScopesFilterValue,
   selectUserWithoutGroupsFilterValue,
   selectUserWithoutRolesFilterValue,
+  selectUserWithoutScopesFilterValue,
   usersTableFiltersUpdated
 } from "@/features/users/storage/user"
 import {usePanelMode} from "@/hooks"
@@ -33,6 +36,12 @@ export default function Search() {
   const withoutGroups = useAppSelector(s =>
     selectUserWithoutGroupsFilterValue(s, mode)
   )
+  const withScopes = useAppSelector(s =>
+    selectUserWithScopesFilterValue(s, mode)
+  )
+  const withoutScopes = useAppSelector(s =>
+    selectUserWithoutScopesFilterValue(s, mode)
+  )
 
   const [localWithRoles, setLocalWithRoles] = useState<string[]>(
     withRoles || []
@@ -45,6 +54,12 @@ export default function Search() {
   )
   const [localWithoutGroups, setLocalWithoutGroups] = useState<string[]>(
     withoutGroups || []
+  )
+  const [localWithScopes, setLocalWithScopes] = useState<string[]>(
+    withScopes || []
+  )
+  const [localWithoutScopes, setLocalWithoutScopes] = useState<string[]>(
+    withoutScopes || []
   )
 
   const [localSearchTextValue, setSearchTextValue] = useState(searchText || "")
@@ -80,6 +95,14 @@ export default function Search() {
     setLocalWithoutGroups(value || [])
   }
 
+  const onLocalWithScopesChange = (value?: string[] | null) => {
+    setLocalWithScopes(value || [])
+  }
+
+  const onLocalWithoutScopesChange = (value?: string[] | null) => {
+    setLocalWithoutScopes(value || [])
+  }
+
   const onTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTextValue(e.currentTarget.value)
   }
@@ -96,7 +119,9 @@ export default function Search() {
         withRolesFilterValue: localWithRoles,
         withoutRolesFilterValue: localWithoutRoles,
         withGroupsFilterValue: localWithGroups,
-        withoutGroupsFilterValue: localWithoutGroups
+        withoutGroupsFilterValue: localWithoutGroups,
+        withScopesFilterValue: localWithScopes,
+        withoutScopesFilterValue: localWithoutScopes
       })
     )
   }
@@ -106,6 +131,8 @@ export default function Search() {
     setLocalWithoutRoles([])
     setLocalWithGroups([])
     setLocalWithoutGroups([])
+    setLocalWithScopes([])
+    setLocalWithoutScopes([])
 
     dispatch(
       usersTableFiltersUpdated({
@@ -114,7 +141,9 @@ export default function Search() {
         withRolesFilterValue: undefined,
         withoutRolesFilterValue: undefined,
         withGroupsFilterValue: undefined,
-        withoutGroupsFilterValue: undefined
+        withoutGroupsFilterValue: undefined,
+        withScopesFilterValue: undefined,
+        withoutScopesFilterValue: undefined
       })
     )
   }
@@ -156,6 +185,22 @@ export default function Search() {
         })}
         onChange={onLocalWithoutGroupChange}
         groups={localWithoutGroups}
+      />
+      <FilterByScope
+        t={t}
+        onChange={onLocalWithScopesChange}
+        scopes={localWithScopes}
+        label={t?.("scopeFilter.label.hasTheseScopes", {
+          defaultValue: "Has these these scopes"
+        })}
+      />
+      <FilterByScope
+        t={t}
+        label={t?.("scopeFilter.label.doesNotHaveTheseScopes", {
+          defaultValue: "Does NOT have these scopes"
+        })}
+        onChange={onLocalWithoutScopesChange}
+        scopes={localWithoutScopes}
       />
     </SearchContainer>
   )

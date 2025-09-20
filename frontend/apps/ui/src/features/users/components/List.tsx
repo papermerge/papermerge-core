@@ -90,8 +90,8 @@ export default function UsersList() {
         }}
         onSortChange={handleSortChange}
         loading={isLoading || isFetching}
-        emptyMessage={t("rolesList.noRolesFound", {
-          defaultValue: "No roles found"
+        emptyMessage={t("usersList.noUsersFound", {
+          defaultValue: "No users found"
         })}
         withCheckbox={true}
         selectedRows={selectedRowsSet}

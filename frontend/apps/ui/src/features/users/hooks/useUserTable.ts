@@ -4,7 +4,9 @@ import {
   selectUserFreeTextFilterValue,
   selectUserPageNumber,
   selectUserPageSize,
-  selectUserSorting
+  selectUserSorting,
+  selectUserWithRolesFilterValue,
+  selectUserWithoutRolesFilterValue
 } from "@/features/users/storage/user"
 import type {SortBy, UserQueryParams} from "@/features/users/types"
 import {usePanelMode} from "@/hooks"
@@ -16,13 +18,21 @@ function useQueryParams(): UserQueryParams {
   const sorting = useAppSelector(s => selectUserSorting(s, mode))
   const column = sorting?.column as SortBy | undefined
   const free_text = useAppSelector(s => selectUserFreeTextFilterValue(s, mode))
+  const with_roles = useAppSelector(s =>
+    selectUserWithRolesFilterValue(s, mode)
+  )
+  const without_roles = useAppSelector(s =>
+    selectUserWithoutRolesFilterValue(s, mode)
+  )
 
   const queryParams: UserQueryParams = {
     page_size: pageSize,
     page_number: pageNumber,
     sort_by: column,
     sort_direction: sorting?.direction || undefined,
-    filter_free_text: free_text
+    filter_free_text: free_text,
+    filter_with_roles: with_roles?.join(","),
+    filter_without_roles: without_roles?.join(",")
   }
 
   return queryParams

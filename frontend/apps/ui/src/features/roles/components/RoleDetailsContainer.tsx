@@ -14,10 +14,12 @@ import type {PanelMode} from "@/types"
 import {
   Breadcrumbs,
   Group,
+  List,
   Loader,
   LoadingOverlay,
   Paper,
-  Stack
+  Stack,
+  Text
 } from "@mantine/core"
 import {CopyableTextInput, RoleForm} from "kommon"
 import {useCallback} from "react"
@@ -27,6 +29,7 @@ import EditButton from "./EditButton"
 
 import LoadingPanel from "@/components/LoadingPanel"
 import type {RoleDetails} from "@/types"
+import {TFunction} from "i18next"
 import {useTranslation} from "react-i18next"
 
 export default function RoleDetailsContainer() {
@@ -102,6 +105,7 @@ export default function RoleDetailsContainer() {
             value={data.created_by.username}
             label={t?.("created_by", {defaultValue: "Created by"})}
           />
+          <UsedBy users={data?.used_by} />
         </Stack>
       </Stack>
     </Paper>
@@ -131,5 +135,28 @@ function Path({role, mode}: {role: RoleDetails | null; mode: PanelMode}) {
       </Breadcrumbs>
       {navigation.state == "loading" && <Loader size="sm" />}
     </Group>
+  )
+}
+
+interface UsedByArgs {
+  users: {
+    id: string
+    username: string
+  }[]
+  t?: TFunction
+}
+
+function UsedBy({users, t}: UsedByArgs) {
+  const userList = users.map(u => (
+    <List.Item>
+      <Link to={`/users/${u.id}`}>{u.username}</Link>
+    </List.Item>
+  ))
+
+  return (
+    <List>
+      <Text>{t?.("usedBy") || "Used By"}:</Text>
+      {userList}
+    </List>
   )
 }

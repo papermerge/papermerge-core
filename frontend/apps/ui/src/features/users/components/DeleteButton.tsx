@@ -48,7 +48,7 @@ export function DeleteUsersButton() {
   const mode = usePanelMode()
   const [opened, {open, close}] = useDisclosure(false)
   const dispatch = useAppDispatch()
-  const selectedIds = useAppSelector(s => selectSelectedIDs(s, mode))
+  const selectedIds = useAppSelector(s => selectSelectedIDs(s, mode)) || []
 
   const onSubmit = () => {
     close()

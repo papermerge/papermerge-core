@@ -82,6 +82,7 @@ class RoleDetails(BaseModel):
     created_by: ByUser | None = None
     updated_at: datetime | None = None
     updated_by: ByUser | None = None
+    used_by: list[ByUser]
 
     # Config
     model_config = ConfigDict(from_attributes=True)

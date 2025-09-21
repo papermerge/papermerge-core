@@ -3,7 +3,7 @@ import logging
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -305,11 +305,25 @@ async def change_user_password(
 
     Required scope: `{scope}`
     """
-    user, error = await dbapi.change_password(
-        db_session, user_id=UUID(attrs.userId), password=attrs.password
-    )
+    async with AsyncAuditContext(
+        db_session,
+        user_id=cur_user.id,
+        username=cur_user.username
+    ):
+        user, error = await dbapi.change_password(
+            db_session, user_id=UUID(attrs.userId), password=attrs.password
+        )
 
     if error:
-        raise HTTPException(status_code=469, detail=error.model_dump())
+        if "not found" in str(error.messages).lower():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=error.model_dump()
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=error.model_dump()
+            )
 
     return user

@@ -686,16 +686,28 @@ async def get_users_count(db_session: AsyncSession) -> int:
 
 
 async def change_password(
-    db_session: AsyncSession, user_id: uuid.UUID, password: str
+    db_session: AsyncSession,
+    user_id: uuid.UUID,
+    password: str
 ) -> Tuple[schema.User | None, err_schema.Error | None]:
-    stmt = select(orm.User).options(selectinload(orm.User.user_roles), selectinload(orm.User.groups)).where(
-        orm.User.id == user_id)
-    db_user = (await db_session.execute(stmt)).scalar()
+    stmt = select(orm.User).options(
+        selectinload(orm.User.user_roles),
+        selectinload(orm.User.user_groups)
+    ).where(orm.User.id == user_id)
+
+    result = await db_session.execute(stmt)
+    db_user = result.scalar()
+
+    if db_user is None:
+        error = err_schema.Error(messages=[f"User with id {user_id} not found"])
+        return None, error
+
     db_user.password = pbkdf2_sha256.hash(password)
 
     try:
         await db_session.commit()
     except Exception as e:
+        await db_session.rollback()
         error = err_schema.Error(messages=[str(e)])
         return None, error
 

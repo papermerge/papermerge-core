@@ -39,7 +39,7 @@ export function getErrorMessage(t: TFunction, error: any) {
       })
     if (error.status === 404)
       return t("changePasswordModal.errors.user_not_found", {
-        defaultValue: "User not found."
+        defaultValue: "404: User or URL not found."
       })
     if (error.status >= 500)
       return t("changePasswordModal.errors.server_error", {

@@ -88,7 +88,7 @@ export const apiSliceWithUsers = apiSlice.injectEndpoints({
     }),
     changePassword: builder.mutation<void, ChangePassword>({
       query: chPwd => ({
-        url: `/users/${chPwd.userId}/change-password`,
+        url: `/users/change-password`,
         method: "POST",
         body: chPwd
       })

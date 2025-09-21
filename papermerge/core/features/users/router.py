@@ -290,16 +290,17 @@ async def update_user(
 
 
 @router.post(
-    "/{user_id}/change-password", status_code=200, response_model=schema.UserDetails
+    "/change-password",
+    status_code=status.HTTP_200_OK,
+    response_model=schema.UserDetails
 )
 @utils.docstring_parameter(scope=scopes.USER_UPDATE)
 async def change_user_password(
-    user_id: UUID,
     attrs: schema.ChangeUserPassword,
     cur_user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.USER_UPDATE])
     ],
-    db_session: AsyncSession=Depends(get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> schema.UserDetails:
     """Change user password
 

@@ -1,55 +1,11 @@
+import ErrorMessage from "@/components/ErrorMessage"
 import {useChangePasswordMutation} from "@/features/users/storage/api"
+
 import {Box, Button, Group, Loader, Modal, PasswordInput} from "@mantine/core"
 import {useForm} from "@mantine/form"
-import {useDisclosure} from "@mantine/hooks"
-import {IconPassword} from "@tabler/icons-react"
-import {useEffect} from "react"
 import {useTranslation} from "react-i18next"
-
-interface ChangePasswordButtonArgs {
-  userId?: string
-}
-
-export default function ChangePasswordButton({
-  userId
-}: ChangePasswordButtonArgs) {
-  const {t} = useTranslation()
-  const [opened, {open, close}] = useDisclosure(false)
-
-  if (!userId) {
-    // if userId is not defined, render button as disabled
-    // and without onClick handler
-    return (
-      <Button
-        leftSection={<IconPassword />}
-        variant={"filled"}
-        color={"teal"}
-        disabled={true}
-      >
-        {t("common.change_password")}
-      </Button>
-    )
-  }
-
-  return (
-    <>
-      <Button
-        leftSection={<IconPassword />}
-        onClick={open}
-        variant={"filled"}
-        color={"teal"}
-      >
-        {t("common.change_password")}
-      </Button>
-      <ChangeUserPasswordModal
-        opened={opened}
-        userId={userId}
-        onSubmit={close}
-        onCancel={close}
-      />
-    </>
-  )
-}
+import {useModalReset, useSuccessHandler} from "./hooks"
+import {getErrorMessage} from "./utils"
 
 interface ChangePasswordModalArgs {
   opened: boolean
@@ -63,14 +19,15 @@ type PasswordWithConfirmation = {
   confirmPassword: string
 }
 
-function ChangeUserPasswordModal({
+export default function ChangeUserPasswordModal({
   userId,
   onCancel,
   onSubmit,
   opened
 }: ChangePasswordModalArgs) {
   const {t} = useTranslation()
-  const [changePassword, {isLoading, isSuccess}] = useChangePasswordMutation()
+  const [changePassword, {isLoading, isSuccess, error, reset}] =
+    useChangePasswordMutation()
 
   const form = useForm({
     mode: "uncontrolled",
@@ -87,13 +44,19 @@ function ChangeUserPasswordModal({
     }
   })
 
-  useEffect(() => {
+  useModalReset(opened, form, reset)
+  useSuccessHandler(isSuccess, () => {
     form.reset()
-  }, [opened])
+    reset()
+    onSubmit()
+  })
 
   const onLocalSubmit = async ({password}: {password: string}) => {
-    await changePassword({userId, password})
-    onSubmit()
+    try {
+      await changePassword({userId, password}).unwrap()
+    } catch (err: any) {
+      console.error("Password change failed:", err)
+    }
   }
   const onClose = () => {
     onCancel()
@@ -120,6 +83,7 @@ function ChangeUserPasswordModal({
             key={form.key("confirmPassword")}
             {...form.getInputProps("confirmPassword")}
           />
+          {error && <ErrorMessage>{getErrorMessage(t, error)}</ErrorMessage>}
           <Group justify="space-between" mt="md">
             <Button variant="default" onClick={onClose}>
               {t("common.cancel")}

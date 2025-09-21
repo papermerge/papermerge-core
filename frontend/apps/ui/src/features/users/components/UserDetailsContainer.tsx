@@ -20,9 +20,9 @@ import EditButton from "./EditButton"
 import UserForm from "./UserForm"
 
 import LoadingPanel from "@/components/LoadingPanel"
+import ChangePasswordButton from "@/features/users/components/ChangePasswordButton"
 import type {UserDetails} from "@/types"
 import {useTranslation} from "react-i18next"
-import ChangePasswordButton from "./ChangePasswordButton"
 
 export default function UserDetailsContainer() {
   const mode = usePanelMode()

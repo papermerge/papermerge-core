@@ -26,10 +26,10 @@ async def test_list_users_without_pagination(make_user, auth_api_client: AuthTes
 
 
 async def test_create_user(
-        db_session: AsyncSession,
-        make_group,
-        make_role,
-        auth_api_client: AuthTestClient
+    db_session: AsyncSession,
+    make_group,
+    make_role,
+    auth_api_client: AuthTestClient
 ):
     await dbapi.sync_perms(db_session)
     role = await make_role(name="guest", scopes=["node.create", "node.view"])
@@ -51,21 +51,28 @@ async def test_create_user(
     created_user_data = response.json()
     user_id = created_user_data["id"]
 
-    # Fixed: Use user_roles relationship instead of roles
+    # Fixed: Use user_groups relationship instead of non-existent groups
     result = await db_session.execute(
         select(orm.User)
         .options(
-            selectinload(orm.User.groups),
+            selectinload(orm.User.user_groups).selectinload(orm.UserGroup.group),
             selectinload(orm.User.user_roles).selectinload(orm.UserRole.role)
         )
         .where(orm.User.id == user_id)
     )
     created_user = result.scalar_one()
 
-    # Assert user has the expected group
-    assert len(created_user.groups) == 1
-    assert created_user.groups[0].id == group.id
-    assert created_user.groups[0].name == "demo"
+    # Assert user has the expected group through user_groups relationship
+    assert len(created_user.user_groups) == 1
+    user_group = created_user.user_groups[0]
+    assert user_group.group.id == group.id
+    assert user_group.group.name == "demo"
+    assert user_group.deleted_at is None  # Ensure it's an active group assignment
+
+    # Alternative: Use the active_groups property if you prefer
+    # assert len(created_user.active_groups) == 1
+    # assert created_user.active_groups[0].id == group.id
+    # assert created_user.active_groups[0].name == "demo"
 
     # Fixed: Assert user has the expected role through user_roles relationship
     assert len(created_user.user_roles) == 1
@@ -159,7 +166,7 @@ async def test_change_user_password(
 
     data = {"userId": str(user.id), "password": my_password}
 
-    response = await auth_api_client.post(f"/users/{user.id}/change-password", json=data)
+    response = await auth_api_client.post(f"/users/change-password", json=data)
 
     assert response.status_code == 200, response.text
     stmt = select(orm.User).where(orm.User.id == user.id)

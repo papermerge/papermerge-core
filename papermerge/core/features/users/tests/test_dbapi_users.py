@@ -12,8 +12,9 @@ async def test_get_user_group_homes(db_session: AsyncSession, make_user, make_gr
     user: orm.User = await make_user("momo", is_superuser=False)
     group: orm.Group = await make_group("Familly", with_special_folders=True)
 
-    db_session.add_all([user, group])
-    user.groups.append(group)
+    user_group = orm.UserGroup(user=user, group=group)
+    db_session.add(user_group)
+
     await db_session.commit()
 
     momo_group_homes, _ = await dbapi.get_user_group_homes(db_session, user_id=user.id)
@@ -36,8 +37,11 @@ async def test_get_user_group_homes_with_two_groups(db_session: AsyncSession, ma
     g2: orm.Group = await make_group("g2", with_special_folders=True)
     g3_no_home: orm.Group = await make_group("g3_no_home", with_special_folders=False)
 
-    db_session.add_all([g1, g2, g3_no_home, user])
-    user.groups.extend([g1, g2, g3_no_home])
+    user_group_1 = orm.UserGroup(user=user, group=g1)
+    user_group_2 = orm.UserGroup(user=user, group=g2)
+    user_group_3 = orm.UserGroup(user=user, group=g3_no_home)
+    db_session.add_all([user_group_1, user_group_2, user_group_3])
+
     await db_session.commit()
 
     momo_group_homes, _ = await dbapi.get_user_group_homes(db_session, user_id=user.id)
@@ -60,13 +64,19 @@ async def test_create_user(db_session: AsyncSession):
 
 
 async def test_user_delete(db_session: AsyncSession, make_user):
+    cur_user: orm.User = await make_user("current_user")
     user: orm.User = await make_user("momo")
-    await dbapi.delete_user(db_session, username=user.username)
+    await dbapi.delete_user(
+        db_session,
+        user_id=user.id,
+        deleted_by_user_id=cur_user.id
+    )
 
-    stmt = select(func.count(orm.User.id))
-    users_count = (await db_session.execute(stmt)).scalar()
-
-    assert users_count == 0
+    stmt = select(func.count(orm.User.id)).where(
+        orm.User.deleted_at.is_(None)
+    )
+    deleted_users_count = (await db_session.execute(stmt)).scalar()
+    assert deleted_users_count == 1
 
 
 async def test_user_update(db_session: AsyncSession, make_user):
@@ -160,8 +170,9 @@ async def test__positive__user_belongs_to(db_session: AsyncSession, make_user, m
     user: orm.User = await make_user("momo", is_superuser=False)
     group: orm.Group = await make_group("familly")
 
-    db_session.add_all([user, group])
-    user.groups.append(group)
+    user_group = orm.UserGroup(user=user, group=group)
+    db_session.add(user_group)
+
     await db_session.commit()
 
     assert  await dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group.id)

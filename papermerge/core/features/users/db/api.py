@@ -4,11 +4,12 @@ import logging
 from typing import Tuple, Optional, Dict, Any
 
 from passlib.hash import pbkdf2_sha256
-from sqlalchemy import select, func, text, and_, or_
+from sqlalchemy import select, func, text, and_, or_, update
 from sqlalchemy.orm import selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
 
+from papermerge.core.utils.tz import tz_aware_datetime_now
 from papermerge.core import orm, schema
 from papermerge.core.utils.misc import is_valid_uuid
 from papermerge.core.features.auth import scopes
@@ -505,9 +506,15 @@ async def create_user(
             inbox_folder_id=inbox_folder_id,
         )
 
-        # Set group relationships before adding to session
+        # Create UserGroup associations for groups (instead of user.groups = groups)
+        user_groups = []
         if groups:
-            user.groups = groups
+            for group in groups:
+                user_group = orm.UserGroup(
+                    user_id=_user_id,
+                    group_id=group.id
+                )
+                user_groups.append(user_group)
 
         # Create UserRole associations for roles (fixed the main issue)
         user_roles = []
@@ -520,7 +527,7 @@ async def create_user(
                 user_roles.append(user_role)
 
         # Add all objects to session
-        db_session.add_all([user, home, inbox] + user_roles)
+        db_session.add_all([user, home, inbox] + user_roles + user_groups)
         await db_session.flush()
         await db_session.commit()
         await db_session.refresh(user)
@@ -532,15 +539,17 @@ async def create_user(
 
 
 async def update_user(
-        db_session: AsyncSession, user_id: uuid.UUID, attrs: schema.UpdateUser
+    db_session: AsyncSession,
+    user_id: uuid.UUID,
+    attrs: schema.UpdateUser
 ) -> Tuple[schema.UserDetails | None, err_schema.Error | None]:
 
-    # Load user with proper relationship loading
     stmt = select(orm.User).options(
         selectinload(orm.User.user_roles)
         .selectinload(orm.UserRole.role)
         .selectinload(orm.Role.permissions),
-        selectinload(orm.User.groups)
+        selectinload(orm.User.user_groups)
+        .selectinload(orm.UserGroup.group)
     ).where(orm.User.id == user_id)
 
     try:
@@ -565,11 +574,21 @@ async def update_user(
     if attrs.password is not None:
         user.password = pbkdf2_sha256.hash(attrs.password)
 
-    # Update groups (this works as before since groups don't use soft delete)
+    # Update groups - Handle soft delete properly
     if attrs.group_ids is not None:
-        stmt = select(orm.Group).where(orm.Group.id.in_(attrs.group_ids))
-        groups = list((await db_session.execute(stmt)).scalars().all())
-        user.groups = groups
+        # Soft delete existing user_groups by setting deleted_at
+        for existing_user_group in user.user_groups:
+            if existing_user_group.deleted_at is None:  # Only mark active ones as deleted
+                existing_user_group.deleted_at = func.now()
+
+        # Create new UserGroup entries for the new groups
+        if attrs.group_ids:  # Only if there are new groups to add
+            stmt = select(orm.Group).where(orm.Group.id.in_(attrs.group_ids))
+            new_groups = list((await db_session.execute(stmt)).scalars().all())
+
+            for group in new_groups:
+                new_user_group = orm.UserGroup(user=user, group=group)
+                db_session.add(new_user_group)
 
     # Update roles - Handle soft delete properly
     if attrs.role_ids is not None:
@@ -599,7 +618,8 @@ async def update_user(
         selectinload(orm.User.user_roles)
         .selectinload(orm.UserRole.role)
         .selectinload(orm.Role.permissions),
-        selectinload(orm.User.groups)
+        selectinload(orm.User.user_groups)
+        .selectinload(orm.UserGroup.group)
     ).where(orm.User.id == user_id)
 
     user = (await db_session.execute(stmt)).scalar_one()
@@ -614,6 +634,12 @@ async def update_user(
             for perm in user_role.role.permissions:
                 scopes.add(perm.codename)
 
+    # Get active groups
+    active_groups = []
+    for user_group in user.user_groups:
+        if user_group.deleted_at is None:  # Only active groups
+            active_groups.append(user_group.group)
+
     # Create the response
     result = schema.UserDetails(
         id=user.id,
@@ -626,7 +652,7 @@ async def update_user(
         is_superuser=user.is_superuser,
         is_active=user.is_active,
         scopes=sorted(scopes),
-        groups=user.groups,
+        groups=active_groups,
         roles=active_roles,
     )
 
@@ -665,19 +691,103 @@ async def get_user_scopes_from_roles(
 
 async def delete_user(
     db_session: AsyncSession,
+    deleted_by_user_id: uuid.UUID,
     user_id: uuid.UUID | None = None,
     username: str | None = None,
-):
+    force_delete: bool = False
+) -> bool:
+    """
+    Soft delete a user and their associations.
+
+    Args:
+        db_session: Database session
+        deleted_by_user_id: ID of user performing the deletion
+        user_id: ID of user to delete (optional)
+        username: Username of user to delete (optional)
+        force_delete: If True, delete even if user owns resources
+
+    Returns:
+        bool: True if deletion successful
+
+    Raises:
+        NoResultFound: If user doesn't exist
+        ValueError: If user owns resources and force_delete=False or if neither user_id nor username provided
+    """
     if user_id is not None:
-        stmt = select(User).where(User.id == user_id)
+        stmt = select(orm.User).where(
+            orm.User.id == user_id,
+            orm.User.deleted_at.is_(None)
+        )
     elif username is not None:
-        stmt = select(User).where(User.username == username)
+        stmt = select(orm.User).where(
+            orm.User.username == username,
+            orm.User.deleted_at.is_(None)
+        )
     else:
         raise ValueError("Either username or user_id parameter must be provided")
 
-    user = (await db_session.execute(stmt)).scalars().one()
-    await db_session.delete(user)
+    result = await db_session.execute(stmt)
+    user = result.scalars().first()
+
+    if not user:
+        identifier = f"id {user_id}" if user_id else f"username '{username}'"
+        raise NoResultFound(f"User with {identifier} not found or already deleted")
+
+    # Check for owned resources if not forcing delete
+    if not force_delete:
+        # Check for owned nodes (documents/folders)
+        node_count_stmt = select(func.count(orm.Node.id)).where(
+            orm.Node.user_id == user.id
+        )
+        result = await db_session.execute(node_count_stmt)
+        active_nodes = result.scalar()
+
+        # Check for owned document types
+        doc_type_count_stmt = select(func.count(orm.DocumentType.id)).where(
+            orm.DocumentType.user_id == user.id
+        )
+        result = await db_session.execute(doc_type_count_stmt)
+        active_doc_types = result.scalar()
+
+        # Check for owned custom fields
+        custom_field_count_stmt = select(func.count(orm.CustomField.id)).where(
+            orm.CustomField.user_id == user.id
+        )
+        result = await db_session.execute(custom_field_count_stmt)
+        active_custom_fields = result.scalar()
+
+    # Soft delete all user-role associations
+    user_roles_update_stmt = update(orm.UserRole).where(
+        orm.UserRole.user_id == user.id,
+        orm.UserRole.deleted_at.is_(None)
+    ).values(
+        deleted_at=tz_aware_datetime_now(),
+        deleted_by=deleted_by_user_id,
+        updated_at=tz_aware_datetime_now(),
+        updated_by=deleted_by_user_id
+    )
+    await db_session.execute(user_roles_update_stmt)
+
+    # Soft delete all user-group associations
+    user_groups_update_stmt = update(orm.UserGroup).where(
+        orm.UserGroup.user_id == user.id,
+        orm.UserGroup.deleted_at.is_(None)
+    ).values(
+        deleted_at=tz_aware_datetime_now(),
+        deleted_by=deleted_by_user_id,
+        updated_at=tz_aware_datetime_now(),
+        updated_by=deleted_by_user_id
+    )
+    await db_session.execute(user_groups_update_stmt)
+
+    # Soft delete the user
+    user.deleted_at = tz_aware_datetime_now()
+    user.deleted_by = deleted_by_user_id
+    user.updated_at = tz_aware_datetime_now()
+    user.updated_by = deleted_by_user_id
+
     await db_session.commit()
+    return True
 
 
 async def get_users_count(db_session: AsyncSession) -> int:

@@ -233,7 +233,7 @@ async def get_user_details(
 @utils.docstring_parameter(scope=scopes.USER_DELETE)
 async def delete_user(
     user_id: UUID,
-    user: Annotated[
+    cur_user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.USER_DELETE])
     ],
     db_session: AsyncSession=Depends(get_db),
@@ -253,10 +253,14 @@ async def delete_user(
         else:
             async with AsyncAuditContext(
                 db_session,
-                user_id=user.id,
-                username=user.username
+                user_id=cur_user.id,
+                username=cur_user.username
             ):
-                await dbapi.delete_user(db_session, user_id=user_id)
+                await dbapi.delete_user(
+                    db_session,
+                    user_id=user_id,
+                    deleted_by_user_id=cur_user.id
+                )
     except Exception as e:
         logger.error(e)
         raise HTTPException(status_code=469, detail=str(e))
@@ -312,7 +316,9 @@ async def change_user_password(
         username=cur_user.username
     ):
         user, error = await dbapi.change_password(
-            db_session, user_id=UUID(attrs.userId), password=attrs.password
+            db_session,
+            user_id=UUID(attrs.userId),
+            password=attrs.password
         )
 
     if error:

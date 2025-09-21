@@ -8,8 +8,8 @@ async def test_user_groups(db_session: AsyncSession, make_user, make_group):
     user: orm.User = await make_user("momo", is_superuser=False)
     group: orm.Group = await make_group("family")
 
-    user.groups.append(group)
-    db_session.add(user)
+    user_group = orm.UserGroup(user=user, group=group)
+    db_session.add(user_group)
     await db_session.commit()
 
     user_details, err = await dbapi.get_user_details(db_session, user.id)

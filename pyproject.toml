@@ -115,10 +115,6 @@ indent-width = 4
 requires = ["setuptools >= 61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
-# This makes it possible to run pytests from any folder
-# e.g.
-# $ cd papermerge/core/features/nodes/tests
-# $ pytest test_common.py
 [tool.pytest.ini_options]
-testpaths = ["papermerge/core/features/"]
+testpaths = ["papermerge"]
 asyncio_mode = "auto"

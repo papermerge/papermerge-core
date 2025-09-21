@@ -345,9 +345,10 @@ async def update_role(
     if missing := requested_codenames - found_codenames:
         raise ValueError(f"Permissions not found: {missing}")
 
-    # Get role with permissions
+    # Get role with permissions and user relationships
     stmt = select(orm.Role).options(
-        selectinload(orm.Role.permissions)
+        selectinload(orm.Role.permissions),
+        selectinload(orm.Role.user_roles).selectinload(orm.UserRole.user)
     ).where(
         orm.Role.id == role_id
     )
@@ -369,12 +370,69 @@ async def update_role(
             raise ValueError(f"Role name '{attrs.name}' already exists")
         raise
 
-    return schema.RoleDetails(
-        id=role.id,
-        name=role.name,  # type: ignore
-        scopes=[p.codename for p in role.permissions]  # Use role.permissions for consistency
+    # Refresh to get updated data
+    await db_session.refresh(role)
+
+    # Create aliases for the user tables to get audit information
+    created_by_user = aliased(orm.User)
+    updated_by_user = aliased(orm.User)
+
+    # Get the complete role data with audit information
+    stmt = (
+        select(
+            orm.Role,
+            created_by_user.id.label('created_by_id'),
+            created_by_user.username.label('created_by_username'),
+            updated_by_user.id.label('updated_by_id'),
+            updated_by_user.username.label('updated_by_username')
+        )
+        .options(
+            selectinload(orm.Role.permissions),
+            selectinload(orm.Role.user_roles).selectinload(orm.UserRole.user)
+        )
+        .outerjoin(created_by_user, orm.Role.created_by == created_by_user.id)
+        .outerjoin(updated_by_user, orm.Role.updated_by == updated_by_user.id)
+        .where(orm.Role.id == role_id)
     )
 
+    result = (await db_session.execute(stmt)).one()
+    db_item = result[0]
+
+    # Create scopes list
+    scopes = sorted([p.codename for p in db_item.permissions])
+
+    # Create audit user objects
+    created_by = None
+    if result.created_by_id:
+        created_by = schema.ByUser(
+            id=result.created_by_id,
+            username=result.created_by_username
+        )
+
+    updated_by = None
+    if result.updated_by_id:
+        updated_by = schema.ByUser(
+            id=result.updated_by_id,
+            username=result.updated_by_username
+        )
+
+    # Get users currently assigned to this role (active assignments only)
+    used_by = [
+        schema.ByUser(id=ur.user.id, username=ur.user.username)
+        for ur in db_item.user_roles
+        if ur.deleted_at is None
+    ]
+
+    return schema.RoleDetails(
+        id=db_item.id,
+        name=db_item.name,
+        scopes=scopes,
+        created_at=db_item.created_at,
+        created_by=created_by,
+        updated_at=db_item.updated_at,
+        updated_by=updated_by,
+        used_by=used_by
+    )
 
 
 async def get_perms(db_session: AsyncSession) -> list[schema.Permission]:

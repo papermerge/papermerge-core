@@ -161,7 +161,9 @@ async def test_update_group_id_field_in_document_type(
     group: orm.Group = await make_group("Familly", with_special_folders=True)
     user = auth_api_client.user
 
-    user.groups.append(group)
+    user_group = orm.UserGroup(user=user, group=group)
+    db_session.add(user_group)
+
     await db_session.commit()
 
     response = await auth_api_client.patch(
@@ -294,8 +296,8 @@ async def test__positive__document_types_all_route_with_group_id_param(
     await make_document_type(name=f"Research 2", group_id=group.id)
 
     # user belongs to 'research' group
-    user.groups.append(group)
-    db_session.add(user)
+    user_group = orm.UserGroup(user=user, group=group)
+    db_session.add(user_group)
     await db_session.commit()
 
     response = await auth_api_client.get(

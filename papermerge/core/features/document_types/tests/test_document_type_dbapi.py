@@ -11,8 +11,9 @@ async def test_get_document_types_grouped_by_owner_without_pagination(
     await make_document_type(name="Bills", group_id=family.id)
     await make_document_type(name="My Private", user=user)
 
-    user.groups.append(family)
-    db_session.add(user)
+    # Create UserGroup relationship instead of appending to non-existent groups
+    user_group = orm.UserGroup(user_id=user.id, group_id=family.id)
+    db_session.add(user_group)
     await db_session.commit()
 
     results = await dbapi.get_document_types_grouped_by_owner_without_pagination(

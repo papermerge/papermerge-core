@@ -7,7 +7,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.db.base import Base
-from papermerge.core.features.groups.db.orm import user_groups_association
 from papermerge.core import constants as const
 
 
@@ -54,14 +53,21 @@ class User(Base, AuditColumns):
         foreign_keys="UserRole.user_id"
     )
 
-    groups: Mapped[list["Group"]] = relationship(  # noqa: F821
-        secondary=user_groups_association, back_populates="users"
+    user_groups: Mapped[list["UserGroup"]] = relationship(
+        "UserGroup",
+        back_populates="user",
+        foreign_keys="UserGroup.user_id"
     )
 
     # Convenience property to get active roles
     @property
     def active_roles(self):
         return [ur.role for ur in self.user_roles if ur.deleted_at is None]
+
+    # Convenience property to get active groups
+    @property
+    def active_groups(self):
+        return [ug.group for ug in self.user_groups if ug.deleted_at is None]
 
     def __repr__(self):
         return f"User({self.id=}, {self.username=})"

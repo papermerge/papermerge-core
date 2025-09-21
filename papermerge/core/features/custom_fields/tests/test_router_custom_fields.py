@@ -176,7 +176,7 @@ async def test__positive__custom_fields_all_route_with_group_id_param(
     """
     group: orm.Group = await make_group("research")
     # Before modifying groups, load the user with the relationship
-    stmt = select(orm.User).options(selectinload(orm.User.groups)).where(orm.User.id == user.id)
+    stmt = select(orm.User).options(selectinload(orm.User.user_groups)).where(orm.User.id == user.id)
     result = await db_session.execute(stmt)
     user = result.scalar_one()
 
@@ -192,9 +192,9 @@ async def test__positive__custom_fields_all_route_with_group_id_param(
         name=f"CF Research 2", type=schema.CustomFieldType.text, group_id=group.id
     )
 
-    # user belongs to 'research' group
-    user.groups.append(group)
-    db_session.add(user)
+    user_group = orm.UserGroup(user_id=user.id, group_id=group.id)
+    db_session.add(user_group)
+
     await db_session.commit()
 
     response = await auth_api_client.get(

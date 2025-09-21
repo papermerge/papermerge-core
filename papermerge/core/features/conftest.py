@@ -520,7 +520,7 @@ async def make_user(db_session: AsyncSession):
         stmt = select(orm.User).options(
             selectinload(orm.User.home_folder),
             selectinload(orm.User.inbox_folder),
-            selectinload(orm.User.groups),
+            selectinload(orm.User.user_groups),
             selectinload(orm.User.user_roles)
         ).where(orm.User.id == user_id)
 

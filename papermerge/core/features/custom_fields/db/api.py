@@ -3,7 +3,6 @@ import logging
 import uuid
 
 from sqlalchemy import select, func, or_
-from sqlalchemy.orm import aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import schema, orm
@@ -31,9 +30,8 @@ async def get_custom_fields(
     order_by: str = "name",
 ) -> schema.PaginatedResponse[schema.CustomField]:
 
-    UserGroupAlias = aliased(orm.user_groups_association)
-    subquery = select(UserGroupAlias.c.group_id).where(
-        UserGroupAlias.c.user_id == user_id
+    subquery = select(orm.UserGroup.group_id).where(
+        orm.UserGroup.user_id == user_id
     )
 
     stmt_total_cf = select(func.count(orm.CustomField.id)).where(

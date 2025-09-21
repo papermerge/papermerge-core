@@ -1,6 +1,6 @@
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from papermerge.core import orm, schema
 
 
@@ -10,8 +10,8 @@ async def test_upload_document_to_group_home(db_session: AsyncSession, make_user
     """
     group = await make_group("hr", with_special_folders=True)
     user = await make_user("john")
-    user.groups.append(group)
-    db_session.add(user)
+    user_group = orm.UserGroup(user=user, group=group)
+    db_session.add(user_group)
     await db_session.commit()
 
     payload = dict(
@@ -46,9 +46,8 @@ async def test_move_document_one_doc_from_private_to_group(
     user = await make_user("john")
     doc = await make_document("cv.title", user=user, parent=user.home_folder)
 
-    user.groups.append(group)
-
-    db_session.add(user)
+    user_group = orm.UserGroup(user=user, group=group)
+    db_session.add(user_group)
     await db_session.commit()
 
     payload = dict(
@@ -73,7 +72,8 @@ async def test_move_document_one_doc_from_group_to_private(
 ):
     group = await make_group("hr", with_special_folders=True)
     user = await make_user("john")
-    user.groups.append(group)
+    user_group = orm.UserGroup(user=user, group=group)
+    db_session.add(user_group)
     doc = await make_document("cv.title", parent=group.home_folder)
 
     db_session.add(user)
@@ -111,9 +111,10 @@ async def test_move_nested_nodes_from_private_to_group(
     folder_1 = await make_folder("folder_1", user=user, parent=user.home_folder)
     folder_2 = await make_folder("folder_2", user=user, parent=folder_1)
     doc = await make_document("cv.title", user=user, parent=folder_2)
-    user.groups.append(group)
 
-    db_session.add(user)
+    user_group = orm.UserGroup(user=user, group=group)
+    db_session.add(user_group)
+
     await db_session.commit()
 
     payload = dict(
@@ -148,9 +149,10 @@ async def test_move_nested_nodes_from_group_to_private(
     folder_1 = await make_folder("folder_1", group=group, parent=group.home_folder)
     folder_2 = await make_folder("folder_2", group=group, parent=folder_1)
     doc = await make_document("cv.title", parent=folder_2)
-    user.groups.append(group)
 
-    db_session.add(user)
+    user_group = orm.UserGroup(user=user, group=group)
+    db_session.add(user_group)
+
     await db_session.commit()
 
     payload = dict(

@@ -3,7 +3,7 @@ import logging
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -233,7 +233,7 @@ async def get_user_details(
 @utils.docstring_parameter(scope=scopes.USER_DELETE)
 async def delete_user(
     user_id: UUID,
-    user: Annotated[
+    cur_user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.USER_DELETE])
     ],
     db_session: AsyncSession=Depends(get_db),
@@ -253,10 +253,14 @@ async def delete_user(
         else:
             async with AsyncAuditContext(
                 db_session,
-                user_id=user.id,
-                username=user.username
+                user_id=cur_user.id,
+                username=cur_user.username
             ):
-                await dbapi.delete_user(db_session, user_id=user_id)
+                await dbapi.delete_user(
+                    db_session,
+                    user_id=user_id,
+                    deleted_by_user_id=cur_user.id
+                )
     except Exception as e:
         logger.error(e)
         raise HTTPException(status_code=469, detail=str(e))
@@ -290,26 +294,43 @@ async def update_user(
 
 
 @router.post(
-    "/{user_id}/change-password", status_code=200, response_model=schema.UserDetails
+    "/change-password",
+    status_code=status.HTTP_200_OK,
+    response_model=schema.UserDetails
 )
 @utils.docstring_parameter(scope=scopes.USER_UPDATE)
 async def change_user_password(
-    user_id: UUID,
     attrs: schema.ChangeUserPassword,
     cur_user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.USER_UPDATE])
     ],
-    db_session: AsyncSession=Depends(get_db),
+    db_session: AsyncSession = Depends(get_db),
 ) -> schema.UserDetails:
     """Change user password
 
     Required scope: `{scope}`
     """
-    user, error = await dbapi.change_password(
-        db_session, user_id=UUID(attrs.userId), password=attrs.password
-    )
+    async with AsyncAuditContext(
+        db_session,
+        user_id=cur_user.id,
+        username=cur_user.username
+    ):
+        user, error = await dbapi.change_password(
+            db_session,
+            user_id=UUID(attrs.userId),
+            password=attrs.password
+        )
 
     if error:
-        raise HTTPException(status_code=469, detail=error.model_dump())
+        if "not found" in str(error.messages).lower():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=error.model_dump()
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=error.model_dump()
+            )
 
     return user

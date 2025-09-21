@@ -20,6 +20,7 @@ import EditButton from "./EditButton"
 import UserForm from "./UserForm"
 
 import LoadingPanel from "@/components/LoadingPanel"
+import ChangePasswordButton from "@/features/users/components/ChangePasswordButton"
 import type {UserDetails} from "@/types"
 import {useTranslation} from "react-i18next"
 
@@ -47,6 +48,7 @@ export default function UserDetailsContainer() {
           <Path user={data} mode={mode} />
           <Group>
             <DeleteUserButton userId={data.id} />
+            <ChangePasswordButton userId={data.id} />
             <EditButton userId={data.id} />
             <CloseSecondaryPanel
               onClick={() => dispatch(closeRoleDetailsSecondaryPanel())}
@@ -70,7 +72,7 @@ export default function UserDetailsContainer() {
             label={t?.("updated_at", {defaultValue: "Updated at"})}
           />
           <CopyableTextInput
-            value={data.updated_by.username}
+            value={data.updated_by?.username}
             label={t?.("updated_by", {defaultValue: "Updated by"})}
           />
           <CopyableTextInput

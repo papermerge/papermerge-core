@@ -226,8 +226,8 @@ async def test__positive__tags_all_route_with_group_id_param(
     await make_tag(name="tag research 2", group_id=group.id)
 
     # user belongs to 'research' group
-    user.groups.append(group)
-    db_session.add(user)
+    user_group = orm.UserGroup(user=user, group=group)
+    db_session.add(user_group)
     await db_session.commit()
 
     response = await auth_api_client.get("/tags/all", params={"group_id": str(group.id)})

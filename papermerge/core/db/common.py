@@ -10,6 +10,7 @@ from papermerge.core.features.shared_nodes.db import orm as sn_orm
 from papermerge.core.features.groups.db import orm as groups_orm
 from papermerge.core.features.roles.db import orm as roles_orm
 from papermerge.core.features.nodes import schema as nodes_schema
+from papermerge.core.orm import UserGroup
 
 
 async def get_ancestors(
@@ -131,9 +132,8 @@ async def has_node_perm(
     """
     ancestor_ids = [item[0] for item in await get_ancestors(db_session, node_id)]
 
-    ug = aliased(groups_orm.user_groups_association)
-    # groups user belongs to
-    user_group_ids = select(ug.c.group_id).where(ug.c.user_id == user_id)
+    # groups user belongs to - use UserGroup model instead of non-existent association table
+    user_group_ids = select(UserGroup.group_id).where(UserGroup.user_id == user_id)
 
     node_access = select(orm.Node.id).where(
         (orm.Node.id == node_id)

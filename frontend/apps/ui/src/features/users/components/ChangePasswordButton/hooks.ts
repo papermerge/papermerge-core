@@ -18,7 +18,7 @@ export function useModalReset(
 export function useSuccessHandler(
   isSuccess: boolean,
   onSuccess: () => void,
-  delay: number = 1000
+  delay: number = 1500
 ) {
   useEffect(() => {
     if (isSuccess) {

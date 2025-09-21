@@ -1,6 +1,7 @@
 import ErrorMessage from "@/components/ErrorMessage"
 import {useChangePasswordMutation} from "@/features/users/storage/api"
 
+import SuccessMessage from "@/components/SuccessMessage"
 import {Box, Button, Group, Loader, Modal, PasswordInput} from "@mantine/core"
 import {useForm} from "@mantine/form"
 import {useTranslation} from "react-i18next"
@@ -84,12 +85,19 @@ export default function ChangeUserPasswordModal({
             {...form.getInputProps("confirmPassword")}
           />
           {error && <ErrorMessage>{getErrorMessage(t, error)}</ErrorMessage>}
+          {isSuccess && (
+            <SuccessMessage>
+              {t("changePasswordModal.success.passwordChanged", {
+                defaultValue: "Password changed successfully!"
+              })}
+            </SuccessMessage>
+          )}
           <Group justify="space-between" mt="md">
             <Button variant="default" onClick={onClose}>
               {t("common.cancel")}
             </Button>
             <Group>
-              {isLoading && <Loader size="sm" />}
+              {(isLoading || isSuccess) && <Loader size="sm" />}
               <Button disabled={isLoading || isSuccess} type="submit">
                 {t("common.submit")}
               </Button>

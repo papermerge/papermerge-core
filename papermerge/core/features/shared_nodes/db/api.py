@@ -79,18 +79,17 @@ async def create_shared_nodes(
 
 
 async def get_paginated_shared_nodes(
-    db_session: AsyncSession,
-    user_id: uuid.UUID,
-    page_size: int,
-    page_number: int,
-    order_by: list[str],
-    filter: str | None = None,
+        db_session: AsyncSession,
+        user_id: uuid.UUID,
+        page_size: int,
+        page_number: int,
+        order_by: list[str],
+        filter: str | None = None,
 ) -> PaginatedResponse[schema.Document | schema.Folder]:
     loader_opt = selectin_polymorphic(orm.Node, [orm.Folder, orm.Document])
-    UserGroupAlias = aliased(orm.user_groups_association)
-    RolePermissionAlias = aliased(orm.roles_permissions_association)
-    subquery = select(UserGroupAlias.c.group_id).where(
-        UserGroupAlias.c.user_id == user_id
+
+    subquery = select(orm.UserGroup.group_id).where(
+        orm.UserGroup.user_id == user_id
     )
 
     perms_query = (
@@ -98,13 +97,13 @@ async def get_paginated_shared_nodes(
         .select_from(orm.SharedNode)
         .join(orm.Node, orm.Node.id == orm.SharedNode.node_id)
         .join(orm.Role, orm.Role.id == orm.SharedNode.role_id)
-        .join(RolePermissionAlias, RolePermissionAlias.c.role_id == orm.Role.id)
-        .join(orm.Permission, orm.Permission.id == RolePermissionAlias.c.permission_id)
+        .join(orm.roles_permissions_association, orm.roles_permissions_association.c.role_id == orm.Role.id)
+        .join(orm.Permission, orm.Permission.id == orm.roles_permissions_association.c.permission_id)
         .where(
             or_(
                 orm.SharedNode.user_id == user_id,
                 orm.SharedNode.group_id.in_(subquery),
-            )
+                )
         )
     )
 
@@ -117,7 +116,7 @@ async def get_paginated_shared_nodes(
             or_(
                 orm.SharedNode.user_id == user_id,
                 orm.SharedNode.group_id.in_(subquery),
-            )
+                )
         )
     )
 

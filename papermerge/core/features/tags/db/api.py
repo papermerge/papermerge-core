@@ -4,7 +4,6 @@ from typing import Tuple
 
 from sqlalchemy import select, func, or_
 from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.exceptions import EntityNotFound
@@ -54,9 +53,9 @@ async def get_tags(
     order_by: str = "name",
 ) -> schema.PaginatedResponse[schema.Tag]:
 
-    UserGroupAlias = aliased(orm.user_groups_association)
-    subquery = select(UserGroupAlias.c.group_id).where(
-        UserGroupAlias.c.user_id == user_id
+    # Use UserGroup model instead of non-existent association table
+    subquery = select(orm.UserGroup.group_id).where(
+        orm.UserGroup.user_id == user_id
     )
 
     stmt_total_tags = select(func.count(orm.Tag.id)).where(

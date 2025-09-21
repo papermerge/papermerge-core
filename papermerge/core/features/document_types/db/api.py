@@ -50,9 +50,9 @@ async def get_document_types_grouped_by_owner_without_pagination(
     Returns all document types to which user has access to, grouped
     by owner. Results are not paginated.
     """
-    UserGroupAlias = aliased(orm.user_groups_association)
-    subquery = select(UserGroupAlias.c.group_id).where(
-        UserGroupAlias.c.user_id == user_id
+
+    subquery = select(orm.UserGroup.group_id).where(
+        orm.UserGroup.user_id == user_id
     )
     stmt_base = (
         select(

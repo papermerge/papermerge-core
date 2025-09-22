@@ -1,12 +1,12 @@
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
-import {useGetPaginatedGroupsQuery} from "@/features/groups/apiSlice"
+import {useGetPaginatedGroupsQuery} from "@/features/groups/storage/api"
 import {
   clearSelection,
   lastPageSizeUpdate,
   selectionAddMany,
   selectLastPageSize,
   selectSelectedIds
-} from "@/features/groups/groupsSlice"
+} from "@/features/groups/storage/group"
 import {isHTTP403Forbidden} from "@/services/helpers"
 import {Center, Checkbox, Group, Loader, Stack, Table} from "@mantine/core"
 import {useState} from "react"

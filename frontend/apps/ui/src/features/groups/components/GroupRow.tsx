@@ -3,7 +3,7 @@ import {
   selectionAdd,
   selectionRemove,
   selectSelectedIds
-} from "@/features/groups/groupsSlice"
+} from "@/features/groups/storage/group"
 import type {Group} from "@/types.d/groups"
 import {Checkbox, Table} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"

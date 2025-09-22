@@ -1,4 +1,4 @@
-import {useGetGroupsQuery} from "@/features/groups/apiSlice"
+import {useGetGroupsQuery} from "@/features/groups/storage/api"
 import {MultiSelect, Skeleton, Stack} from "@mantine/core"
 import {useState} from "react"
 

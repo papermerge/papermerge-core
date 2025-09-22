@@ -1,4 +1,4 @@
-import {useGetGroupsQuery} from "@/features/groups/apiSlice"
+import {useGetGroupsQuery} from "@/features/groups/storage/api"
 import {Loader, MultiSelect} from "@mantine/core"
 import {TFunction} from "i18next"
 import {useState} from "react"

@@ -18,7 +18,7 @@ import {
 } from "@/features/users/storage/api"
 import {UserEditableFields} from "@/types"
 
-import {useGetGroupsQuery} from "@/features/groups/apiSlice"
+import {useGetGroupsQuery} from "@/features/groups/storage/api"
 import {useGetRolesQuery} from "@/features/roles/storage/api"
 import {useTranslation} from "react-i18next"
 

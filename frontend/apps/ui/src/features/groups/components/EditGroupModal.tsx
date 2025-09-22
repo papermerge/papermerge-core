@@ -12,7 +12,7 @@ import {useEffect, useState} from "react"
 import {
   useEditGroupMutation,
   useGetGroupQuery
-} from "@/features/groups/apiSlice"
+} from "@/features/groups/storage/api"
 import {useTranslation} from "react-i18next"
 
 interface Args {

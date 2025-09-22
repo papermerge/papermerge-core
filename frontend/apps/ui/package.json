@@ -48,7 +48,7 @@
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "@types/react-router-dom": "^5.3.3",
-    "@vitejs/plugin-react": "^5.0.1",
+    "@vitejs/plugin-react": "^5.0.3",
     "prettier": "^3.6.2",
     "sass": "^1.91.0",
     "typescript": "^5.9.2",

@@ -8,5 +8,7 @@ export type PanelComponent =
   | "auditLogDetails"
   | "rolesList"
   | "roleDetails"
+  | "groupsList"
+  | "groupDetails"
   | "usersList"
   | "userDetails"

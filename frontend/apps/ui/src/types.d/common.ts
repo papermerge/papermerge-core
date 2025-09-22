@@ -7,3 +7,8 @@ export type ObjectURLState = {
 
 export type ImageSize = "sm" | "md" | "lg" | "xl"
 export type DialogVisiblity = "opened" | "closed"
+
+export interface ByUser {
+  id: string
+  username: string
+}

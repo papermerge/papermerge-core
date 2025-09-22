@@ -9,6 +9,7 @@ import type {PanelMode} from "@/types"
 import Viewer from "@/features/document/components/Viewer"
 
 import {AuditLogDetails, AuditLogsList} from "@/features/audit/components"
+import {GroupDetails, GroupsList} from "@/features/groups/components"
 import Commander from "@/features/nodes/components/Commander"
 import {RoleDetails, RolesList} from "@/features/roles/components"
 import SearchResults from "@/features/search/components/SearchResults"
@@ -29,6 +30,8 @@ const PANEL_COMPONENTS_SAFE = {
   auditLogList: AuditLogsList,
   rolesList: RolesList,
   roleDetails: RoleDetails,
+  groupsList: GroupsList,
+  groupDetails: GroupDetails,
   usersList: UsersList,
   userDetails: UserDetails
 } satisfies Record<PanelComponent, React.ComponentType>

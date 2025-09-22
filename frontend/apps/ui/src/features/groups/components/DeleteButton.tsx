@@ -1,14 +1,16 @@
 import {Button} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconTrash} from "@tabler/icons-react"
-import {useDispatch, useSelector} from "react-redux"
+import {useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
 import {
   clearSelection,
-  selectSelectedIds
+  selectSelectedIDs
 } from "@/features/groups/storage/group"
 
+import {useAppSelector} from "@/app/hooks"
+import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
 import {RemoveGroupModal, RemoveGroupsModal} from "./DeleteModal"
 
@@ -38,18 +40,19 @@ export function DeleteGroupButton({groupId}: {groupId: string}) {
 }
 
 export function DeleteGroupsButton() {
+  const mode = usePanelMode()
   const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
   const dispatch = useDispatch()
-  const selectedIds = useSelector(selectSelectedIds)
+  const selectedIds = useAppSelector(s => selectSelectedIDs(s, mode)) || []
 
   const onSubmit = () => {
-    dispatch(clearSelection())
+    dispatch(clearSelection({mode}))
     close()
   }
 
   const onCancel = () => {
-    dispatch(clearSelection())
+    dispatch(clearSelection({mode}))
     close()
   }
 

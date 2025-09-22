@@ -1,8 +1,23 @@
-import {useParams} from "react-router"
-import {GroupDetails} from "@/features/groups/components"
+import {store} from "@/app/store"
+import DualPanel from "@/components/DualPanel"
+import {showGroupDetailsInMainPanel} from "@/features/groups/storage/thunks"
+import {LoaderFunctionArgs} from "react-router"
 
 export default function GroupDetailsPage() {
-  const {groupId} = useParams()
+  return <DualPanel />
+}
 
-  return <GroupDetails groupId={groupId!} />
+export async function loader({params, request}: LoaderFunctionArgs) {
+  const url = new URL(request.url)
+  let entryID = "whatever"
+
+  if (params.id) {
+    entryID = params.id
+  }
+
+  if (entryID) {
+    store.dispatch(showGroupDetailsInMainPanel(entryID))
+  }
+
+  return {entryID, urlParams: url.searchParams}
 }

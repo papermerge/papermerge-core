@@ -4099,9 +4099,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:^1.91.0":
-  version: 1.91.0
-  resolution: "sass@npm:1.91.0"
+"sass@npm:^1.93.0":
+  version: 1.93.0
+  resolution: "sass@npm:1.93.0"
   dependencies:
     "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^4.0.0"
@@ -4112,7 +4112,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 10c0/5be1c98f7a618cb5f90b62f63d2aa0f78f9bf369c93ec7cd9880752a26b0ead19aa63cc341e8a26ce6c74d080baa5705f1685dff52fe6a3f28a7828ae50182b6
+  checksum: 10c0/51dcb4e65a69f97b4c200ee154ca45f81b748a45f8ef0ec3236b774bb143590a9304038e9ab09f809f734d4edb3add96a0a690b2e8451ff66b9f57c469b2685e
   languageName: node
   linkType: hard
 
@@ -4445,7 +4445,7 @@ __metadata:
     react-redux: "npm:^9.2.0"
     react-router: "npm:^7.8.2"
     react-router-dom: "npm:^7.9.1"
-    sass: "npm:^1.91.0"
+    sass: "npm:^1.93.0"
     typescript: "npm:^5.9.2"
     use-immer: "npm:^0.11.0"
     viewer: "workspace:*"

@@ -38,7 +38,7 @@
     "react-dom": "^19.1.1",
     "react-i18next": "^15.7.3",
     "react-redux": "^9.2.0",
-    "react-router": "^7.8.2",
+    "react-router": "^7.9.1",
     "react-router-dom": "^7.9.1",
     "use-immer": "^0.11.0",
     "viewer": "workspace:*"

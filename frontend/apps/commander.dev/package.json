@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@mantine/core": "^8.3.0",
-    "@mantine/hooks": "^8.3.0",
+    "@mantine/hooks": "^8.3.1",
     "@tabler/icons-react": "^3.34.1",
     "clsx": "^2.1.1",
     "commander": "workspace:*",

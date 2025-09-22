@@ -4,7 +4,7 @@ import {RootState} from "@/app/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 import type {Paginated, PaginationType} from "@/types"
 import type {Group} from "@/types.d/groups"
-import {apiSliceWithGroups} from "./apiSlice"
+import {apiSliceWithGroups} from "./api"
 
 export type GroupSlice = {
   selectedIds: Array<string>

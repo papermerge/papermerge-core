@@ -1,9 +1,9 @@
-import {useSelector} from "react-redux"
+import {selectSelectedIds} from "@/features/groups/storage/group"
 import {Group} from "@mantine/core"
-import {selectSelectedIds} from "@/features/groups/groupsSlice"
-import NewButton from "./NewButton"
-import EditButton from "./EditButton"
+import {useSelector} from "react-redux"
 import {DeleteGroupsButton} from "./DeleteButton"
+import EditButton from "./EditButton"
+import NewButton from "./NewButton"
 
 export default function ActionButtons() {
   const selectedIds = useSelector(selectSelectedIds)

@@ -4,10 +4,13 @@ import {IconTrash} from "@tabler/icons-react"
 import {useDispatch, useSelector} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
-import {selectSelectedIds, clearSelection} from "@/features/groups/groupsSlice"
+import {
+  clearSelection,
+  selectSelectedIds
+} from "@/features/groups/storage/group"
 
-import {RemoveGroupModal, RemoveGroupsModal} from "./DeleteModal"
 import {useTranslation} from "react-i18next"
+import {RemoveGroupModal, RemoveGroupsModal} from "./DeleteModal"
 
 export function DeleteGroupButton({groupId}: {groupId: string}) {
   const {t} = useTranslation()

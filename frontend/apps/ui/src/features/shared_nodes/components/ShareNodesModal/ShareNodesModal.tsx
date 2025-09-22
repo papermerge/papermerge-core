@@ -1,4 +1,4 @@
-import {useGetGroupsQuery} from "@/features/groups/apiSlice"
+import {useGetGroupsQuery} from "@/features/groups/storage/api"
 import {useGetRolesQuery} from "@/features/roles/storage/api"
 import {useAddNewSharedNodeMutation} from "@/features/shared_nodes/store/apiSlice"
 import {useGetUsersQuery} from "@/features/users/storage/api"

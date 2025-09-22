@@ -14,7 +14,7 @@ import {useForm} from "@mantine/form"
 import {UserEditableFields} from "@/types"
 
 import LazyMultiSelect from "@/components/LazyMultiSelect"
-import {useGetGroupsQuery} from "@/features/groups/apiSlice"
+import {useGetGroupsQuery} from "@/features/groups/storage/api"
 import {useGetRolesQuery} from "@/features/roles/storage/api"
 import {useAddNewUserMutation} from "@/features/users/storage/api"
 import {makeRandomString} from "@/utils"

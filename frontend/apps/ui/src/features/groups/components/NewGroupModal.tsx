@@ -9,7 +9,7 @@ import {
 } from "@mantine/core"
 import {useEffect, useState} from "react"
 
-import {useAddNewGroupMutation} from "@/features/groups/apiSlice"
+import {useAddNewGroupMutation} from "@/features/groups/storage/api"
 import {useTranslation} from "react-i18next"
 
 interface Args {

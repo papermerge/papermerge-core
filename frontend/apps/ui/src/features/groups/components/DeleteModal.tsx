@@ -1,6 +1,6 @@
+import {useDeleteGroupMutation} from "@/features/groups/storage/api"
+import {Button, Container, Group, Loader, Modal, Space} from "@mantine/core"
 import {useState} from "react"
-import {Button, Modal, Container, Group, Space, Loader} from "@mantine/core"
-import {useDeleteGroupMutation} from "@/features/groups/apiSlice"
 import {useTranslation} from "react-i18next"
 
 interface RemoveGroupsModalArgs {

@@ -5,7 +5,7 @@ import {useNavigate} from "react-router-dom"
 
 import {clearSelection, selectSelectedIDs} from "@/features/users/storage/user"
 
-import DeleteButton from "@/components/DeleteButton"
+import DeleteButton from "@/components/buttons/DeleteButton"
 import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
 import {RemoveUserModal, RemoveUsersModal} from "./DeleteModal"

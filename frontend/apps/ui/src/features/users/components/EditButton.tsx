@@ -2,7 +2,7 @@ import {Button} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconEdit} from "@tabler/icons-react"
 
-import EditButton from "@/components/EditButton"
+import EditButton from "@/components/buttons/EditButton"
 import {useTranslation} from "react-i18next"
 import EditUserModal from "./EditUserModal"
 

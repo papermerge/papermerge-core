@@ -1,4 +1,4 @@
-import EditButton from "@/components/EditButton"
+import EditButton from "@/components/buttons/EditButton"
 import {useDisclosure} from "@mantine/hooks"
 
 import {useTranslation} from "react-i18next"

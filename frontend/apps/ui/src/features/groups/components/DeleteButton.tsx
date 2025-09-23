@@ -8,7 +8,7 @@ import {
 } from "@/features/groups/storage/group"
 
 import {useAppSelector} from "@/app/hooks"
-import DeleteButton from "@/components/DeleteButton"
+import DeleteButton from "@/components/buttons/DeleteButton"
 import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
 import {RemoveGroupModal, RemoveGroupsModal} from "./DeleteModal"

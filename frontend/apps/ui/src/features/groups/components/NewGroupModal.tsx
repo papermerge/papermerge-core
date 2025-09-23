@@ -1,14 +1,7 @@
-import {
-  Button,
-  Checkbox,
-  Group,
-  Loader,
-  Modal,
-  Text,
-  TextInput
-} from "@mantine/core"
+import {Checkbox, Group, Loader, Modal, Text, TextInput} from "@mantine/core"
 import {useEffect, useState} from "react"
 
+import {CancelButton, SaveButton} from "@/components/buttons"
 import {useAddNewGroupMutation} from "@/features/groups/storage/api"
 import {useTranslation} from "react-i18next"
 
@@ -90,14 +83,10 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
       />
       {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">
-        <Button variant="default" onClick={onLocalCancel}>
-          {t("cancel", {defaultValue: "Cancel"})}
-        </Button>
+        <CancelButton onClick={onLocalCancel} t={t} />
         <Group>
           {isLoading && <Loader size="sm" />}
-          <Button disabled={isLoading} onClick={onLocalSubmit}>
-            {t("save", {defaultValue: "Save"})}
-          </Button>
+          <SaveButton disabled={isLoading} onClick={onLocalSubmit} t={t} />
         </Group>
       </Group>
     </Modal>

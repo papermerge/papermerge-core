@@ -70,7 +70,7 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
 
   return (
     <Modal
-      title={t("groups.new.title")}
+      title={t("groups.newGroupModal.title", {defaultValue: "New Group"})}
       opened={opened}
       size="lg"
       onClose={onLocalCancel}
@@ -78,23 +78,25 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
       <TextInput
         value={name}
         onChange={onNameChangeHandler}
-        label={t("groups.form.name")}
-        placeholder={t("groups.form.name.placeholder")}
+        label={t("name", {defaultValue: "Name"})}
+        placeholder={t("name", {defaultValue: "Name"})}
       />
       <Checkbox
         my="md"
         onChange={onCheckboxClicked}
-        label="For this group create special folders: inbox and home"
+        label={t("groups.newGroupModal.forThisGroupCreateSpecialFolders", {
+          defaultValue: "For this group create special folders: inbox and home"
+        })}
       />
       {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>
-          {t("common.cancel")}
+          {t("cancel", {defaultValue: "Cancel"})}
         </Button>
         <Group>
           {isLoading && <Loader size="sm" />}
           <Button disabled={isLoading} onClick={onLocalSubmit}>
-            {t("common.submit")}
+            {t("save", {defaultValue: "Save"})}
           </Button>
         </Group>
       </Group>

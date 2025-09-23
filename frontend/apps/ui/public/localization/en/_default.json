@@ -326,6 +326,10 @@
         "withoutUsers": "Does NOT include these users"
       }
     },
+    "newGroupModal": {
+      "title": "New Group",
+      "forThisGroupCreateSpecialFolders": "For this group create special folders: inbox and home"
+    },
     "searchGroups": "Search groups...",
     "noGroupsFound": "No groups found"
   },
@@ -468,5 +472,8 @@
     "noUsersFound": "No users found"
   },
   "pickValue": "Pick value",
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "name": "Name",
+  "cancel": "Cancel",
+  "save": "Save"
 }

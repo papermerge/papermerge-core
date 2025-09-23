@@ -1,5 +1,5 @@
 import {useAppSelector} from "@/app/hooks"
-import {selectSelectedIDs} from "@/features/users/storage/user"
+import {selectSelectedIDs} from "@/features/groups/storage/group"
 import {Group} from "@mantine/core"
 
 import {usePanelMode} from "@/hooks"

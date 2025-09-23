@@ -1,6 +1,4 @@
-import {Button} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
-import {IconTrash} from "@tabler/icons-react"
 import {useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
@@ -10,6 +8,7 @@ import {
 } from "@/features/groups/storage/group"
 
 import {useAppSelector} from "@/app/hooks"
+import DeleteButton from "@/components/DeleteButton"
 import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
 import {RemoveGroupModal, RemoveGroupsModal} from "./DeleteModal"
@@ -26,9 +25,7 @@ export function DeleteGroupButton({groupId}: {groupId: string}) {
 
   return (
     <>
-      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        {t("common.delete")}
-      </Button>
+      <DeleteButton onClick={open} text={t("common.delete")} />
       <RemoveGroupModal
         opened={opened}
         onSubmit={onSubmit}
@@ -58,9 +55,7 @@ export function DeleteGroupsButton() {
 
   return (
     <>
-      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        {t("common.delete")}
-      </Button>
+      <DeleteButton onClick={open} text={t("common.delete")} />
       <RemoveGroupsModal
         opened={opened}
         onSubmit={onSubmit}

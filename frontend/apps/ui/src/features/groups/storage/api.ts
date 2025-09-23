@@ -1,7 +1,7 @@
 import {apiSlice} from "@/features/api/slice"
 import type {GroupItem} from "@/features/groups/types"
 import type {Paginated} from "@/types"
-import type {Group, GroupUpdate, NewGroup} from "@/types.d/groups"
+import type {Group, GroupDetails, GroupUpdate, NewGroup} from "@/types.d/groups"
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 import {GroupQueryParams} from "@/features/groups/types"
@@ -38,7 +38,7 @@ export const apiSliceWithGroups = apiSlice.injectEndpoints({
         ...result.map(({id}) => ({type: "Group", id}) as const)
       ]
     }),
-    getGroup: builder.query<Group, string>({
+    getGroup: builder.query<GroupDetails, string>({
       query: groupID => `/groups/${groupID}`,
       providesTags: (_result, _error, arg) => [{type: "Group", id: arg}]
     }),

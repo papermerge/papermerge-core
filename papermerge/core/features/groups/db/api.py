@@ -14,11 +14,72 @@ logger = logging.getLogger(__name__)
 
 
 async def get_group(db_session: AsyncSession, group_id: uuid.UUID) -> schema.GroupDetails:
-    stmt = select(orm.Group).where(orm.Group.id == group_id)
-    db_item = (await db_session.scalars(stmt)).unique().one()
-    result = schema.GroupDetails.model_validate(db_item)
+    """
+    Get a single group by ID with full audit trail information.
 
-    return result
+    Args:
+        db_session: Database session
+        group_id: UUID of the group to retrieve
+
+    Returns:
+        GroupDetails with audit trail information
+
+    Raises:
+        NoResultFound: If group doesn't exist
+    """
+
+    # Create user aliases for all audit trail joins
+    created_user = aliased(orm.User, name='created_user')
+    updated_user = aliased(orm.User, name='updated_user')
+
+    # Build query with joins for all audit user data
+    query = (
+        select(orm.Group)
+        .join(created_user, orm.Group.created_by == created_user.id, isouter=True)
+        .join(updated_user, orm.Group.updated_by == updated_user.id, isouter=True)
+        .where(orm.Group.id == group_id)
+        .add_columns(
+            # Created by user
+            created_user.id.label('created_by_id'),
+            created_user.username.label('created_by_username'),
+            # Updated by user
+            updated_user.id.label('updated_by_id'),
+            updated_user.username.label('updated_by_username'),
+        )
+    )
+
+    # Execute query
+    result = (await db_session.execute(query)).one()
+    group = result[0]  # The Group object
+
+    # Build audit user objects (handle None values)
+    created_by = None
+    if result.created_by_id:
+        created_by = schema.ByUser(
+            id=result.created_by_id,
+            username=result.created_by_username
+        )
+
+    updated_by = None
+    if result.updated_by_id:
+        updated_by = schema.ByUser(
+            id=result.updated_by_id,
+            username=result.updated_by_username
+        )
+
+    # Create GroupDetails with all data
+    group_data = {
+        "id": group.id,
+        "name": group.name,
+        "home_folder_id": group.home_folder_id,
+        "inbox_folder_id": group.inbox_folder_id,
+        "created_at": group.created_at,
+        "updated_at": group.updated_at,
+        "created_by": created_by,
+        "updated_by": updated_by,
+    }
+
+    return schema.GroupDetails(**group_data)
 
 
 async def get_groups(

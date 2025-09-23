@@ -1,31 +1,24 @@
-import {Button} from "@mantine/core"
+import EditButton from "@/components/EditButton"
 import {useDisclosure} from "@mantine/hooks"
-import {IconEdit} from "@tabler/icons-react"
 
-import EditGroupModal from "./EditGroupModal"
 import {useTranslation} from "react-i18next"
+import EditGroupModal from "./EditGroupModal"
 
 interface Args {
   groupId: string
 }
 
-export default function EditButton({groupId}: Args) {
+export default function EditButtonContainer({groupId}: Args) {
   const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
 
   if (!groupId) {
-    return (
-      <Button leftSection={<IconEdit />} variant={"default"} disabled={true}>
-        {t("common.edit")}
-      </Button>
-    )
+    return <EditButton disabled={true} text={t("common.edit")} />
   }
 
   return (
     <>
-      <Button leftSection={<IconEdit />} variant={"default"} onClick={open}>
-        {t("common.edit")}
-      </Button>
+      <EditButton onClick={open} text={t("common.edit")} />
       <EditGroupModal
         opened={opened}
         onSubmit={close}

@@ -1,4 +1,4 @@
+import GroupDetails from "./GroupDetailsContainer"
 import GroupsList from "./List"
-import GroupDetails from "./GroupDetails"
 
-export {GroupsList, GroupDetails}
+export {GroupDetails, GroupsList}

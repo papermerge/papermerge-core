@@ -26,6 +26,11 @@ class GroupDetails(BaseModel):
     home_folder_id: uuid.UUID | None = None
     inbox_folder_id: uuid.UUID | None = None
 
+    created_at: datetime | None = None
+    created_by: ByUser | None = None
+    updated_at: datetime | None = None
+    updated_by: ByUser | None = None
+
     # Config
     model_config = ConfigDict(from_attributes=True)
 

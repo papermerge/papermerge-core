@@ -1,0 +1,105 @@
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
+import {useGetGroupQuery} from "@/features/groups/storage/api"
+import {selectGroupDetailsID} from "@/features/groups/storage/group"
+import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
+import {usePanelMode} from "@/hooks"
+import type {PanelMode} from "@/types"
+import type {GroupDetails} from "@/types.d/groups"
+import {
+  Breadcrumbs,
+  Group,
+  Loader,
+  LoadingOverlay,
+  Paper,
+  Stack
+} from "@mantine/core"
+import {CopyableTextInput} from "kommon"
+import {Link, useNavigation} from "react-router-dom"
+import {DeleteGroupButton} from "./DeleteButton"
+import EditButton from "./EditButton"
+import GroupForm from "./GroupForm"
+
+import LoadingPanel from "@/components/LoadingPanel"
+import {useTranslation} from "react-i18next"
+
+export default function GroupDetailsContainer() {
+  const mode = usePanelMode()
+  const dispatch = useAppDispatch()
+  const {t} = useTranslation()
+  const groupID = useAppSelector(s => selectGroupDetailsID(s, mode))
+  const {data, isLoading, isFetching, error} = useGetGroupQuery(groupID || "", {
+    skip: !groupID
+  })
+
+  if (isLoading) return <LoadingPanel />
+  if (error) return <div>Error loading group details</div>
+
+  if (!data) {
+    return <LoadingPanel />
+  }
+
+  return (
+    <Paper p="md" withBorder style={{height: "100%", position: "relative"}}>
+      <LoadingOverlay visible={isFetching} />
+      <Stack style={{height: "100%", overflow: "hidden"}}>
+        <Group justify="space-between" style={{flexShrink: 0}}>
+          <Path group={data} mode={mode} />
+          <Group>
+            <DeleteGroupButton groupId={data.id} />
+            <EditButton groupId={data.id} />
+            <CloseSecondaryPanel
+              onClick={() => dispatch(closeRoleDetailsSecondaryPanel())}
+            />
+          </Group>
+        </Group>
+        <Stack style={{overflowY: "auto"}}>
+          <GroupForm key={data.id} group={data} />
+
+          <CopyableTextInput
+            value={data.updated_at}
+            label={t?.("updated_at", {defaultValue: "Updated at"})}
+          />
+          <CopyableTextInput
+            value={data.updated_by?.username}
+            label={t?.("updated_by", {defaultValue: "Updated by"})}
+          />
+          <CopyableTextInput
+            value={data.created_at}
+            label={t?.("created_at", {defaultValue: "Created at"})}
+          />
+          <CopyableTextInput
+            value={data.created_by.username}
+            label={t?.("created_by", {defaultValue: "Created by"})}
+          />
+        </Stack>
+      </Stack>
+    </Paper>
+  )
+}
+
+function Path({group, mode}: {group: GroupDetails | null; mode: PanelMode}) {
+  const navigation = useNavigation()
+
+  if (mode == "main") {
+    return (
+      <Group>
+        <Breadcrumbs>
+          <Link to="/groups/">Groups</Link>
+          <Link to={`/groups/${group?.id}`}>{group?.name}</Link>
+        </Breadcrumbs>
+        {navigation.state == "loading" && <Loader size="sm" />}
+      </Group>
+    )
+  }
+
+  return (
+    <Group>
+      <Breadcrumbs>
+        <div>Groups</div>
+        <div>{group?.name}</div>
+      </Breadcrumbs>
+      {navigation.state == "loading" && <Loader size="sm" />}
+    </Group>
+  )
+}

@@ -41,7 +41,6 @@ const groupsSlice = createSlice({
       action: PayloadAction<string | undefined>
     ) {
       const groupID = action.payload
-
       if (groupID) {
         state.secondaryGroupDetails = {id: groupID}
       } else {

@@ -319,6 +319,14 @@
     "updated_at": "Updated At",
     "updated_by": "Updated By"
   },
+  "groups": {
+    "filterByUser": {
+      "label": {
+        "withUsers": "Includes these users",
+        "withoutUsers": "Does NOT include these users"
+      }
+    }
+  },
   "roles.name": "Roles",
   "roles.new.title": "New Role",
   "roles.edit.title": "Edit Role",

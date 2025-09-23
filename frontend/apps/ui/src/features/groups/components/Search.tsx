@@ -102,20 +102,20 @@ export default function Search() {
       onClear={onClear}
       onSearch={onSearch}
       t={t}
-      placeholder={t?.("searchGroups") || "Search groups..."}
+      placeholder={t?.("searchGroups", {defaultValue: "Search groups..."})}
     >
       <FilterByUser
         t={t}
         onChange={onLocalWithUsersChange}
-        users={withUsers}
+        users={localWithUsers}
         label={
-          t?.("groups.scopeFilter.label.includes") ?? "Includes these users"
+          t?.("groups.filterByUser.label.withUsers") ?? "Includes these users"
         }
       />
       <FilterByUser
         t={t}
         label={
-          t?.("groups.scopeFilter.label.excludes") ??
+          t?.("groups.filterByUser.label.withoutUsers") ??
           "Does NOT include these users"
         }
         onChange={onLocalWithoutUsersChange}

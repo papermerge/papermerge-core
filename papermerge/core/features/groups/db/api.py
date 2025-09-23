@@ -212,12 +212,13 @@ async def get_groups(
     )
 
 
+
 def _build_group_filter_conditions(
-        filters: Dict[str, Dict[str, Any]],
-        created_user,
-        updated_user,
-        deleted_user,
-        archived_user
+    filters: Dict[str, Dict[str, Any]],
+    created_user,
+    updated_user,
+    deleted_user,
+    archived_user
 ) -> list:
     """Build SQLAlchemy WHERE conditions from filters dictionary for groups."""
     conditions = []
@@ -233,22 +234,25 @@ def _build_group_filter_conditions(
 
         if filter_name == "with_users":
             if operator == "in" and isinstance(value, list):
-                # Groups that contain specific users
-                # This requires a subquery to check users_groups table
-                user_ids = [uuid.UUID(uid) if isinstance(uid, str) else uid for uid in value]
+                user_ids_subquery = (
+                    select(orm.User.id)
+                    .where(orm.User.username.in_(value))
+                )
                 subquery = (
                     select(orm.UserGroup.group_id)
-                    .where(orm.UserGroup.user_id.in_(user_ids))
+                    .where(orm.UserGroup.user_id.in_(user_ids_subquery))
                 )
                 condition = orm.Group.id.in_(subquery)
 
         elif filter_name == "without_users":
             if operator == "in" and isinstance(value, list):
-                # Groups that do NOT contain specific users
-                user_ids = [uuid.UUID(uid) if isinstance(uid, str) else uid for uid in value]
+                user_ids_subquery = (
+                    select(orm.User.id)
+                    .where(orm.User.username.in_(value))
+                )
                 subquery = (
                     select(orm.UserGroup.group_id)
-                    .where(orm.UserGroup.user_id.in_(user_ids))
+                    .where(orm.UserGroup.user_id.in_(user_ids_subquery))
                 )
                 condition = ~orm.Group.id.in_(subquery)
 
@@ -425,18 +429,26 @@ def _apply_user_filters_to_count_query(count_query, filters):
             value = filter_config.get("value")
 
             if filter_name == "with_users" and operator == "in":
-                user_ids = [uuid.UUID(uid) if isinstance(uid, str) else uid for uid in value]
+                # First get user IDs from usernames, then check users_groups table
+                user_ids_subquery = (
+                    select(orm.User.id)
+                    .where(orm.User.username.in_(value))
+                )
                 subquery = (
                     select(orm.UserGroup.group_id)
-                    .where(orm.UserGroup.user_id.in_(user_ids))
+                    .where(orm.UserGroup.user_id.in_(user_ids_subquery))
                 )
                 count_query = count_query.where(orm.Group.id.in_(subquery))
 
             elif filter_name == "without_users" and operator == "in":
-                user_ids = [uuid.UUID(uid) if isinstance(uid, str) else uid for uid in value]
+                # First get user IDs from usernames, then check users_groups table
+                user_ids_subquery = (
+                    select(orm.User.id)
+                    .where(orm.User.username.in_(value))
+                )
                 subquery = (
                     select(orm.UserGroup.group_id)
-                    .where(orm.UserGroup.user_id.in_(user_ids))
+                    .where(orm.UserGroup.user_id.in_(user_ids_subquery))
                 )
                 count_query = count_query.where(~orm.Group.id.in_(subquery))
 

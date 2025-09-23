@@ -82,7 +82,7 @@ export default function LazyUsersSelect({
       value={selectedScopes}
       onChange={handleChange}
       onDropdownOpen={handleDropdownOpen}
-      placeholder={t?.("roles.scopeFilter.pickValue", {
+      placeholder={t?.("pickValue", {
         defaultValue: "Pick value"
       })}
       label={label}

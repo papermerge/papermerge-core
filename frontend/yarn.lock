@@ -774,12 +774,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/hooks@npm:^8.3.0":
-  version: 8.3.0
-  resolution: "@mantine/hooks@npm:8.3.0"
+"@mantine/hooks@npm:^8.3.1":
+  version: 8.3.1
+  resolution: "@mantine/hooks@npm:8.3.1"
   peerDependencies:
     react: ^18.x || ^19.x
-  checksum: 10c0/2caaac7654a97424e798d3ae18ee9c70219a62d69dbd21582da90f44b8381674ed496583e4e7ad378a2fd42b7a78fb84534982297918acb24ed674abcb1a312b
+  checksum: 10c0/d64ea9c848a687668ce34007e3ab226b5c45c52ea1f4bdd721ca17b07d7f7a642b86e23ee65777179d6cd1ae9c3ce56fe43602828f332bfc2cbd59658b1c9047
   languageName: node
   linkType: hard
 
@@ -2019,7 +2019,7 @@ __metadata:
   dependencies:
     "@eslint/js": "npm:^9.35.0"
     "@mantine/core": "npm:^8.3.0"
-    "@mantine/hooks": "npm:^8.3.0"
+    "@mantine/hooks": "npm:^8.3.1"
     "@tabler/icons-react": "npm:^3.34.1"
     "@types/react": "npm:^19.1.12"
     "@types/react-dom": "npm:^19.1.9"
@@ -3208,7 +3208,7 @@ __metadata:
   dependencies:
     "@eslint/js": "npm:^9.35.0"
     "@mantine/core": "npm:^8.3.0"
-    "@mantine/hooks": "npm:^8.3.0"
+    "@mantine/hooks": "npm:^8.3.1"
     "@tabler/icons-react": "npm:^3.34.1"
     "@types/react": "npm:^19.1.12"
     "@types/react-dom": "npm:^19.1.9"
@@ -4416,7 +4416,7 @@ __metadata:
     "@mantine/core": "npm:^8.3.0"
     "@mantine/dates": "npm:^8.3.1"
     "@mantine/form": "npm:^8.3.1"
-    "@mantine/hooks": "npm:^8.3.0"
+    "@mantine/hooks": "npm:^8.3.1"
     "@mantine/notifications": "npm:^8.3.0"
     "@reduxjs/toolkit": "npm:^2.9.0"
     "@tabler/icons-react": "npm:^3.34.1"
@@ -4597,7 +4597,7 @@ __metadata:
   dependencies:
     "@eslint/js": "npm:^9.35.0"
     "@mantine/core": "npm:^8.3.0"
-    "@mantine/hooks": "npm:^8.3.0"
+    "@mantine/hooks": "npm:^8.3.1"
     "@tabler/icons-react": "npm:^3.34.1"
     "@types/react": "npm:^19.1.12"
     "@types/react-dom": "npm:^19.1.9"

@@ -326,6 +326,10 @@
         "withoutUsers": "Enthält NICHT diese Benutzer"
       }
     },
+    "newGroupModal": {
+      "title": "Neue Gruppe",
+      "forThisGroupCreateSpecialFolders": "Für diese Gruppe spezielle Ordner erstellen: Posteingang und Startordner"
+    },
     "searchGroups": "Gruppen suchen...",
     "noGroupsFound": "Keine Gruppen gefunden"
   },
@@ -468,5 +472,8 @@
     "noUsersFound": "Keine Benutzer gefunden"
   },
   "pickValue": "Wert auswählen",
-  "loading": "Laden..."
+  "loading": "Laden...",
+  "name": "Name",
+  "cancel": "Abrechen",
+  "save": "Speichern"
 }

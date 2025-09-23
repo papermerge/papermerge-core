@@ -1,18 +1,19 @@
-import {Button} from "@mantine/core"
+import {Button, ButtonProps} from "@mantine/core"
 import {IconEdit} from "@tabler/icons-react"
 
-interface EditButtonProps {
+interface Args extends ButtonProps {
   text: string
-  onClick: () => void
+  onClick?: () => void
 }
 
-export default function EditButton({text, onClick}: EditButtonProps) {
+export default function EditButton({text, onClick, ...buttonProps}: Args) {
   return (
     <Button
       leftSection={<IconEdit />}
       onClick={onClick}
       color={"teal"}
       variant="filled"
+      {...buttonProps}
     >
       {text}
     </Button>

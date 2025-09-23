@@ -1,5 +1,4 @@
 import {
-  Button,
   Checkbox,
   Group,
   Loader,
@@ -9,6 +8,7 @@ import {
 } from "@mantine/core"
 import {useEffect, useState} from "react"
 
+import {CancelButton, SaveButton} from "@/components/buttons"
 import {
   useEditGroupMutation,
   useGetGroupQuery
@@ -94,14 +94,14 @@ export default function EditGroupModal({
         label="Group with special folders: inbox and home"
       />
       <Group justify="space-between" mt="md">
-        <Button variant="default" onClick={onLocalCancel}>
-          {t("common.cancel")}
-        </Button>
+        <CancelButton onClick={onLocalCancel} t={t} />
         <Group>
           {isLoadingGroupUpdate && <Loader size="sm" />}
-          <Button disabled={isLoadingGroupUpdate} onClick={onLocalSubmit}>
-            {t("common.update")}
-          </Button>
+          <SaveButton
+            disabled={isLoadingGroupUpdate}
+            onClick={onLocalSubmit}
+            t={t}
+          />
         </Group>
       </Group>
     </Modal>

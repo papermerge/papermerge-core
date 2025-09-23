@@ -8,7 +8,7 @@ interface Args extends ButtonProps {
 
 export default function CancelButton({t, onClick}: Args) {
   return (
-    <Button onClick={onClick}>
+    <Button variant="default" onClick={onClick}>
       {t?.("cancel", {defaultValue: "Cancel"}) || "Cancel"}
     </Button>
   )

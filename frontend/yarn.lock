@@ -3080,10 +3080,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"immer@npm:^10.0.3, immer@npm:^10.1.1":
+"immer@npm:^10.0.3":
   version: 10.1.1
   resolution: "immer@npm:10.1.1"
   checksum: 10c0/b749e10d137ccae91788f41bd57e9387f32ea6d6ea8fd7eb47b23fd7766681575efc7f86ceef7fe24c3bc9d61e38ff5d2f49c2663b2b0c056e280a4510923653
+  languageName: node
+  linkType: hard
+
+"immer@npm:^10.1.3":
+  version: 10.1.3
+  resolution: "immer@npm:10.1.3"
+  checksum: 10c0/b3929022c1999935c9c5e9491fce20d883c15a04072628056f3b8c51a63ac0876d1c1f25cec146e325c30c906bc7f15a636c29ed53156f0a3049150f152df4c8
   languageName: node
   linkType: hard
 
@@ -4519,7 +4526,7 @@ __metadata:
     i18next-chained-backend: "npm:^4.6.2"
     i18next-localstorage-backend: "npm:^4.2.0"
     i18next-xhr-backend: "npm:^3.2.2"
-    immer: "npm:^10.1.1"
+    immer: "npm:^10.1.3"
     js-cookie: "npm:^3.0.5"
     kommon: "workspace:*"
     pdfjs-dist: "npm:^5.4.149"

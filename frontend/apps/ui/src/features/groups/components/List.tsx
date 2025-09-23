@@ -91,7 +91,7 @@ export default function GroupsList() {
         }}
         onSortChange={handleSortChange}
         loading={isLoading || isFetching}
-        emptyMessage={t("groupsList.noGroupsFound", {
+        emptyMessage={t("groups.noGroupsFound", {
           defaultValue: "No groups found"
         })}
         withCheckbox={true}

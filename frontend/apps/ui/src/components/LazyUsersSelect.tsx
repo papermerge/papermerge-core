@@ -57,7 +57,7 @@ export default function LazyUsersSelect({
       return [
         {
           value: "error",
-          label: t?.("usersSelect.error") ?? "Error loading users",
+          label: t?.("lazyUsersSelect.error") ?? "Error loading users",
           disabled: true
         }
       ]
@@ -67,7 +67,7 @@ export default function LazyUsersSelect({
       return [
         {
           value: "empty",
-          label: t?.("usersSelect.noUsersFound") ?? "No users found",
+          label: t?.("lazyUsersSelect.noUsersFound") ?? "No users found",
           disabled: true
         }
       ]

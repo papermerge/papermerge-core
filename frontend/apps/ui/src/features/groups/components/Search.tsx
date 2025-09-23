@@ -102,7 +102,9 @@ export default function Search() {
       onClear={onClear}
       onSearch={onSearch}
       t={t}
-      placeholder={t?.("searchGroups", {defaultValue: "Search groups..."})}
+      placeholder={t?.("groups.searchGroups", {
+        defaultValue: "Search groups..."
+      })}
     >
       <FilterByUser
         t={t}

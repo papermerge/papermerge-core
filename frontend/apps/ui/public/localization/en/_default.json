@@ -322,10 +322,12 @@
   "groups": {
     "filterByUser": {
       "label": {
-        "withUsers": "Includes these users",
+        "withUsers": "Includes any of these users",
         "withoutUsers": "Does NOT include these users"
       }
-    }
+    },
+    "searchGroups": "Search groups...",
+    "noGroupsFound": "No groups found"
   },
   "roles.name": "Roles",
   "roles.new.title": "New Role",
@@ -460,5 +462,11 @@
     "shared_node.delete": "Delete Shared Nodes",
 
     "audit_log.view": "View Audit Logs"
-  }
+  },
+  "lazyUsersSelect": {
+    "error": "Error loading users",
+    "noUsersFound": "No users found"
+  },
+  "pickValue": "Pick value",
+  "loading": "Loading..."
 }

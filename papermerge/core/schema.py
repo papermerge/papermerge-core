@@ -37,7 +37,7 @@ from .features.users.schema import User, UserEx, CreateUser, UserDetails, Update
 from .features.custom_fields.schema import CustomField, UpdateCustomField, CustomFieldType, CustomFieldValue
 from .features.tags.schema import Tag, UpdateTag, CreateTag
 from .features.document_types.schema import DocumentType, UpdateDocumentType, CreateDocumentType
-from .features.groups.schema import Group, GroupDetails, CreateGroup, UpdateGroup
+from .features.groups.schema import Group, GroupEx, GroupDetails, CreateGroup, UpdateGroup
 from .features.roles.schema import Role, RoleEx, RoleDetails, CreateRole, UpdateRole, Permission, ByUser
 from .features.audit.schema import AuditLog, AuditLogDetails
 from .schemas.error import Error, AttrError
@@ -95,6 +95,7 @@ __all__ = [
     'CreateDocumentType',
     'UpdateDocumentType',
     'Group',
+    'GroupEx',
     'CreateGroup',
     'GroupDetails',
     'UpdateGroup',

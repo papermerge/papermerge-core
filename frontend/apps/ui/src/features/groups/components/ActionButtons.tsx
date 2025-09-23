@@ -1,18 +1,31 @@
-import {selectSelectedIds} from "@/features/groups/storage/group"
+import {useAppSelector} from "@/app/hooks"
+import {selectSelectedIDs} from "@/features/users/storage/user"
 import {Group} from "@mantine/core"
-import {useSelector} from "react-redux"
+
+import {usePanelMode} from "@/hooks"
+import ColumnSelector from "./ColumnSelector"
 import {DeleteGroupsButton} from "./DeleteButton"
 import EditButton from "./EditButton"
 import NewButton from "./NewButton"
+import Search from "./Search"
 
 export default function ActionButtons() {
-  const selectedIds = useSelector(selectSelectedIds)
+  const mode = usePanelMode()
+  const selectedIds = useAppSelector(s => selectSelectedIDs(s, mode)) || []
+  const hasOneSelected = selectedIds.length === 1
+  const hasAnySelected = selectedIds.length >= 1
 
   return (
-    <Group>
-      <NewButton />
-      {selectedIds.length == 1 ? <EditButton groupId={selectedIds[0]} /> : ""}
-      {selectedIds.length >= 1 ? <DeleteGroupsButton /> : ""}
+    <Group justify="space-between" w={"100%"}>
+      <Group>
+        <NewButton />
+        {hasOneSelected && <EditButton groupId={selectedIds[0]} />}
+        {hasAnySelected && <DeleteGroupsButton />}
+      </Group>
+      <Group>
+        <Search />
+        <ColumnSelector />
+      </Group>
     </Group>
   )
 }

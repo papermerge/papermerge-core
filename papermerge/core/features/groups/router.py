@@ -11,9 +11,9 @@ from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.features.groups.db import api as dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
-from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.db.engine import get_db
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
+from .schema import GroupParams
 
 router = APIRouter(
     prefix="/groups",
@@ -40,24 +40,39 @@ async def get_groups_without_pagination(
     return result
 
 
-@router.get("/")
+@router.get("/", response_model=schema.PaginatedResponse[schema.GroupEx])
 @utils.docstring_parameter(scope=scopes.GROUP_VIEW)
 async def get_groups(
-    user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])
-    ],
-    params: CommonQueryParams = Depends(),
-    db_session: AsyncSession=Depends(get_db),
-):
-    """Get all (paginated) groups
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.GROUP_VIEW])],
+    params: GroupParams = Depends(),
+    db_session: AsyncSession = Depends(get_db),
+) -> schema.PaginatedResponse[schema.GroupEx]:
+    """Get all (paginated) roles
 
     Required scope: `{scope}`
     """
-    result = await dbapi.get_groups(
-        db_session, page_size=params.page_size, page_number=params.page_number
-    )
+    try:
+        filters = params.to_filters()
+        result = await dbapi.get_groups(
+            db_session,
+            page_size=params.page_size,
+            page_number=params.page_number,
+            sort_by=params.sort_by,
+            sort_direction=params.sort_direction,
+            filters=filters
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid parameters: {str(e)}")
+    except Exception as e:
+        logger.error(
+            f"Error fetching group by the user {user.id}: {e}",
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
     return result
+
 
 
 @router.get("/{group_id}", response_model=schema.GroupDetails)

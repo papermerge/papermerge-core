@@ -47,7 +47,7 @@ export default function LazyMultiSelect({
       return [
         {
           value: t?.("empty") ?? "Empty",
-          label: t?.("roles.scopeFilter.noScopesFound") ?? "No scopes found",
+          label: t?.("roles.scopeFilter.noScopesFound") ?? "No items found",
           disabled: true
         }
       ]

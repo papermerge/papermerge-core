@@ -36,6 +36,8 @@ import {AccessForbidden, NotFound, UnprocessableContent} from "@/pages/errors"
 
 import {loader as auditLogDetailsLoader} from "@/features/audit/pages/Details"
 import {loader as auditLogsListLoader} from "@/features/audit/pages/List"
+import {loader as groupsDetailsLoader} from "@/features/groups/pages/Details"
+import {loader as groupsListLoader} from "@/features/groups/pages/List"
 import {loader as rolesDetailsLoader} from "@/features/roles/pages/Details"
 import {loader as rolesListLoader} from "@/features/roles/pages/List"
 import {loader as usersDetailsLoader} from "@/features/users/pages/Details"
@@ -130,11 +132,13 @@ const router = createBrowserRouter([
       },
       {
         path: "/groups",
-        element: <GroupsList />
+        element: <GroupsList />,
+        loader: groupsListLoader
       },
       {
-        path: "/groups/:groupId",
-        element: <GroupDetails />
+        path: "/groups/:id",
+        element: <GroupDetails />,
+        loader: groupsDetailsLoader
       },
       {
         path: "/roles",

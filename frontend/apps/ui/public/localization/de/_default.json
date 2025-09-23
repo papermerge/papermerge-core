@@ -311,6 +311,24 @@
     "updated_at": "Aktualisiert am",
     "updated_by": "Aktualisiert von"
   },
+  "groupColumns": {
+    "name": "Name",
+    "id": "ID",
+    "created_at": "Erstellt am",
+    "created_by": "Erstellt von",
+    "updated_at": "Aktualisiert am",
+    "updated_by": "Aktualisiert von"
+  },
+  "groups": {
+    "filterByUser": {
+      "label": {
+        "withUsers": "Enthält einen dieser Benutzer",
+        "withoutUsers": "Enthält NICHT diese Benutzer"
+      }
+    },
+    "searchGroups": "Gruppen suchen...",
+    "noGroupsFound": "Keine Gruppen gefunden"
+  },
   "roles.name": "Rollen",
   "roles.new.title": "Neue Rolle",
   "roles.edit.title": "Rolle bearbeiten",
@@ -444,5 +462,11 @@
     "shared_node.delete": "Geteilte Knoten löschen",
 
     "audit_log.view": "Audit-Protokolle anzeigen"
-  }
+  },
+  "lazyUsersSelect": {
+    "error": "Fehler beim Laden der Benutzer",
+    "noUsersFound": "Keine Benutzer gefunden"
+  },
+  "pickValue": "Wert auswählen",
+  "loading": "Laden..."
 }

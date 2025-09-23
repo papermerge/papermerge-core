@@ -1,62 +1,74 @@
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
-import {useGetPaginatedGroupsQuery} from "@/features/groups/storage/api"
+import useGroupTable from "@/features/groups/hooks/useGroupTable"
+import useVisibleColumns from "@/features/groups/hooks/useVisibleColumns"
 import {
-  clearSelection,
-  lastPageSizeUpdate,
-  selectionAddMany,
-  selectLastPageSize,
-  selectSelectedIds
+  groupListSortingUpdated,
+  groupPaginationUpdated,
+  selectGroupDetailsID,
+  selectionSet,
+  selectSelectedIDs
 } from "@/features/groups/storage/group"
+import {showGroupDetailsInSecondaryPanel} from "@/features/groups/storage/thunks"
 import {isHTTP403Forbidden} from "@/services/helpers"
-import {Center, Checkbox, Group, Loader, Stack, Table} from "@mantine/core"
-import {useState} from "react"
-import {useDispatch, useSelector} from "react-redux"
+import {Group, Stack} from "@mantine/core"
+import type {SortState} from "kommon"
+import {DataTable, TablePagination} from "kommon"
 import {useNavigate} from "react-router-dom"
+import type {GroupItem} from "../types"
+import groupColumns from "./columns"
 
-import Pagination from "@/components/Pagination"
+import {usePanelMode} from "@/hooks"
+import {useTranslation} from "react-i18next"
 import ActionButtons from "./ActionButtons"
-import GroupRow from "./GroupRow"
 
 export default function GroupsList() {
-  const selectedIds = useSelector(selectSelectedIds)
-  const dispatch = useDispatch()
-  const lastPageSize = useSelector(selectLastPageSize)
+  const {t} = useTranslation()
+  const mode = usePanelMode()
+  const selectedRowIDs = useAppSelector(s => selectSelectedIDs(s, mode))
+  const selectedRowsSet = new Set(selectedRowIDs || [])
+  const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const visibleColumns = useVisibleColumns(groupColumns(t))
+  const groupDetailsID = useAppSelector(s =>
+    selectGroupDetailsID(s, "secondary")
+  )
 
-  const [page, setPage] = useState<number>(1)
-  const [pageSize, setPageSize] = useState<number>(lastPageSize)
+  const {isError, data, queryParams, error, isLoading, isFetching} =
+    useGroupTable()
 
-  const {data, isLoading, isFetching, isError, error} =
-    useGetPaginatedGroupsQuery({
-      page_number: page,
-      page_size: pageSize
-    })
+  const handleSortChange = (value: SortState) => {
+    dispatch(groupListSortingUpdated({mode, value}))
+  }
 
-  const onCheckAll = (checked: boolean) => {
-    if (!data) {
-      console.log(`undefined data`)
-      return
-    }
+  const handleSelectionChange = (newSelection: Set<string>) => {
+    const newIds = Array.from(newSelection)
+    dispatch(selectionSet({ids: newIds, mode}))
+  }
 
-    if (checked) {
-      // check all/select all group items
-      dispatch(selectionAddMany(data.items.map(i => i.id)))
+  const handlePageSizeChange = (newValue: number) => {
+    dispatch(
+      groupPaginationUpdated({
+        mode,
+        value: {
+          pageSize: newValue,
+          pageNumber: 1
+        }
+      })
+    )
+  }
+
+  const handlePageNumberChange = (pageNumber: number) => {
+    dispatch(groupPaginationUpdated({mode, value: {pageNumber}}))
+  }
+
+  const getRowId = (row: GroupItem) => row.id
+
+  const onTableRowClick = (row: GroupItem, openInSecondaryPanel: boolean) => {
+    if (openInSecondaryPanel) {
+      dispatch(showGroupDetailsInSecondaryPanel(row.id))
     } else {
-      // uncheck all/unselect all group items
-      dispatch(clearSelection())
-    }
-  }
-
-  const onPageNumberChange = (page: number) => {
-    setPage(page)
-  }
-
-  const onPageSizeChange = (value: string | null) => {
-    if (value) {
-      const pageSize = parseInt(value)
-
-      dispatch(lastPageSizeUpdate(pageSize))
-      setPageSize(pageSize)
+      navigate(`/groups/${row.id}`)
     }
   }
 
@@ -64,68 +76,41 @@ export default function GroupsList() {
     navigate(ERRORS_403_ACCESS_FORBIDDEN)
   }
 
-  if (isLoading || !data) {
-    return (
-      <Stack>
-        <ActionButtons />
-        <Center>
-          <Loader type="bars" />
-        </Center>
-      </Stack>
-    )
-  }
-
-  if (data.items.length == 0) {
-    return (
-      <div>
-        <ActionButtons />
-        <Empty />
-      </div>
-    )
-  }
-
-  const groupRows = data.items.map(g => <GroupRow key={g.id} group={g} />)
-
   return (
-    <Stack>
-      <Group>
-        <ActionButtons /> {isFetching && <Loader size={"sm"} />}
+    <Stack style={{height: "100%"}}>
+      <Group w={"100%"}>
+        <ActionButtons />
       </Group>
-      <Table>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>
-              <Checkbox
-                checked={data.items.length == selectedIds.length}
-                onChange={e => onCheckAll(e.currentTarget.checked)}
-              />
-            </Table.Th>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Special Folders</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{groupRows}</Table.Tbody>
-      </Table>
-      <Pagination
-        pagination={{
-          pageNumber: page,
-          pageSize: pageSize,
-          numPages: data.num_pages
+
+      <DataTable
+        data={data?.items || []}
+        columns={visibleColumns}
+        sorting={{
+          column: queryParams.sort_by,
+          direction: queryParams.sort_direction || null
         }}
-        onPageNumberChange={onPageNumberChange}
-        onPageSizeChange={onPageSizeChange}
-        lastPageSize={lastPageSize}
+        onSortChange={handleSortChange}
+        loading={isLoading || isFetching}
+        emptyMessage={t("groups.noGroupsFound", {
+          defaultValue: "No groups found"
+        })}
+        withCheckbox={true}
+        selectedRows={selectedRowsSet}
+        onSelectionChange={handleSelectionChange}
+        onRowClick={onTableRowClick}
+        getRowId={getRowId}
+        highlightRowID={groupDetailsID}
+      />
+
+      <TablePagination
+        currentPage={data?.page_number || 1}
+        totalPages={data?.num_pages || 0}
+        pageSize={data?.page_size || 15}
+        onPageChange={handlePageNumberChange}
+        onPageSizeChange={handlePageSizeChange}
+        totalItems={data?.total_items}
+        t={t}
       />
     </Stack>
-  )
-}
-
-function Empty() {
-  return (
-    <Center>
-      <Stack align="center">
-        <div>Currently there are no groups</div>
-      </Stack>
-    </Center>
   )
 }

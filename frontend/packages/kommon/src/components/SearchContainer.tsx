@@ -1,5 +1,5 @@
 import {ActionIcon, Button, Group, Menu, Stack, TextInput} from "@mantine/core"
-import {IconAdjustmentsHorizontal, IconSearch, IconX} from "@tabler/icons-react"
+import {IconFilter, IconSearch, IconX} from "@tabler/icons-react"
 import {TFunction} from "i18next"
 
 interface Args {
@@ -63,7 +63,7 @@ export default function SearchContainer({
               size="sm"
               style={{cursor: "pointer"}}
             >
-              <IconAdjustmentsHorizontal size={16} />
+              <IconFilter size={16} />
             </ActionIcon>
           </Menu.Target>
 

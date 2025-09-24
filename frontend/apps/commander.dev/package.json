@@ -10,8 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mantine/core": "^8.3.1",
-    "@mantine/hooks": "^8.3.1",
+    "@mantine/core": "^8.3.2",
+    "@mantine/hooks": "^8.3.2",
     "@tabler/icons-react": "^3.35.0",
     "clsx": "^2.1.1",
     "commander": "workspace:*",
@@ -21,17 +21,17 @@
     "react-router": "^7.9.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.35.0",
-    "@types/react": "^19.1.12",
+    "@eslint/js": "^9.36.0",
+    "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
-    "@vitejs/plugin-react": "^5.0.1",
+    "@vitejs/plugin-react": "^5.0.3",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
+    "eslint-plugin-react-refresh": "^0.4.21",
     "globals": "^16.4.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.1",
-    "vite": "^7.1.5",
+    "vite": "^7.1.7",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }

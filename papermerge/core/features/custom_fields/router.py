@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from papermerge.core import utils
+from papermerge.core import utils, schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.features.custom_fields import schema as cf_schema
@@ -16,7 +16,7 @@ from papermerge.core.features.users.schema import User
 from papermerge.core.features.users.db import api as user_dbapi
 from papermerge.core.db.engine import get_db
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
-from .types import PaginatedQueryParams
+from .schema import CustomFieldParams
 
 router = APIRouter(
     prefix="/custom-fields",
@@ -69,27 +69,39 @@ async def get_custom_fields_without_pagination(
     return result
 
 
-@router.get("/")
+@router.get("/", response_model=schema.PaginatedResponse[schema.CustomFieldEx])
 @utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_VIEW)
 async def get_custom_fields(
     user: Annotated[
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
-    params: PaginatedQueryParams = Depends(),
+    params: CustomFieldParams = Depends(),
     db_session: AsyncSession = Depends(get_db),
-):
+) -> schema.PaginatedResponse[schema.CustomFieldEx]:
     """Get paginated list of custom fields
 
     Required scope: `{scope}`
     """
-    result = await dbapi.get_custom_fields(
-        db_session,
-        user_id=user.id,
-        page_size=params.page_size,
-        page_number=params.page_number,
-        order_by=params.order_by,
-        filter=params.filter,
-    )
+    try:
+        filters = params.to_filters()
+        result = await dbapi.get_custom_fields(
+            db_session,
+            user_id=user.id,
+            page_size=params.page_size,
+            page_number=params.page_number,
+            sort_by=params.sort_by,
+            sort_direction=params.sort_direction,
+            filters=filters
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid parameters: {str(e)}")
+    except Exception as e:
+        logger.error(
+            f"Error fetching group by the user {user.id}: {e}",
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
     return result
 

@@ -9,6 +9,10 @@ import type {PanelMode} from "@/types"
 import Viewer from "@/features/document/components/Viewer"
 
 import {AuditLogDetails, AuditLogsList} from "@/features/audit/components"
+import {
+  CustomFieldDetails,
+  CustomFieldsList
+} from "@/features/custom-fields/components"
 import {GroupDetails, GroupsList} from "@/features/groups/components"
 import Commander from "@/features/nodes/components/Commander"
 import {RoleDetails, RolesList} from "@/features/roles/components"
@@ -30,6 +34,8 @@ const PANEL_COMPONENTS_SAFE = {
   auditLogList: AuditLogsList,
   rolesList: RolesList,
   roleDetails: RoleDetails,
+  customFieldsList: CustomFieldsList,
+  customFieldDetails: CustomFieldDetails,
   groupsList: GroupsList,
   groupDetails: GroupDetails,
   usersList: UsersList,

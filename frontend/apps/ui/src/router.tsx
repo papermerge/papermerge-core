@@ -36,6 +36,8 @@ import {AccessForbidden, NotFound, UnprocessableContent} from "@/pages/errors"
 
 import {loader as auditLogDetailsLoader} from "@/features/audit/pages/Details"
 import {loader as auditLogsListLoader} from "@/features/audit/pages/List"
+import {loader as customFieldsLoader} from "@/features/custom-fields/pages/Details"
+import {loader as customFieldsListLoader} from "@/features/custom-fields/pages/List"
 import {loader as groupsDetailsLoader} from "@/features/groups/pages/Details"
 import {loader as groupsListLoader} from "@/features/groups/pages/List"
 import {loader as rolesDetailsLoader} from "@/features/roles/pages/Details"
@@ -116,11 +118,13 @@ const router = createBrowserRouter([
       },
       {
         path: "/custom-fields/",
-        element: <CustomFieldsList />
+        element: <CustomFieldsList />,
+        loader: customFieldsListLoader
       },
       {
-        path: "/custom-fields/:customFieldID",
-        element: <CustomFieldDetails />
+        path: "/custom-fields/:id",
+        element: <CustomFieldDetails />,
+        loader: customFieldsLoader
       },
       {
         path: "/document-types/",

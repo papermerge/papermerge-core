@@ -1,4 +1,4 @@
-import {useDeleteCustomFieldMutation} from "@/features/custom-fields/apiSlice"
+import {useDeleteCustomFieldMutation} from "@/features/custom-fields/storage/api"
 import {Button, Container, Group, Loader, Modal, Space} from "@mantine/core"
 import {useState} from "react"
 import {useTranslation} from "react-i18next"

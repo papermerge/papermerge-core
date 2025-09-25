@@ -17,7 +17,7 @@ import {CURRENCIES, CUSTOM_FIELD_DATA_TYPES} from "@/cconstants"
 import {
   useEditCustomFieldMutation,
   useGetCustomFieldQuery
-} from "@/features/custom-fields/apiSlice"
+} from "@/features/custom-fields/storage/api"
 import {useTranslation} from "react-i18next"
 
 interface Args {

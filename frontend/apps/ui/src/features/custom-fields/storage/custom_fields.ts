@@ -10,9 +10,9 @@ import type {
   PaginationType,
   ServerErrorType
 } from "@/types"
-import {apiSliceWithCustomFields} from "./apiSlice"
+import {apiSliceWithCustomFields} from "./api"
 
-import type {CustomFieldListColumnName, CustomFieldSortByInput} from "./types"
+import type {CustomFieldListColumnName, CustomFieldSortByInput} from "../types"
 
 export type CustomFieldSlice = {
   selectedIds: Array<string>

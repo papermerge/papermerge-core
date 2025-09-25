@@ -2,7 +2,7 @@ import {
   selectSelectedIds,
   selectionAdd,
   selectionRemove
-} from "@/features/custom-fields/customFieldsSlice"
+} from "@/features/custom-fields/storage/custom_fields"
 import type {CustomField} from "@/types"
 import {Checkbox, Table} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"

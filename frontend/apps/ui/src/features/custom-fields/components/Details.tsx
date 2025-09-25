@@ -1,7 +1,7 @@
 import {Box, Breadcrumbs, Group, Loader, LoadingOverlay} from "@mantine/core"
 import {Link, useNavigation} from "react-router-dom"
 
-import {useGetCustomFieldQuery} from "@/features/custom-fields/apiSlice"
+import {useGetCustomFieldQuery} from "@/features/custom-fields/storage/api"
 import type {CustomField} from "@/types"
 import CustomFieldForm from "./CustomFieldForm"
 import {DeleteCustomFieldButton} from "./DeleteButton"

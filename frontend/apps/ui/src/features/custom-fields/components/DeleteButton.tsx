@@ -7,10 +7,10 @@ import {useNavigate} from "react-router-dom"
 import {
   clearSelection,
   selectSelectedIds
-} from "@/features/custom-fields/customFieldsSlice"
+} from "@/features/custom-fields/storage/custom_fields"
 
-import {RemoveCustomFieldModal, RemoveCustomFieldsModal} from "./DeleteModal"
 import {useTranslation} from "react-i18next"
+import {RemoveCustomFieldModal, RemoveCustomFieldsModal} from "./DeleteModal"
 
 export function DeleteCustomFieldButton({
   customFieldId

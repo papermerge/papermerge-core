@@ -3,7 +3,7 @@ import QuickFilter from "@/components/QuickFilter"
 import {
   selectFilterText,
   selectSelectedIds
-} from "@/features/custom-fields/customFieldsSlice"
+} from "@/features/custom-fields/storage/custom_fields"
 import {Group, Loader} from "@mantine/core"
 import {DeleteCustomFieldsButton} from "./DeleteButton"
 import EditButton from "./EditButton"

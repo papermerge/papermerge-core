@@ -2,7 +2,7 @@ import {useEffect, useState} from "react"
 
 import {CURRENCIES, CUSTOM_FIELD_DATA_TYPES} from "@/cconstants"
 import OwnerSelector from "@/components/OwnerSelect/OwnerSelect"
-import {useAddNewCustomFieldMutation} from "@/features/custom-fields/apiSlice"
+import {useAddNewCustomFieldMutation} from "@/features/custom-fields/storage/api"
 import {CurrencyType, CustomFieldDataType} from "@/types"
 import {
   Button,

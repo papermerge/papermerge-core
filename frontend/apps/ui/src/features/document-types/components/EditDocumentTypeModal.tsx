@@ -1,5 +1,5 @@
 import {OWNER_ME} from "@/cconstants"
-import {useGetCustomFieldsQuery} from "@/features/custom-fields/apiSlice"
+import {useGetCustomFieldsQuery} from "@/features/custom-fields/storage/api"
 import {
   Button,
   ComboboxItem,

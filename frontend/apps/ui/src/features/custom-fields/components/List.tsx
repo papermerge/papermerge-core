@@ -1,6 +1,6 @@
 import Pagination from "@/components/Pagination"
 import Th from "@/components/TableSort/Th"
-import {useGetPaginatedCustomFieldsQuery} from "@/features/custom-fields/apiSlice"
+import {useGetPaginatedCustomFieldsQuery} from "@/features/custom-fields/storage/api"
 import {
   clearSelection,
   filterUpdated,
@@ -16,14 +16,14 @@ import {
   selectTableSortColumns,
   selectionAddMany,
   sortByUpdated
-} from "@/features/custom-fields/customFieldsSlice"
+} from "@/features/custom-fields/storage/custom_fields"
 import {Center, Checkbox, Loader, Stack, Table} from "@mantine/core"
 import {useState} from "react"
+import {useTranslation} from "react-i18next"
 import {useDispatch, useSelector} from "react-redux"
 import type {CustomFieldListColumnName} from "../types"
 import ActionButtons from "./ActionButtons"
 import CustomFieldRow from "./CustomFieldRow"
-import {useTranslation} from "react-i18next"
 
 export default function CustomFieldsList() {
   const {t} = useTranslation()

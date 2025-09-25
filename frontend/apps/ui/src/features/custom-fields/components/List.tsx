@@ -71,7 +71,7 @@ export default function CustomFieldsList() {
     if (openInSecondaryPanel) {
       dispatch(showCustomFieldDetailsInSecondaryPanel(row.id))
     } else {
-      navigate(`/customFields/${row.id}`)
+      navigate(`/custom-fields/${row.id}`)
     }
   }
 

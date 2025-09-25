@@ -30,11 +30,25 @@ class CustomField(BaseModel):
     # Basically `extra_data` is either a stringified JSON i.e. json.dumps(...)
     # or an actually python dict (or None)
     extra_data: str | dict | None
-    group_id: UUID | None = None
-    group_name: str | None = None
 
     # Config
     model_config = ConfigDict(from_attributes=True)
+
+
+class CustomFieldDetails(CustomField):
+    owned_by: OwnedBy
+    created_at: datetime
+    # Both `created_by` and `updated_by`  should be optional.
+    # The problem is that both columns are updated via a postgres trigger
+    # which gets user details via AuditContext and the audit
+    # context is missing in many parts of the tests.
+    created_by: ByUser | None = None
+    updated_at: datetime
+    updated_by: ByUser | None = None
+    archived_at: datetime | None = None
+    archived_by: ByUser | None = None
+    deleted_at: datetime | None = None
+    deleted_by: ByUser | None = None
 
 
 class CustomFieldEx(CustomField):
@@ -108,9 +122,9 @@ class CustomFieldParams(BaseModel):
         description="Filter by free text"
     )
 
-    filter_data_types: Optional[str] = Query(
+    filter_types: Optional[str] = Query(
         None,
-        description="Comma-separated list of data types"
+        description="Comma-separated list of custom field types"
     )
 
     def to_filters(self) -> Optional[Dict[str, Dict[str, Any]]]:
@@ -122,9 +136,9 @@ class CustomFieldParams(BaseModel):
                 "operator": "free_text"
             }
 
-        if self.filter_data_types:
-            filters["date_types"] = {
-                "value": self.filter_data_types.split(","),
+        if self.filter_types:
+            filters["types"] = {
+                "value": self.filter_types.split(","),
                 "operator": "in"
             }
 

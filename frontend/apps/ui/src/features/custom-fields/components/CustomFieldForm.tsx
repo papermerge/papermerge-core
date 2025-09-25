@@ -1,10 +1,11 @@
 import {CUSTOM_FIELD_DATA_TYPES} from "@/cconstants"
 import CopyButton from "@/components/CopyButton"
-import type {CustomField} from "@/types"
+import OwnerIcon from "@/components/OwnerIcon"
+import type {CustomFieldItem} from "@/features/custom-fields/types"
 import {Box, NativeSelect, TextInput} from "@mantine/core"
 
 type Args = {
-  customField: CustomField | null
+  customField: CustomFieldItem | null
 }
 
 export default function CustomFieldForm({customField}: Args) {
@@ -34,9 +35,10 @@ export default function CustomFieldForm({customField}: Args) {
       <TextInput
         my="md"
         label="Owner"
-        value={customField?.group_name || "Me"}
+        value={customField?.owned_by.name || "Me"}
         onChange={() => {}}
-        rightSection={<CopyButton value={customField?.group_name || "Me"} />}
+        leftSection={<OwnerIcon owner={customField?.owned_by} />}
+        rightSection={<CopyButton value={customField?.owned_by.name || "Me"} />}
       />
     </Box>
   )

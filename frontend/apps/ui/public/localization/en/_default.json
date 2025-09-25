@@ -340,7 +340,10 @@
     "created_by": "Created By",
     "updated_at": "Updated At",
     "updated_by": "Updated By",
-    "owned_by": "Owner"
+    "owned_by": "Owned By"
+  },
+  "customFieldDetails": {
+    "name": "Custom Fields"
   },
   "roles.name": "Roles",
   "roles.new.title": "New Role",

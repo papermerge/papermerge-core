@@ -1,31 +1,24 @@
-import {Button} from "@mantine/core"
+import EditButton from "@/components/buttons/EditButton"
 import {useDisclosure} from "@mantine/hooks"
-import {IconEdit} from "@tabler/icons-react"
 
-import EditCustomFieldModal from "./EditCustomFieldModal"
 import {useTranslation} from "react-i18next"
+import EditCustomFieldModal from "./EditCustomFieldModal"
 
 interface Args {
   customFieldId: string
 }
 
-export default function EditButton({customFieldId}: Args) {
+export default function EditButtonContainer({customFieldId}: Args) {
   const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
 
   if (!customFieldId) {
-    return (
-      <Button leftSection={<IconEdit />} variant={"default"} disabled={true}>
-        {t("common.edit")}
-      </Button>
-    )
+    return <EditButton disabled={true} text={t("common.edit")} />
   }
 
   return (
     <>
-      <Button leftSection={<IconEdit />} variant={"default"} onClick={open}>
-        {t("common.edit")}
-      </Button>
+      <EditButton onClick={open} text={t("common.edit")} />
       <EditCustomFieldModal
         opened={opened}
         onSubmit={close}

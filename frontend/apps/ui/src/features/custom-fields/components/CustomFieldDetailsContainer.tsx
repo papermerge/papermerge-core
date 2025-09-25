@@ -89,12 +89,15 @@ function Path({
   mode: PanelMode
 }) {
   const navigation = useNavigation()
+  const {t} = useTranslation()
 
   if (mode == "main") {
     return (
       <Group>
         <Breadcrumbs>
-          <Link to="/custom-fields/">CustomFields</Link>
+          <Link to="/custom-fields/">
+            {t("customFieldDetails.name", {defaultValue: "Custom Fields"})}
+          </Link>
           <Link to={`/custom-fields/${customField?.id}`}>
             {customField?.name}
           </Link>
@@ -107,7 +110,9 @@ function Path({
   return (
     <Group>
       <Breadcrumbs>
-        <div>CustomFields</div>
+        <div>
+          {t("customFieldDetails.name", {defaultValue: "Custom Fields"})}
+        </div>
         <div>{customField?.name}</div>
       </Breadcrumbs>
       {navigation.state == "loading" && <Loader size="sm" />}

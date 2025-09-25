@@ -34,7 +34,7 @@ from .features.document.schema import (
     DownloadURL
 )
 from .features.users.schema import User, UserEx, CreateUser, UserDetails, UpdateUser, ChangeUserPassword, UserHomes, UserInboxes, UserHome, UserInbox
-from .features.custom_fields.schema import CustomField, CustomFieldEx, UpdateCustomField, CustomFieldType, CustomFieldValue
+from .features.custom_fields.schema import CustomField, CustomFieldEx, CustomFieldDetails, UpdateCustomField, CustomFieldType, CustomFieldValue
 from .features.tags.schema import Tag, UpdateTag, CreateTag
 from .features.document_types.schema import DocumentType, UpdateDocumentType, CreateDocumentType
 from .features.groups.schema import Group, GroupEx, GroupDetails, CreateGroup, UpdateGroup
@@ -81,6 +81,7 @@ __all__ = [
     'UpdateCustomField',
     'CustomFieldType',
     'CustomFieldValue',
+    'CustomFieldDetails',
     'DocumentCFV',
     'CFV',
     'DocumentCustomFieldsUpdate',

@@ -2,9 +2,31 @@ import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
 import type {CustomFieldItem} from "@/features/custom-fields/types"
 import {OwnedBy} from "@/types"
 import type {ByUser} from "@/types.d/common"
-import {Box, Text} from "@mantine/core"
+import {Box, Group, Text} from "@mantine/core"
+import {IconUser, IconUsersGroup} from "@tabler/icons-react"
 import {TFunction} from "i18next"
 import type {ColumnConfig} from "kommon"
+
+interface OwnerArgs {
+  value: OwnedBy
+}
+
+function Owner({value}: OwnerArgs) {
+  if (value.type == "group") {
+    return (
+      <Group gap="xs">
+        <IconUsersGroup size={18} />
+        <Text>{value.name}</Text>
+      </Group>
+    )
+  }
+  return (
+    <Group gap="xs">
+      <IconUser size={18} />
+      <Text>{value.name}</Text>
+    </Group>
+  )
+}
 
 export default function customFieldColumns(t?: TFunction) {
   const columns: ColumnConfig<CustomFieldItem>[] = [
@@ -42,17 +64,10 @@ export default function customFieldColumns(t?: TFunction) {
       sortable: true,
       filterable: true,
       visible: true,
-      width: 200,
-      minWidth: 100,
-      render: (value, row, onClick) => {
-        return (
-          <Box
-            style={{cursor: "pointer"}}
-            onClick={() => onClick?.(row, false)}
-          >
-            <Text component="a">{(value as OwnedBy).name}</Text>
-          </Box>
-        )
+      width: 150,
+      minWidth: 120,
+      render: value => {
+        return <Owner value={value as OwnedBy} />
       }
     },
     {

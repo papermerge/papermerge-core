@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from papermerge.core.db.exceptions import ResourceAccessDenied
 from papermerge.core import utils, schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
@@ -106,7 +107,7 @@ async def get_custom_fields(
     return result
 
 
-@router.get("/{custom_field_id}", response_model=cf_schema.CustomField)
+@router.get("/{custom_field_id}", response_model=cf_schema.CustomFieldDetails)
 @utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_VIEW)
 async def get_custom_field(
     custom_field_id: uuid.UUID,
@@ -120,9 +121,15 @@ async def get_custom_field(
     Required scope: `{scope}`
     """
     try:
-        result = await dbapi.get_custom_field(db_session, custom_field_id=custom_field_id)
+        result = await dbapi.get_custom_field(
+            db_session,
+            user_id=user.id,
+            custom_field_id=custom_field_id
+        )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Custom field not found")
+    except ResourceAccessDenied:
+        raise HTTPException(status_code=403, detail="Forbidden: You don't have permission to access this custom field")
 
     return result
 

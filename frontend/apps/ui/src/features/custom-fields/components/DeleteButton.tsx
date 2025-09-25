@@ -1,6 +1,4 @@
-import {Button} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
-import {IconTrash} from "@tabler/icons-react"
 import {useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
@@ -10,6 +8,7 @@ import {
 } from "@/features/custom-fields/storage/custom_field"
 
 import {useAppSelector} from "@/app/hooks"
+import DeleteButton from "@/components/buttons/DeleteButton"
 import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
 import {RemoveCustomFieldModal, RemoveCustomFieldsModal} from "./DeleteModal"
@@ -30,9 +29,7 @@ export function DeleteCustomFieldButton({
 
   return (
     <>
-      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        {t("common.delete")}
-      </Button>
+      <DeleteButton onClick={open} text={t("common.delete")} />
       <RemoveCustomFieldModal
         opened={opened}
         onSubmit={onSubmit}
@@ -62,9 +59,7 @@ export function DeleteCustomFieldsButton() {
 
   return (
     <>
-      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        {t("common.delete")}
-      </Button>
+      <DeleteButton onClick={open} text={t("common.delete")} />
       <RemoveCustomFieldsModal
         opened={opened}
         onSubmit={onSubmit}

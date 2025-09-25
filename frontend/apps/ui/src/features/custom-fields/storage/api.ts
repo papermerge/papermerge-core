@@ -1,10 +1,13 @@
 import {apiSlice} from "@/features/api/slice"
 import type {
+  CustomFieldItem,
+  CustomFieldQueryParams
+} from "@/features/custom-fields/types"
+import type {
   CustomField,
   CustomFieldUpdate,
   NewCustomField,
-  Paginated,
-  PaginatedArgs
+  Paginated
 } from "@/types"
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
@@ -12,30 +15,21 @@ import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
   endpoints: builder => ({
     getPaginatedCustomFields: builder.query<
-      Paginated<CustomField>,
-      PaginatedArgs | void
+      Paginated<CustomFieldItem>,
+      CustomFieldQueryParams | void
     >({
-      query: ({
-        page_number = 1,
-        page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES,
-        sort_by = "name",
-        filter = undefined
-      }: PaginatedArgs) => {
-        let ret
-
-        if (filter) {
-          ret = `/custom-fields/?page_number=${page_number}`
-          ret += `&page_size=${page_size}&order_by=${sort_by}`
-          ret += `&filter=${filter}`
-        } else {
-          ret = `/custom-fields/?page_number=${page_number}`
-          ret += `&page_size=${page_size}&order_by=${sort_by}`
-        }
-
-        return ret
+      query: (params = {}) => {
+        const queryString = buildQueryString(params || {})
+        return `/custom-fields/?${queryString}`
       },
       providesTags: (
-        result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
+        result = {
+          page_number: 1,
+          page_size: 1,
+          num_pages: 1,
+          items: [],
+          total_items: 1
+        },
         _error,
         _arg
       ) => [
@@ -55,11 +49,11 @@ export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
         ...result.map(({id}) => ({type: "CustomField", id}) as const)
       ]
     }),
-    getCustomField: builder.query<CustomField, string>({
+    getCustomField: builder.query<CustomFieldItem, string>({
       query: groupID => `/custom-fields/${groupID}`,
       providesTags: (_result, _error, arg) => [{type: "CustomField", id: arg}]
     }),
-    addNewCustomField: builder.mutation<CustomField, NewCustomField>({
+    addNewCustomField: builder.mutation<CustomFieldItem, NewCustomField>({
       query: cf => ({
         url: "/custom-fields/",
         method: "POST",
@@ -99,3 +93,32 @@ export const {
   useDeleteCustomFieldMutation,
   useAddNewCustomFieldMutation
 } = apiSliceWithCustomFields
+
+function buildQueryString(params: CustomFieldQueryParams = {}): string {
+  const searchParams = new URLSearchParams()
+
+  // Always include pagination with defaults
+  searchParams.append("page_number", String(params.page_number || 1))
+  searchParams.append(
+    "page_size",
+    String(params.page_size || PAGINATION_DEFAULT_ITEMS_PER_PAGES)
+  )
+
+  // Add sorting if provided
+  if (params.sort_by) {
+    searchParams.append("sort_by", params.sort_by)
+  }
+  if (params.sort_direction) {
+    searchParams.append("sort_direction", params.sort_direction)
+  }
+
+  if (params.filter_free_text) {
+    searchParams.append("filter_free_text", params.filter_free_text)
+  }
+
+  if (params.filter_types) {
+    searchParams.append("filter_types", params.filter_types)
+  }
+
+  return searchParams.toString()
+}

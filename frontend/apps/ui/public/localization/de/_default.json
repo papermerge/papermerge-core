@@ -247,7 +247,7 @@
   "document_types.delete.many.title": "Kategorie löschen",
   "document_types.delete.many.description": "Kategorien löschen",
   "document_types.list.empty": "Derzeit gibt es keine Kategorien",
-  "custom_fields.name": "BD Felder",
+  "custom_fields.name": "BD-Felder",
   "custom_fields.new.title": "Neue Benutzerdefiniertefeld",
   "custom_fields.edit.title": "Benutzerdefiniertefeld bearbeiten",
   "custom_fields.form.name": "Name",
@@ -332,6 +332,18 @@
     },
     "searchGroups": "Gruppen suchen...",
     "noGroupsFound": "Keine Gruppen gefunden"
+  },
+  "customFieldColumns": {
+    "name": "Name",
+    "id": "ID",
+    "created_at": "Erstellt am",
+    "created_by": "Erstellt von",
+    "updated_at": "Aktualisiert am",
+    "updated_by": "Aktualisiert von",
+    "owned_by": "Besitzer"
+  },
+  "customFieldDetails": {
+    "name": "Benutzerdefinierte Felder"
   },
   "roles.name": "Rollen",
   "roles.new.title": "Neue Rolle",

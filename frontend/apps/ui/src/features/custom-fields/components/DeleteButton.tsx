@@ -1,14 +1,15 @@
-import {Button} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
-import {IconTrash} from "@tabler/icons-react"
-import {useDispatch, useSelector} from "react-redux"
+import {useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
 import {
   clearSelection,
-  selectSelectedIds
-} from "@/features/custom-fields/storage/custom_fields"
+  selectSelectedIDs
+} from "@/features/custom-fields/storage/custom_field"
 
+import {useAppSelector} from "@/app/hooks"
+import DeleteButton from "@/components/buttons/DeleteButton"
+import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
 import {RemoveCustomFieldModal, RemoveCustomFieldsModal} from "./DeleteModal"
 
@@ -28,9 +29,7 @@ export function DeleteCustomFieldButton({
 
   return (
     <>
-      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        {t("common.delete")}
-      </Button>
+      <DeleteButton onClick={open} text={t("common.delete")} />
       <RemoveCustomFieldModal
         opened={opened}
         onSubmit={onSubmit}
@@ -43,25 +42,24 @@ export function DeleteCustomFieldButton({
 
 export function DeleteCustomFieldsButton() {
   const {t} = useTranslation()
+  const mode = usePanelMode()
   const [opened, {open, close}] = useDisclosure(false)
   const dispatch = useDispatch()
-  const selectedIds = useSelector(selectSelectedIds)
+  const selectedIds = useAppSelector(s => selectSelectedIDs(s, mode)) || []
 
   const onSubmit = () => {
-    dispatch(clearSelection())
+    dispatch(clearSelection({mode}))
     close()
   }
 
   const onCancel = () => {
-    dispatch(clearSelection())
+    dispatch(clearSelection({mode}))
     close()
   }
 
   return (
     <>
-      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        {t("common.delete")}
-      </Button>
+      <DeleteButton onClick={open} text={t("common.delete")} />
       <RemoveCustomFieldsModal
         opened={opened}
         onSubmit={onSubmit}

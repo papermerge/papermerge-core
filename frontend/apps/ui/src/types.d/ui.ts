@@ -10,5 +10,7 @@ export type PanelComponent =
   | "roleDetails"
   | "groupsList"
   | "groupDetails"
+  | "customFieldsList"
+  | "customFieldDetails"
   | "usersList"
   | "userDetails"

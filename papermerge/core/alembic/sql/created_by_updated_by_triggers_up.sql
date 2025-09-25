@@ -50,3 +50,18 @@ CREATE TRIGGER set_created_by_updated_by_trigger_groups
     BEFORE INSERT OR UPDATE ON groups
     FOR EACH ROW
     EXECUTE FUNCTION set_created_by_updated_by();
+
+CREATE TRIGGER set_created_by_updated_by_trigger_custom_fields
+    BEFORE INSERT OR UPDATE ON custom_fields
+    FOR EACH ROW
+    EXECUTE FUNCTION set_created_by_updated_by();
+
+CREATE TRIGGER set_created_by_updated_by_trigger_document_types
+    BEFORE INSERT OR UPDATE ON document_types
+    FOR EACH ROW
+    EXECUTE FUNCTION set_created_by_updated_by();
+
+CREATE TRIGGER set_created_by_updated_by_trigger_tags
+    BEFORE INSERT OR UPDATE ON tags
+    FOR EACH ROW
+    EXECUTE FUNCTION set_created_by_updated_by();

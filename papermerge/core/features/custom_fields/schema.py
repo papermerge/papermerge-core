@@ -6,7 +6,7 @@ from typing import Optional, Dict, Any, Literal
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict
 
-from papermerge.core.schemas.common import ByUser
+from papermerge.core.schemas.common import ByUser, OwnedBy
 
 
 class CustomFieldType(str, Enum):
@@ -38,6 +38,7 @@ class CustomField(BaseModel):
 
 
 class CustomFieldEx(CustomField):
+    owned_by: OwnedBy
     created_at: datetime
     # Both `created_by` and `updated_by`  should be optional.
     # The problem is that both columns are updated via a postgres trigger

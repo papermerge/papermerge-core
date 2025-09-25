@@ -63,6 +63,7 @@ async def get_custom_fields(
     updated_user = aliased(orm.User, name='updated_user')
     deleted_user = aliased(orm.User, name='deleted_user')
     archived_user = aliased(orm.User, name='archived_user')
+    owner_user = aliased(orm.User, name='owner_user')
 
     # Subquery to get user's group IDs (for access control)
     user_groups_subquery = select(orm.UserGroup.group_id).where(
@@ -76,6 +77,7 @@ async def get_custom_fields(
         .join(updated_user, orm.CustomField.updated_by == updated_user.id, isouter=True)
         .join(deleted_user, orm.CustomField.deleted_by == deleted_user.id, isouter=True)
         .join(archived_user, orm.CustomField.archived_by == archived_user.id, isouter=True)
+        .join(owner_user, orm.CustomField.user_id == owner_user.id, isouter=True)
         .join(orm.Group, orm.Group.id == orm.CustomField.group_id, isouter=True)
     )
 
@@ -150,7 +152,9 @@ async def get_custom_fields(
             deleted_user.username.label('deleted_by_username'),
             # Archived by user
             archived_user.id.label('archived_by_id'),
-            archived_user.username.label('archived_by_username')
+            archived_user.username.label('archived_by_username'),
+            owner_user.id.label('owner_user_id'),
+            owner_user.username.label('owner_username'),
         )
         .limit(page_size)
         .offset(offset)
@@ -193,6 +197,19 @@ async def get_custom_fields(
                 username=row.archived_by_username
             )
 
+        if custom_field.user_id:
+            owned_by = schema.OwnedBy(
+                id=custom_field.user_id,
+                name=row.owner_username,
+                type="user"
+            )
+        else:  # group_id is not null (enforced by check constraint)
+            owned_by = schema.OwnedBy(
+                id=row.group_id,
+                name=row.group_name,
+                type="group"
+            )
+
         custom_field_data = {
             "id": custom_field.id,
             "name": custom_field.name,
@@ -207,7 +224,8 @@ async def get_custom_fields(
             "created_by": created_by,
             "updated_by": updated_by,
             "deleted_by": deleted_by,
-            "archived_by": archived_by
+            "archived_by": archived_by,
+            "owned_by": owned_by,
         }
 
         items.append(schema.CustomFieldEx(**custom_field_data))

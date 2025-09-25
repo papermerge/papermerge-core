@@ -1,5 +1,6 @@
 import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
 import type {CustomFieldItem} from "@/features/custom-fields/types"
+import {OwnedBy} from "@/types"
 import type {ByUser} from "@/types.d/common"
 import {Box, Text} from "@mantine/core"
 import {TFunction} from "i18next"
@@ -34,6 +35,25 @@ export default function customFieldColumns(t?: TFunction) {
       width: 200,
       minWidth: 100,
       render: value => <TruncatedTextWithCopy value={value as string} />
+    },
+    {
+      key: "owned_by",
+      label: t?.("customFieldColumns.owned_by") || "Owned By",
+      sortable: true,
+      filterable: true,
+      visible: true,
+      width: 200,
+      minWidth: 100,
+      render: (value, row, onClick) => {
+        return (
+          <Box
+            style={{cursor: "pointer"}}
+            onClick={() => onClick?.(row, false)}
+          >
+            <Text component="a">{(value as OwnedBy).name}</Text>
+          </Box>
+        )
+      }
     },
     {
       key: "created_at",

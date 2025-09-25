@@ -6,6 +6,14 @@ export type ByUser = {
   id: string
 }
 
+export type OwnerType = "user" | "group"
+
+export type OwnedBy = {
+  id: string
+  name: string // Will be username for users, name for groups
+  type: OwnerType
+}
+
 export type State<T> = {
   is_loading: boolean
   error: string | null

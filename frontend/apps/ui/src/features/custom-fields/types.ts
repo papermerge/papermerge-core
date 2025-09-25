@@ -1,4 +1,4 @@
-import type {PaginatedArgs} from "@/types"
+import type {ByUser, OwnedBy, PaginatedArgs} from "@/types"
 
 export type SortBy = "name" | "created_at" | "created_by"
 
@@ -19,11 +19,6 @@ export interface CustomFieldQueryParams extends Partial<PaginatedArgs> {
   filter_without_users?: string
 }
 
-export interface ByUser {
-  id: string
-  username: string
-}
-
 export interface CustomFieldItem {
   id: string
   name: string
@@ -31,4 +26,5 @@ export interface CustomFieldItem {
   updated_at: string
   created_by: ByUser
   updated_by: ByUser
+  owned_by: OwnedBy
 }

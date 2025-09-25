@@ -38,10 +38,10 @@ from .features.custom_fields.schema import CustomField, CustomFieldEx, UpdateCus
 from .features.tags.schema import Tag, UpdateTag, CreateTag
 from .features.document_types.schema import DocumentType, UpdateDocumentType, CreateDocumentType
 from .features.groups.schema import Group, GroupEx, GroupDetails, CreateGroup, UpdateGroup
-from .features.roles.schema import Role, RoleEx, RoleDetails, CreateRole, UpdateRole, Permission, ByUser
+from .features.roles.schema import Role, RoleEx, RoleDetails, CreateRole, UpdateRole, Permission
 from .features.audit.schema import AuditLog, AuditLogDetails
 from .schemas.error import Error, AttrError
-from .schemas.common import PaginatedResponse
+from .schemas.common import PaginatedResponse, OwnedBy, ByUser
 from .schemas.version import Version
 
 __all__ = [
@@ -117,5 +117,6 @@ __all__ = [
     'DocVerListItem',
     'DownloadURL',
     'AuditLog',
-    'AuditLogDetails'
+    'AuditLogDetails',
+    'OwnedBy'
 ]

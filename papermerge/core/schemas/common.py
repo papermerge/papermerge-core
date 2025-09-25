@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Literal
 import uuid
 
 from pydantic import BaseModel, ConfigDict
@@ -20,3 +20,11 @@ class PaginatedResponse(BaseModel, Generic[T]):
 class ByUser(BaseModel):
     id: uuid.UUID | None = None
     username: str | None = None
+
+
+class OwnedBy(BaseModel):
+    id: uuid.UUID
+    name: str  # Will be username for users, name for groups
+    type: Literal["user", "group"]  # To distinguish the owner type
+
+    model_config = ConfigDict(from_attributes=True)

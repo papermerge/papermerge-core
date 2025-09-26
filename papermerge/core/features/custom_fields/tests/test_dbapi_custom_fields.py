@@ -16,7 +16,11 @@ async def test_custom_filed_create(db_session: AsyncSession, user: User):
     assert cfield.name == "cf1"
     assert cfield.type == schema.CustomFieldType.text
 
-    retrieved_cf1 = await dbapi.get_custom_field(db_session, cfield.id)
+    retrieved_cf1 = await dbapi.get_custom_field(
+        db_session,
+        user_id=user.id,
+        custom_field_id=cfield.id
+    )
     assert retrieved_cf1.id == cfield.id
     assert retrieved_cf1.name == cfield.name
 
@@ -29,7 +33,11 @@ async def test_custom_field_delete(db_session: AsyncSession, user: User):
         user_id=user.id,
     )
 
-    retrieved_cf1 = await dbapi.get_custom_field(db_session, cfield.id)
+    retrieved_cf1 = await dbapi.get_custom_field(
+        db_session,
+        user_id=user.id,
+        custom_field_id=cfield.id
+    )
     assert retrieved_cf1.id == cfield.id
     assert retrieved_cf1.name == cfield.name
 
@@ -48,5 +56,9 @@ async def test_custom_field_update(db_session: AsyncSession, user: User):
         attrs=schema.UpdateCustomField(name="new_cf1_name", user_id=user.id),
     )
 
-    updated_cf1 = await dbapi.get_custom_field(db_session, cfield.id)
+    updated_cf1 = await dbapi.get_custom_field(
+        db_session,
+        user_id=user.id,
+        custom_field_id=cfield.id
+    )
     assert updated_cf1.name == "new_cf1_name"

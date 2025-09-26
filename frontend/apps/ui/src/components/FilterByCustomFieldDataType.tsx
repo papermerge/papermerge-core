@@ -26,7 +26,7 @@ export default function FilterByCustomFieldDataType({
     {
       value: "boolean",
       label:
-        t?.("customFieldType.boolean", {defaultValue: "Boolean"}) || "Boolean"
+        t?.("customFieldType.boolean", {defaultValue: "Yes/No"}) || "Yes/No"
     },
     {
       value: "int",
@@ -40,14 +40,14 @@ export default function FilterByCustomFieldDataType({
     {
       value: "monetary",
       label:
-        t?.("customFieldType.monetary", {defaultValue: "Monetary"}) ||
-        "Monetary"
+        t?.("customFieldType.monetary", {defaultValue: "Currency"}) ||
+        "Currency"
     },
     {
       value: "yearmonth",
       label:
-        t?.("customFieldType.yearmonth", {defaultValue: "Year-Month"}) ||
-        "Year-Month"
+        t?.("customFieldType.yearmonth", {defaultValue: "Year/Month"}) ||
+        "Year/Month"
     }
   ]
 

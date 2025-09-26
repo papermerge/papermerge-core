@@ -345,6 +345,15 @@
   "customFieldDetails": {
     "name": "Benutzerdefinierte Felder"
   },
+  "customFieldType": {
+    "date": "Datum",
+    "text": "Text",
+    "boolean": "Ja/Nein",
+    "int": "Ganzzahl",
+    "float": "Dezimalzahl",
+    "monetary": "Währung",
+    "yearmonth": "Jahr/Monat"
+  },
   "roles.name": "Rollen",
   "roles.new.title": "Neue Rolle",
   "roles.edit.title": "Rolle bearbeiten",

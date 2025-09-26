@@ -13,6 +13,7 @@ interface GroupPanelList extends PanelListBase {
   selectedIDs?: Array<string>
   withUsersFilterValue?: Array<string>
   withoutUsersFilterValue?: Array<string>
+  freeTextFilterValue?: string
 }
 
 interface GroupPanelDetails {

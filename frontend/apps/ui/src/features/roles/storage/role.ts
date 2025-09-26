@@ -11,6 +11,7 @@ import {apiSliceWithRoles} from "./api"
 
 interface RolePanelList extends PanelListBase {
   selectedIDs?: Array<string>
+  freeTextFilterValue?: string
   includeScopeFilterValue?: Array<string>
   excludeScopeFilterValue?: Array<string>
 }

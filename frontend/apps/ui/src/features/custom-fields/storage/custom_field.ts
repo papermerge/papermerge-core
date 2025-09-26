@@ -11,8 +11,8 @@ import {apiSliceWithCustomFields} from "./api"
 
 interface CustomFieldPanelList extends PanelListBase {
   selectedIDs?: Array<string>
-  withUsersFilterValue?: Array<string>
-  withoutUsersFilterValue?: Array<string>
+  freeTextFilterValue?: string
+  typesFilterValue?: Array<string>
 }
 
 interface CustomFieldPanelDetails {
@@ -79,22 +79,15 @@ const customFieldsSlice = createSlice({
       action: PayloadAction<{
         mode: PanelMode
         freeTextFilterValue?: string
-        withUsersFilterValue?: string[]
-        withoutUsersFilterValue?: string[]
+        typesFilterValue?: string[]
       }>
     ) {
-      const {
-        mode,
-        freeTextFilterValue,
-        withUsersFilterValue,
-        withoutUsersFilterValue
-      } = action.payload
+      const {mode, freeTextFilterValue, typesFilterValue} = action.payload
       if (mode == "main") {
         state.mainCustomFieldList = {
           ...state.mainCustomFieldList,
           freeTextFilterValue,
-          withUsersFilterValue,
-          withoutUsersFilterValue
+          typesFilterValue
         }
         return
       }
@@ -102,8 +95,7 @@ const customFieldsSlice = createSlice({
       state.secondaryCustomFieldList = {
         ...state.secondaryCustomFieldList,
         freeTextFilterValue,
-        withUsersFilterValue,
-        withoutUsersFilterValue
+        typesFilterValue
       }
     },
     customFieldPaginationUpdated(
@@ -320,26 +312,15 @@ export const selectCustomFieldFreeTextFilterValue = (
   return state.customFields.secondaryCustomFieldList?.freeTextFilterValue
 }
 
-export const selectCustomFieldWithUsersFilterValue = (
+export const selectCustomFieldTypesFilterValue = (
   state: RootState,
   mode: PanelMode
 ) => {
   if (mode == "main") {
-    return state.customFields.mainCustomFieldList?.withUsersFilterValue
+    return state.customFields.mainCustomFieldList?.typesFilterValue
   }
 
-  return state.customFields.secondaryCustomFieldList?.withUsersFilterValue
-}
-
-export const selectCustomFieldWithoutUsersFilterValue = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.customFields.mainCustomFieldList?.withoutUsersFilterValue
-  }
-
-  return state.customFields.secondaryCustomFieldList?.withoutUsersFilterValue
+  return state.customFields.secondaryCustomFieldList?.typesFilterValue
 }
 
 export const customFieldCRUDListeners = (

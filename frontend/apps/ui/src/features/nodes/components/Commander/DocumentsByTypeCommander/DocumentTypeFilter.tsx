@@ -50,7 +50,7 @@ export default function DocumentTypeFilter() {
         documentTypeID: document_type_id
       })
     )
-    navigate(`/category/${document_type_id}`)
+    navigate(`/documents/${document_type_id}`)
   }
 
   return (

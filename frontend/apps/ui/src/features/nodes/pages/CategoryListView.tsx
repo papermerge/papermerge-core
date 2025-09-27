@@ -8,7 +8,7 @@ import {LoaderFunctionArgs} from "react-router"
 
 import {store} from "@/app/store"
 
-export default function CategoryListView() {
+export default function DocumentsListView() {
   return <DualPanel />
 }
 

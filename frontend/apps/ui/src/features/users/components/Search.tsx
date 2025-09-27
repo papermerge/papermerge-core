@@ -156,7 +156,7 @@ export default function Search() {
       onClear={onClear}
       onSearch={onSearch}
       t={t}
-      placeholder={t?.("searchUsers", {defaultValue: "Search users..."})}
+      placeholder={t?.("users.searchLabel", {defaultValue: "Search users..."})}
     >
       <FilterByRoles
         label={t?.("usersFilter.ByRole.WithRoles", {

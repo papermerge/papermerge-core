@@ -127,6 +127,11 @@ export default function Search() {
       onClearSearchText={onClearSearchText}
       onClear={onClear}
       onSearch={onSearch}
+      placeholder={
+        t?.("auditLog.searchLabel", {
+          defaultValue: "Search audit logs..."
+        }) || "Search audit logs..."
+      }
       t={t}
     >
       <TimestampFilter t={t} range={localRange} onChange={onLocalRangeChange} />

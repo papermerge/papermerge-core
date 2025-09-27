@@ -9,7 +9,7 @@ import {
   selectionSet,
   selectSelectedIDs
 } from "@/features/document-types/storage/documentType"
-import {showDocumentTypeDetailsInSecondaryPanel} from "@/features/documentTypes/storage/thunks"
+import {showDocumentTypeDetailsInSecondaryPanel} from "@/features/document-types/storage/thunks"
 import {isHTTP403Forbidden} from "@/services/helpers"
 import {Group, Stack} from "@mantine/core"
 import type {SortState} from "kommon"

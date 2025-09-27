@@ -39,7 +39,7 @@ import {loader as auditLogsListLoader} from "@/features/audit/pages/List"
 import {loader as customFieldsLoader} from "@/features/custom-fields/pages/Details"
 import {loader as customFieldsListLoader} from "@/features/custom-fields/pages/List"
 import {loader as documentTypeDetailsLoader} from "@/features/document-types/pages/Details"
-
+import {loader as documentTypesListLoader} from "@/features/document-types/pages/List"
 import {loader as groupsDetailsLoader} from "@/features/groups/pages/Details"
 import {loader as groupsListLoader} from "@/features/groups/pages/List"
 import {loader as rolesDetailsLoader} from "@/features/roles/pages/Details"
@@ -131,7 +131,7 @@ const router = createBrowserRouter([
       {
         path: "/categories/",
         element: <DocumentTypesList />,
-        loader: documentTypeDetailsLoader
+        loader: documentTypesListLoader
       },
       {
         path: "/categories/:id",

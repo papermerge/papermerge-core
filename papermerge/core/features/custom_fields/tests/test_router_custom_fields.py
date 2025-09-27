@@ -104,7 +104,13 @@ async def test_delete_custom_field(
 
     response = await auth_api_client.delete(f"/custom-fields/{custom_field_cf1.id}")
     assert response.status_code == 204
-    count_after_result = await db_session.execute(select(func.count(orm.CustomField.id)))
+
+    stmt = select(
+        func.count(orm.CustomField.id)
+    ).where(
+        orm.CustomField.deleted_at.is_(None)
+    )
+    count_after_result = await db_session.execute(stmt)
     count_after = count_after_result.scalar()
     assert count_after == 0
 

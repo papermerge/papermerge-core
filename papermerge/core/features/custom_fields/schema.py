@@ -109,7 +109,7 @@ class CustomFieldParams(BaseModel):
     # Sorting parameters
     sort_by: Optional[str] = Query(
         None,
-        pattern="^(id|name|created_at|updated_at|created_by|updated_by)$",
+        pattern="^(id|name|type|created_at|updated_at|created_by|updated_by)$",
         description="Column to sort by: id, name, created_at, updated_at, created_by, updated_by"
     )
     sort_direction: Optional[Literal["asc", "desc"]] = Query(

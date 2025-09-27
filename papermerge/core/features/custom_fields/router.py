@@ -199,6 +199,10 @@ async def create_custom_field(
         404: {
             "description": """No custom field with specified ID found""",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+        403: {
+            "description": """Forbidden: You don't have permission to delete this custom field""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
         }
     },
 )
@@ -220,9 +224,15 @@ async def delete_custom_field(
             user_id=user.id,
             username=user.username
         ):
-            await dbapi.delete_custom_field(db_session, custom_field_id)
+            await dbapi.delete_custom_field(
+                db_session,
+                user_id=user.id,  # Add user_id for access control
+                custom_field_id=custom_field_id
+            )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Custom field not found")
+    except ResourceAccessDenied:  # Add this import
+        raise HTTPException(status_code=403, detail="Forbidden: You don't have permission to delete this custom field")
 
 
 @router.patch(

@@ -57,7 +57,7 @@ export default function CustomFieldDetailsContainer() {
           </Group>
         </Group>
         <Stack style={{overflowY: "auto"}}>
-          <CustomFieldForm key={data.id} customField={data} />
+          <CustomFieldForm key={data.id} customField={data} t={t} />
 
           <CopyableTextInput
             value={data.updated_at}

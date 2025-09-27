@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react"
 
-import {CURRENCIES, CUSTOM_FIELD_DATA_TYPES} from "@/cconstants"
+import {CURRENCIES} from "@/cconstants"
 import OwnerSelector from "@/components/OwnerSelect/OwnerSelect"
 import {useAddNewCustomFieldMutation} from "@/features/custom-fields/storage/api"
 import {CurrencyType, CustomFieldDataType} from "@/types"
@@ -16,6 +16,7 @@ import {
   TextInput
 } from "@mantine/core"
 import {useTranslation} from "react-i18next"
+import {getCustomFieldTypes} from "../utils"
 
 interface Args {
   opened: boolean
@@ -114,7 +115,7 @@ export default function NewCustomFieldModal({
         mt="sm"
         label={t("custom_fields.form.type")}
         value={dataType}
-        data={CUSTOM_FIELD_DATA_TYPES}
+        data={getCustomFieldTypes(t)}
         onChange={e =>
           setDataType(e.currentTarget.value as CustomFieldDataType)
         }

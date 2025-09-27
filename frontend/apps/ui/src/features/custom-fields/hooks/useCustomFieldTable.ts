@@ -5,8 +5,7 @@ import {
   selectCustomFieldPageNumber,
   selectCustomFieldPageSize,
   selectCustomFieldSorting,
-  selectCustomFieldWithoutUsersFilterValue,
-  selectCustomFieldWithUsersFilterValue
+  selectCustomFieldTypesFilterValue
 } from "@/features/custom-fields/storage/custom_field"
 import type {
   CustomFieldQueryParams,
@@ -24,11 +23,8 @@ function useQueryParams(): CustomFieldQueryParams {
   const free_text = useAppSelector(s =>
     selectCustomFieldFreeTextFilterValue(s, mode)
   )
-  const with_users = useAppSelector(s =>
-    selectCustomFieldWithUsersFilterValue(s, mode)
-  )
-  const without_users = useAppSelector(s =>
-    selectCustomFieldWithoutUsersFilterValue(s, mode)
+  const cf_types = useAppSelector(s =>
+    selectCustomFieldTypesFilterValue(s, mode)
   )
 
   const queryParams: CustomFieldQueryParams = {
@@ -37,8 +33,7 @@ function useQueryParams(): CustomFieldQueryParams {
     sort_by: column,
     sort_direction: sorting?.direction || undefined,
     filter_free_text: free_text,
-    filter_with_users: with_users?.join(","),
-    filter_without_users: without_users?.join(",")
+    filter_types: cf_types?.join(",")
   }
 
   return queryParams

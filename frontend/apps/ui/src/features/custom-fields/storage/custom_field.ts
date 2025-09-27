@@ -1,7 +1,7 @@
 import {AppStartListening} from "@/app/listenerMiddleware"
 import {RootState} from "@/app/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
-import type {PanelMode, ServerErrorType} from "@/types"
+import type {PanelMode} from "@/types"
 import type {PanelListBase} from "@/types.d/panel"
 import {notifications} from "@mantine/notifications"
 import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit"
@@ -11,8 +11,8 @@ import {apiSliceWithCustomFields} from "./api"
 
 interface CustomFieldPanelList extends PanelListBase {
   selectedIDs?: Array<string>
-  withUsersFilterValue?: Array<string>
-  withoutUsersFilterValue?: Array<string>
+  freeTextFilterValue?: string
+  typesFilterValue?: Array<string>
 }
 
 interface CustomFieldPanelDetails {
@@ -79,22 +79,15 @@ const customFieldsSlice = createSlice({
       action: PayloadAction<{
         mode: PanelMode
         freeTextFilterValue?: string
-        withUsersFilterValue?: string[]
-        withoutUsersFilterValue?: string[]
+        typesFilterValue?: string[]
       }>
     ) {
-      const {
-        mode,
-        freeTextFilterValue,
-        withUsersFilterValue,
-        withoutUsersFilterValue
-      } = action.payload
+      const {mode, freeTextFilterValue, typesFilterValue} = action.payload
       if (mode == "main") {
         state.mainCustomFieldList = {
           ...state.mainCustomFieldList,
           freeTextFilterValue,
-          withUsersFilterValue,
-          withoutUsersFilterValue
+          typesFilterValue
         }
         return
       }
@@ -102,8 +95,7 @@ const customFieldsSlice = createSlice({
       state.secondaryCustomFieldList = {
         ...state.secondaryCustomFieldList,
         freeTextFilterValue,
-        withUsersFilterValue,
-        withoutUsersFilterValue
+        typesFilterValue
       }
     },
     customFieldPaginationUpdated(
@@ -320,26 +312,15 @@ export const selectCustomFieldFreeTextFilterValue = (
   return state.customFields.secondaryCustomFieldList?.freeTextFilterValue
 }
 
-export const selectCustomFieldWithUsersFilterValue = (
+export const selectCustomFieldTypesFilterValue = (
   state: RootState,
   mode: PanelMode
 ) => {
   if (mode == "main") {
-    return state.customFields.mainCustomFieldList?.withUsersFilterValue
+    return state.customFields.mainCustomFieldList?.typesFilterValue
   }
 
-  return state.customFields.secondaryCustomFieldList?.withUsersFilterValue
-}
-
-export const selectCustomFieldWithoutUsersFilterValue = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.customFields.mainCustomFieldList?.withoutUsersFilterValue
-  }
-
-  return state.customFields.secondaryCustomFieldList?.withoutUsersFilterValue
+  return state.customFields.secondaryCustomFieldList?.typesFilterValue
 }
 
 export const customFieldCRUDListeners = (
@@ -352,7 +333,9 @@ export const customFieldCRUDListeners = (
     effect: async () => {
       notifications.show({
         withBorder: true,
-        message: t("notifications.goup.created.success")
+        message: t("customFields.notifications.created", {
+          defaultValue: "Custom field was successfully created"
+        })
       })
     }
   })
@@ -363,21 +346,9 @@ export const customFieldCRUDListeners = (
     effect: async () => {
       notifications.show({
         withBorder: true,
-        message: t("notifications.goup.updated.success")
-      })
-    }
-  })
-  // Update negative
-  startAppListening({
-    matcher: apiSliceWithCustomFields.endpoints.editCustomField.matchRejected,
-    effect: async action => {
-      const error = action.payload as ServerErrorType
-      notifications.show({
-        autoClose: false,
-        withBorder: true,
-        color: "red",
-        title: t("notifications.common.error"),
-        message: error.data.detail
+        message: t("customFields.notifications.updated", {
+          defaultValue: "Custom field was successfully updated"
+        })
       })
     }
   })
@@ -388,21 +359,9 @@ export const customFieldCRUDListeners = (
     effect: async () => {
       notifications.show({
         withBorder: true,
-        message: t("notifications.goup.deleted.success")
-      })
-    }
-  })
-  // Delete negative
-  startAppListening({
-    matcher: apiSliceWithCustomFields.endpoints.deleteCustomField.matchRejected,
-    effect: async action => {
-      const error = action.payload as ServerErrorType
-      notifications.show({
-        autoClose: false,
-        withBorder: true,
-        color: "red",
-        title: t("notifications.common.error"),
-        message: error.data.detail
+        message: t("customFields.notifications.deleted", {
+          defaultValue: "Custom field was successfully deleted"
+        })
       })
     }
   })

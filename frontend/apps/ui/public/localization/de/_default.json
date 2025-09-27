@@ -336,6 +336,7 @@
   "customFieldColumns": {
     "name": "Name",
     "id": "ID",
+    "type": "Typ",
     "created_at": "Erstellt am",
     "created_by": "Erstellt von",
     "updated_at": "Aktualisiert am",
@@ -344,6 +345,26 @@
   },
   "customFieldDetails": {
     "name": "Benutzerdefinierte Felder"
+  },
+  "customFields": {
+    "filterByType": {
+      "label": "Typen"
+    },
+    "notifications": {
+      "created": "Benutzerdefiniertes Feld wurde erfolgreich erstellt",
+      "updated": "Benutzerdefiniertes Feld wurde erfolgreich aktualisiert",
+      "deleted": "Benutzerdefiniertes Feld wurde erfolgreich gelöscht"
+    },
+    "searchLabel": "BD-Felder suchen..."
+  },
+  "customFieldType": {
+    "date": "Datum",
+    "text": "Text",
+    "boolean": "Ja/Nein",
+    "int": "Ganzzahl",
+    "float": "Dezimalzahl",
+    "monetary": "Währung",
+    "yearmonth": "Jahr/Monat"
   },
   "roles.name": "Rollen",
   "roles.new.title": "Neue Rolle",

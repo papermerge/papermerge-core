@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import schema, orm
 from papermerge.core.db.exceptions import ResourceAccessDenied
+from papermerge.core.utils.tz import tz_aware_datetime_now
 
 logger = logging.getLogger(__name__)
 
@@ -452,11 +453,78 @@ async def get_custom_field(
 
     return schema.CustomFieldDetails(**custom_field_data)
 
-async def delete_custom_field(session: AsyncSession, custom_field_id: uuid.UUID):
-    stmt = select(orm.CustomField).where(orm.CustomField.id == custom_field_id)
-    cfield = (await session.execute(stmt)).scalars().one()
-    await session.delete(cfield)
+
+async def delete_custom_field(
+    session: AsyncSession,
+    user_id: uuid.UUID,
+    custom_field_id: uuid.UUID
+):
+    """
+    Soft delete a custom field with access control.
+
+    Args:
+        session: Database session
+        user_id: Current user ID (for access control)
+        custom_field_id: ID of the custom field to delete
+
+    Raises:
+        NoResultFound: If custom field doesn't exist
+        CustomFieldAccessError: If user doesn't have permission to delete the custom field
+    """
+
+    # First check if the custom field exists at all
+    exists_stmt = select(orm.CustomField.id).where(
+        orm.CustomField.id == custom_field_id
+    )
+    exists_result = await session.execute(exists_stmt)
+    if not exists_result.scalar():
+        raise NoResultFound(f"Custom field with id {custom_field_id} not found")
+
+    # Subquery to get user's group IDs (for access control)
+    user_groups_subquery = select(orm.UserGroup.group_id).where(
+        orm.UserGroup.user_id == user_id
+    )
+
+    # Check if user has access to this custom field
+    access_stmt = (
+        select(orm.CustomField)
+        .where(
+            and_(
+                orm.CustomField.id == custom_field_id,
+                # Access control: user can delete if they own it directly or through group
+                or_(
+                    orm.CustomField.user_id == user_id,
+                    orm.CustomField.group_id.in_(user_groups_subquery)
+                )
+            )
+        )
+    )
+
+    access_result = await session.execute(access_stmt)
+    custom_field = access_result.scalars().first()
+
+    # If no result, user doesn't have access (we know the custom field exists)
+    if not custom_field:
+        raise ResourceAccessDenied(f"User {user_id} does not have permission to delete custom field {custom_field_id}")
+
+    # Check if already soft deleted
+    if custom_field.deleted_at is not None:
+        # Custom field is already deleted - you might want to handle this differently
+        # Option 1: Silently succeed (idempotent delete)
+        return
+        # Option 2: Raise an error
+        # raise ValueError(f"Custom field {custom_field_id} is already deleted")
+
+    # Perform soft delete by setting deleted_at and deleted_by
+    # Note: The deleted_by will be set by the audit trigger using the audit context
+    # that was established in the endpoint with AsyncAuditContext
+    custom_field.deleted_at = tz_aware_datetime_now()
+    custom_field.deleted_by = user_id
+
+    # Add to session and commit
+    session.add(custom_field)
     await session.commit()
+
 
 
 async def update_custom_field(

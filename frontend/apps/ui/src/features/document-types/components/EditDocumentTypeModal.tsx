@@ -17,7 +17,7 @@ import OwnerSelector from "@/components/OwnerSelect/OwnerSelect"
 import {
   useEditDocumentTypeMutation,
   useGetDocumentTypeQuery
-} from "@/features/document-types/apiSlice"
+} from "@/features/document-types/storage/api"
 import {useTranslation} from "react-i18next"
 
 interface Args {

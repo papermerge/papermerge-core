@@ -7,7 +7,7 @@ import {
   CustomFieldYearMonth
 } from "../customFields"
 
-import {useGetDocumentTypesQuery} from "@/features/document-types/apiSlice"
+import {useGetDocumentTypesQuery} from "@/features/document-types/storage/api"
 import {
   useGetDocumentCustomFieldsQuery,
   useUpdateDocumentCustomFieldsMutation,

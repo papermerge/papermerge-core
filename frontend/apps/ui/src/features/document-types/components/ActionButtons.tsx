@@ -3,7 +3,7 @@ import QuickFilter from "@/components/QuickFilter"
 import {
   selectFilterText,
   selectSelectedIds
-} from "@/features/document-types/documentTypesSlice"
+} from "@/features/document-types/storage/documentType"
 import {Group, Loader} from "@mantine/core"
 import {DeleteDocumentTypesButton} from "./DeleteButton"
 import EditButton from "./EditButton"

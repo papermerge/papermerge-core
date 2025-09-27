@@ -1,6 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {useGetDocumentTypesGroupedQuery} from "@/features/document-types/apiSlice"
+import {useGetDocumentTypesGroupedQuery} from "@/features/document-types/storage/api"
 import {DocTypeGrouped} from "@/features/document-types/types"
 import {
   commanderDocumentTypeIDUpdated,

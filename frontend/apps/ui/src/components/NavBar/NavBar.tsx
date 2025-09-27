@@ -127,7 +127,7 @@ function NavBarFull() {
           </NavLink>
         )}
         {user.scopes.includes(DOCUMENT_TYPE_VIEW) && (
-          <NavLink to="/document-types">
+          <NavLink to="/categories">
             {NavLinkWithFeedback(
               t("document_types.name.by"),
               <IconTriangleSquareCircle />
@@ -230,7 +230,7 @@ function NavBarCollapsed() {
           </NavLink>
         )}
         {user.scopes.includes(DOCUMENT_TYPE_VIEW) && (
-          <NavLink to="/document-types">
+          <NavLink to="/categories">
             {NavLinkWithFeedbackShort(<IconTriangleSquareCircle />)}
           </NavLink>
         )}

@@ -7,10 +7,10 @@ import {useNavigate} from "react-router-dom"
 import {
   clearSelection,
   selectSelectedIds
-} from "@/features/document-types/documentTypesSlice"
+} from "@/features/document-types/storage/documentType"
 
-import {RemoveDocumentTypeModal, RemoveDocumentTypesModal} from "./DeleteModal"
 import {useTranslation} from "react-i18next"
+import {RemoveDocumentTypeModal, RemoveDocumentTypesModal} from "./DeleteModal"
 
 export function DeleteDocumentTypeButton({
   documentTypeId

@@ -1,4 +1,4 @@
-import {useDeleteDocumentTypeMutation} from "@/features/document-types/apiSlice"
+import {useDeleteDocumentTypeMutation} from "@/features/document-types/storage/api"
 import {
   Button,
   Container,

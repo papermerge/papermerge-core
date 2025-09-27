@@ -135,6 +135,7 @@
       "label": "Benutzer",
       "pickValue": "Wert auswählen"
     },
+    "searchLabel": "Audit-Protokolle suchen...",
     "noAuditLogFound": "Keine Audit-Protokolle gefunden",
     "errorLoadingAuditLogs": "Fehler beim Laden der Audit-Protokollen",
     "anErrorOccurred": "Ein Fehler ist aufgetreten",
@@ -300,7 +301,8 @@
     }
   },
   "users": {
-    "addNewUser": "Hinzufügen"
+    "addNewUser": "Hinzufügen",
+    "searchLabel": "Benutzer suchen..."
   },
   "userColumns": {
     "username": "Benutzername",

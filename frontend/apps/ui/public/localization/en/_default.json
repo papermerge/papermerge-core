@@ -138,7 +138,8 @@
       "errorLoadingAuditLogs": "Error loading audit logs",
       "anErrorOccurred": "An error occurred",
       "noAuditLogsFound": "No audit logs found"
-    }
+    },
+    "searchLabel": "Search audit logs..."
   },
   "auditLogDetails": {
     "timestamp": "Timestamp",
@@ -300,7 +301,8 @@
     }
   },
   "users": {
-    "addNewUser": "Add"
+    "addNewUser": "Add",
+    "searchLabel": "Search users..."
   },
   "userColumns": {
     "username": "Username",

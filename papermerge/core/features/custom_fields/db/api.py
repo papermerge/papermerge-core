@@ -557,6 +557,8 @@ def _apply_custom_field_sorting(
         sort_column = orm.CustomField.id
     elif sort_by == "name":
         sort_column = orm.CustomField.name
+    elif sort_by == "type":
+        sort_column = orm.CustomField.type
     elif sort_by == "created_at":
         sort_column = orm.CustomField.created_at
     elif sort_by == "updated_at":

@@ -1,7 +1,7 @@
 import {AppStartListening} from "@/app/listenerMiddleware"
 import {RootState} from "@/app/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
-import type {PanelMode, ServerErrorType} from "@/types"
+import type {PanelMode} from "@/types"
 import type {PanelListBase} from "@/types.d/panel"
 import {notifications} from "@mantine/notifications"
 import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit"
@@ -333,7 +333,9 @@ export const customFieldCRUDListeners = (
     effect: async () => {
       notifications.show({
         withBorder: true,
-        message: t("notifications.goup.created.success")
+        message: t("customFields.notifications.created", {
+          defaultValue: "Custom field was successfully created"
+        })
       })
     }
   })
@@ -344,21 +346,9 @@ export const customFieldCRUDListeners = (
     effect: async () => {
       notifications.show({
         withBorder: true,
-        message: t("notifications.goup.updated.success")
-      })
-    }
-  })
-  // Update negative
-  startAppListening({
-    matcher: apiSliceWithCustomFields.endpoints.editCustomField.matchRejected,
-    effect: async action => {
-      const error = action.payload as ServerErrorType
-      notifications.show({
-        autoClose: false,
-        withBorder: true,
-        color: "red",
-        title: t("notifications.common.error"),
-        message: error.data.detail
+        message: t("customFields.notifications.updated", {
+          defaultValue: "Custom field was successfully updated"
+        })
       })
     }
   })
@@ -369,21 +359,9 @@ export const customFieldCRUDListeners = (
     effect: async () => {
       notifications.show({
         withBorder: true,
-        message: t("notifications.goup.deleted.success")
-      })
-    }
-  })
-  // Delete negative
-  startAppListening({
-    matcher: apiSliceWithCustomFields.endpoints.deleteCustomField.matchRejected,
-    effect: async action => {
-      const error = action.payload as ServerErrorType
-      notifications.show({
-        autoClose: false,
-        withBorder: true,
-        color: "red",
-        title: t("notifications.common.error"),
-        message: error.data.detail
+        message: t("customFields.notifications.deleted", {
+          defaultValue: "Custom field was successfully deleted"
+        })
       })
     }
   })

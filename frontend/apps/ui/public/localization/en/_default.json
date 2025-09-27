@@ -336,6 +336,7 @@
   "customFieldColumns": {
     "name": "Name",
     "id": "ID",
+    "type": "Type",
     "created_at": "Created At",
     "created_by": "Created By",
     "updated_at": "Updated At",
@@ -344,6 +345,16 @@
   },
   "customFieldDetails": {
     "name": "Custom Fields"
+  },
+  "customFields": {
+    "filterByType": {
+      "label": "Types"
+    },
+    "notifications": {
+      "created": "Custom field was successfully created",
+      "updated": "Custom field was successfully updated",
+      "deleted": "Custom field was successfully deleted"
+    }
   },
   "customFieldType": {
     "date": "Date",

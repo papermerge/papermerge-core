@@ -94,7 +94,7 @@ export default function Search() {
         t={t}
         onChange={onLocalTypesChange}
         selectedDataTypes={localTypes}
-        label={t?.("customFields.filterByType.label.types") ?? "Types"}
+        label={t?.("customFields.filterByType.label") ?? "Types"}
       />
     </SearchContainer>
   )

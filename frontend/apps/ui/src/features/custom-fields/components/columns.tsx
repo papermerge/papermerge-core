@@ -49,6 +49,21 @@ export default function customFieldColumns(t?: TFunction) {
       }
     },
     {
+      key: "type",
+      label: t?.("customFieldColumns.type") || "Type",
+      sortable: true,
+      filterable: true,
+      width: 200,
+      minWidth: 150,
+      render: value => {
+        const val = value as string
+        const key = `customFieldType.${value}`
+        const finalValue = `${t?.(key) || val} (${val})`
+
+        return <TruncatedTextWithCopy maxLength={24} value={finalValue} />
+      }
+    },
+    {
       key: "id",
       label: t?.("customFieldColumns.id") || "ID",
       sortable: true,

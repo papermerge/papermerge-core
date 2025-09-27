@@ -1,4 +1,4 @@
-import { CustomFieldDataType, I18nLangType, OCRLangType } from "@/types"
+import {I18nLangType, OCRLangType} from "@/types"
 
 export const DEFAULT_TAG_BG_COLOR = "#c41fff"
 export const DEFAULT_TAG_FG_COLOR = "#ffffff"
@@ -54,16 +54,6 @@ export const MAX_ZOOM_FACTOR = 300 // percents
 export const ONE_DAY_IN_SECONDS = 86400
 export const DRAGGED = "dragged"
 
-export const CUSTOM_FIELD_DATA_TYPES: Array<CustomFieldDataType> = [
-  "boolean",
-  "date",
-  "float",
-  "int",
-  "monetary",
-  "text",
-  "yearmonth"
-]
-
 export const CURRENCIES = [
   "CHF",
   "CZK",
@@ -89,10 +79,10 @@ export const SHARED_NODES_ROOT_BREADCRUMB = [
 ]
 
 export const SUPPORTED_LANGS: I18nLangType[] = [
-  { code: "en", name: "English" },
-  { code: "de", name: "Deutsch" },
-  { code: "ru", name: "Русский" },
-  { code: "kk", name: "Қазақша" }
+  {code: "en", name: "English"},
+  {code: "de", name: "Deutsch"},
+  {code: "ru", name: "Русский"},
+  {code: "kk", name: "Қазақша"}
 ]
 
 export const ERRORS_422_UNPROCESSABLE_CONTENT = "/errors/unprocessable-content"
@@ -100,8 +90,8 @@ export const ERRORS_404_RESOURCE_NOT_FOUND = "/errors/resource-not-found"
 export const ERRORS_403_ACCESS_FORBIDDEN = "/errors/access-forbidden"
 
 export const IMAGE_SIZE_MAP = {
-  "sm": 200,
-  "md": 800,
-  "lg": 1000,
-  "xl": 1200
+  sm: 200,
+  md: 800,
+  lg: 1000,
+  xl: 1200
 }

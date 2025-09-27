@@ -13,12 +13,13 @@ import {
 } from "@mantine/core"
 import {useEffect, useState} from "react"
 
-import {CURRENCIES, CUSTOM_FIELD_DATA_TYPES} from "@/cconstants"
+import {CURRENCIES} from "@/cconstants"
 import {
   useEditCustomFieldMutation,
   useGetCustomFieldQuery
 } from "@/features/custom-fields/storage/api"
 import {useTranslation} from "react-i18next"
+import {getCustomFieldTypes} from "../utils"
 
 interface Args {
   opened: boolean
@@ -51,8 +52,8 @@ export default function EditGroupModal({
   const formReset = () => {
     if (data) {
       setName(data.name || "")
-      if (data.group_id && data.group_name) {
-        setOwner({value: data.group_id, label: data.group_name})
+      if (data.owned_by && data.owned_by.type == "group") {
+        setOwner({value: data.owned_by.id, label: data.owned_by.name})
       } else {
         setOwner({value: "", label: "Me"})
       }
@@ -121,7 +122,7 @@ export default function EditGroupModal({
         mt="sm"
         label="Type"
         value={dataType}
-        data={CUSTOM_FIELD_DATA_TYPES}
+        data={getCustomFieldTypes(t)}
         onChange={e =>
           setDataType(e.currentTarget.value as CustomFieldDataType)
         }

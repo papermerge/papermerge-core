@@ -354,7 +354,8 @@
       "created": "Benutzerdefiniertes Feld wurde erfolgreich erstellt",
       "updated": "Benutzerdefiniertes Feld wurde erfolgreich aktualisiert",
       "deleted": "Benutzerdefiniertes Feld wurde erfolgreich gelöscht"
-    }
+    },
+    "searchLabel": "BD-Felder suchen..."
   },
   "customFieldType": {
     "date": "Datum",

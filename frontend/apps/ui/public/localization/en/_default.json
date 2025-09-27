@@ -354,7 +354,8 @@
       "created": "Custom field was successfully created",
       "updated": "Custom field was successfully updated",
       "deleted": "Custom field was successfully deleted"
-    }
+    },
+    "searchLabel": "Search custom fields..."
   },
   "customFieldType": {
     "date": "Date",

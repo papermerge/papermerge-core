@@ -86,8 +86,8 @@ export default function Search() {
       onClear={onClear}
       onSearch={onSearch}
       t={t}
-      placeholder={t?.("customFields.searchCustomFields", {
-        defaultValue: "Search customFields..."
+      placeholder={t?.("customFields.searchLabel", {
+        defaultValue: "Search custom fields..."
       })}
     >
       <FilterByDataType

@@ -1,13 +1,19 @@
 import {apiSlice} from "@/features/api/slice"
 import type {Paginated, PaginatedArgs} from "@/types"
-import type {DocType, DocTypeGrouped, DocTypeUpdate, NewDocType} from "./types"
+import type {
+  DocType,
+  DocTypeGrouped,
+  DocTypeUpdate,
+  DocumentTypeItem,
+  NewDocType
+} from "../types"
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
-export const apiSliceWithDocTypes = apiSlice.injectEndpoints({
+export const apiSliceWithDocumentTypes = apiSlice.injectEndpoints({
   endpoints: builder => ({
     getPaginatedDocumentTypes: builder.query<
-      Paginated<DocType>,
+      Paginated<DocumentTypeItem>,
       PaginatedArgs | void
     >({
       query: ({
@@ -91,4 +97,4 @@ export const {
   useEditDocumentTypeMutation,
   useDeleteDocumentTypeMutation,
   useAddDocumentTypeMutation
-} = apiSliceWithDocTypes
+} = apiSliceWithDocumentTypes

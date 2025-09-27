@@ -13,6 +13,10 @@ import {
   CustomFieldDetails,
   CustomFieldsList
 } from "@/features/custom-fields/components"
+import {
+  DocumentTypeDetails,
+  DocumentTypesList
+} from "@/features/document-types/components"
 import {GroupDetails, GroupsList} from "@/features/groups/components"
 import Commander from "@/features/nodes/components/Commander"
 import {RoleDetails, RolesList} from "@/features/roles/components"
@@ -36,6 +40,8 @@ const PANEL_COMPONENTS_SAFE = {
   roleDetails: RoleDetails,
   customFieldsList: CustomFieldsList,
   customFieldDetails: CustomFieldDetails,
+  documentTypesList: DocumentTypesList,
+  documentTypeDetails: DocumentTypeDetails,
   groupsList: GroupsList,
   groupDetails: GroupDetails,
   usersList: UsersList,

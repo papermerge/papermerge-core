@@ -210,7 +210,7 @@ async def test_paginated_result__9_items_first_page(
 
     assert response.status_code == 200, response.json()
 
-    paginated_items = schema.PaginatedResponse[schema.DocumentType](**response.json())
+    paginated_items = schema.PaginatedResponse[schema.DocumentTypeEx](**response.json())
 
     assert paginated_items.page_size == 5
     assert paginated_items.page_number == 1
@@ -230,7 +230,7 @@ async def test_paginated_result__9_items_second_page(
 
     assert response.status_code == 200, response.json()
 
-    paginated_items = schema.PaginatedResponse[schema.DocumentType](**response.json())
+    paginated_items = schema.PaginatedResponse[schema.DocumentTypeEx](**response.json())
 
     assert paginated_items.page_size == 5
     assert paginated_items.page_number == 2

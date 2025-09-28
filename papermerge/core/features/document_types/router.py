@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from papermerge.core.db.exceptions import ResourceAccessDenied
 from papermerge.core import utils, schema, dbapi
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
@@ -130,7 +131,7 @@ async def get_document_types(
     return paginated_response
 
 
-@router.get("/{document_type_id}", response_model=schema.DocumentType)
+@router.get("/{document_type_id}", response_model=schema.DocumentTypeDetails)
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
 async def get_document_type(
     document_type_id: uuid.UUID,
@@ -145,9 +146,16 @@ async def get_document_type(
     Required scope: `{scope}`
     """
     try:
-        result = await dbapi.get_document_type(db_session, document_type_id=document_type_id)
+        result = await dbapi.get_document_type(
+            db_session,
+            user_id=user.id,
+            document_type_id=document_type_id
+        )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")
+    except ResourceAccessDenied:
+        raise HTTPException(status_code=403, detail="Forbidden: You don't have permission to access this custom field")
+
     return result
 
 

@@ -6,8 +6,10 @@ from typing import Optional, Dict, Any
 
 from sqlalchemy.orm import selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy import select, func, and_, or_
 
+from papermerge.core.db.exceptions import ResourceAccessDenied
 from papermerge.core import schema
 from papermerge.core import constants as const
 from papermerge.core import orm
@@ -379,34 +381,161 @@ async def create_document_type(
 
     return dtype
 
-
 async def get_document_type(
-    session: AsyncSession, document_type_id: uuid.UUID
-) -> schema.DocumentType:
-    stmt = (
-        select(DocumentType)
-        .options(
-            selectinload(DocumentType.custom_fields),
-            selectinload(DocumentType.group)
-        )
-        .where(DocumentType.id == document_type_id)
+        session: AsyncSession,
+        user_id: uuid.UUID,
+        document_type_id: uuid.UUID
+) -> schema.DocumentTypeDetails:
+    """
+    Get a single document type with full audit trail.
+
+    Args:
+        session: Database session
+        user_id: Current user ID (for access control)
+        document_type_id: ID of the document type to retrieve
+
+    Returns:
+        DocumentTypeDetails with complete audit trail and ownership info
+
+    Raises:
+        NoResultFound: If document type doesn't exist
+        ResourceAccessDenied: If user doesn't have permission to access the document type
+    """
+
+    # First check if the document type exists at all
+    exists_stmt = select(orm.DocumentType.id).where(orm.DocumentType.id == document_type_id)
+    exists_result = await session.execute(exists_stmt)
+    if not exists_result.scalar():
+        raise NoResultFound(f"Document type with id {document_type_id} not found")
+
+    # Create user aliases for all audit trail joins
+    created_user = aliased(orm.User, name='created_user')
+    updated_user = aliased(orm.User, name='updated_user')
+    deleted_user = aliased(orm.User, name='deleted_user')
+    archived_user = aliased(orm.User, name='archived_user')
+    owner_user = aliased(orm.User, name='owner_user')
+
+    # Subquery to get user's group IDs (for access control)
+    user_groups_subquery = select(orm.UserGroup.group_id).where(
+        orm.UserGroup.user_id == user_id
     )
 
-    result = await session.execute(stmt)
-    document_type = result.scalar_one()
+    # Build query with all audit user joins and group info
+    stmt = (
+        select(orm.DocumentType)
+        .options(
+            selectinload(orm.DocumentType.custom_fields)
+        )
+        .join(created_user, orm.DocumentType.created_by == created_user.id, isouter=True)
+        .join(updated_user, orm.DocumentType.updated_by == updated_user.id, isouter=True)
+        .join(deleted_user, orm.DocumentType.deleted_by == deleted_user.id, isouter=True)
+        .join(archived_user, orm.DocumentType.archived_by == archived_user.id, isouter=True)
+        .join(orm.Group, orm.Group.id == orm.DocumentType.group_id, isouter=True)
+        .join(owner_user, orm.DocumentType.user_id == owner_user.id, isouter=True)
+        .add_columns(
+            # Group info
+            orm.Group.id.label('group_id'),
+            orm.Group.name.label('group_name'),
+            # Owner user info
+            owner_user.id.label('owner_user_id'),
+            owner_user.username.label('owner_username'),
+            # Created by user
+            created_user.id.label('created_by_id'),
+            created_user.username.label('created_by_username'),
+            # Updated by user
+            updated_user.id.label('updated_by_id'),
+            updated_user.username.label('updated_by_username'),
+            # Deleted by user
+            deleted_user.id.label('deleted_by_id'),
+            deleted_user.username.label('deleted_by_username'),
+            # Archived by user
+            archived_user.id.label('archived_by_id'),
+            archived_user.username.label('archived_by_username')
+        )
+        .where(
+            and_(
+                orm.DocumentType.id == document_type_id,
+                # Access control: user can access if they own it directly or through group
+                or_(
+                    orm.DocumentType.user_id == user_id,
+                    orm.DocumentType.group_id.in_(user_groups_subquery)
+                )
+            )
+        )
+    )
 
-    kwargs = {
+    # Execute query and get single result
+    result = await session.execute(stmt)
+    row = result.unique().first()
+
+    # If no row returned, user doesn't have access (we know the document type exists)
+    if not row:
+        raise ResourceAccessDenied(f"User {user_id} does not have permission to access document type {document_type_id}")
+
+    document_type = row[0]  # The DocumentType object
+
+    # Build audit user objects (handle None values)
+    created_by = None
+    if row.created_by_id:
+        created_by = schema.ByUser(
+            id=row.created_by_id,
+            username=row.created_by_username
+        )
+
+    updated_by = None
+    if row.updated_by_id:
+        updated_by = schema.ByUser(
+            id=row.updated_by_id,
+            username=row.updated_by_username
+        )
+
+    deleted_by = None
+    if row.deleted_by_id:
+        deleted_by = schema.ByUser(
+            id=row.deleted_by_id,
+            username=row.deleted_by_username
+        )
+
+    archived_by = None
+    if row.archived_by_id:
+        archived_by = schema.ByUser(
+            id=row.archived_by_id,
+            username=row.archived_by_username
+        )
+
+    # Determine owner based on which ID exists
+    if document_type.user_id:
+        owned_by = schema.OwnedBy(
+            id=document_type.user_id,
+            name=row.owner_username,
+            type="user"
+        )
+    else:  # group_id is not null (enforced by check constraint)
+        owned_by = schema.OwnedBy(
+            id=row.group_id,
+            name=row.group_name,
+            type="group"
+        )
+
+    # Build the complete DocumentTypeDetails object
+    document_type_data = {
         "id": document_type.id,
         "name": document_type.name,
         "path_template": document_type.path_template,
         "custom_fields": document_type.custom_fields,
+        "owned_by": owned_by,
+        "created_at": document_type.created_at,
+        "updated_at": document_type.updated_at,
+        "deleted_at": document_type.deleted_at,
+        "archived_at": document_type.archived_at,
+        "created_by": created_by,
+        "updated_by": updated_by,
+        "deleted_by": deleted_by,
+        "archived_by": archived_by
     }
 
-    if document_type.group:
-        kwargs["group_id"] = document_type.group.id
-        kwargs["group_name"] = document_type.group.name
+    return schema.DocumentTypeDetails(**document_type_data)
 
-    return schema.DocumentType(**kwargs)
 
 
 async def delete_document_type(session: AsyncSession, document_type_id: uuid.UUID):

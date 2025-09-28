@@ -21,6 +21,30 @@ class DocumentType(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class DocumentTypeDetails(BaseModel):
+    id: UUID
+    name: str
+    path_template: str | None = None
+    custom_fields: list[CustomField]
+
+    owned_by: OwnedBy
+    created_at: datetime
+    # Both `created_by` and `updated_by`  should be optional.
+    # The problem is that both columns are updated via a postgres trigger
+    # which gets user details via AuditContext and the audit
+    # context is missing in many parts of the tests.
+    created_by: ByUser | None = None
+    updated_at: datetime
+    updated_by: ByUser | None = None
+    archived_at: datetime | None = None
+    archived_by: ByUser | None = None
+    deleted_at: datetime | None = None
+    deleted_by: ByUser | None = None
+
+    # Config
+    model_config = ConfigDict(from_attributes=True)
+
+
 class CreateDocumentType(BaseModel):
     name: str
     path_template: str | None = None

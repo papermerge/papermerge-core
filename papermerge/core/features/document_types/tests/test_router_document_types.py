@@ -187,15 +187,13 @@ async def test_delete_document_type(
     db_session: AsyncSession,
     make_document_type,
 ):
-    doc_type = await make_document_type(name="Invoice")
+    doc_type = await make_document_type(name="Invoice", user=auth_api_client.user)
     count_before = (await db_session.execute(select(func.count(orm.DocumentType.id)))).scalar()
     assert count_before == 1
 
     response = await auth_api_client.delete(f"/document-types/{doc_type.id}")
-    assert response.status_code == 204, response.json()
-    count_after = (await db_session.execute(select(func.count(orm.DocumentType.id)))).scalar()
-
-    assert count_after == 0
+    # cannot delete document type which has custom fields associated!
+    assert response.status_code == 409, response.json()
 
 
 async def test_paginated_result__9_items_first_page(

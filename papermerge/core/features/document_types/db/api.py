@@ -500,7 +500,7 @@ async def delete_document_type(
     Raises:
         NoResultFound: If document type doesn't exist
         ResourceAccessDenied: If user doesn't have permission to delete the document type
-        ValueError: If document type has dependencies (custom fields or documents)
+        DependenciesExist: If document type has dependencies (custom fields or documents)
     """
 
     # First check if the document type exists at all

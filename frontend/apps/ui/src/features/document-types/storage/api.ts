@@ -1,5 +1,5 @@
 import {apiSlice} from "@/features/api/slice"
-import type {Paginated, PaginatedArgs} from "@/types"
+import type {Paginated} from "@/types"
 import type {
   DocType,
   DocTypeGrouped,
@@ -8,32 +8,28 @@ import type {
   NewDocType
 } from "../types"
 
+import {DocumentTypeQueryParams} from "@/features/document-types/types"
+
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
 export const apiSliceWithDocumentTypes = apiSlice.injectEndpoints({
   endpoints: builder => ({
     getPaginatedDocumentTypes: builder.query<
       Paginated<DocumentTypeItem>,
-      PaginatedArgs | void
+      DocumentTypeQueryParams | void
     >({
-      query: ({
-        page_number = 1,
-        page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES,
-        sort_by = "name",
-        filter = undefined
-      }: PaginatedArgs) => {
-        let ret
-
-        if (filter) {
-          ret = `/document-types/?page_number=${page_number}&page_size=${page_size}&order_by=${sort_by}`
-          ret += `&filter=${filter}`
-        } else {
-          ret = `/document-types/?page_number=${page_number}&page_size=${page_size}&order_by=${sort_by}`
-        }
-        return ret
+      query: (params = {}) => {
+        const queryString = buildQueryString(params || {})
+        return `/document-types/?${queryString}`
       },
       providesTags: (
-        result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
+        result = {
+          page_number: 1,
+          page_size: 1,
+          num_pages: 1,
+          items: [],
+          total_items: 1
+        },
         _error,
         _arg
       ) => [
@@ -98,3 +94,28 @@ export const {
   useDeleteDocumentTypeMutation,
   useAddDocumentTypeMutation
 } = apiSliceWithDocumentTypes
+
+function buildQueryString(params: DocumentTypeQueryParams = {}): string {
+  const searchParams = new URLSearchParams()
+
+  // Always include pagination with defaults
+  searchParams.append("page_number", String(params.page_number || 1))
+  searchParams.append(
+    "page_size",
+    String(params.page_size || PAGINATION_DEFAULT_ITEMS_PER_PAGES)
+  )
+
+  // Add sorting if provided
+  if (params.sort_by) {
+    searchParams.append("sort_by", params.sort_by)
+  }
+  if (params.sort_direction) {
+    searchParams.append("sort_direction", params.sort_direction)
+  }
+
+  if (params.filter_free_text) {
+    searchParams.append("filter_free_text", params.filter_free_text)
+  }
+
+  return searchParams.toString()
+}

@@ -1,5 +1,7 @@
+import Owner from "@/components/Owner"
 import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
 import type {DocumentTypeItem} from "@/features/document-types/types"
+import type {OwnedBy} from "@/types"
 import type {ByUser} from "@/types.d/common"
 import {Box, Text} from "@mantine/core"
 import {TFunction} from "i18next"
@@ -34,6 +36,18 @@ export default function documentTypeColumns(t?: TFunction) {
       width: 200,
       minWidth: 100,
       render: value => <TruncatedTextWithCopy value={value as string} />
+    },
+    {
+      key: "owned_by",
+      label: t?.("customFieldColumns.owned_by") || "Owned By",
+      sortable: true,
+      filterable: true,
+      visible: true,
+      width: 150,
+      minWidth: 120,
+      render: value => {
+        return <Owner value={value as OwnedBy} />
+      }
     },
     {
       key: "created_at",

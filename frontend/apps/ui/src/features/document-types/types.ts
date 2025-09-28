@@ -1,4 +1,4 @@
-import type {CustomField} from "@/types"
+import type {CustomField, OwnedBy} from "@/types"
 
 export type NewDocType = {
   name: string
@@ -73,4 +73,5 @@ export interface DocumentTypeItem {
   updated_at: string
   created_by: ByUser
   updated_by: ByUser
+  owned_by: OwnedBy
 }

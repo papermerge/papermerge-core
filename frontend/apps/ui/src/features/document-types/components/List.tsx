@@ -95,7 +95,7 @@ export default function DocumentTypesList() {
         onSortChange={handleSortChange}
         loading={isLoading || isFetching}
         emptyMessage={t("documentTypes.noDocumentTypesFound", {
-          defaultValue: "No documentTypes found"
+          defaultValue: "No categories found"
         })}
         withCheckbox={true}
         selectedRows={selectedRowsSet}

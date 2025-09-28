@@ -379,6 +379,11 @@
   },
   "documentTypes": {
     "addNewDocumentType": "Hinzufügen",
+    "notifications": {
+      "created": "Kategorie wurde erfolgreich erstellt",
+      "updated": "Kategorie wurde erfolgreich aktualisiert",
+      "deleted": "Kategorie wurde erfolgreich gelöscht"
+    },
     "searchLabel": "Kategorien suchen..."
   },
   "roles.name": "Rollen",

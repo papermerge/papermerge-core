@@ -379,6 +379,11 @@
   },
   "documentTypes": {
     "addNewDocumentType": "Add",
+    "notifications": {
+      "created": "Category was successfully created",
+      "updated": "Category was successfully updated",
+      "deleted": "Category was successfully deleted"
+    },
     "searchLabel": "Search categories..."
   },
   "roles.name": "Roles",

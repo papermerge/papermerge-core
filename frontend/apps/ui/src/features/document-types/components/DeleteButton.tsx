@@ -23,7 +23,7 @@ export function DeleteDocumentTypeButton({
   const navigate = useNavigate()
 
   const onSubmit = () => {
-    navigate("/document-types/")
+    navigate("/categories/")
     close()
   }
 

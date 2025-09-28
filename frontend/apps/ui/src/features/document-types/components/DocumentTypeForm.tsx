@@ -1,5 +1,7 @@
 import {OWNER_ME} from "@/cconstants"
 import CopyButton from "@/components/CopyButton"
+import OwnerIcon from "@/components/OwnerIcon"
+import type {DocumentTypeDetails} from "@/features/document-types/types"
 import type {CustomField} from "@/types"
 import {
   Box,
@@ -9,13 +11,14 @@ import {
   TextInput,
   Textarea
 } from "@mantine/core"
-import type {DocType} from "../types"
+import {TFunction} from "i18next"
 
 type Args = {
-  documentType: DocType | null
+  documentType: DocumentTypeDetails | null
+  t?: TFunction
 }
 
-export default function DocumentTypeForm({documentType}: Args) {
+export default function DocumentTypeForm({documentType, t}: Args) {
   const custom_fields = documentType?.custom_fields
   const hasCustomFields = custom_fields ? custom_fields.length > 0 : false
 
@@ -50,11 +53,12 @@ export default function DocumentTypeForm({documentType}: Args) {
       />
       <TextInput
         my="md"
-        label="Owner"
-        value={documentType?.group_name || OWNER_ME}
+        label={t?.("customFieldColumns.owned_by") || "Owned By"}
+        value={documentType?.owned_by.name || OWNER_ME}
         onChange={() => {}}
+        leftSection={<OwnerIcon owner={documentType?.owned_by} />}
         rightSection={
-          <CopyButton value={documentType?.group_name || OWNER_ME} />
+          <CopyButton value={documentType?.owned_by.name || OWNER_ME} />
         }
       />
     </Box>

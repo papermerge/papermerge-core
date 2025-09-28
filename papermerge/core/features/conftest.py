@@ -639,7 +639,11 @@ def token():
 
 
 @pytest.fixture
-async def make_document_type(db_session, make_user, make_custom_field):
+async def make_document_type(
+    db_session,
+    make_user,
+    make_custom_field
+):
     cf = await make_custom_field(name="some-random-cf", type=schema.CustomFieldType.boolean)
 
     async def _make_document_type(

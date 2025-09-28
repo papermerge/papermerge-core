@@ -5,7 +5,6 @@ import {selectDocumentTypeDetailsID} from "@/features/document-types/storage/doc
 import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
 import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
-import type {GroupDetails} from "@/types.d/documentTypes"
 import {
   Breadcrumbs,
   Group,
@@ -22,6 +21,7 @@ import EditButton from "./EditButton"
 
 import LoadingPanel from "@/components/LoadingPanel"
 import {useTranslation} from "react-i18next"
+import {DocumentTypeDetails} from "../types"
 
 export default function DocumentTypeDetailsContainer() {
   const mode = usePanelMode()
@@ -87,7 +87,7 @@ function Path({
   documentType,
   mode
 }: {
-  documentType: GroupDetails | null
+  documentType: DocumentTypeDetails | null
   mode: PanelMode
 }) {
   const navigation = useNavigation()
@@ -96,8 +96,8 @@ function Path({
     return (
       <Group>
         <Breadcrumbs>
-          <Link to="/documentTypes/">DocumentTypes</Link>
-          <Link to={`/documentTypes/${documentType?.id}`}>
+          <Link to="/categories/">DocumentTypes</Link>
+          <Link to={`/categories/${documentType?.id}`}>
             {documentType?.name}
           </Link>
         </Breadcrumbs>

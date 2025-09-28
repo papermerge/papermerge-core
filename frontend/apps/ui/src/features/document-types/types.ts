@@ -75,3 +75,15 @@ export interface DocumentTypeItem {
   updated_by: ByUser
   owned_by: OwnedBy
 }
+
+export interface DocumentTypeDetails {
+  id: string
+  name: string
+  path_template: string
+  custom_fields: Array<CustomField>
+  created_at: string
+  updated_at: string
+  created_by: ByUser
+  updated_by: ByUser
+  owned_by: OwnedBy
+}

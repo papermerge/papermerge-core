@@ -71,7 +71,7 @@ export default function DocumentTypesList() {
     if (openInSecondaryPanel) {
       dispatch(showDocumentTypeDetailsInSecondaryPanel(row.id))
     } else {
-      navigate(`/documentTypes/${row.id}`)
+      navigate(`/categories/${row.id}`)
     }
   }
 

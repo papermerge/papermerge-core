@@ -6,6 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from papermerge.core.db.exceptions import ResourceAccessDenied, \
+    DependenciesExist, InvalidRequest
 from papermerge.core import utils, schema, dbapi
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
@@ -130,7 +132,7 @@ async def get_document_types(
     return paginated_response
 
 
-@router.get("/{document_type_id}", response_model=schema.DocumentType)
+@router.get("/{document_type_id}", response_model=schema.DocumentTypeDetails)
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
 async def get_document_type(
     document_type_id: uuid.UUID,
@@ -145,9 +147,16 @@ async def get_document_type(
     Required scope: `{scope}`
     """
     try:
-        result = await dbapi.get_document_type(db_session, document_type_id=document_type_id)
+        result = await dbapi.get_document_type(
+            db_session,
+            user_id=user.id,
+            document_type_id=document_type_id
+        )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")
+    except ResourceAccessDenied:
+        raise HTTPException(status_code=403, detail="Forbidden: You don't have permission to access this custom field")
+
     return result
 
 
@@ -201,6 +210,16 @@ async def create_document_type(
         404: {
             "description": """No document type with specified ID found""",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+        403: {
+            "description": """Forbidden: You don't have permission to delete
+            this document type""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+        409: {
+            "description": """Cannot delete document type because it
+            has dependencies like associated custom fields and/or documents.""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
         }
     },
 )
@@ -223,9 +242,26 @@ async def delete_document_type(
             user_id=user.id,
             username=user.username
         ):
-            await dbapi.delete_document_type(db_session, document_type_id)
+            await dbapi.delete_document_type(
+                db_session,
+                user_id=user.id,
+                document_type_id=document_type_id
+            )
     except NoResultFound:
-        raise HTTPException(status_code=404, detail="Document type not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Document type not found"
+        )
+    except ResourceAccessDenied:
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden: You don't have permission to delete this document type"
+        )
+    except DependenciesExist as e:
+        raise HTTPException(
+            status_code=409,
+            detail=str(e)
+        )
 
 
 @router.patch(
@@ -235,6 +271,10 @@ async def delete_document_type(
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": """User does not belong to group""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+        400: {
+            "description": """Invalid request""",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
         }
     },
@@ -257,7 +297,9 @@ async def update_document_type(
         if attrs.group_id:
             group_id = attrs.group_id
             ok = await dbapi.user_belongs_to(
-                db_session, user_id=cur_user.id, group_id=group_id
+                db_session,
+                user_id=cur_user.id,
+                group_id=group_id
             )
             if not ok:
                 user_id = cur_user.id
@@ -280,5 +322,7 @@ async def update_document_type(
             )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")
+    except InvalidRequest as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     return dtype

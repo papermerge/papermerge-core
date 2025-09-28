@@ -96,8 +96,8 @@ function Path({
     return (
       <Group>
         <Breadcrumbs>
-          <Link to="/documentTypes/">DocumentTypes</Link>
-          <Link to={`/documentTypes/${documentType?.id}`}>
+          <Link to="/categories/">DocumentTypes</Link>
+          <Link to={`/categories/${documentType?.id}`}>
             {documentType?.name}
           </Link>
         </Breadcrumbs>

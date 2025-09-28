@@ -1,7 +1,7 @@
 import {OWNER_ME} from "@/cconstants"
 import OwnerSelector from "@/components/OwnerSelect/OwnerSelect"
 import {useGetCustomFieldsQuery} from "@/features/custom-fields/storage/api"
-import {useAddDocumentTypeMutation} from "@/features/document-types/apiSlice"
+import {useAddDocumentTypeMutation} from "@/features/document-types/storage/api"
 import {
   Button,
   ComboboxItem,

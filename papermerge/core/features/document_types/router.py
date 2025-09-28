@@ -14,7 +14,7 @@ from papermerge.core.features.users import schema as users_schema
 from papermerge.core.features.document_types import schema as dt_schema
 from papermerge.core.db.engine import get_db
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
-from .types import PaginatedQueryParams
+from .schema import DocumentTypeParams, DocumentTypeEx
 
 router = APIRouter(
     prefix="/document-types",
@@ -93,27 +93,39 @@ async def get_document_types_without_pagination(
     return result
 
 
-@router.get("/")
+@router.get("/", response_model=schema.PaginatedResponse[DocumentTypeEx])
 @utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
 async def get_document_types(
     user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
+        users_schema.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW])
     ],
-    params: PaginatedQueryParams = Depends(),
+    params: DocumentTypeParams = Depends(),
     db_session: AsyncSession = Depends(get_db),
-) -> schema.PaginatedResponse[schema.DocumentType]:
+) -> schema.PaginatedResponse[DocumentTypeEx]:
     """Get all (paginated) document types
 
     Required scope: `{scope}`
     """
-    paginated_response = await dbapi.get_document_types(
-        db_session,
-        user_id=user.id,
-        page_size=params.page_size,
-        page_number=params.page_number,
-        order_by=params.order_by,
-        filter=params.filter,
-    )
+    try:
+        filters = params.to_filters()
+        paginated_response = await dbapi.get_document_types(
+            db_session,
+            user_id=user.id,
+            page_size=params.page_size,
+            page_number=params.page_number,
+            sort_by=params.sort_by,
+            sort_direction=params.sort_direction,
+            filters=filters,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid parameters: {str(e)}")
+    except Exception as e:
+        logger.error(
+            f"Error fetching document type by the user {user.id}: {e}",
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
     return paginated_response
 

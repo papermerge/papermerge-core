@@ -368,6 +368,19 @@
     "monetary": "Currency",
     "yearmonth": "Year/Month"
   },
+  "documentTypeColumns": {
+    "name": "Name",
+    "id": "ID",
+    "created_at": "Created At",
+    "created_by": "Created By",
+    "updated_at": "Updated At",
+    "updated_by": "Updated By",
+    "owned_by": "Owned By"
+  },
+  "documentTypes": {
+    "addNewDocumentType": "Add",
+    "searchLabel": "Search categories..."
+  },
   "roles.name": "Roles",
   "roles.new.title": "New Role",
   "roles.edit.title": "Edit Role",

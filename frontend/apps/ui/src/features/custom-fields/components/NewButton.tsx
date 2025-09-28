@@ -11,7 +11,7 @@ export default function NewButtonContainer() {
     <>
       <NewButton
         onClick={open}
-        text={t("users.addNewUser", {defaultValue: "Add"})}
+        text={t("customFields.addNewCustomField", {defaultValue: "Add"})}
       />
       <NewCustomFieldModal opened={opened} onSubmit={close} onCancel={close} />
     </>

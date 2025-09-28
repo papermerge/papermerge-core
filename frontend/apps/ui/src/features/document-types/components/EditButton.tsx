@@ -1,15 +1,16 @@
+import EditButton from "@/components/buttons/EditButton"
 import {Button} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconEdit} from "@tabler/icons-react"
 
-import EditDocumentTypeModal from "./EditDocumentTypeModal"
 import {useTranslation} from "react-i18next"
+import EditDocumentTypeModal from "./EditDocumentTypeModal"
 
 interface Args {
   documentTypeId: string
 }
 
-export default function EditButton({documentTypeId}: Args) {
+export default function EditButtonContainer({documentTypeId}: Args) {
   const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
 
@@ -23,9 +24,10 @@ export default function EditButton({documentTypeId}: Args) {
 
   return (
     <>
-      <Button leftSection={<IconEdit />} variant={"default"} onClick={open}>
-        {t("common.edit")}
-      </Button>
+      <EditButton
+        text={t("common.edit", {defaultValue: "Edit"})}
+        onClick={open}
+      />
       <EditDocumentTypeModal
         opened={opened}
         onSubmit={close}

@@ -3,7 +3,7 @@ import {IconFilter, IconSearch, IconX} from "@tabler/icons-react"
 import {TFunction} from "i18next"
 
 interface Args {
-  children: React.ReactNode
+  children?: React.ReactNode
   onSearch?: () => void
   onClear?: () => void
   searchText?: string
@@ -48,46 +48,48 @@ export default function SearchContainer({
       }
       leftSectionPointerEvents="auto"
       leftSection={
-        <Menu
-          shadow="md"
-          width={480}
-          position="bottom-start"
-          closeOnItemClick={false}
-          transitionProps={{duration: 0}}
-          onClose={onSearch}
-        >
-          <Menu.Target>
-            <ActionIcon
-              variant="subtle"
-              color={"blue"}
-              size="sm"
-              style={{cursor: "pointer"}}
-            >
-              <IconFilter size={16} />
-            </ActionIcon>
-          </Menu.Target>
-
-          <Menu.Dropdown>
-            <Stack align="stretch" gap="sm" p="sm">
-              {children}
-            </Stack>
-
-            <Menu.Divider />
-
-            <Group justify="space-between" p="sm">
-              <Button onClick={onClear} variant="subtle" size="xs">
-                {t?.("tableSearchContainer.clearAll") || "Clear All"}
-              </Button>
-              <Button
-                onClick={onSearch}
-                size="xs"
-                leftSection={<IconSearch size={14} />}
+        children && (
+          <Menu
+            shadow="md"
+            width={480}
+            position="bottom-start"
+            closeOnItemClick={false}
+            transitionProps={{duration: 0}}
+            onClose={onSearch}
+          >
+            <Menu.Target>
+              <ActionIcon
+                variant="subtle"
+                color={"blue"}
+                size="sm"
+                style={{cursor: "pointer"}}
               >
-                {t?.("tableSearchContainer.search") || "Search"}
-              </Button>
-            </Group>
-          </Menu.Dropdown>
-        </Menu>
+                <IconFilter size={16} />
+              </ActionIcon>
+            </Menu.Target>
+
+            <Menu.Dropdown>
+              <Stack align="stretch" gap="sm" p="sm">
+                {children}
+              </Stack>
+
+              <Menu.Divider />
+
+              <Group justify="space-between" p="sm">
+                <Button onClick={onClear} variant="subtle" size="xs">
+                  {t?.("tableSearchContainer.clearAll") || "Clear All"}
+                </Button>
+                <Button
+                  onClick={onSearch}
+                  size="xs"
+                  leftSection={<IconSearch size={14} />}
+                >
+                  {t?.("tableSearchContainer.search") || "Search"}
+                </Button>
+              </Group>
+            </Menu.Dropdown>
+          </Menu>
+        )
       }
       placeholder={placeholder}
     />

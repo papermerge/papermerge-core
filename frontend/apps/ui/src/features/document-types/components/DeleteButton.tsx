@@ -1,16 +1,17 @@
-import {Button} from "@mantine/core"
+import DeleteButton from "@/components/buttons/DeleteButton"
 import {useDisclosure} from "@mantine/hooks"
-import {IconTrash} from "@tabler/icons-react"
-import {useDispatch, useSelector} from "react-redux"
+import {useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
 import {
   clearSelection,
-  selectSelectedIds
-} from "@/features/document-types/documentTypesSlice"
+  selectSelectedIDs
+} from "@/features/document-types/storage/documentType"
 
-import {RemoveDocumentTypeModal, RemoveDocumentTypesModal} from "./DeleteModal"
+import {useAppSelector} from "@/app/hooks"
+import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
+import {RemoveDocumentTypeModal, RemoveDocumentTypesModal} from "./DeleteModal"
 
 export function DeleteDocumentTypeButton({
   documentTypeId
@@ -28,9 +29,7 @@ export function DeleteDocumentTypeButton({
 
   return (
     <>
-      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        {t("common.delete")}
-      </Button>
+      <DeleteButton onClick={open} text={t("common.delete")} />
       <RemoveDocumentTypeModal
         opened={opened}
         onSubmit={onSubmit}
@@ -43,25 +42,24 @@ export function DeleteDocumentTypeButton({
 
 export function DeleteDocumentTypesButton() {
   const {t} = useTranslation()
+  const mode = usePanelMode()
   const [opened, {open, close}] = useDisclosure(false)
   const dispatch = useDispatch()
-  const selectedIds = useSelector(selectSelectedIds)
+  const selectedIds = useAppSelector(s => selectSelectedIDs(s, mode)) || []
 
   const onSubmit = () => {
-    dispatch(clearSelection())
+    dispatch(clearSelection({mode}))
     close()
   }
 
   const onCancel = () => {
-    dispatch(clearSelection())
+    dispatch(clearSelection({mode}))
     close()
   }
 
   return (
     <>
-      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        {t("common.delete")}
-      </Button>
+      <DeleteButton onClick={open} text={t("common.delete")} />
       <RemoveDocumentTypesModal
         opened={opened}
         onSubmit={onSubmit}

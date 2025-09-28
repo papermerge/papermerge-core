@@ -1,18 +1,17 @@
 import Owner from "@/components/Owner"
 import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
-import type {CustomFieldItem} from "@/features/custom-fields/types"
-import {OwnedBy} from "@/types"
+import type {DocumentTypeItem} from "@/features/document-types/types"
+import type {OwnedBy} from "@/types"
 import type {ByUser} from "@/types.d/common"
 import {Box, Text} from "@mantine/core"
-
 import {TFunction} from "i18next"
 import type {ColumnConfig} from "kommon"
 
-export default function customFieldColumns(t?: TFunction) {
-  const columns: ColumnConfig<CustomFieldItem>[] = [
+export default function documentTypeColumns(t?: TFunction) {
+  const columns: ColumnConfig<DocumentTypeItem>[] = [
     {
       key: "name",
-      label: t?.("customFieldColumns.name") || "Name",
+      label: t?.("documentTypeColumns.name") || "Name",
       sortable: true,
       filterable: true,
       width: 200,
@@ -29,23 +28,8 @@ export default function customFieldColumns(t?: TFunction) {
       }
     },
     {
-      key: "type",
-      label: t?.("customFieldColumns.type") || "Type",
-      sortable: true,
-      filterable: true,
-      width: 200,
-      minWidth: 150,
-      render: value => {
-        const val = value as string
-        const key = `customFieldType.${value}`
-        const finalValue = `${t?.(key) || val} (${val})`
-
-        return <TruncatedTextWithCopy maxLength={24} value={finalValue} />
-      }
-    },
-    {
       key: "id",
-      label: t?.("customFieldColumns.id") || "ID",
+      label: t?.("documentTypeColumns.id") || "ID",
       sortable: true,
       filterable: true,
       visible: true,
@@ -67,7 +51,7 @@ export default function customFieldColumns(t?: TFunction) {
     },
     {
       key: "created_at",
-      label: t?.("customFieldColumns.created_at") || "Created At",
+      label: t?.("documentTypeColumns.created_at") || "Created At",
       sortable: true,
       filterable: true,
       visible: true,
@@ -77,7 +61,7 @@ export default function customFieldColumns(t?: TFunction) {
     },
     {
       key: "created_by",
-      label: t?.("customFieldColumns.created_by") || "Created By",
+      label: t?.("documentTypeColumns.created_by") || "Created By",
       sortable: true,
       filterable: true,
       visible: true,
@@ -87,7 +71,7 @@ export default function customFieldColumns(t?: TFunction) {
     },
     {
       key: "updated_at",
-      label: t?.("customFieldColumns.updated_at") || "Updated At",
+      label: t?.("documentTypeColumns.updated_at") || "Updated At",
       sortable: true,
       filterable: true,
       visible: false,
@@ -97,7 +81,7 @@ export default function customFieldColumns(t?: TFunction) {
     },
     {
       key: "updated_by",
-      label: t?.("customFieldColumns.updated_by") || "updated By",
+      label: t?.("documentTypeColumns.updated_by") || "updated By",
       sortable: true,
       filterable: true,
       visible: false,

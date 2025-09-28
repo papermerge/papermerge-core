@@ -1,7 +1,7 @@
 import {Box, Breadcrumbs, Group, Loader, LoadingOverlay} from "@mantine/core"
 import {Link, useNavigation} from "react-router-dom"
 
-import {useGetDocumentTypeQuery} from "@/features/document-types/apiSlice"
+import {useGetDocumentTypeQuery} from "@/features/document-types/storage/api"
 import type {DocType} from "../types"
 import {DeleteDocumentTypeButton} from "./DeleteButton"
 import DocumentTypeForm from "./DocumentTypeForm"

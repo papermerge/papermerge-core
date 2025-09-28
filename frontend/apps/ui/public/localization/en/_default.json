@@ -380,9 +380,9 @@
   "documentTypes": {
     "addNewDocumentType": "Add",
     "notifications": {
-      "created": "Custom field was successfully created",
-      "updated": "Custom field was successfully updated",
-      "deleted": "Custom field was successfully deleted"
+      "created": "Category was successfully created",
+      "updated": "Category was successfully updated",
+      "deleted": "Category was successfully deleted"
     },
     "searchLabel": "Search categories..."
   },

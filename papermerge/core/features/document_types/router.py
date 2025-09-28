@@ -7,7 +7,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.db.exceptions import ResourceAccessDenied, \
-    DependenciesExist
+    DependenciesExist, InvalidRequest
 from papermerge.core import utils, schema, dbapi
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
@@ -272,6 +272,10 @@ async def delete_document_type(
         status.HTTP_403_FORBIDDEN: {
             "description": """User does not belong to group""",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+        400: {
+            "description": """Invalid request""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
         }
     },
 )
@@ -293,7 +297,9 @@ async def update_document_type(
         if attrs.group_id:
             group_id = attrs.group_id
             ok = await dbapi.user_belongs_to(
-                db_session, user_id=cur_user.id, group_id=group_id
+                db_session,
+                user_id=cur_user.id,
+                group_id=group_id
             )
             if not ok:
                 user_id = cur_user.id
@@ -316,5 +322,7 @@ async def update_document_type(
             )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Document type not found")
+    except InvalidRequest as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     return dtype

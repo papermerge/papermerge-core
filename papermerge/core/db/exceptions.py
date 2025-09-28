@@ -21,3 +21,7 @@ class DependenciesExist(Exception):
     custom fields or documents associated with it
     """
     pass
+
+
+class InvalidRequest(Exception):
+    pass

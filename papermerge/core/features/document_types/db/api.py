@@ -10,7 +10,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy import select, func, and_, or_
 
 from papermerge.core.db.exceptions import ResourceAccessDenied, \
-    DependenciesExist
+    DependenciesExist, InvalidRequest
 from papermerge.core import schema, orm
 from papermerge.core import constants as const
 from papermerge.core.tasks import send_task
@@ -602,43 +602,95 @@ async def update_document_type(
     document_type_id: uuid.UUID,
     attrs: schema.UpdateDocumentType,
 ) -> schema.DocumentType:
-    stmt = select(DocumentType).options(
-        selectinload(orm.DocumentType.custom_fields)
-    ).where(DocumentType.id == document_type_id)
-    doc_type: DocumentType = (await session.execute(stmt)).scalars().one()
+    """
+    Update a document type with proper validation.
 
-    if attrs.custom_field_ids:
-        stmt = select(orm.CustomField).where(
-            orm.CustomField.id.in_(attrs.custom_field_ids)
+    Args:
+        session: Database session
+        document_type_id: ID of the document type to update
+        attrs: Update attributes
+
+    Raises:
+        NoResultFound: If document type doesn't exist or is soft deleted
+        ValueError: If invalid attributes provided
+    """
+
+    # Get document type with soft delete check
+    stmt = (
+        select(DocumentType)
+        .options(selectinload(orm.DocumentType.custom_fields))
+        .where(
+            and_(
+                DocumentType.id == document_type_id,
+                DocumentType.deleted_at.is_(None)  # Exclude soft deleted
+            )
         )
-        custom_fields = (await session.execute(stmt)).scalars().all()
-        if attrs.custom_field_ids:
-            doc_type.custom_fields = custom_fields
+    )
 
-    if attrs.name:
+    result = await session.execute(stmt)
+    doc_type: DocumentType = result.scalars().first()
+
+    if not doc_type:
+        raise NoResultFound(f"Document type with id {document_type_id} not found")
+
+    # Update custom fields if provided
+    if attrs.custom_field_ids is not None:
+        if attrs.custom_field_ids:  # Non-empty list
+            # Validate that custom fields exist and are not soft deleted
+            custom_fields_stmt = select(orm.CustomField).where(
+                and_(
+                    orm.CustomField.id.in_(attrs.custom_field_ids),
+                    orm.CustomField.deleted_at.is_(None)  # Only non-deleted custom fields
+                )
+            )
+            custom_fields = (await session.execute(custom_fields_stmt)).scalars().all()
+
+            # Check if all requested custom fields were found
+            found_ids = {cf.id for cf in custom_fields}
+            requested_ids = set(attrs.custom_field_ids)
+            missing_ids = requested_ids - found_ids
+
+            if missing_ids:
+                raise ValueError(f"Custom fields not found or deleted: {missing_ids}")
+
+            doc_type.custom_fields = custom_fields
+        else:  # Empty list - remove all custom fields
+            doc_type.custom_fields = []
+
+    # Update name if provided
+    if attrs.name is not None:
         doc_type.name = attrs.name
 
-    if attrs.group_id:
+    # Update ownership - ensure mutual exclusivity
+    if attrs.group_id is not None and attrs.user_id is not None:
+        raise InvalidRequest("Cannot set both user_id and group_id - they are mutually exclusive")
+
+    if attrs.group_id is not None:
         doc_type.user_id = None
         doc_type.group_id = attrs.group_id
-    elif attrs.user_id:
+    elif attrs.user_id is not None:
         doc_type.user_id = attrs.user_id
         doc_type.group_id = None
-    else:
-        raise ValueError(
-            "Either attrs.user_id or attrs.group_id should be non-empty value"
-        )
+    # If both are None, keep existing ownership
 
+    # Validate that at least one ownership field is set after update
+    if doc_type.user_id is None and doc_type.group_id is None:
+        raise InvalidRequest("Document type must have either user_id or group_id set")
+
+    # Update path template and track if notification needed
     notify_path_tmpl_worker = False
-    if doc_type.path_template != attrs.path_template:
+    if attrs.path_template is not None and doc_type.path_template != attrs.path_template:
         doc_type.path_template = attrs.path_template
         notify_path_tmpl_worker = True
 
+    # Commit changes
     session.add(doc_type)
     await session.commit()
 
+    # Convert to schema
     result = schema.DocumentType.model_validate(doc_type)
 
+    # Send background task if path template changed
     if notify_path_tmpl_worker:
         # background task to move all doc_type documents
         # to new target path based on path template evaluation

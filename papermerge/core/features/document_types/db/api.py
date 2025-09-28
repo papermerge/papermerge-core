@@ -9,12 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy import select, func, and_, or_
 
-from papermerge.core.db.exceptions import ResourceAccessDenied
-from papermerge.core import schema
+from papermerge.core.db.exceptions import ResourceAccessDenied, \
+    DependenciesExist
+from papermerge.core import schema, orm
 from papermerge.core import constants as const
-from papermerge.core import orm
 from papermerge.core.tasks import send_task
 from papermerge.core.features.document_types import schema as dt_schema
+from papermerge.core.utils.tz import tz_aware_datetime_now
 from .orm import DocumentType
 
 logger = logging.getLogger(__name__)
@@ -103,6 +104,7 @@ async def get_document_types_grouped_by_owner_without_pagination(
 
     return results
 
+
 async def get_document_types(
     db_session: AsyncSession,
     *,
@@ -112,6 +114,7 @@ async def get_document_types(
     sort_by: Optional[str] = None,
     sort_direction: Optional[str] = None,
     filters: Optional[Dict[str, Dict[str, Any]]] = None,
+    include_deleted: bool = False
 ) -> schema.PaginatedResponse[schema.DocumentTypeEx]:
     """
     Get paginated document types with filtering and sorting support.
@@ -163,6 +166,8 @@ async def get_document_types(
     )
 
     where_conditions = [access_control_condition]
+    if not include_deleted:
+        where_conditions.append(orm.DocumentType.deleted_at.is_(None))
 
     # Apply custom filters
     if filters:
@@ -281,69 +286,6 @@ async def get_document_types(
     )
 
 
-def _build_document_type_filter_conditions(
-        filters: Dict[str, Dict[str, Any]],
-        created_user,
-        updated_user
-) -> list:
-    """Build SQLAlchemy WHERE conditions from filters dictionary for document types."""
-    conditions = []
-
-    for filter_name, filter_config in filters.items():
-        value = filter_config.get("value")
-        operator = filter_config.get("operator", "eq")
-
-        if not value:
-            continue
-
-        condition = None
-
-        if filter_name == "free_text":
-            # Search across document type name
-            search_term = f"%{value}%"
-            condition = orm.DocumentType.name.ilike(search_term)
-
-        if condition is not None:
-            conditions.append(condition)
-
-    return conditions
-
-
-def _apply_document_type_sorting(
-        query,
-        sort_by: str,
-        sort_direction: str,
-        created_user,
-        updated_user,
-):
-    """Apply sorting to the document types query."""
-    sort_column = None
-
-    # Map sort_by to actual columns
-    if sort_by == "id":
-        sort_column = orm.DocumentType.id
-    elif sort_by == "name":
-        sort_column = orm.DocumentType.name
-    elif sort_by == "created_at":
-        sort_column = orm.DocumentType.created_at
-    elif sort_by == "updated_at":
-        sort_column = orm.DocumentType.updated_at
-    elif sort_by == "created_by":
-        # Sort by username of creator
-        sort_column = created_user.username
-    elif sort_by == "updated_by":
-        # Sort by username of updater
-        sort_column = updated_user.username
-
-    if sort_column is not None:
-        if sort_direction.lower() == "desc":
-            query = query.order_by(sort_column.desc())
-        else:
-            query = query.order_by(sort_column.asc())
-
-    return query
-
-
 async def document_type_cf_count(session: AsyncSession, document_type_id: uuid.UUID):
     """count number of custom fields associated to document type"""
     stmt = select(DocumentType).options(
@@ -380,6 +322,7 @@ async def create_document_type(
     await session.commit()
 
     return dtype
+
 
 async def get_document_type(
         session: AsyncSession,
@@ -537,11 +480,120 @@ async def get_document_type(
     return schema.DocumentTypeDetails(**document_type_data)
 
 
+async def delete_document_type(
+    session: AsyncSession,
+    user_id: uuid.UUID,
+    document_type_id: uuid.UUID
+):
+    """
+    Soft delete a document type with access control and dependency validation.
 
-async def delete_document_type(session: AsyncSession, document_type_id: uuid.UUID):
-    stmt = select(DocumentType).where(DocumentType.id == document_type_id)
-    cfield = (await session.execute(stmt)).scalars().one()
-    await session.delete(cfield)
+    Prevents deletion if:
+    - Document type has associated custom fields (non-deleted)
+    - Document type has associated documents (non-deleted)
+
+    Args:
+        session: Database session
+        user_id: Current user ID (for access control)
+        document_type_id: ID of the document type to delete
+
+    Raises:
+        NoResultFound: If document type doesn't exist
+        ResourceAccessDenied: If user doesn't have permission to delete the document type
+        ValueError: If document type has dependencies (custom fields or documents)
+    """
+
+    # First check if the document type exists at all
+    exists_stmt = select(DocumentType.id).where(
+        DocumentType.id == document_type_id
+    )
+    exists_result = await session.execute(exists_stmt)
+    if not exists_result.scalar():
+        raise NoResultFound(f"Document type with id {document_type_id} not found")
+
+    # Subquery to get user's group IDs (for access control)
+    user_groups_subquery = select(orm.UserGroup.group_id).where(
+        orm.UserGroup.user_id == user_id
+    )
+
+    # Check if user has access to this document type
+    access_stmt = (
+        select(DocumentType)
+        .where(
+            and_(
+                DocumentType.id == document_type_id,
+                # Access control: user can delete if they own it directly or through group
+                or_(
+                    DocumentType.user_id == user_id,
+                    DocumentType.group_id.in_(user_groups_subquery)
+                )
+            )
+        )
+    )
+
+    access_result = await session.execute(access_stmt)
+    document_type = access_result.scalars().first()
+
+    # If no result, user doesn't have access (we know the document type exists)
+    if not document_type:
+        raise ResourceAccessDenied(f"User {user_id} does not have permission to delete document type {document_type_id}")
+
+    # Check if already soft deleted
+    if document_type.deleted_at is not None:
+        # Document type is already deleted - silently succeed (idempotent delete)
+        return
+
+    # Check for associated custom fields (via document_types_custom_fields)
+    # Only count associations where the custom field is not soft deleted
+    custom_fields_count_stmt = (
+        select(func.count(orm.DocumentTypeCustomField.id))
+        .select_from(
+            orm.DocumentTypeCustomField.__table__.join(
+                orm.CustomField.__table__,
+                orm.DocumentTypeCustomField.custom_field_id == orm.CustomField.id
+            )
+        )
+        .where(
+            and_(
+                orm.DocumentTypeCustomField.document_type_id == document_type_id,
+                orm.CustomField.deleted_at.is_(None)  # Only count non-deleted custom fields
+            )
+        )
+    )
+    custom_fields_result = await session.execute(custom_fields_count_stmt)
+    custom_fields_count = custom_fields_result.scalar()
+
+    if custom_fields_count > 0:
+        raise DependenciesExist(
+            f"Cannot delete document type {document_type_id}: "
+            f"it has {custom_fields_count} associated custom fields. "
+            "Remove all custom field associations first."
+        )
+
+    # Check for associated documents
+    # Only count non-deleted documents
+    documents_count_stmt = select(func.count(orm.Document.id)).where(
+        and_(
+            orm.Document.document_type_id == document_type_id,
+            orm.Document.deleted_at.is_(None)  # Only count non-deleted documents
+        )
+    )
+    documents_result = await session.execute(documents_count_stmt)
+    documents_count = documents_result.scalar()
+
+    if documents_count > 0:
+        raise DependenciesExist(
+            f"Cannot delete document type {document_type_id}: "
+            f"it has {documents_count} associated documents. "
+            "Delete or reassign all documents first."
+        )
+
+    # All checks passed - perform soft delete
+    document_type.deleted_at = tz_aware_datetime_now()
+    document_type.deleted_by = user_id
+
+    # Add to session and commit
+    session.add(document_type)
     await session.commit()
 
 
@@ -597,3 +649,66 @@ async def update_document_type(
         )
 
     return result
+
+
+def _build_document_type_filter_conditions(
+        filters: Dict[str, Dict[str, Any]],
+        created_user,
+        updated_user
+) -> list:
+    """Build SQLAlchemy WHERE conditions from filters dictionary for document types."""
+    conditions = []
+
+    for filter_name, filter_config in filters.items():
+        value = filter_config.get("value")
+        operator = filter_config.get("operator", "eq")
+
+        if not value:
+            continue
+
+        condition = None
+
+        if filter_name == "free_text":
+            # Search across document type name
+            search_term = f"%{value}%"
+            condition = orm.DocumentType.name.ilike(search_term)
+
+        if condition is not None:
+            conditions.append(condition)
+
+    return conditions
+
+
+def _apply_document_type_sorting(
+        query,
+        sort_by: str,
+        sort_direction: str,
+        created_user,
+        updated_user,
+):
+    """Apply sorting to the document types query."""
+    sort_column = None
+
+    # Map sort_by to actual columns
+    if sort_by == "id":
+        sort_column = orm.DocumentType.id
+    elif sort_by == "name":
+        sort_column = orm.DocumentType.name
+    elif sort_by == "created_at":
+        sort_column = orm.DocumentType.created_at
+    elif sort_by == "updated_at":
+        sort_column = orm.DocumentType.updated_at
+    elif sort_by == "created_by":
+        # Sort by username of creator
+        sort_column = created_user.username
+    elif sort_by == "updated_by":
+        # Sort by username of updater
+        sort_column = updated_user.username
+
+    if sort_column is not None:
+        if sort_direction.lower() == "desc":
+            query = query.order_by(sort_column.desc())
+        else:
+            query = query.order_by(sort_column.asc())
+
+    return query

@@ -6,7 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from papermerge.core.db.exceptions import ResourceAccessDenied
+from papermerge.core.db.exceptions import ResourceAccessDenied, \
+    DependenciesExist
 from papermerge.core import utils, schema, dbapi
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
@@ -209,6 +210,16 @@ async def create_document_type(
         404: {
             "description": """No document type with specified ID found""",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+        403: {
+            "description": """Forbidden: You don't have permission to delete
+            this document type""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+        409: {
+            "description": """Cannot delete document type because it
+            has dependencies like associated custom fields and/or documents.""",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
         }
     },
 )
@@ -231,9 +242,26 @@ async def delete_document_type(
             user_id=user.id,
             username=user.username
         ):
-            await dbapi.delete_document_type(db_session, document_type_id)
+            await dbapi.delete_document_type(
+                db_session,
+                user_id=user.id,
+                document_type_id=document_type_id
+            )
     except NoResultFound:
-        raise HTTPException(status_code=404, detail="Document type not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Document type not found"
+        )
+    except ResourceAccessDenied:
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden: You don't have permission to delete this document type"
+        )
+    except DependenciesExist as e:
+        raise HTTPException(
+            status_code=409,
+            detail=str(e)
+        )
 
 
 @router.patch(

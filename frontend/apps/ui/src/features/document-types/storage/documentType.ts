@@ -1,7 +1,7 @@
 import {AppStartListening} from "@/app/listenerMiddleware"
 import {RootState} from "@/app/types"
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
-import type {PanelMode, ServerErrorType} from "@/types"
+import type {PanelMode} from "@/types"
 import type {PanelListBase} from "@/types.d/panel"
 import {notifications} from "@mantine/notifications"
 import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit"
@@ -349,13 +349,15 @@ export const selectDocumentTypeWithoutUsersFilterValue = (
 export const documentTypeCRUDListeners = (
   startAppListening: AppStartListening
 ) => {
-  //create positive
+  // Create positive
   startAppListening({
     matcher: apiSliceWithDocumentTypes.endpoints.addDocumentType.matchFulfilled,
     effect: async () => {
       notifications.show({
         withBorder: true,
-        message: t("notifications.goup.created.success")
+        message: t("documentTypes.notifications.created", {
+          defaultValue: "Category was successfully created"
+        })
       })
     }
   })
@@ -367,21 +369,9 @@ export const documentTypeCRUDListeners = (
     effect: async () => {
       notifications.show({
         withBorder: true,
-        message: t("notifications.goup.updated.success")
-      })
-    }
-  })
-  // Update negative
-  startAppListening({
-    matcher: apiSliceWithDocumentTypes.endpoints.editDocumentType.matchRejected,
-    effect: async action => {
-      const error = action.payload as ServerErrorType
-      notifications.show({
-        autoClose: false,
-        withBorder: true,
-        color: "red",
-        title: t("notifications.common.error"),
-        message: error.data.detail
+        message: t("documentTypes.notifications.updated", {
+          defaultValue: "Category was successfully updated"
+        })
       })
     }
   })
@@ -392,22 +382,9 @@ export const documentTypeCRUDListeners = (
     effect: async () => {
       notifications.show({
         withBorder: true,
-        message: t("notifications.goup.deleted.success")
-      })
-    }
-  })
-  // Delete negative
-  startAppListening({
-    matcher:
-      apiSliceWithDocumentTypes.endpoints.deleteDocumentType.matchRejected,
-    effect: async action => {
-      const error = action.payload as ServerErrorType
-      notifications.show({
-        autoClose: false,
-        withBorder: true,
-        color: "red",
-        title: t("notifications.common.error"),
-        message: error.data.detail
+        message: t("documentTypes.notifications.deleted", {
+          defaultValue: "Category was successfully deleted"
+        })
       })
     }
   })

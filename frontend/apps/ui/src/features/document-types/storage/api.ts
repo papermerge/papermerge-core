@@ -4,6 +4,7 @@ import type {
   DocType,
   DocTypeGrouped,
   DocTypeUpdate,
+  DocumentTypeDetails,
   DocumentTypeItem,
   NewDocType
 } from "../types"
@@ -37,7 +38,7 @@ export const apiSliceWithDocumentTypes = apiSlice.injectEndpoints({
         ...result.items.map(({id}) => ({type: "DocumentType", id}) as const)
       ]
     }),
-    getDocumentTypes: builder.query<DocType[], string | undefined>({
+    getDocumentTypes: builder.query<DocumentTypeDetails[], string | undefined>({
       query: (group_id: string | undefined) => {
         if (group_id && group_id.length > 0) {
           return `/document-types/all?group_id=${group_id}`
@@ -53,7 +54,7 @@ export const apiSliceWithDocumentTypes = apiSlice.injectEndpoints({
     getDocumentTypesGrouped: builder.query<DocTypeGrouped[], void>({
       query: _arg => "/document-types/all-grouped"
     }),
-    getDocumentType: builder.query<DocType, string>({
+    getDocumentType: builder.query<DocumentTypeDetails, string>({
       query: docTypeID => `/document-types/${docTypeID}`,
       providesTags: (_result, _error, arg) => [{type: "DocumentType", id: arg}]
     }),

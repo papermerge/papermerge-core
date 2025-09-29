@@ -1,4 +1,4 @@
-import type {PaginatedArgs} from "@/types"
+import type {ByUser, OwnedBy, PaginatedArgs} from "@/types"
 
 export type SortBy = "name" | "created_at" | "created_by"
 
@@ -17,14 +17,10 @@ export interface TagQueryParams extends Partial<PaginatedArgs> {
   filter_free_text?: string
 }
 
-export interface ByUser {
-  id: string
-  username: string
-}
-
 export interface TagItem {
   id: string
   name: string
+  owned_by: OwnedBy
   created_at: string
   updated_at: string
   created_by: ByUser

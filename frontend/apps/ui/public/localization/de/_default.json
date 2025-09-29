@@ -386,6 +386,15 @@
     },
     "searchLabel": "Kategorien suchen..."
   },
+  "tagColumns": {
+    "name": "Name",
+    "id": "ID",
+    "created_at": "Erstellt am",
+    "created_by": "Erstellt von",
+    "updated_at": "Aktualisiert am",
+    "updated_by": "Aktualisiert von",
+    "owned_by": "Besitzer"
+  },
   "roles.name": "Rollen",
   "roles.new.title": "Neue Rolle",
   "roles.edit.title": "Rolle bearbeiten",

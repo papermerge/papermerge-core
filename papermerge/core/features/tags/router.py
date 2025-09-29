@@ -4,8 +4,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import NoResultFound
 
-from papermerge.core import utils
+from papermerge.core import utils, schema
 from papermerge.core.features.users import schema as usr_schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
@@ -16,7 +17,8 @@ from papermerge.core.features.tags import schema as tags_schema
 from papermerge.core.exceptions import EntityNotFound
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
-from .types import PaginatedQueryParams
+from papermerge.core.db.exceptions import ResourceAccessDenied
+from .schema import TagParams
 
 router = APIRouter(
     prefix="/tags",
@@ -65,32 +67,43 @@ async def retrieve_tags_without_pagination(
     return tags
 
 
-@router.get("/")
+@router.get("/", response_model=schema.PaginatedResponse[schema.TagEx])
 @utils.docstring_parameter(scope=scopes.TAG_VIEW)
-async def retrieve_tags(
+async def get_tags(
     user: Annotated[
         usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_VIEW])
     ],
-    params: PaginatedQueryParams = Depends(),
+    params: TagParams = Depends(),
     db_session=Depends(get_db),
-):
+) -> schema.PaginatedResponse[schema.TagEx]:
     """Retrieves (paginated) list of tags
 
     Required scope: `{scope}`
     """
-    tags = await tags_dbapi.get_tags(
-        db_session,
-        user_id=user.id,
-        page_number=params.page_number,
-        page_size=params.page_size,
-        order_by=params.order_by,
-        filter=params.filter,
-    )
+    try:
+        filters = params.to_filters()
+        tags = await tags_dbapi.get_tags(
+            db_session,
+            user_id=user.id,
+            page_number=params.page_number,
+            page_size=params.page_size,
+            sort_by=params.sort_by,
+            sort_direction=params.sort_direction,
+            filters=filters
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid parameters: {str(e)}")
+    except Exception as e:
+        logger.error(
+            f"Error fetching tag by the user {user.id}: {e}",
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     return tags
 
 
-@router.get("/{tag_id}", response_model=tags_schema.Tag)
+@router.get("/{tag_id}", response_model=tags_schema.TagDetails)
 @utils.docstring_parameter(scope=scopes.TAG_VIEW)
 async def get_tag_details(
     tag_id: UUID,
@@ -104,11 +117,17 @@ async def get_tag_details(
     Required scope: `{scope}`
     """
     try:
-        tag, error = await tags_dbapi.get_tag(db_session, tag_id=tag_id)
-    except EntityNotFound:
-        raise HTTPException(status_code=404, detail="Does not exists")
+        result = await tags_dbapi.get_tag(
+            db_session,
+            user_id=user.id,
+            tag_id=tag_id
+        )
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    except ResourceAccessDenied:
+        raise HTTPException(status_code=403, detail="Forbidden: You don't have permission to access this tag")
 
-    return tag
+    return result
 
 
 @router.post(

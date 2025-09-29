@@ -1,13 +1,14 @@
-import {Button} from "@mantine/core"
+import DeleteButton from "@/components/buttons/DeleteButton"
 import {useDisclosure} from "@mantine/hooks"
-import {IconTrash} from "@tabler/icons-react"
-import {useDispatch, useSelector} from "react-redux"
+import {useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
-import {selectSelectedIds, clearSelection} from "@/features/tags/tagsSlice"
+import {clearSelection, selectSelectedIDs} from "@/features/tags/storage/tag"
 
-import {DeleteTagModal, DeleteTagsModal} from "./DeleteModal"
+import {useAppSelector} from "@/app/hooks"
+import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
+import {DeleteTagModal, DeleteTagsModal} from "./DeleteModal"
 
 export function DeleteTagButton({tagId}: {tagId: string}) {
   const {t} = useTranslation()
@@ -20,9 +21,7 @@ export function DeleteTagButton({tagId}: {tagId: string}) {
 
   return (
     <>
-      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        {t("common.delete")}
-      </Button>
+      <DeleteButton onClick={open} text={t("common.delete")} />
       <DeleteTagModal
         opened={opened}
         onSubmit={onSubmit}
@@ -35,25 +34,24 @@ export function DeleteTagButton({tagId}: {tagId: string}) {
 
 export function DeleteTagsButton() {
   const {t} = useTranslation()
+  const mode = usePanelMode()
   const [opened, {open, close}] = useDisclosure(false)
   const dispatch = useDispatch()
-  const selectedIds = useSelector(selectSelectedIds)
+  const selectedIds = useAppSelector(s => selectSelectedIDs(s, mode))
 
   const onSubmit = () => {
-    dispatch(clearSelection())
+    dispatch(clearSelection({mode}))
     close()
   }
 
   const onCancel = () => {
-    dispatch(clearSelection())
+    dispatch(clearSelection({mode}))
     close()
   }
 
   return (
     <>
-      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        {t("common.delete")}
-      </Button>
+      <DeleteButton onClick={open} text={t("common.delete")} />
       <DeleteTagsModal
         opened={opened}
         onSubmit={onSubmit}

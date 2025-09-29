@@ -3,7 +3,7 @@ import {
   selectionAdd,
   selectionRemove,
   selectSelectedIds
-} from "@/features/tags/tagsSlice"
+} from "@/features/tags/storage/tag"
 import type {ColoredTag} from "@/types"
 import {Checkbox, Pill, Table} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"

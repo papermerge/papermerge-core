@@ -1,8 +1,23 @@
-import {useParams} from "react-router"
-import TagDetails from "@/features/tags/components/TagDetails.tsx"
+import {store} from "@/app/store"
+import DualPanel from "@/components/DualPanel"
+import {showTagDetailsInMainPanel} from "@/features/tags/storage/thunks"
+import {LoaderFunctionArgs} from "react-router"
 
 export default function TagDetailsPage() {
-  const {tagId} = useParams()
+  return <DualPanel />
+}
 
-  return <TagDetails tagId={tagId!} />
+export async function loader({params, request}: LoaderFunctionArgs) {
+  const url = new URL(request.url)
+  let entryID = "whatever"
+
+  if (params.id) {
+    entryID = params.id
+  }
+
+  if (entryID) {
+    store.dispatch(showTagDetailsInMainPanel(entryID))
+  }
+
+  return {entryID, urlParams: url.searchParams}
 }

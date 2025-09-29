@@ -1,39 +1,30 @@
-import QuickFilter from "@/components/QuickFilter"
-import {selectFilterText, selectSelectedIds} from "@/features/tags/tagsSlice"
-import {Group, Loader} from "@mantine/core"
-import {useSelector} from "react-redux"
+import {useAppSelector} from "@/app/hooks"
+import {selectSelectedIDs} from "@/features/tags/storage/tag"
+import {Group} from "@mantine/core"
+
+import {usePanelMode} from "@/hooks"
+import ColumnSelector from "./ColumnSelector"
 import {DeleteTagsButton} from "./DeleteButton"
 import EditButton from "./EditButton"
 import NewButton from "./NewButton"
+import Search from "./Search"
 
-interface Args {
-  isFetching?: boolean
-  onQuickFilterChange: (value: string) => void
-  onQuickFilterClear: () => void
-}
-
-export default function ActionButtons({
-  isFetching,
-  onQuickFilterChange,
-  onQuickFilterClear
-}: Args) {
-  const selectedIds = useSelector(selectSelectedIds)
-  const filterText = useSelector(selectFilterText)
+export default function ActionButtons() {
+  const mode = usePanelMode()
+  const selectedIds = useAppSelector(s => selectSelectedIDs(s, mode)) || []
+  const hasOneSelected = selectedIds.length === 1
+  const hasAnySelected = selectedIds.length >= 1
 
   return (
-    <Group justify="space-between">
+    <Group justify="space-between" w={"100%"}>
       <Group>
         <NewButton />
-        {selectedIds.length == 1 ? <EditButton tagId={selectedIds[0]} /> : ""}
-        {selectedIds.length >= 1 ? <DeleteTagsButton /> : ""}
-        {isFetching && <Loader size={"sm"} />}
+        {hasOneSelected && <EditButton tagId={selectedIds[0]} />}
+        {hasAnySelected && <DeleteTagsButton />}
       </Group>
       <Group>
-        <QuickFilter
-          onChange={onQuickFilterChange}
-          onClear={onQuickFilterClear}
-          filterText={filterText}
-        />
+        <Search />
+        <ColumnSelector />
       </Group>
     </Group>
   )

@@ -44,6 +44,8 @@ import {loader as groupsDetailsLoader} from "@/features/groups/pages/Details"
 import {loader as groupsListLoader} from "@/features/groups/pages/List"
 import {loader as rolesDetailsLoader} from "@/features/roles/pages/Details"
 import {loader as rolesListLoader} from "@/features/roles/pages/List"
+import {loader as tagsDetailsLoader} from "@/features/tags/pages/Details"
+import {loader as tagsListLoader} from "@/features/tags/pages/List"
 import {loader as usersDetailsLoader} from "@/features/users/pages/Details"
 import {loader as usersListLoader} from "@/features/users/pages/List"
 import {loader as documentLoader} from "@/pages/Document"
@@ -112,11 +114,13 @@ const router = createBrowserRouter([
       },
       {
         path: "/tags",
-        element: <TagsList />
+        element: <TagsList />,
+        loader: tagsListLoader
       },
       {
-        path: "/tags/:tagId",
-        element: <TagDetails />
+        path: "/tags/:id",
+        element: <TagDetails />,
+        loader: tagsDetailsLoader
       },
       {
         path: "/custom-fields/",

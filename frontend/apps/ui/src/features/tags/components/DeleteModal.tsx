@@ -1,6 +1,6 @@
+import {useDeleteTagMutation} from "@/features/tags/storage/api"
+import {Button, Container, Group, Loader, Modal, Space} from "@mantine/core"
 import {useState} from "react"
-import {Button, Modal, Container, Group, Space, Loader} from "@mantine/core"
-import {useDeleteTagMutation} from "@/features/tags/apiSlice"
 import {useTranslation} from "react-i18next"
 
 type RemoveTagsModalArgs = {

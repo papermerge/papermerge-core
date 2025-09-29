@@ -1,6 +1,5 @@
-import {Button} from "@mantine/core"
+import DeleteButton from "@/components/buttons/DeleteButton"
 import {useDisclosure} from "@mantine/hooks"
-import {IconTrash} from "@tabler/icons-react"
 import {useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
@@ -22,9 +21,7 @@ export function DeleteTagButton({tagId}: {tagId: string}) {
 
   return (
     <>
-      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        {t("common.delete")}
-      </Button>
+      <DeleteButton onClick={open} text={t("common.delete")} />
       <DeleteTagModal
         opened={opened}
         onSubmit={onSubmit}
@@ -54,9 +51,7 @@ export function DeleteTagsButton() {
 
   return (
     <>
-      <Button leftSection={<IconTrash />} onClick={open} variant={"default"}>
-        {t("common.delete")}
-      </Button>
+      <DeleteButton onClick={open} text={t("common.delete")} />
       <DeleteTagsModal
         opened={opened}
         onSubmit={onSubmit}

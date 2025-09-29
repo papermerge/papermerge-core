@@ -1,11 +1,12 @@
+import EditButton from "@/components/buttons/EditButton"
 import {Button} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconEdit} from "@tabler/icons-react"
 
-import EditTagModal from "./EditTagModal"
 import {useTranslation} from "react-i18next"
+import EditTagModal from "./EditTagModal"
 
-export default function EditButton({tagId}: {tagId?: string}) {
+export default function EditButtonContainer({tagId}: {tagId?: string}) {
   const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
 
@@ -19,9 +20,7 @@ export default function EditButton({tagId}: {tagId?: string}) {
 
   return (
     <>
-      <Button leftSection={<IconEdit />} variant={"default"} onClick={open}>
-        {t("common.edit")}
-      </Button>
+      <EditButton onClick={open} text={t("common.edit")} />
       <EditTagModal
         opened={opened}
         onSubmit={close}

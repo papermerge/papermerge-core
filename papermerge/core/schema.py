@@ -35,7 +35,7 @@ from .features.document.schema import (
 )
 from .features.users.schema import User, UserEx, CreateUser, UserDetails, UpdateUser, ChangeUserPassword, UserHomes, UserInboxes, UserHome, UserInbox
 from .features.custom_fields.schema import CustomField, CustomFieldEx, CustomFieldDetails, UpdateCustomField, CustomFieldType, CustomFieldValue
-from .features.tags.schema import Tag, UpdateTag, CreateTag
+from .features.tags.schema import Tag, TagEx, TagDetails, UpdateTag, CreateTag
 from .features.document_types.schema import DocumentType, DocumentTypeEx, DocumentTypeDetails, UpdateDocumentType, CreateDocumentType
 from .features.groups.schema import Group, GroupEx, GroupDetails, CreateGroup, UpdateGroup
 from .features.roles.schema import Role, RoleEx, RoleDetails, CreateRole, UpdateRole, Permission
@@ -72,6 +72,8 @@ __all__ = [
     'UserInboxes',
     'UserInbox',
     'Tag',
+    'TagEx',
+    'TagDetails',
     'UpdateTag',
     'CreateTag',
     'Error',

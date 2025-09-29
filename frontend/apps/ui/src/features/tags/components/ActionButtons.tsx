@@ -7,6 +7,7 @@ import ColumnSelector from "./ColumnSelector"
 import {DeleteTagsButton} from "./DeleteButton"
 import EditButton from "./EditButton"
 import NewButton from "./NewButton"
+import Search from "./Search"
 
 export default function ActionButtons() {
   const mode = usePanelMode()
@@ -22,6 +23,7 @@ export default function ActionButtons() {
         {hasAnySelected && <DeleteTagsButton />}
       </Group>
       <Group>
+        <Search />
         <ColumnSelector />
       </Group>
     </Group>

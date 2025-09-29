@@ -1,8 +1,9 @@
 import Owner from "@/components/Owner"
 import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
 import type {TagItem} from "@/features/tags/types"
+import {OwnedBy} from "@/types"
 import type {ByUser} from "@/types.d/common"
-import {Box, Text} from "@mantine/core"
+import {Box, Pill, Text} from "@mantine/core"
 import {TFunction} from "i18next"
 import type {ColumnConfig} from "kommon"
 
@@ -21,7 +22,13 @@ export default function tagColumns(t?: TFunction) {
             style={{cursor: "pointer"}}
             onClick={() => onClick?.(row, false)}
           >
-            <Text component="a">{value as string}</Text>
+            <Text component="a">
+              <Pill
+                style={{backgroundColor: row?.bg_color, color: row?.fg_color}}
+              >
+                {value as string}
+              </Pill>
+            </Text>
           </Box>
         )
       }

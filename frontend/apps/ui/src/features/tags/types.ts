@@ -20,6 +20,8 @@ export interface TagQueryParams extends Partial<PaginatedArgs> {
 export interface TagItem {
   id: string
   name: string
+  bg_color: string
+  fg_color: string
   owned_by: OwnedBy
   created_at: string
   updated_at: string

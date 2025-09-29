@@ -32,6 +32,7 @@ from papermerge.core.features.roles.db.orm import Role, Permission, roles_permis
 from papermerge.core.features.document_types.db.orm import DocumentType, DocumentTypeCustomField # noqa
 from papermerge.core.features.shared_nodes.db.orm import SharedNode # noqa
 from papermerge.core.features.audit.db.orm import AuditLog  # noqa
+from papermerge.core.features.preferences.db.orm import SystemPreferences, UserPreferences  # noqa
 
 target_metadata = Base.metadata
 

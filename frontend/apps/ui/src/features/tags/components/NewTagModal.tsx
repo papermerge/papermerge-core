@@ -2,7 +2,7 @@ import {useEffect, useState} from "react"
 
 import {OWNER_ME} from "@/cconstants"
 import OwnerSelector from "@/components/OwnerSelect/OwnerSelect"
-import {useAddNewTagMutation} from "@/features/tags/apiSlice"
+import {useAddNewTagMutation} from "@/features/tags/storage/api"
 import {
   Box,
   Button,

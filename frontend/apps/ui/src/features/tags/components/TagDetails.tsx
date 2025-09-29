@@ -1,11 +1,11 @@
+import {Box, Breadcrumbs, Group, Loader, LoadingOverlay} from "@mantine/core"
 import {Link, useNavigation} from "react-router-dom"
-import {Breadcrumbs, Box, LoadingOverlay, Group, Loader} from "@mantine/core"
 
+import {useGetTagQuery} from "@/features/tags/storage/api"
 import type {ColoredTagType} from "@/types"
-import {useGetTagQuery} from "@/features/tags/apiSlice"
-import TagForm from "./TagForm"
-import EditButton from "./EditButton"
 import {DeleteTagButton} from "./DeleteButton"
+import EditButton from "./EditButton"
+import TagForm from "./TagForm"
 
 interface TagDetailsArgs {
   tagId: string

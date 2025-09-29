@@ -8,7 +8,7 @@ import {
   useUpdateNodeTagsMutation
 } from "@/features/nodes/apiSlice"
 import {selectNodeById} from "@/features/nodes/nodesSlice"
-import {useGetTagsQuery} from "@/features/tags/apiSlice"
+import {useGetTagsQuery} from "@/features/tags/storage/api"
 import type {EntityWithTags} from "@/types"
 import {useTranslation} from "react-i18next"
 

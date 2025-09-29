@@ -23,6 +23,7 @@ import {RoleDetails, RolesList} from "@/features/roles/components"
 import SearchResults from "@/features/search/components/SearchResults"
 import SharedCommander from "@/features/shared_nodes/components/SharedCommander"
 import SharedViewer from "@/features/shared_nodes/components/SharedViewer"
+import {TagDetails, TagsList} from "@/features/tags/components"
 import {UserDetails, UsersList} from "@/features/users/components"
 import type {PanelComponent} from "@/types.d/ui"
 
@@ -44,6 +45,8 @@ const PANEL_COMPONENTS_SAFE = {
   documentTypeDetails: DocumentTypeDetails,
   groupsList: GroupsList,
   groupDetails: GroupDetails,
+  tagsList: TagsList,
+  tagDetails: TagDetails,
   usersList: UsersList,
   userDetails: UserDetails
 } satisfies Record<PanelComponent, React.ComponentType>

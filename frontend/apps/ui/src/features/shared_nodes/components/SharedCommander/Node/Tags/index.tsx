@@ -1,4 +1,4 @@
-import {useGetTagsQuery} from "@/features/tags/apiSlice"
+import {useGetTagsQuery} from "@/features/tags/storage/api"
 import type {ColoredTagType, NodeType} from "@/types"
 import {Pill, Stack} from "@mantine/core"
 import classes from "./Tags.module.css"

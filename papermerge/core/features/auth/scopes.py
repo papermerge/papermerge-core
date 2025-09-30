@@ -20,6 +20,7 @@ class ScopeCategory(Enum):
     DOCUMENT_TYPE = "document_type"
     SHARED_NODE = "shared_node"
     AUDIT_LOG = "audit_log"
+    SYSTEM_PREFERENCE = "system_preference"
 
 
 class Action(Enum):
@@ -128,6 +129,10 @@ class Scopes:
 
     # Audit log permissions
     AUDIT_LOG_VIEW = "audit_log.view"
+
+    # System preferences
+    SYSTEM_PREFERENCE_VIEW = "system_preference.view"
+    SYSTEM_PREFERENCE_UPDATE = "system_preference.update"
 
     @classmethod
     def all_scopes(cls) -> Set[str]:

@@ -73,7 +73,6 @@ async def get_merged_preferences(
     return merged, sources
 
 
-
 async def update_user_preferences(
     db_session: AsyncSession,
     user_id: UUID,

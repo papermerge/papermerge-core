@@ -18,8 +18,6 @@ class DateFormat(str, Enum):
 class UILanguage(str, Enum):
     EN = "en"
     DE = "de"
-    ES = "es"
-    FR = "fr"
 
 
 
@@ -53,7 +51,7 @@ class Preferences(BaseModel):
     @field_validator('date_format')
     @classmethod
     def validate_date_format(cls, v):
-        allowed = ["YYYY-MM-DD", "MM/DD/YYYY", "DD/MM/YYYY", "MMMM DD, YYYY"]
+        allowed = [fmt.value for fmt in DateFormat]
         if v not in allowed:
             raise ValueError(f"Invalid date format. Allowed: {allowed}")
         return v
@@ -61,7 +59,7 @@ class Preferences(BaseModel):
     @field_validator('ui_language')
     @classmethod
     def validate_ui_language(cls, v):
-        allowed = ["en", "de", "es", "fr", "it", "pt", "ru", "zh", "ja"]
+        allowed = [fmt.value for fmt in UILanguage]
         if v not in allowed:
             raise ValueError(f"Invalid UI language. Allowed: {allowed}")
         return v
@@ -87,7 +85,7 @@ class PreferencesUpdate(BaseModel):
     @classmethod
     def validate_date_format(cls, v):
         if v is not None:
-            allowed = ["YYYY-MM-DD", "MM/DD/YYYY", "DD/MM/YYYY", "MMMM DD, YYYY"]
+            allowed = allowed = [fmt.value for fmt in DateFormat]
             if v not in allowed:
                 raise ValueError(f"Invalid date format. Allowed: {allowed}")
         return v
@@ -96,7 +94,7 @@ class PreferencesUpdate(BaseModel):
     @classmethod
     def validate_ui_language(cls, v):
         if v is not None:
-            allowed = ["en", "de", "es", "fr", "it", "pt", "ru", "zh", "ja"]
+            allowed = [fmt.value for fmt in UILanguage]
             if v not in allowed:
                 raise ValueError(f"Invalid UI language. Allowed: {allowed}")
         return v

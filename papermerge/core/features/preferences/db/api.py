@@ -11,7 +11,7 @@ from papermerge.core.features.preferences.schema import Preferences
 # Default preferences constant
 DEFAULTS = {
     'date_format': 'YYYY-MM-DD',
-    'number_format': 'en-US',
+    'number_format': 'eu_dot',
     'timezone': 'UTC',
     'ui_language': 'en',
 }

@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Optional
+from typing import List
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -74,6 +75,20 @@ class TimestampFormat(str, Enum):
         return [fmt.value for fmt in cls]
 
 
+class NumberFormat(str, Enum):
+    """Common number formatting patterns"""
+
+    US = "us"      # US, UK, most English-speaking e.g. 1,234.56
+    EU_DOT = "eu_dot"     # Germany, Spain, Italy e.g. 1.234,56
+    EU_SPACE = "eu_space"   # France, Sweden, Norway e.g. 1 234,56
+    SWISS = "swiss"      # Switzerland e.g. 1'234.56
+    COMPACT = "compact"     # No separator e.g. 1234.56
+
+    @classmethod
+    def values(cls):
+        return [fmt.value for fmt in cls]
+
+
 class UILanguage(str, Enum):
     EN = "en"
     DE = "de"
@@ -91,8 +106,8 @@ class Preferences(BaseModel):
         description="Timestamp format display"
     )
     number_format: str = Field(
-        default="en-US",
-        description="Number format locale"
+        default="eu_dot",
+        description="Number formatting pattern"
     )
     timezone: str = Field(
         default="UTC",
@@ -117,6 +132,14 @@ class Preferences(BaseModel):
         allowed = [fmt.value for fmt in DateFormat]
         if v not in allowed:
             raise ValueError(f"Invalid date format. Allowed: {allowed}")
+        return v
+
+    @field_validator('number_format')
+    @classmethod
+    def validate_number_format(cls, v):
+        allowed = NumberFormat.values()
+        if v not in allowed:
+            raise ValueError(f"Invalid number format. Allowed: {allowed}")
         return v
 
     @field_validator('timestamp_format')
@@ -191,3 +214,22 @@ class SystemPreferencesResponse(BaseModel):
     updated_by: Optional[str] = None
 
     model_config = {"from_attributes": True}
+
+
+
+
+
+class TimezoneOption(BaseModel):
+    """Single timezone option"""
+    value: str = Field(..., description="IANA timezone name (e.g., 'America/New_York')")
+    label: str = Field(..., description="Display label with offset (e.g., 'New York (UTC-05:00)')")
+    region: str = Field(..., description="Geographic region (e.g., 'America', 'Europe')")
+    offset: str = Field(..., description="UTC offset (e.g., '+02:00', '-05:00')")
+
+
+class TimezonesResponse(BaseModel):
+    """Response with available timezones"""
+    timezones: List[TimezoneOption] = Field(
+        ...,
+        description="List of available timezones"
+    )

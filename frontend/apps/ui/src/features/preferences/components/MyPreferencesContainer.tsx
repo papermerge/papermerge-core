@@ -8,7 +8,8 @@ export default function MyPreferencesContainer() {
   const prefs: Preference = {
     ui_language: "en",
     date_format: "DD.MM.YYYY",
-    timestamp_format: "DD.MM.YYYY HH:mm:ss"
+    timestamp_format: "DD.MM.YYYY HH:mm:ss",
+    number_format: "eu_dot"
   }
 
   return <PreferencesForm preferences={prefs} t={t} />

@@ -53,6 +53,19 @@ export default function PreferencesForm({preferences, onChange, t}: Args) {
           comboboxProps={{width: "target"}}
           searchable
         />
+
+        <Select
+          label={t?.("preferencesForm.numberFormat.label", {
+            defaultValue: "Number Format"
+          })}
+          data={NUMBER_FORMATS}
+          value={preferences.number_format}
+          onChange={onChange}
+          w="fit-content"
+          miw={300}
+          comboboxProps={{width: "target"}}
+          searchable
+        />
       </Stack>
     </Paper>
   )
@@ -141,4 +154,12 @@ export const TIMESTAMP_FORMATS: ComboboxItem[] = [
 
   // Compact
   {value: "YYYYMMDDHHmmss", label: "Compact (20250930143542)"}
+]
+
+export const NUMBER_FORMATS: ComboboxItem[] = [
+  {value: "us", label: "US/UK (1,234.56)"},
+  {value: "eu_dot", label: "European Dot (1.234,56)"},
+  {value: "eu_space", label: "European Space (1 234,56)"},
+  {value: "swiss", label: "Swiss (1'234.56)"},
+  {value: "compact", label: "Compact (1234.56)"}
 ]

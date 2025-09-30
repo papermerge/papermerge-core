@@ -47,8 +47,16 @@ export type TimestampFormatValue =
   // Compact
   | "YYYYMMDDHHmmss"
 
+export type NumberFormatValue =
+  | "us"
+  | "eu_dot"
+  | "eu_space"
+  | "swiss"
+  | "compact"
+
 export type Preference = {
   ui_language: UILanguageValue
   date_format: DateFormatValue
   timestamp_format: TimestampFormatValue
+  number_format: NumberFormatValue
 }

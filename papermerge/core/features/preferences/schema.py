@@ -5,14 +5,73 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class DateFormat(str, Enum):
-    ISO = "YYYY-MM-DD"
+    # ISO Standard
+    ISO_8601 = "YYYY-MM-DD"
+
+    # US Formats
     US_LONG = "MM/DD/YYYY"
     US_SHORT = "MM/DD/YY"
-    EU_LONG1 = "DD/MM/YYYY"
-    EU_LONG2 = "DD.MM.YYYY"
-    EU_SHORT1 = "DD/MM/YY"
-    EU_SHORT2 = "DD.MM.YY"
-    LONG = "MMMM DD, YYYY"
+    US_LONG_TEXT = "MMMM DD, YYYY"
+    US_SHORT_TEXT = "MMM DD, YYYY"
+
+    # European Formats (slash separator)
+    EU_SLASH_LONG = "DD/MM/YYYY"
+    EU_SLASH_SHORT = "DD/MM/YY"
+
+    # European Formats (dot separator)
+    EU_DOT_LONG = "DD.MM.YYYY"
+    EU_DOT_SHORT = "DD.MM.YY"
+
+    # European Formats (dash separator) - commonly used in Germany
+    EU_DASH_LONG = "DD-MM-YYYY"
+
+    # Asian Formats
+    ASIA_LONG = "YYYY/MM/DD"  # Used in Japan, China, Korea
+    ASIA_DOT = "YYYY.MM.DD"  # Used in China, Korea
+
+    # Compact formats (no separators)
+    COMPACT_ISO = "YYYYMMDD"
+
+
+class TimestampFormat(str, Enum):
+    """Timestamp display formats for audit logs and metadata fields"""
+
+    # ISO 8601 Formats
+    ISO_8601_FULL = "YYYY-MM-DD HH:mm:ss"              # 2025-09-30 14:35:42
+    ISO_8601_WITH_TZ = "YYYY-MM-DD HH:mm:ss Z"         # 2025-09-30 14:35:42 +02:00
+    ISO_8601_T = "YYYY-MM-DDTHH:mm:ss"                 # 2025-09-30T14:35:42
+    ISO_8601_T_TZ = "YYYY-MM-DDTHH:mm:ssZ"            # 2025-09-30T14:35:42+02:00
+
+    # Readable Formats (12-hour)
+    US_LONG_12H = "MM/DD/YYYY hh:mm:ss A"             # 09/30/2025 02:35:42 PM
+    US_SHORT_12H = "MM/DD/YY hh:mm A"                 # 09/30/25 02:35 PM
+    US_TEXT_12H = "MMM DD, YYYY hh:mm A"              # Sep 30, 2025 02:35 PM
+    US_TEXT_LONG_12H = "MMMM DD, YYYY hh:mm:ss A"    # September 30, 2025 02:35:42 PM
+
+    # Readable Formats (24-hour)
+    US_LONG_24H = "MM/DD/YYYY HH:mm:ss"               # 09/30/2025 14:35:42
+    US_SHORT_24H = "MM/DD/YY HH:mm"                   # 09/30/25 14:35
+    US_TEXT_24H = "MMM DD, YYYY HH:mm"                # Sep 30, 2025 14:35
+    US_TEXT_LONG_24H = "MMMM DD, YYYY HH:mm:ss"      # September 30, 2025 14:35:42
+
+    # European Formats (24-hour is standard)
+    EU_SLASH_24H = "DD/MM/YYYY HH:mm:ss"              # 30/09/2025 14:35:42
+    EU_SLASH_SHORT = "DD/MM/YY HH:mm"                 # 30/09/25 14:35
+    EU_DOT_24H = "DD.MM.YYYY HH:mm:ss"                # 30.09.2025 14:35:42
+    EU_DOT_SHORT = "DD.MM.YYYY HH:mm"                 # 30.09.2025 14:35
+    EU_DASH_24H = "DD-MM-YYYY HH:mm:ss"               # 30-09-2025 14:35:42
+
+    # Asian Formats
+    ASIA_LONG = "YYYY/MM/DD HH:mm:ss"                 # 2025/09/30 14:35:42
+    ASIA_SHORT = "YYYY/MM/DD HH:mm"                   # 2025/09/30 14:35
+
+    # Compact Format
+    COMPACT = "YYYYMMDDHHmmss"                        # 20250930143542
+
+    @classmethod
+    def values(cls):
+        """Get all enum values as a list"""
+        return [fmt.value for fmt in cls]
 
 
 class UILanguage(str, Enum):
@@ -26,6 +85,10 @@ class Preferences(BaseModel):
     date_format: str = Field(
         default="YYYY-MM-DD",
         description="Date format display"
+    )
+    timestamp_format: str = Field(
+        default="DD.MM.YYYY HH:mm:ss",
+        description="Timestamp format display"
     )
     number_format: str = Field(
         default="en-US",
@@ -54,6 +117,14 @@ class Preferences(BaseModel):
         allowed = [fmt.value for fmt in DateFormat]
         if v not in allowed:
             raise ValueError(f"Invalid date format. Allowed: {allowed}")
+        return v
+
+    @field_validator('timestamp_format')
+    @classmethod
+    def validate_date_format(cls, v):
+        allowed = [fmt.value for fmt in TimestampFormat]
+        if v not in allowed:
+            raise ValueError(f"Invalid timestamp format. Allowed: {allowed}")
         return v
 
     @field_validator('ui_language')

@@ -1,20 +1,22 @@
-import type { User } from "@/types.ts"
-import { Group, Menu, UnstyledButton } from "@mantine/core"
+import type {User} from "@/types.ts"
+import {Group, Menu, UnstyledButton} from "@mantine/core"
 import {
   IconApi,
   IconChevronRight,
   IconLogout,
+  IconSettings,
   IconUser
 } from "@tabler/icons-react"
 import Cookies from "js-cookie"
-import { useSelector } from "react-redux"
+import {useSelector} from "react-redux"
+import {Link} from "react-router"
 
 import {
   selectCurrentUser,
   selectCurrentUserError,
   selectCurrentUserStatus
 } from "@/slices/currentUser.ts"
-import { useTranslation } from "react-i18next"
+import {useTranslation} from "react-i18next"
 
 export default function UserMenu() {
   const status = useSelector(selectCurrentUserStatus)
@@ -48,6 +50,14 @@ export default function UserMenu() {
         </UnstyledButton>
       </Menu.Target>
       <Menu.Dropdown>
+        <Menu.Item>
+          <Group>
+            <IconSettings />
+            <Link to="/preferences/me">
+              {t("userMenu.MyPreferences", {defaultValue: "My Preferences"})}
+            </Link>
+          </Group>
+        </Menu.Item>
         <Menu.Item>
           <Group>
             <IconApi />

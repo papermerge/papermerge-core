@@ -31,6 +31,7 @@ import {TagDetails, TagsList} from "@/features/tags/pages"
 import {UserDetails, UsersList} from "@/features/users/pages"
 import Document from "@/pages/Document"
 import {AuditLogDetails, AuditLogsList} from "./features/audit/pages"
+import {MyPreferences} from "./features/preferences/components"
 
 import {AccessForbidden, NotFound, UnprocessableContent} from "@/pages/errors"
 
@@ -181,6 +182,10 @@ const router = createBrowserRouter([
         path: "/audit-logs/:id",
         element: <AuditLogDetails />,
         loader: auditLogDetailsLoader
+      },
+      {
+        path: "/preferences/me",
+        element: <MyPreferences />
       },
       {
         path: ERRORS_403_ACCESS_FORBIDDEN,

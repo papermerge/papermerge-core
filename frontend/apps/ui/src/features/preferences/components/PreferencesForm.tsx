@@ -1,9 +1,9 @@
-import {Preference} from "@/features/preferences/types"
+import {Preferences} from "@/features/preferences/types"
 import {ComboboxItem, Paper, Select, Stack, Text} from "@mantine/core"
 import {TFunction} from "i18next"
 
 interface Args {
-  preferences: Preference
+  preferences: Preferences
   onChange?: (_value: any, option: ComboboxItem) => void
   t?: TFunction
 }

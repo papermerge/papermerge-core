@@ -82,6 +82,7 @@ class NumberFormat(str, Enum):
     EU_DOT = "eu_dot"     # Germany, Spain, Italy e.g. 1.234,56
     EU_SPACE = "eu_space"   # France, Sweden, Norway e.g. 1 234,56
     SWISS = "swiss"      # Switzerland e.g. 1'234.56
+    INDIAN = "indian"     # 1,23,456.78
     COMPACT = "compact"     # No separator e.g. 1234.56
 
     @classmethod
@@ -94,28 +95,36 @@ class UILanguage(str, Enum):
     DE = "de"
 
 
+class UITheme(str, Enum):
+    LIGHT = "light"
+    DARK = "dark"
+
 
 class Preferences(BaseModel):
     """User or system preferences"""
-    date_format: str = Field(
-        default="YYYY-MM-DD",
-        description="Date format display"
-    )
-    timestamp_format: str = Field(
-        default="DD.MM.YYYY HH:mm:ss",
-        description="Timestamp format display"
-    )
-    number_format: str = Field(
-        default="eu_dot",
-        description="Number formatting pattern"
+    ui_language: str = Field(
+        default="en",
+        description="UI language"
     )
     timezone: str = Field(
         default="UTC",
         description="User timezone"
     )
-    ui_language: str = Field(
-        default="en",
-        description="UI language"
+    date_format: str = Field(
+        default="YYYY-MM-DD",
+        description="Date format display"
+    )
+    number_format: str = Field(
+        default="eu_dot",
+        description="Number formatting pattern"
+    )
+    timestamp_format: str = Field(
+        default="DD.MM.YYYY HH:mm:ss",
+        description="Timestamp format display"
+    )
+    ui_theme: str = Field(
+        default="light",
+        description="UI Theme"
     )
 
     @field_validator('timezone')
@@ -158,6 +167,13 @@ class Preferences(BaseModel):
             raise ValueError(f"Invalid UI language. Allowed: {allowed}")
         return v
 
+    @field_validator('ui_theme')
+    @classmethod
+    def validate_ui_theme(cls, v):
+        allowed = [i.value for i in UITheme]
+        if v not in allowed:
+            raise ValueError(f"Invalid UI Theme. Allowed: {allowed}")
+        return v
 
 class PreferencesUpdate(BaseModel):
     """Partial preferences update (all fields optional)"""
@@ -165,6 +181,7 @@ class PreferencesUpdate(BaseModel):
     number_format: Optional[str] = None
     timezone: Optional[str] = None
     ui_language: Optional[str] = None
+    ui_theme: Optional[str] = None
 
     @field_validator('timezone')
     @classmethod
@@ -193,6 +210,15 @@ class PreferencesUpdate(BaseModel):
                 raise ValueError(f"Invalid UI language. Allowed: {allowed}")
         return v
 
+    @field_validator('ui_theme')
+    @classmethod
+    def validate_ui_theme(cls, v):
+        if v is not None:
+            allowed = [i.value for i in UITheme]
+            if v not in allowed:
+                raise ValueError(f"Invalid UI theme. Allowed: {allowed}")
+        return v
+
 
 class UserPreferencesResponse(BaseModel):
     """Response model for user preferences"""
@@ -214,8 +240,6 @@ class SystemPreferencesResponse(BaseModel):
     updated_by: Optional[str] = None
 
     model_config = {"from_attributes": True}
-
-
 
 
 

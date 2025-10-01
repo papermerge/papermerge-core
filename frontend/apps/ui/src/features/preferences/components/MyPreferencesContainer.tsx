@@ -1,16 +1,11 @@
+import {useAppSelector} from "@/app/hooks"
 import {useTranslation} from "react-i18next"
-import {Preference} from "../types"
+import {selectMePreferences} from "../storage/preference"
 import PreferencesForm from "./PreferencesForm"
 
 export default function MyPreferencesContainer() {
   const {t} = useTranslation()
+  const myPreferences = useAppSelector(selectMePreferences)
 
-  const prefs: Preference = {
-    ui_language: "en",
-    date_format: "DD.MM.YYYY",
-    timestamp_format: "DD.MM.YYYY HH:mm:ss",
-    number_format: "eu_dot"
-  }
-
-  return <PreferencesForm preferences={prefs} t={t} />
+  return <PreferencesForm preferences={myPreferences} t={t} />
 }

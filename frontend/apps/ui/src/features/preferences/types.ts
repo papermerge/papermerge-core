@@ -54,9 +54,16 @@ export type NumberFormatValue =
   | "swiss"
   | "compact"
 
-export type Preference = {
-  ui_language: UILanguageValue
-  date_format: DateFormatValue
-  timestamp_format: TimestampFormatValue
-  number_format: NumberFormatValue
+export type Preferences = {
+  ui_language: string // de, en...
+  timezone: string
+  date_format: string
+  number_format: string
+  timestamp_format: string
+  ui_theme: string // light / dark
+}
+
+export interface SelectOption {
+  value: string
+  label: string
 }

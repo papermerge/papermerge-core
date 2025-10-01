@@ -1,9 +1,13 @@
 import {apiSlice} from "@/features/api/slice"
-import {Preferences, SelectOption} from "@/features/preferences/types"
+import {
+  Preferences,
+  SelectOption,
+  TimezoneResponse
+} from "@/features/preferences/types"
 
 export const apiSliceWithPreferences = apiSlice.injectEndpoints({
   endpoints: builder => ({
-    getTimezones: builder.query<SelectOption[], void>({
+    getTimezones: builder.query<TimezoneResponse, void>({
       query: () => "/preferences/options/timezone",
       providesTags: ["PreferenceOptionTimezones"]
     }),
@@ -35,6 +39,7 @@ export const apiSliceWithPreferences = apiSlice.injectEndpoints({
 
 export const {
   useGetTimezonesQuery,
+  useLazyGetTimezonesQuery,
   useGetDateFormatsQuery,
   useGetNumberFormatsQuery,
   useGetTimestampFormatsQuery,

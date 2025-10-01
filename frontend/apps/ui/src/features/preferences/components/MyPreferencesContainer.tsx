@@ -23,10 +23,8 @@ export default function MyPreferencesContainer() {
     const update = {
       [preferenceName]: option.value
     }
-    console.log(update)
 
     const previousValue = myPreferences[preferenceName]
-
     dispatch(updateMyPreferences(update))
 
     try {

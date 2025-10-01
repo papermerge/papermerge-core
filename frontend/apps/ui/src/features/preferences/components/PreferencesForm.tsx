@@ -1,6 +1,7 @@
 import {Preferences} from "@/features/preferences/types"
 import {ComboboxItem, Paper, Select, Stack, Text} from "@mantine/core"
 import {TFunction} from "i18next"
+import TimezonePicker from "./TimezonePicker"
 
 interface Args {
   preferences: Preferences
@@ -32,6 +33,11 @@ export default function PreferencesForm({
           data={UI_LANGUAGES}
           value={preferences.ui_language}
           onChange={(_, option) => onChange?.("ui_language", option)}
+        />
+
+        <TimezonePicker
+          value={preferences.timezone}
+          onChange={(_, option) => onChange?.("timezone", option)}
         />
 
         <Select

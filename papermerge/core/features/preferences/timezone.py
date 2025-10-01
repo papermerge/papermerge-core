@@ -1,11 +1,12 @@
-# app/services/timezone.py
 from datetime import datetime
+import logging
 from typing import List
 
 import pytz
 
 from .schema import TimezoneOption
 
+logger = logging.getLogger(__name__)
 
 class TimezoneService:
     """Service for timezone-related operations"""
@@ -77,7 +78,8 @@ class TimezoneService:
             offset = now.strftime('%z')
             # Format as +02:00 or -05:00
             return f"{offset[:3]}:{offset[3:]}"
-        except Exception:
+        except Exception as e:
+            logger.error(e)
             return ""
 
     @staticmethod
@@ -137,11 +139,11 @@ class TimezoneService:
                         value=tz,
                         label=label,
                         region=region,
-                        offset=offset
                     )
                 )
-            except Exception:
+            except Exception as e:
                 # Skip invalid timezones
+                logger.error(e)
                 continue
 
         # Sort by region, then by timezone name

@@ -67,3 +67,7 @@ export interface SelectOption {
   value: string
   label: string
 }
+
+export interface TimezoneResponse {
+  timezones: SelectOption[]
+}

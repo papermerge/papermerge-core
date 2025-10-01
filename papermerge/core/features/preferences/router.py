@@ -61,40 +61,6 @@ async def update_my_preferences(
     )
 
 
-@router.delete("/me/{key}")
-async def delete_my_preference(
-    key: str,
-    current_user: Annotated[
-      schema.User, Security(get_current_user, scopes=[scopes.USER_ME])
-    ],
-    db_session: AsyncSession = Depends(get_db)
-):
-    """Delete a specific preference key (will fall back to system/default)"""
-    deleted = await pref_dbapi.delete_user_preference(db_session, current_user.id, key)
-
-    if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Preference key '{key}' not found"
-        )
-
-    return {"message": f"Preference '{key}' deleted successfully"}
-
-
-@router.delete("/me", response_model=Preferences)
-async def reset_my_preferences(
-    current_user:  Annotated[
-      schema.User, Security(get_current_user, scopes=[scopes.USER_ME])
-    ],
-    db_session: AsyncSession = Depends(get_db)
-):
-    """Reset all user preferences to system/default values"""
-    await pref_dbapi.reset_user_preferences(db_session, current_user.id)
-
-    # Return the merged preferences (now defaults)
-    return await pref_dbapi.get_merged_preferences_as_model(db_session, current_user.id)
-
-
 # Admin endpoints
 @router.get("/system", response_model=SystemPreferencesResponse)
 @utils.docstring_parameter(scope=scopes.SYSTEM_PREFERENCE_VIEW)
@@ -173,7 +139,7 @@ async def update_system_preferences(
 
 
 @router.get(
-    "/options/timezones",
+    "/options/timezone",
     response_model=TimezonesResponse,
     summary="Get available timezones",
     description="Returns popular IANA timezones for user selection"

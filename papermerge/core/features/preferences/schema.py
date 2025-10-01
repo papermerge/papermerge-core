@@ -258,7 +258,6 @@ class TimezoneOption(BaseModel):
     value: str = Field(..., description="IANA timezone name (e.g., 'America/New_York')")
     label: str = Field(..., description="Display label with offset (e.g., 'New York (UTC-05:00)')")
     region: str = Field(..., description="Geographic region (e.g., 'America', 'Europe')")
-    offset: str = Field(..., description="UTC offset (e.g., '+02:00', '-05:00')")
 
 
 class TimezonesResponse(BaseModel):

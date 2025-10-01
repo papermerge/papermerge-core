@@ -1,5 +1,5 @@
 import {apiSlice} from "@/features/api/slice"
-import {SelectOption} from "@/features/preferences/types"
+import {Preferences, SelectOption} from "@/features/preferences/types"
 
 export const apiSliceWithPreferences = apiSlice.injectEndpoints({
   endpoints: builder => ({
@@ -22,6 +22,13 @@ export const apiSliceWithPreferences = apiSlice.injectEndpoints({
     getUILanguages: builder.query<SelectOption[], void>({
       query: () => "/preferences/options/number-formats",
       providesTags: ["PreferenceOptionNumberFormats"]
+    }),
+    updateMyPreferences: builder.mutation<Preferences, Partial<Preferences>>({
+      query: preferences => ({
+        url: "/preferences/me",
+        method: "PUT",
+        body: preferences
+      })
     })
   })
 })
@@ -31,5 +38,6 @@ export const {
   useGetDateFormatsQuery,
   useGetNumberFormatsQuery,
   useGetTimestampFormatsQuery,
-  useLazyGetUILanguagesQuery
+  useLazyGetUILanguagesQuery,
+  useUpdateMyPreferencesMutation
 } = apiSliceWithPreferences

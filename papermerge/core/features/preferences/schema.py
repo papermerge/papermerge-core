@@ -177,10 +177,11 @@ class Preferences(BaseModel):
 
 class PreferencesUpdate(BaseModel):
     """Partial preferences update (all fields optional)"""
+    ui_language: Optional[str] = None
+    timezone: Optional[str] = None
     date_format: Optional[str] = None
     number_format: Optional[str] = None
-    timezone: Optional[str] = None
-    ui_language: Optional[str] = None
+    timestamp_format: Optional[str] = None
     ui_theme: Optional[str] = None
 
     @field_validator('timezone')
@@ -196,9 +197,18 @@ class PreferencesUpdate(BaseModel):
     @classmethod
     def validate_date_format(cls, v):
         if v is not None:
-            allowed = allowed = [fmt.value for fmt in DateFormat]
+            allowed = [fmt.value for fmt in DateFormat]
             if v not in allowed:
                 raise ValueError(f"Invalid date format. Allowed: {allowed}")
+        return v
+
+    @field_validator('timestamp_format')
+    @classmethod
+    def validate_timestamp_format(cls, v):
+        if v is not None:
+            allowed = [fmt.value for fmt in TimestampFormat]
+            if v not in allowed:
+                raise ValueError(f"Invalid timestamp format. Allowed: {allowed}")
         return v
 
     @field_validator('ui_language')

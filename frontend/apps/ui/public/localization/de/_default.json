@@ -404,6 +404,12 @@
       "deleted": "Tag wurde erfolgreich gelöscht"
     }
   },
+  "preferences": {
+    "updateSuccessTitle": "Erfolg",
+    "updateSuccessMessage": "Einstellungen erfolgreich aktualisiert",
+    "updateErrorTitle": "Fehler",
+    "updateErrorMessage": "Einstellungen konnten nicht aktualisiert werden"
+  },
   "roles.name": "Rollen",
   "roles.new.title": "Neue Rolle",
   "roles.edit.title": "Rolle bearbeiten",

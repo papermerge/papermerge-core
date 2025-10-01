@@ -27,7 +27,7 @@ const preferencesSlice = createSlice({
   initialState,
   reducers: {
     // Action to update user preferences locally (optimistic update)
-    updateMePreferences: (
+    updateMyPreferences: (
       state,
       action: PayloadAction<Partial<Preferences>>
     ) => {
@@ -48,13 +48,13 @@ const preferencesSlice = createSlice({
   }
 })
 
-export const {updateMePreferences, setSystemPreferences} =
+export const {updateMyPreferences, setSystemPreferences} =
   preferencesSlice.actions
 
 export default preferencesSlice.reducer
 
 // Selectors
-export const selectMePreferences = (state: RootState): Preferences =>
+export const selectMyPreferences = (state: RootState): Preferences =>
   state.preferences.me
 
 export const selectSystemPreferences = (state: RootState): Preferences =>

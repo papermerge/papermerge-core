@@ -4,11 +4,17 @@ import {TFunction} from "i18next"
 
 interface Args {
   preferences: Preferences
-  onChange?: (_value: any, option: ComboboxItem) => void
+  onChange?: (preferenceKey: keyof Preferences, option: ComboboxItem) => void
   t?: TFunction
+  isLoading?: boolean
 }
 
-export default function PreferencesForm({preferences, onChange, t}: Args) {
+export default function PreferencesForm({
+  preferences,
+  onChange,
+  t,
+  isLoading = false
+}: Args) {
   return (
     <Paper p="md">
       <Stack>
@@ -25,7 +31,7 @@ export default function PreferencesForm({preferences, onChange, t}: Args) {
           })}
           data={UI_LANGUAGES}
           value={preferences.ui_language}
-          onChange={onChange}
+          onChange={(_, option) => onChange?.("ui_language", option)}
         />
 
         <Select
@@ -34,7 +40,7 @@ export default function PreferencesForm({preferences, onChange, t}: Args) {
           })}
           data={DATE_FORMATS}
           value={preferences.date_format}
-          onChange={onChange}
+          onChange={(_, option) => onChange?.("date_format", option)}
           w="fit-content"
           miw={300}
           comboboxProps={{width: "target"}}
@@ -47,7 +53,7 @@ export default function PreferencesForm({preferences, onChange, t}: Args) {
           })}
           data={TIMESTAMP_FORMATS}
           value={preferences.timestamp_format}
-          onChange={onChange}
+          onChange={(_, option) => onChange?.("timestamp_format", option)}
           w="fit-content"
           miw={300}
           comboboxProps={{width: "target"}}
@@ -60,7 +66,7 @@ export default function PreferencesForm({preferences, onChange, t}: Args) {
           })}
           data={NUMBER_FORMATS}
           value={preferences.number_format}
-          onChange={onChange}
+          onChange={(_, option) => onChange?.("number_format", option)}
           w="fit-content"
           miw={300}
           comboboxProps={{width: "target"}}

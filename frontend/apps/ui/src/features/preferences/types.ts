@@ -71,3 +71,7 @@ export interface SelectOption {
 export interface TimezoneResponse {
   timezones: SelectOption[]
 }
+
+export interface UILanguageResponse {
+  languages: SelectOption[]
+}

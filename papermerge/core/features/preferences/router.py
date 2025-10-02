@@ -9,8 +9,9 @@ from papermerge.core.features.preferences.db import api as pref_dbapi
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.db.engine import get_db
 from .schema import Preferences, PreferencesUpdate, SystemPreferencesResponse, \
-    TimezonesResponse
+    TimezonesResponse, UILanguageResponse
 from .timezone import TimezoneService
+from .ui_languages import get_ui_languages
 
 router = APIRouter(
     prefix="/preferences",
@@ -153,3 +154,13 @@ async def get_timezones():
     timezones = TimezoneService.get_timezones()
 
     return TimezonesResponse(timezones=timezones)
+
+
+@router.get("/options/ui-language")
+async def get_timezones() -> UILanguageResponse:
+    """
+    Get available UI Languages.
+    """
+    languages = get_ui_languages()
+
+    return UILanguageResponse(languages=languages)

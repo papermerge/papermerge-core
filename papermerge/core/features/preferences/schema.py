@@ -252,6 +252,11 @@ class SystemPreferencesResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class SelectOption(BaseModel):
+    """Single dropdown option"""
+    value: str
+    label: str
+
 
 class TimezoneOption(BaseModel):
     """Single timezone option"""
@@ -266,3 +271,8 @@ class TimezonesResponse(BaseModel):
         ...,
         description="List of available timezones"
     )
+
+
+class UILanguageResponse(BaseModel):
+    """Response with available UI Languages"""
+    languages: List[SelectOption]

@@ -405,6 +405,14 @@
     }
   },
   "preferences": {
+    "uiLanguage": {
+      "label": "Oberflächensprache",
+      "description": "Sprache für die Benutzeroberfläche"
+    },
+    "timezone": {
+      "label": "Zeitzone",
+      "description": "Wähle deine Zeitzone für die korrekte Anzeige von Datum und Uhrzeit"
+    },
     "updateSuccessTitle": "Erfolg",
     "updateSuccessMessage": "Einstellungen erfolgreich aktualisiert",
     "updateErrorTitle": "Fehler",
@@ -550,6 +558,8 @@
   },
   "pickValue": "Wert auswählen",
   "loading": "Laden...",
+  "nothingFound": "Nichts gefunden",
+  "failedToLoad": "Fehler beim Laden",
   "name": "Name",
   "cancel": "Abrechen",
   "save": "Speichern"

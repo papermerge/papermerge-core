@@ -1,4 +1,4 @@
-import {useGetTimezonesQuery} from "@/features/preferences/storage/api"
+import {useGetUILanguagesQuery} from "@/features/preferences/storage/api"
 import {ComboboxItem, Select, SelectProps} from "@mantine/core"
 import {TFunction} from "i18next"
 import React from "react"
@@ -6,28 +6,30 @@ import React from "react"
 interface TimezonePickerProps
   extends Omit<SelectProps, "data" | "onDropdownOpen"> {
   value: string
-  t?: TFunction
   onChange: (value: any, option: ComboboxItem) => void
+  t?: TFunction
 }
 
-export const TimezonePicker: React.FC<TimezonePickerProps> = ({
+export const UILanguagePicker: React.FC<TimezonePickerProps> = ({
   value,
   onChange,
   t,
   ...selectProps
 }) => {
-  const {data, isLoading, isError} = useGetTimezonesQuery()
+  const {data, isLoading, isError} = useGetUILanguagesQuery()
 
   return (
     <Select
-      label={t?.("preferences.timezone.label", {defaultValue: "Timezone"})}
-      placeholder={t?.("pickValue")}
-      description={t?.("preferences.timezone.description", {
-        defaultValue: "All dates will be displayed according to your timezone"
+      label={t?.("preferences.uiLanguage.label", {
+        defaultValue: "Interface Language"
       })}
+      description={t?.("preferences.uiLanguage.description", {
+        defaultValue: "Language for the user interface"
+      })}
+      placeholder={t?.("pickValue")}
       value={value}
       onChange={onChange}
-      data={data?.timezones}
+      data={data?.languages}
       searchable
       disabled={isLoading || isError}
       error={isError ? t?.("failedToLoad") : null}
@@ -39,4 +41,4 @@ export const TimezonePicker: React.FC<TimezonePickerProps> = ({
   )
 }
 
-export default TimezonePicker
+export default UILanguagePicker

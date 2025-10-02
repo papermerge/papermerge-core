@@ -405,6 +405,14 @@
     }
   },
   "preferences": {
+    "uiLanguage": {
+      "label": "Interface Language",
+      "description": "Language for the user interface"
+    },
+    "timezone": {
+      "label": "Timezone",
+      "description": "Select your timezone for accurate date and time display"
+    },
     "updateSuccessTitle": "Success",
     "updateSuccessMessage": "Preferences updated successfully",
     "updateErrorTitle": "Error",
@@ -550,6 +558,8 @@
   },
   "pickValue": "Pick value",
   "loading": "Loading...",
+  "nothingFound": "Nothing found",
+  "failedToLoad": "Failed to load",
   "name": "Name",
   "cancel": "Cancel",
   "save": "Save"

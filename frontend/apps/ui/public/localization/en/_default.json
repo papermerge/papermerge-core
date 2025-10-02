@@ -413,6 +413,11 @@
       "label": "Timezone",
       "description": "Select your timezone for accurate date and time display"
     },
+    "theme": {
+      "label": "Theme",
+      "light": "Light",
+      "dark": "Dark"
+    },
     "updateSuccessTitle": "Success",
     "updateSuccessMessage": "Preferences updated successfully",
     "updateErrorTitle": "Error",

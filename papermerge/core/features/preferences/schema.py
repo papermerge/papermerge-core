@@ -276,3 +276,18 @@ class TimezonesResponse(BaseModel):
 class UILanguageResponse(BaseModel):
     """Response with available UI Languages"""
     languages: List[SelectOption]
+
+
+class DateFormatResponse(BaseModel):
+    """Response with available date formats"""
+    date_formats: List[SelectOption]
+
+
+class TimestampFormatResponse(BaseModel):
+    """Response with available timestamp formats"""
+    timestamp_formats: List[SelectOption]
+
+
+class NumberFormatResponse(BaseModel):
+    """Response with available number formats"""
+    number_formats: List[SelectOption]

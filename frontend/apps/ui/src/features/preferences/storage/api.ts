@@ -1,7 +1,9 @@
 import {apiSlice} from "@/features/api/slice"
 import {
+  DateFormatResponse,
+  NumberFormatResponse,
   Preferences,
-  SelectOption,
+  TimestampFormatResponse,
   TimezoneResponse,
   UILanguageResponse
 } from "@/features/preferences/types"
@@ -12,16 +14,16 @@ export const apiSliceWithPreferences = apiSlice.injectEndpoints({
       query: () => "/preferences/options/timezone",
       providesTags: ["PreferenceOptionTimezones"]
     }),
-    getDateFormats: builder.query<SelectOption[], void>({
-      query: () => "/preferences/options/date-formats",
+    getDateFormats: builder.query<DateFormatResponse, void>({
+      query: () => "/preferences/options/date-format",
       providesTags: ["PreferenceOptionDateFormats"]
     }),
-    getTimestampFormats: builder.query<SelectOption[], void>({
-      query: () => "/preferences/options/timestamp-formats",
+    getTimestampFormats: builder.query<TimestampFormatResponse, void>({
+      query: () => "/preferences/options/timestamp-format",
       providesTags: ["PreferenceOptionTimestampFormats"]
     }),
-    getNumberFormats: builder.query<SelectOption[], void>({
-      query: () => "/preferences/options/number-formats",
+    getNumberFormats: builder.query<NumberFormatResponse, void>({
+      query: () => "/preferences/options/number-format",
       providesTags: ["PreferenceOptionNumberFormats"]
     }),
     getUILanguages: builder.query<UILanguageResponse, void>({

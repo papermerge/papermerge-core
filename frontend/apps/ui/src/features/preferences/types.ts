@@ -75,3 +75,15 @@ export interface TimezoneResponse {
 export interface UILanguageResponse {
   languages: SelectOption[]
 }
+
+export interface DateFormatResponse {
+  date_formats: SelectOption[]
+}
+
+export interface TimestampFormatResponse {
+  timestamp_formats: SelectOption[]
+}
+
+export interface NumberFormatResponse {
+  number_formats: SelectOption[]
+}

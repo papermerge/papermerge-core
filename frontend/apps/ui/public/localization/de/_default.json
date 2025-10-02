@@ -413,6 +413,11 @@
       "label": "Zeitzone",
       "description": "Wähle deine Zeitzone für die korrekte Anzeige von Datum und Uhrzeit"
     },
+    "theme": {
+      "label": "Theme",
+      "light": "Hell",
+      "dark": "Dunkel"
+    },
     "updateSuccessTitle": "Erfolg",
     "updateSuccessMessage": "Einstellungen erfolgreich aktualisiert",
     "updateErrorTitle": "Fehler",

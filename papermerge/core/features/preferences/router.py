@@ -9,9 +9,13 @@ from papermerge.core.features.preferences.db import api as pref_dbapi
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.db.engine import get_db
 from .schema import Preferences, PreferencesUpdate, SystemPreferencesResponse, \
-    TimezonesResponse, UILanguageResponse
+    TimezonesResponse, UILanguageResponse, DateFormatResponse, \
+    TimestampFormatResponse, NumberFormatResponse
 from .timezone import TimezoneService
-from .ui_languages import get_ui_languages
+from .ui_language import get_ui_languages
+from .date_format import get_date_formats
+from .timestamp_format import get_timestamp_formats
+from .number_format import get_number_formats
 
 router = APIRouter(
     prefix="/preferences",
@@ -157,10 +161,37 @@ async def get_timezones():
 
 
 @router.get("/options/ui-language")
-async def get_timezones() -> UILanguageResponse:
+async def get_ui_languages_endpoint() -> UILanguageResponse:
     """
-    Get available UI Languages.
+    Get available UI Languages
     """
     languages = get_ui_languages()
 
     return UILanguageResponse(languages=languages)
+
+
+@router.get("/options/date-format")
+async def get_date_formats_endpoint() -> DateFormatResponse:
+    """
+    Get available date formats.
+    """
+    date_formats = get_date_formats()
+    return DateFormatResponse(date_formats=date_formats)
+
+
+@router.get("/options/timestamp-format")
+async def get_timestamp_formats_endpoint() -> TimestampFormatResponse:
+    """
+    Get available timestamp formats
+    """
+    timestamp_formats = get_timestamp_formats()
+    return TimestampFormatResponse(timestamp_formats=timestamp_formats)
+
+
+@router.get("/options/number-format")
+async def get_number_formats_endpoint() -> NumberFormatResponse:
+    """
+    Get available number formats
+    """
+    number_formats = get_number_formats()
+    return NumberFormatResponse(number_formats=number_formats)

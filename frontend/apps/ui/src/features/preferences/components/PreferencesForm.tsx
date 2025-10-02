@@ -1,5 +1,5 @@
 import {Preferences} from "@/features/preferences/types"
-import {ComboboxItem, Paper, Select, Stack, Text} from "@mantine/core"
+import {ComboboxItem, Paper, Select, Stack} from "@mantine/core"
 import {TFunction} from "i18next"
 import TimezonePicker from "./TimezonePicker"
 
@@ -17,12 +17,8 @@ export default function PreferencesForm({
   isLoading = false
 }: Args) {
   return (
-    <Paper p="md">
+    <Paper p="md" withBorder>
       <Stack>
-        <Text size="lg">
-          {t?.("preferencesForm.preferences", {defaultValue: "Preferences"})}
-        </Text>
-
         <Select
           label={t?.("preferencesForm.uiLanguage.label", {
             defaultValue: "Interface Language"

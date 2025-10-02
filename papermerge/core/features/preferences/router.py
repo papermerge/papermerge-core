@@ -36,29 +36,22 @@ async def update_my_preferences(
       schema.User, Security(get_current_user, scopes=[scopes.USER_ME])
     ],
     db_session: AsyncSession = Depends(get_db)
-):
+) -> Preferences:
     """Update current user's preferences"""
-    # Convert Pydantic model to dict, excluding None values
-    prefs_dict = preferences.model_dump(exclude_none=True)
-
-    if not prefs_dict:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No preferences provided"
-        )
 
     await pref_dbapi.update_user_preferences(
         db_session=db_session,
         user_id=current_user.id,
-        preferences=prefs_dict,
-        merge=True
+        preferences=preferences
     )
 
     # Return the merged preferences
-    return await pref_dbapi.get_merged_preferences_as_model(
+    ret: Preferences = await pref_dbapi.get_merged_preferences_as_model(
         db_session,
         current_user.id
     )
+
+    return ret
 
 
 # Admin endpoints

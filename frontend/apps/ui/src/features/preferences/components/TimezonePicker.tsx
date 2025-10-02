@@ -1,4 +1,4 @@
-import {useLazyGetTimezonesQuery} from "@/features/preferences/storage/api"
+import {useGetTimezonesQuery} from "@/features/preferences/storage/api"
 import {ComboboxItem, Select, SelectProps} from "@mantine/core"
 import React from "react"
 
@@ -13,12 +13,7 @@ export const TimezonePicker: React.FC<TimezonePickerProps> = ({
   onChange,
   ...selectProps
 }) => {
-  const [triggerFetch, result] = useLazyGetTimezonesQuery()
-  const {data: timezone_data, isLoading, isError} = result
-
-  const handleDropdownOpen = () => {
-    triggerFetch()
-  }
+  const {data, isLoading, isError} = useGetTimezonesQuery()
 
   return (
     <Select
@@ -26,9 +21,8 @@ export const TimezonePicker: React.FC<TimezonePickerProps> = ({
       placeholder="Select your timezone"
       value={value}
       onChange={onChange}
-      data={timezone_data?.timezones}
+      data={data?.timezones}
       searchable
-      onDropdownOpen={handleDropdownOpen}
       disabled={isLoading || isError}
       error={isError ? "Failed to load timezones" : null}
       nothingFoundMessage={

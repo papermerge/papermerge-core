@@ -6,7 +6,8 @@ from sqlalchemy import select
 
 from papermerge.core.features.preferences.db.orm import UserPreferences, \
     SystemPreferences
-from papermerge.core.features.preferences.schema import Preferences
+from papermerge.core.features.preferences.schema import Preferences, \
+    PreferencesUpdate
 
 # Default preferences constant
 DEFAULTS = {
@@ -76,8 +77,7 @@ async def get_merged_preferences(
 async def update_user_preferences(
     db_session: AsyncSession,
     user_id: UUID,
-    preferences: Dict[str, Any],
-    merge: bool = True
+    preferences: PreferencesUpdate
 ) -> UserPreferences:
     """
     Update user preferences
@@ -91,16 +91,13 @@ async def update_user_preferences(
     stmt = select(UserPreferences).where(UserPreferences.user_id == user_id)
     result = await db_session.execute(stmt)
     user_prefs = result.scalar_one_or_none()
-
+    new_pref_dict = preferences.model_dump(exclude_none=True)
     if user_prefs:
-        if merge:
-            # Merge with existing preferences
-            current = user_prefs.preferences or {}
-            current.update(preferences)
-            user_prefs.preferences = current
-        else:
-            # Replace completely
-            user_prefs.preferences = preferences
+        previous_prefs = user_prefs.preferences or {}
+        # SqlAlchemy detects change (and saves it) only
+        # if `user_prefs.preferences` is a new object
+        new_dictionary_object = {**previous_prefs, **new_pref_dict}
+        user_prefs.preferences = new_dictionary_object
     else:
         # Create new user preferences
         user_prefs = UserPreferences(

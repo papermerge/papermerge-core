@@ -5,7 +5,7 @@ import {
   updateMyPreferences
 } from "@/features/preferences/storage/preference"
 import {Preferences} from "@/features/preferences/types"
-import {ComboboxItem} from "@mantine/core"
+import {ComboboxItem, Container, Stack, Text} from "@mantine/core"
 import {notifications} from "@mantine/notifications"
 import {useTranslation} from "react-i18next"
 import PreferencesForm from "./PreferencesForm"
@@ -54,11 +54,18 @@ export default function MyPreferencesContainer() {
   }
 
   return (
-    <PreferencesForm
-      preferences={myPreferences}
-      onChange={onChange}
-      isLoading={isLoading}
-      t={t}
-    />
+    <Stack gap="md" p="md">
+      <Text size="lg" fw={500}>
+        {t?.("preferencesForm.preferences", {defaultValue: "Preferences"})}
+      </Text>
+      <Container size="sm" px={0}>
+        <PreferencesForm
+          preferences={myPreferences}
+          onChange={onChange}
+          isLoading={isLoading}
+          t={t}
+        />
+      </Container>
+    </Stack>
   )
 }

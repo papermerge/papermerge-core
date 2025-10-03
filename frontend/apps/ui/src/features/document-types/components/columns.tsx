@@ -1,4 +1,5 @@
 import Owner from "@/components/Owner"
+import TimestampZ from "@/components/Timestampz"
 import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
 import type {DocumentTypeItem} from "@/features/document-types/types"
 import type {OwnedBy} from "@/types"
@@ -57,7 +58,7 @@ export default function documentTypeColumns(t?: TFunction) {
       visible: true,
       width: 200,
       minWidth: 100,
-      render: value => <Text size="sm">{value as string}</Text>
+      render: value => <TimestampZ value={value as string} />
     },
     {
       key: "created_by",
@@ -77,7 +78,7 @@ export default function documentTypeColumns(t?: TFunction) {
       visible: false,
       width: 200,
       minWidth: 100,
-      render: value => <Text size="sm">{value as string}</Text>
+      render: value => <TimestampZ value={value as string} />
     },
     {
       key: "updated_by",

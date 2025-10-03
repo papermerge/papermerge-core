@@ -15,6 +15,7 @@ from papermerge.core.utils.misc import is_valid_uuid
 from papermerge.core.features.auth import scopes
 from papermerge.core import constants
 from papermerge.core.schemas import error as err_schema
+from papermerge.core.features.preferences.db import api as prefs_dbapi
 from .orm import User
 
 DATETIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
@@ -35,10 +36,20 @@ async def get_user(db_session: AsyncSession, user_id_or_username: str) -> schema
     db_user = (await db_session.scalars(stmt, params)).one()
 
     logger.debug(f"User {db_user} fetched")
+
+    # Get merged preferences as Pydantic model
+    preferences_model = await prefs_dbapi.get_merged_preferences_as_model(
+        db_session,
+        db_user.id
+    )
+
+    # Convert ORM model to Pydantic schema
     model_user = schema.User.model_validate(db_user)
 
-    return model_user
+    # Add preferences to the user object
+    model_user.preferences = preferences_model
 
+    return model_user
 
 async def get_user_group_homes(
     db_session: AsyncSession, user_id: uuid.UUID

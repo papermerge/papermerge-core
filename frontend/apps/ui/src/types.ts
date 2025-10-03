@@ -1,5 +1,6 @@
 import type {Group} from "@/types.d/groups"
 import {DocumentType} from "./features/document/types"
+import {Preferences} from "./features/preferences/types"
 
 export type ByUser = {
   username: string
@@ -67,6 +68,7 @@ export type UserDetails = User & {
   created_by: ByUser
   updated_at: string
   updated_by: ByUser
+  preferences: Preferences
 }
 
 export type UserEditableFields = {

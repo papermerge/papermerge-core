@@ -404,6 +404,25 @@
       "deleted": "Tag wurde erfolgreich gelöscht"
     }
   },
+  "preferences": {
+    "uiLanguage": {
+      "label": "Oberflächensprache",
+      "description": "Sprache für die Benutzeroberfläche"
+    },
+    "timezone": {
+      "label": "Zeitzone",
+      "description": "Wähle deine Zeitzone für die korrekte Anzeige von Datum und Uhrzeit"
+    },
+    "theme": {
+      "label": "Theme",
+      "light": "Hell",
+      "dark": "Dunkel"
+    },
+    "updateSuccessTitle": "Erfolg",
+    "updateSuccessMessage": "Einstellungen erfolgreich aktualisiert",
+    "updateErrorTitle": "Fehler",
+    "updateErrorMessage": "Einstellungen konnten nicht aktualisiert werden"
+  },
   "roles.name": "Rollen",
   "roles.new.title": "Neue Rolle",
   "roles.edit.title": "Rolle bearbeiten",
@@ -544,6 +563,8 @@
   },
   "pickValue": "Wert auswählen",
   "loading": "Laden...",
+  "nothingFound": "Nichts gefunden",
+  "failedToLoad": "Fehler beim Laden",
   "name": "Name",
   "cancel": "Abrechen",
   "save": "Speichern"

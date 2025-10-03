@@ -13,6 +13,7 @@ import filesReducer from "@/features/files/filesSlice"
 import groupsReducer from "@/features/groups/storage/group"
 import nodesReducer from "@/features/nodes/nodesSlice"
 import thumbnailObjects from "@/features/nodes/thumbnailObjectsSlice"
+import preferencesReducer from "@/features/preferences/storage/preference"
 import rolesReducer from "@/features/roles/storage/role"
 import searchReducer from "@/features/search/searchSlice"
 import sharedNodesReducer from "@/features/shared_nodes/store/sharedNodesSlice"
@@ -45,7 +46,7 @@ export const store = configureStore({
     docVers: docVersReducer,
     docs: docsReducer,
     files: filesReducer,
-
+    preferences: preferencesReducer,
     [apiSlice.reducerPath]: apiSlice.reducer
   },
   middleware: getDefaultMiddleware =>

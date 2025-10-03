@@ -15,6 +15,7 @@ from pydantic import (
 from papermerge.core.features.groups.schema import Group
 from papermerge.core.features.roles.schema import Role
 from papermerge.core.schemas.common import ByUser
+from papermerge.core.features.preferences.schema import Preferences
 
 
 class RemoteUser(BaseModel):
@@ -38,6 +39,7 @@ class User(BaseModel):
     is_superuser: bool = False
     is_active: bool = False
     scopes: list[str] = []
+    preferences: Preferences = Preferences()
 
     @field_validator("scopes")
     @classmethod

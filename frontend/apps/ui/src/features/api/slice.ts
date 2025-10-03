@@ -75,7 +75,11 @@ export const apiSlice = createApi({
     "DocumentCFV",
     "DocVersList",
     "DocumentVersion",
-    "AuditLog"
+    "AuditLog",
+    "PreferenceOptionTimezones",
+    "PreferenceOptionDateFormats",
+    "PreferenceOptionNumberFormats",
+    "PreferenceOptionTimestampFormats"
   ],
   endpoints: _ => ({})
 })

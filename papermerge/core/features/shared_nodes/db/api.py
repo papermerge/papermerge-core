@@ -171,9 +171,8 @@ async def get_shared_node_ids(
     db_session: AsyncSession,
     user_id: uuid.UUID,
 ) -> Sequence[uuid.UUID]:
-    UserGroupAlias = aliased(orm.user_groups_association)
-    subquery = select(UserGroupAlias.c.group_id).where(
-        UserGroupAlias.c.user_id == user_id
+    subquery = (select(orm.UserGroup.group_id).where(
+        orm.UserGroup.user_id == user_id)
     )
 
     stmt = (

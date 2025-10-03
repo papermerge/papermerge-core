@@ -1,3 +1,4 @@
+import TimestampZ from "@/components/Timestampz"
 import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
 import {Box, Text} from "@mantine/core"
 import {TFunction} from "i18next"
@@ -42,7 +43,7 @@ export default function roleColumns(t?: TFunction) {
       visible: true,
       width: 200,
       minWidth: 100,
-      render: value => <Text size="sm">{value as string}</Text>
+      render: value => <TimestampZ value={value as string} />
     },
     {
       key: "created_by",
@@ -62,7 +63,7 @@ export default function roleColumns(t?: TFunction) {
       visible: false,
       width: 200,
       minWidth: 100,
-      render: value => <Text size="sm">{value as string}</Text>
+      render: value => <TimestampZ value={value as string} />
     },
     {
       key: "updated_by",

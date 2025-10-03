@@ -181,7 +181,7 @@ export default function Viewer() {
   }
 
   return (
-    <div ref={ref}>
+    <div ref={ref} style={{height: "100%"}}>
       <ActionButtons
         onEditNodeTitleClicked={onEditNodeTitleItem}
         onRotateCWClicked={onRotateCWItemClicked}
@@ -192,7 +192,7 @@ export default function Viewer() {
         <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
         <DocumentDetailsToggle />
       </Group>
-      <Flex className={classes.inner}>
+      <Flex className={classes.inner} style={{height: "100%"}}>
         {thumbnailsIsOpen && <ThumbnailList />}
         <ThumbnailsToggle />
         <PageList />

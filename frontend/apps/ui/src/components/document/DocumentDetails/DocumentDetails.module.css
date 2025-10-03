@@ -5,10 +5,13 @@
   padding-top: 1rem;
   width: 25%;
   min-width: 20rem;
-  overflow-y: scroll;
-  padding-bottom: 1rem;
+  overflow-y: auto;
+  height: 100%;
+  padding-bottom: 5rem;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
 }
-
 .documentDetailsClosed {
   position: relative;
   padding-left: 0rem;
@@ -17,4 +20,5 @@
 
 .documentDetailsContent {
   width: 100%;
+  flex-shrink: 0;
 }

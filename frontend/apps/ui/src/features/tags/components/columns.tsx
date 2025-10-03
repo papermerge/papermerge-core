@@ -1,4 +1,5 @@
 import Owner from "@/components/Owner"
+import TimestampZ from "@/components/Timestampz"
 import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
 import type {TagItem} from "@/features/tags/types"
 import {OwnedBy} from "@/types"
@@ -63,7 +64,7 @@ export default function tagColumns(t?: TFunction) {
       visible: true,
       width: 200,
       minWidth: 100,
-      render: value => <Text size="sm">{value as string}</Text>
+      render: value => <TimestampZ value={value as string} />
     },
     {
       key: "created_by",
@@ -83,7 +84,7 @@ export default function tagColumns(t?: TFunction) {
       visible: false,
       width: 200,
       minWidth: 100,
-      render: value => <Text size="sm">{value as string}</Text>
+      render: value => <TimestampZ value={value as string} />
     },
     {
       key: "updated_by",

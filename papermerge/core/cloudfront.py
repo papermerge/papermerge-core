@@ -1,14 +1,14 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 
-import pytz
 from botocore.signers import CloudFrontSigner
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
+
 from papermerge.core.config import settings
 from papermerge.core.cache import client as cache
-
+from papermerge.core.utils.tz import utc_now
 
 PEM_PRIVATE_KEY_STRING = "pem-private-key-string"
 PEM_PRIVATE_KEY_TTL = 600
@@ -63,15 +63,15 @@ def sign_url(url: str, valid_for: int = 600):
         to 600 (i.e. 10 minutes)
     """
     key_id = settings.papermerge__main__cf_sign_url_key_id
-    tz = pytz.timezone(
-        settings.papermerge__main__timezone
-    )
+
     if key_id is None:
         raise ValueError(
             "CF_SIGN_URL_KEY_ID is empty"
         )
     cf_signer = CloudFrontSigner(key_id, rsa_signer)
-    date_less_than = datetime.now(tz) + timedelta(seconds=valid_for)
+
+    # CloudFront expiration times are always in UTC
+    date_less_than = utc_now() + timedelta(seconds=valid_for)
     signed_url = cf_signer.generate_presigned_url(
         url,
         date_less_than=date_less_than

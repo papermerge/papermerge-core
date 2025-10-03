@@ -9,7 +9,7 @@ from sqlalchemy.orm import selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
 
-from papermerge.core.utils.tz import tz_aware_datetime_now
+from papermerge.core.utils.tz import utc_now
 from papermerge.core import orm, schema
 from papermerge.core.utils.misc import is_valid_uuid
 from papermerge.core.features.auth import scopes
@@ -772,9 +772,9 @@ async def delete_user(
         orm.UserRole.user_id == user.id,
         orm.UserRole.deleted_at.is_(None)
     ).values(
-        deleted_at=tz_aware_datetime_now(),
+        deleted_at=utc_now(),
         deleted_by=deleted_by_user_id,
-        updated_at=tz_aware_datetime_now(),
+        updated_at=utc_now(),
         updated_by=deleted_by_user_id
     )
     await db_session.execute(user_roles_update_stmt)
@@ -784,17 +784,17 @@ async def delete_user(
         orm.UserGroup.user_id == user.id,
         orm.UserGroup.deleted_at.is_(None)
     ).values(
-        deleted_at=tz_aware_datetime_now(),
+        deleted_at=utc_now(),
         deleted_by=deleted_by_user_id,
-        updated_at=tz_aware_datetime_now(),
+        updated_at=utc_now(),
         updated_by=deleted_by_user_id
     )
     await db_session.execute(user_groups_update_stmt)
 
     # Soft delete the user
-    user.deleted_at = tz_aware_datetime_now()
+    user.deleted_at = utc_now()
     user.deleted_by = deleted_by_user_id
-    user.updated_at = tz_aware_datetime_now()
+    user.updated_at = utc_now()
     user.updated_by = deleted_by_user_id
 
     await db_session.commit()

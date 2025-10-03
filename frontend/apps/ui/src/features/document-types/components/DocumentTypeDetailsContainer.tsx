@@ -2,9 +2,11 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
 import {useGetDocumentTypeQuery} from "@/features/document-types/storage/api"
 import {selectDocumentTypeDetailsID} from "@/features/document-types/storage/documentType"
+import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
 import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
+import {formatTimestamp} from "@/utils/formatTimestamp"
 import {
   Breadcrumbs,
   Group,
@@ -36,6 +38,7 @@ export default function DocumentTypeDetailsContainer() {
       skip: !documentTypeID
     }
   )
+  const {timestamp_format, timezone} = useAppSelector(selectMyPreferences)
 
   if (isLoading) return <LoadingPanel />
   if (error) return <div>Error loading documentType details</div>
@@ -62,7 +65,7 @@ export default function DocumentTypeDetailsContainer() {
           <DocumentTypeForm key={data.id} documentType={data} />
 
           <CopyableTextInput
-            value={data.updated_at}
+            value={formatTimestamp(data.updated_at, timestamp_format, timezone)}
             label={t?.("updated_at", {defaultValue: "Updated at"})}
           />
           <CopyableTextInput
@@ -70,7 +73,7 @@ export default function DocumentTypeDetailsContainer() {
             label={t?.("updated_by", {defaultValue: "Updated by"})}
           />
           <CopyableTextInput
-            value={data.created_at}
+            value={formatTimestamp(data.created_at, timestamp_format, timezone)}
             label={t?.("created_at", {defaultValue: "Created at"})}
           />
           <CopyableTextInput

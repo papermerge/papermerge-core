@@ -15,7 +15,7 @@ from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from core.utils.tz import tz_aware_datetime_now
+from core.utils.tz import utc_now
 from papermerge.core.tests.resource_file import ResourceFile
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core import constants
@@ -806,9 +806,9 @@ def make_role(db_session, make_user, random_string):
             name=name,
             permissions=perms,
             created_by=user.id,
-            created_at=tz_aware_datetime_now(),
+            created_at=utc_now(),
             updated_by=user.id,
-            updated_at=tz_aware_datetime_now()
+            updated_at=utc_now()
         )
         db_session.add(role)
         await db_session.commit()

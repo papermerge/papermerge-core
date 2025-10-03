@@ -9,6 +9,7 @@ class FileServer(str, Enum):
     S3 = 's3'
 
 class Settings(BaseSettings):
+    papermerge__database__url: str
     papermerge__main__logging_cfg: Path | None = Path("/etc/papermerge/logging.yaml")
     papermerge__main__media_root: Path = Path("media")
     papermerge__main__api_prefix: str = ''
@@ -17,9 +18,7 @@ class Settings(BaseSettings):
     papermerge__main__cf_sign_url_private_key: str | None = None
     papermerge__main__cf_sign_url_key_id: str | None = None
     papermerge__main__cf_domain: str | None = None
-    papermerge__main__timezone: str = 'Europe/Berlin'
     papermerge__main__cache_enabled: bool = False
-    papermerge__database__url: str = "sqlite:////db/db.sqlite3"
     papermerge__redis__url: str | None = None
     papermerge__ocr__default_lang_code: str = 'deu'
     papermerge__preview__page_size_sm: int = 200  # pixels

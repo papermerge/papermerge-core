@@ -1,3 +1,4 @@
+import TimestampZ from "@/components/Timestampz"
 import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
 import {Badge, Box, Text} from "@mantine/core"
 import {TFunction} from "i18next"
@@ -10,15 +11,6 @@ const OPERATION_COLORS = {
   DELETE: "red"
 } as const
 
-// Pre-process date formatting to avoid repeated Date() calls
-const formatTimestamp = (timestamp: string) => {
-  const date = new Date(timestamp)
-  return {
-    date: date.toLocaleDateString(),
-    time: date.toLocaleTimeString()
-  }
-}
-
 export default function auditLogColumns(t?: TFunction) {
   const columns: ColumnConfig<AuditLogItem>[] = [
     {
@@ -29,18 +21,12 @@ export default function auditLogColumns(t?: TFunction) {
       width: 180,
       minWidth: 180,
       render: (value, row, onClick) => {
-        const {date, time} = formatTimestamp(value as string)
         return (
           <Box
             style={{cursor: "pointer"}}
             onClick={() => onClick?.(row, false)}
           >
-            <Text component="a" size="xs">
-              {date}
-            </Text>
-            <Text size="xs" c="dimmed">
-              {time}
-            </Text>
+            <TimestampZ value={value as string} />
           </Box>
         )
       }

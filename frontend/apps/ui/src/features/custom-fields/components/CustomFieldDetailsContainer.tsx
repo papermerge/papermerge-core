@@ -2,10 +2,12 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
 import {useGetCustomFieldQuery} from "@/features/custom-fields/storage/api"
 import {selectCustomFieldDetailsID} from "@/features/custom-fields/storage/custom_field"
+import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
 import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
 import type {CustomFieldDetails} from "@/types.d/customFields"
+import {formatTimestamp} from "@/utils/formatTimestamp"
 import {
   Breadcrumbs,
   Group,
@@ -34,6 +36,7 @@ export default function CustomFieldDetailsContainer() {
       skip: !customFieldID
     }
   )
+  const {timestamp_format, timezone} = useAppSelector(selectMyPreferences)
 
   if (isLoading) return <LoadingPanel />
   if (error) return <div>Error loading customField details</div>
@@ -60,7 +63,7 @@ export default function CustomFieldDetailsContainer() {
           <CustomFieldForm key={data.id} customField={data} t={t} />
 
           <CopyableTextInput
-            value={data.updated_at}
+            value={formatTimestamp(data.updated_at, timestamp_format, timezone)}
             label={t?.("updated_at", {defaultValue: "Updated at"})}
           />
           <CopyableTextInput
@@ -68,7 +71,7 @@ export default function CustomFieldDetailsContainer() {
             label={t?.("updated_by", {defaultValue: "Updated by"})}
           />
           <CopyableTextInput
-            value={data.created_at}
+            value={formatTimestamp(data.created_at, timestamp_format, timezone)}
             label={t?.("created_at", {defaultValue: "Created at"})}
           />
           <CopyableTextInput

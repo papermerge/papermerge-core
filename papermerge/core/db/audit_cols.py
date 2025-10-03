@@ -5,18 +5,18 @@ from sqlalchemy import func, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 
-from papermerge.core.utils.tz import tz_aware_datetime_now
+from papermerge.core.utils.tz import utc_now
 
 
 class AuditColumns:
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
-        default=lambda: tz_aware_datetime_now(),
+        default=utc_now,
         nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
-        default=lambda: tz_aware_datetime_now(),
+        default=utc_now,
         onupdate=func.now(),
         nullable=False
     )

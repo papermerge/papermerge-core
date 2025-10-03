@@ -15,7 +15,7 @@ from papermerge.core import schema, orm
 from papermerge.core import constants as const
 from papermerge.core.tasks import send_task
 from papermerge.core.features.document_types import schema as dt_schema
-from papermerge.core.utils.tz import tz_aware_datetime_now
+from papermerge.core.utils.tz import utc_now
 from .orm import DocumentType
 
 logger = logging.getLogger(__name__)
@@ -589,7 +589,7 @@ async def delete_document_type(
         )
 
     # All checks passed - perform soft delete
-    document_type.deleted_at = tz_aware_datetime_now()
+    document_type.deleted_at = utc_now()
     document_type.deleted_by = user_id
 
     # Add to session and commit

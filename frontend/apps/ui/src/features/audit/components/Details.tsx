@@ -1,3 +1,6 @@
+import {useAppSelector} from "@/app/hooks"
+import {selectMyPreferences} from "@/features/preferences/storage/preference"
+import {formatTimestamp} from "@/utils/formatTimestamp"
 import {Paper} from "@mantine/core"
 import {TFunction} from "i18next"
 import {CopyableTextArea, CopyableTextInput} from "kommon"
@@ -9,6 +12,8 @@ interface Args {
 }
 
 export default function AuditLogDetailsComponent({auditLog, t}: Args) {
+  const {timestamp_format, timezone} = useAppSelector(selectMyPreferences)
+
   return (
     <Paper style={{height: "100%"}} className="scrollable-y">
       <CopyableTextInput
@@ -17,7 +22,7 @@ export default function AuditLogDetailsComponent({auditLog, t}: Args) {
         py="xs"
       />
       <CopyableTextInput
-        value={auditLog?.timestamp}
+        value={formatTimestamp(auditLog.timestamp, timestamp_format, timezone)}
         label={t?.("auditLogDetails.timestamp") || "Timestamp"}
         py="xs"
       />

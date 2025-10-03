@@ -14,6 +14,7 @@ import {
 
 import Uploader from "@/components/Uploader"
 import "./App.css"
+import {useUILanguage, useUITheme} from "./hooks"
 
 function App() {
   const navigate = useNavigate()
@@ -21,6 +22,9 @@ function App() {
   const status = useSelector(selectCurrentUserStatus)
   const error = useSelector(selectCurrentUserError)
   const user = useSelector(selectCurrentUser)
+
+  useUILanguage()
+  useUITheme()
 
   useEffect(() => {
     /* notice *EXACT match* of the root route.

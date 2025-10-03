@@ -1,10 +1,8 @@
 import {Group, useMantineTheme} from "@mantine/core"
 import logoURL from "/logo_transparent_bg.svg"
 
-import {ColorSchemeToggle} from "@/components/ColorSchemeToggle/ColorSchemeToggle"
 import classes from "./Header.module.css"
 
-import LanguageMenu from "./LanguageMenu"
 import Search from "./Search"
 import SidebarToggle from "./SidebarToggle"
 import UserMenu from "./UserMenu"
@@ -29,8 +27,6 @@ function Header() {
           <Search />
         </Group>
         <Group>
-          <LanguageMenu />
-          <ColorSchemeToggle />
           <UserMenu />
         </Group>
       </div>

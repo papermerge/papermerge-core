@@ -93,6 +93,8 @@ class NumberFormat(str, Enum):
 class UILanguage(str, Enum):
     EN = "en"
     DE = "de"
+    KK = "kk"
+    RU = "ru"
 
 
 class UITheme(str, Enum):

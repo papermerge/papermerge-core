@@ -48,20 +48,20 @@ export default function DocumentDetails({doc, docVer, docID, isLoading}: Args) {
 
   if (!docID || isLoading) {
     return (
-      <Group align="flex-start" className={classes.documentDetailsOpened}>
+      <div className={classes.documentDetailsOpened}>
         <DocumentDetailsToggle />
         <Stack className={classes.documentDetailsContent} justify="flex-start">
           <Skeleton height={"20"} />
           <Skeleton height={"20"} />
           <Skeleton height={"20"} />
         </Stack>
-      </Group>
+      </div>
     )
   }
 
   if (documentDetailsIsOpen) {
     return (
-      <Group align="flex-start" className={classes.documentDetailsOpened}>
+      <div className={classes.documentDetailsOpened}>
         <Stack className={classes.documentDetailsContent} justify="flex-start">
           <TextInput
             label="ID"
@@ -107,7 +107,7 @@ export default function DocumentDetails({doc, docVer, docID, isLoading}: Args) {
             mt="md"
           />
         </Stack>
-      </Group>
+      </div>
     )
   }
 

@@ -1,11 +1,13 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
+import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
 import {useGetTagQuery} from "@/features/tags/storage/api"
 import {selectTagDetailsID} from "@/features/tags/storage/tag"
 import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
 import type {TagDetails} from "@/types.d/tags"
+import {formatTimestamp} from "@/utils/formatTimestamp"
 import {
   Breadcrumbs,
   Group,
@@ -28,6 +30,7 @@ export default function TagDetailsContainer() {
   const dispatch = useAppDispatch()
   const {t} = useTranslation()
   const tagID = useAppSelector(s => selectTagDetailsID(s, mode))
+  const {timestamp_format, timezone} = useAppSelector(selectMyPreferences)
   const {data, isLoading, isFetching, error} = useGetTagQuery(tagID || "", {
     skip: !tagID
   })
@@ -57,7 +60,7 @@ export default function TagDetailsContainer() {
           <TagForm key={data.id} tag={data} />
 
           <CopyableTextInput
-            value={data.updated_at}
+            value={formatTimestamp(data.updated_at, timestamp_format, timezone)}
             label={t?.("updated_at", {defaultValue: "Updated at"})}
           />
           <CopyableTextInput
@@ -65,7 +68,7 @@ export default function TagDetailsContainer() {
             label={t?.("updated_by", {defaultValue: "Updated by"})}
           />
           <CopyableTextInput
-            value={data.created_at}
+            value={formatTimestamp(data.created_at, timestamp_format, timezone)}
             label={t?.("created_at", {defaultValue: "Created at"})}
           />
           <CopyableTextInput

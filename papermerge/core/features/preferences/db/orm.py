@@ -5,7 +5,7 @@ from sqlalchemy import Text, CheckConstraint, Boolean, ForeignKey, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 
-from papermerge.core.utils.tz import tz_aware_datetime_now
+from papermerge.core.utils.tz import utc_now
 from papermerge.core.db.base import Base
 
 
@@ -31,12 +31,12 @@ class SystemPreferences(Base):
 
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
-        default=lambda: tz_aware_datetime_now(),
+        default=utc_now,
         nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
-        default=lambda: tz_aware_datetime_now(),
+        default=utc_now,
         onupdate=func.now(),
         nullable=False
     )
@@ -64,12 +64,12 @@ class UserPreferences(Base):
 
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
-        default=lambda: tz_aware_datetime_now(),
+        default=utc_now,
         nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
-        default=lambda: tz_aware_datetime_now(),
+        default=utc_now,
         onupdate=func.now(),
         nullable=False
     )

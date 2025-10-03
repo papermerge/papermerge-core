@@ -6,7 +6,6 @@ import {useAppSelector} from "./useApp"
 
 export default function useUITheme() {
   const {colorScheme, setColorScheme} = useMantineColorScheme()
-
   const {ui_theme} = useAppSelector(selectMyPreferences)
 
   useEffect(() => {

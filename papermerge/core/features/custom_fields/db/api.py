@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import schema, orm
 from papermerge.core.db.exceptions import ResourceAccessDenied
-from papermerge.core.utils.tz import tz_aware_datetime_now
+from papermerge.core.utils.tz import utc_now
 
 logger = logging.getLogger(__name__)
 
@@ -518,7 +518,7 @@ async def delete_custom_field(
     # Perform soft delete by setting deleted_at and deleted_by
     # Note: The deleted_by will be set by the audit trigger using the audit context
     # that was established in the endpoint with AsyncAuditContext
-    custom_field.deleted_at = tz_aware_datetime_now()
+    custom_field.deleted_at = utc_now()
     custom_field.deleted_by = user_id
 
     # Add to session and commit

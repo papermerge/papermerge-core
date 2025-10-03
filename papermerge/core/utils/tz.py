@@ -1,12 +1,6 @@
-from datetime import datetime
-from zoneinfo import ZoneInfo
-
-from papermerge.core import config
-
-settings = config.get_settings()
+from datetime import datetime, timezone
 
 
-def tz_aware_datetime_now():
-    tz = settings.papermerge__main__timezone
-    zone = ZoneInfo(tz)
-    return datetime.now(zone)
+def utc_now():
+    """Returns current time in UTC - always use for database timestamps"""
+    return datetime.now(timezone.utc)

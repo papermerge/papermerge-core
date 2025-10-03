@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from papermerge.core.utils.tz import tz_aware_datetime_now
+from papermerge.core.utils.tz import utc_now
 from papermerge.core import schema, orm
 from papermerge.core.features.auth import scopes
 
@@ -530,17 +530,17 @@ async def delete_role(
         orm.UserRole.role_id == role_id,
         orm.UserRole.deleted_at.is_(None)
     ).values(
-        deleted_at=tz_aware_datetime_now(),
+        deleted_at=utc_now(),
         deleted_by=deleted_by_user_id,
-        updated_at=tz_aware_datetime_now(),
+        updated_at=utc_now(),
         updated_by=deleted_by_user_id
     )
     await db_session.execute(user_roles_update_stmt)
 
     # Soft delete the role
-    role.deleted_at = tz_aware_datetime_now()
+    role.deleted_at = utc_now()
     role.deleted_by = deleted_by_user_id
-    role.updated_at = tz_aware_datetime_now()
+    role.updated_at = utc_now()
     role.updated_by = deleted_by_user_id
 
     await db_session.commit()
@@ -578,9 +578,9 @@ async def archive_role(
         raise NoResultFound(f"Role with id {role_id} not found or already archived/deleted")
 
     # Archive the role (keep user associations intact)
-    role.archived_at = tz_aware_datetime_now()
+    role.archived_at = utc_now()
     role.archived_by = archived_by_user_id
-    role.updated_at = tz_aware_datetime_now()
+    role.updated_at = utc_now()
     role.updated_by = archived_by_user_id
 
     await db_session.commit()
@@ -624,7 +624,7 @@ async def restore_role(
     role.deleted_by = None
     role.archived_at = None  # Also unarchive if archived
     role.archived_by = None
-    role.updated_at = tz_aware_datetime_now()
+    role.updated_at = utc_now()
     role.updated_by = restored_by_user_id
 
     # Conditionally restore user associations
@@ -635,7 +635,7 @@ async def restore_role(
         ).values(
             deleted_at=None,
             deleted_by=None,
-            updated_at=tz_aware_datetime_now(),
+            updated_at=utc_now(),
             updated_by=restored_by_user_id
         )
         await db_session.execute(user_roles_restore_stmt)

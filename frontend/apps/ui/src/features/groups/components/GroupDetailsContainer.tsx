@@ -2,10 +2,12 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
 import {useGetGroupQuery} from "@/features/groups/storage/api"
 import {selectGroupDetailsID} from "@/features/groups/storage/group"
+import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
 import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
 import type {GroupDetails} from "@/types.d/groups"
+import {formatTimestamp} from "@/utils/formatTimestamp"
 import {
   Breadcrumbs,
   Group,
@@ -31,6 +33,7 @@ export default function GroupDetailsContainer() {
   const {data, isLoading, isFetching, error} = useGetGroupQuery(groupID || "", {
     skip: !groupID
   })
+  const {timestamp_format, timezone} = useAppSelector(selectMyPreferences)
 
   if (isLoading) return <LoadingPanel />
   if (error) return <div>Error loading group details</div>
@@ -57,7 +60,7 @@ export default function GroupDetailsContainer() {
           <GroupForm key={data.id} group={data} />
 
           <CopyableTextInput
-            value={data.updated_at}
+            value={formatTimestamp(data.updated_at, timestamp_format, timezone)}
             label={t?.("updated_at", {defaultValue: "Updated at"})}
           />
           <CopyableTextInput
@@ -65,7 +68,7 @@ export default function GroupDetailsContainer() {
             label={t?.("updated_by", {defaultValue: "Updated by"})}
           />
           <CopyableTextInput
-            value={data.created_at}
+            value={formatTimestamp(data.created_at, timestamp_format, timezone)}
             label={t?.("created_at", {defaultValue: "Created at"})}
           />
           <CopyableTextInput

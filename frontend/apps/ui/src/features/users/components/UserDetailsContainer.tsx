@@ -1,10 +1,12 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
+import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
 import {useGetUserQuery} from "@/features/users/storage/api"
 import {selectUserDetailsID} from "@/features/users/storage/user"
 import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
+import {formatTimestamp} from "@/utils/formatTimestamp"
 import {
   Breadcrumbs,
   Group,
@@ -32,6 +34,7 @@ export default function UserDetailsContainer() {
   const {data, isLoading, isFetching, error} = useGetUserQuery(userID || "", {
     skip: !userID
   })
+  const {timestamp_format, timezone} = useAppSelector(selectMyPreferences)
 
   if (isLoading) return <LoadingPanel />
   if (error) return <div>Error loading user details</div>
@@ -68,7 +71,7 @@ export default function UserDetailsContainer() {
           />
 
           <CopyableTextInput
-            value={data.updated_at}
+            value={formatTimestamp(data.updated_at, timestamp_format, timezone)}
             label={t?.("updated_at", {defaultValue: "Updated at"})}
           />
           <CopyableTextInput
@@ -76,7 +79,7 @@ export default function UserDetailsContainer() {
             label={t?.("updated_by", {defaultValue: "Updated by"})}
           />
           <CopyableTextInput
-            value={data.created_at}
+            value={formatTimestamp(data.created_at, timestamp_format, timezone)}
             label={t?.("created_at", {defaultValue: "Created at"})}
           />
           <CopyableTextInput

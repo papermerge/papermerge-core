@@ -1,5 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
+import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import useI18NText from "@/features/roles/hooks/useRoleFormI18NText"
 import {useGetRoleQuery} from "@/features/roles/storage/api"
 import {
@@ -11,6 +12,7 @@ import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
 import {server2clientPerms} from "@/features/roles/utils"
 import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
+import {formatTimestamp} from "@/utils/formatTimestamp"
 import {
   Breadcrumbs,
   Group,
@@ -40,6 +42,7 @@ export default function RoleDetailsContainer() {
   const {data, isLoading, isFetching, error} = useGetRoleQuery(roleID || "", {
     skip: !roleID
   })
+  const {timestamp_format, timezone} = useAppSelector(selectMyPreferences)
   const expandedNodes = useAppSelector(s =>
     selectRoleFormExpandedNodes(s, mode)
   )
@@ -90,7 +93,7 @@ export default function RoleDetailsContainer() {
             onExpandedStateChange={handleExpandedStateChange}
           />
           <CopyableTextInput
-            value={data.updated_at}
+            value={formatTimestamp(data.updated_at, timestamp_format, timezone)}
             label={t?.("updated_at", {defaultValue: "Updated at"})}
           />
           <CopyableTextInput
@@ -98,7 +101,7 @@ export default function RoleDetailsContainer() {
             label={t?.("updated_by", {defaultValue: "Updated by"})}
           />
           <CopyableTextInput
-            value={data.created_at}
+            value={formatTimestamp(data.created_at, timestamp_format, timezone)}
             label={t?.("created_at", {defaultValue: "Created at"})}
           />
           <CopyableTextInput

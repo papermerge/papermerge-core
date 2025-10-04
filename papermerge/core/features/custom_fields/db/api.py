@@ -3,7 +3,8 @@ import logging
 import uuid
 from typing import Optional, Dict, Any
 
-from sqlalchemy import select, func, or_, and_
+from pydantic import ValidationError
+from sqlalchemy import select, func, or_, and_, asc, desc
 from sqlalchemy.orm import aliased
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,6 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from papermerge.core import schema, orm
 from papermerge.core.db.exceptions import ResourceAccessDenied
 from papermerge.core.utils.tz import utc_now
+from papermerge.core.features.custom_fields.cf_types.registry import \
+    TypeRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -246,7 +249,6 @@ async def get_custom_fields(
     )
 
 
-
 async def get_custom_fields_without_pagination(
     db_session: AsyncSession,
     user_id: uuid.UUID | None = None,
@@ -269,36 +271,49 @@ async def get_custom_fields_without_pagination(
 
 async def create_custom_field(
     session: AsyncSession,
-    name: str,
-    type: schema.CustomFieldType,
-    user_id: uuid.UUID | None = None,
-    group_id: uuid.UUID | None = None,
-    extra_data: str | None = None,
+    user_id: uuid.UUID,
+    data: schema.CreateCustomField
 ) -> schema.CustomField:
-    cfield = None
+    """
+    Create a new custom field
 
-    if user_id:
-        cfield = orm.CustomField(
-            id=uuid.uuid4(),
-            name=name,
-            type=type,
-            extra_data=extra_data,
-            user_id=user_id,
-        )
-    elif group_id:
-        cfield = orm.CustomField(
-            id=uuid.uuid4(),
-            name=name,
-            type=type,
-            extra_data=extra_data,
-            group_id=group_id,
-        )
+    Args:
+        session: Database session
+        user_id: Owner user ID
+        data: Field creation data (Pydantic model)
 
-    session.add(cfield)
+    Returns:
+        Created custom field (Pydantic model)
+    """
+    # Validate type handler exists
+    try:
+        handler = TypeRegistry.get_handler(data.type_handler)
+    except ValueError as e:
+        raise ValueError(f"Invalid type handler: {data.type_handler}")
+
+    # Validate configuration using handler's config model
+    try:
+        validated_config = handler.parse_config(data.config)
+        config_dict = validated_config.model_dump()
+    except ValidationError as e:
+        raise ValueError(f"Invalid configuration: {e}")
+
+    # Create ORM instance
+    field = orm.CustomField(
+        id=uuid.uuid4(),
+        name=data.name,
+        type_handler=data.type_handler,
+        config=config_dict,
+        user_id=user_id if not data.group_id else None,
+        group_id=data.group_id
+    )
+
+    session.add(field)
     await session.commit()
-    result = schema.CustomField.model_validate(cfield)
+    await session.refresh(field)
 
-    return result
+    return schema.CustomField.model_validate(field)
+
 
 
 async def get_custom_field(
@@ -526,47 +541,309 @@ async def delete_custom_field(
     await session.commit()
 
 
-
 async def update_custom_field(
-    session: AsyncSession, custom_field_id: uuid.UUID, attrs: schema.UpdateCustomField
+    session: AsyncSession,
+    field_id: uuid.UUID,
+    data: schema.UpdateCustomField
 ) -> schema.CustomField:
-    stmt = select(orm.CustomField).where(orm.CustomField.id == custom_field_id)
-    cfield = (await session.execute(stmt)).scalars().one()
-    session.add(cfield)
+    """Update a custom field"""
+    field = await session.get(orm.CustomField, field_id)
+    if not field:
+        raise ValueError(f"Custom field {field_id} not found")
 
-    if attrs.name:
-        cfield.name = attrs.name
+    # Update fields
+    if data.name is not None:
+        field.name = data.name
 
-    if attrs.type:
-        cfield.type = attrs.type
+    if data.type_handler is not None:
+        # Validate new type handler
+        try:
+            TypeRegistry.get_handler(data.type_handler)
+            field.type_handler = data.type_handler
+        except ValueError:
+            raise ValueError(f"Invalid type handler: {data.type_handler}")
 
-    if attrs.extra_data:
-        cfield.extra_data = attrs.extra_data
+    if data.config is not None:
+        # Validate new config
+        handler = TypeRegistry.get_handler(field.type_handler)
+        try:
+            validated_config = handler.parse_config(data.config)
+            field.config = validated_config.model_dump()
+        except ValidationError as e:
+            raise ValueError(f"Invalid configuration: {e}")
 
-    if attrs.group_id:
-        cfield.user_id = None
-        cfield.group_id = attrs.group_id
-    elif attrs.user_id:
-        cfield.user_id = attrs.user_id
-        cfield.group_id = None
-    else:
-        raise ValueError(
-            "Either attrs.user_id or attrs.group_id should be non-empty value"
-        )
+    if data.group_id is not None:
+        field.group_id = data.group_id
+        field.user_id = None
+    elif data.user_id is not None:
+        field.user_id = data.user_id
+        field.group_id = None
 
     await session.commit()
-    result = schema.CustomField.model_validate(cfield)
+    await session.refresh(field)
+
+    return schema.CustomField.model_validate(field)
+
+
+
+
+async def get_custom_field_value(
+    session: AsyncSession,
+    document_id: uuid.UID,
+    field_id: uuid.UUID
+) -> Any:
+    """
+    Get a custom field value (returns Python type)
+
+    Args:
+        session: Database session
+        document_id: Document ID
+        field_id: Field ID
+
+    Returns:
+        Python value of appropriate type (str, int, float, bool, date, etc.)
+    """
+    # Get field definition
+    field = await session.get(orm.CustomField, field_id)
+    if not field:
+        raise ValueError(f"Custom field {field_id} not found")
+
+    # Get value record
+    stmt = select(orm.CustomFieldValue).where(
+        and_(
+            orm.CustomFieldValue.document_id == document_id,
+            orm.CustomFieldValue.field_id == field_id
+        )
+    )
+    cfv = (await session.execute(stmt)).scalar_one_or_none()
+
+    if not cfv:
+        return None
+
+    # Get type handler
+    handler = TypeRegistry.get_handler(field.type_handler)
+
+    # Parse configuration
+    config = handler.parse_config(field.config or {})
+
+    # Convert JSONB dict to Pydantic model
+    storage_data = schema.CustomFieldValueData(**cfv.value)
+
+    # Deserialize to Python value
+    return handler.from_storage(storage_data, config)
+
+
+async def get_document_custom_field_values(
+    session: AsyncSession,
+    document_id: uuid.UUID
+) -> list[tuple[schema.CustomField, Any]]:
+    """
+    Get all custom field values for a document
+
+    Returns:
+        List of (field, value) tuples
+    """
+    # Get document type
+    doc = await session.get(orm.Document, document_id)
+    if not doc or not doc.document_type_id:
+        return []
+
+    # Get all fields for this document type
+    stmt = select(orm.CustomField).join(
+        orm.DocumentTypeCustomField,
+        orm.DocumentTypeCustomField.custom_field_id == orm.CustomField.id
+    ).where(
+        orm.DocumentTypeCustomField.document_type_id == doc.document_type_id
+    )
+
+    fields = (await session.execute(stmt)).scalars().all()
+
+    result = []
+    for field in fields:
+        value = await get_custom_field_value(session, document_id, field.id)
+        field_model = schema.CustomField.model_validate(field)
+        result.append((field_model, value))
 
     return result
 
 
+async def query_documents_by_custom_fields(
+    session: AsyncSession,
+    params: schema.DocumentQueryParams
+) -> list[uuid.UUID]:
+    """
+    Query documents by custom field values with filtering and sorting
+
+    Args:
+        session: Database session
+        params: Query parameters (Pydantic model)
+
+    Returns:
+        List of document IDs matching the criteria
+    """
+    from sqlalchemy.orm import aliased
+
+    # Start with documents of this type
+    query = select(orm.Document.id).where(
+        orm.Document.document_type_id == params.document_type_id
+    )
+
+    # Apply filters
+    for i, filter_spec in enumerate(params.filters):
+        # Get field definition
+        field = await session.get(orm.CustomField, filter_spec.field_id)
+        if not field:
+            raise ValueError(f"Custom field {filter_spec.field_id} not found")
+
+        # Get handler
+        handler = TypeRegistry.get_handler(field.type_handler)
+
+        # Parse config
+        config = handler.parse_config(field.config or {})
+
+        # Create alias for this join
+        cfv_alias = aliased(orm.CustomFieldValue, name=f"cfv_{i}")
+
+        # Get the appropriate sort column
+        sort_column = getattr(cfv_alias, handler.get_sort_column())
+
+        # Build filter expression
+        filter_expr = handler.get_filter_expression(
+            sort_column,
+            filter_spec.operator,
+            filter_spec.value,
+            config
+        )
+
+        # Add join and filter
+        query = query.join(
+            cfv_alias,
+            and_(
+                cfv_alias.document_id == orm.Document.id,
+                cfv_alias.field_id == field.id,
+                filter_expr
+            )
+        )
+
+    # Apply sorting
+    if params.sort:
+        # Get field for sorting
+        sort_field = await session.get(orm.CustomField, params.sort.field_id)
+        if not sort_field:
+            raise ValueError(f"Custom field {params.sort.field_id} not found")
+
+        # Get handler
+        sort_handler = TypeRegistry.get_handler(sort_field.type_handler)
+
+        # Create alias for sort join
+        cfv_sort = aliased(orm.CustomFieldValue, name="cfv_sort")
+
+        # Get sort column
+        sort_column = getattr(cfv_sort, sort_handler.get_sort_column())
+
+        # Add sort join
+        query = query.join(
+            cfv_sort,
+            and_(
+                cfv_sort.document_id == orm.Document.id,
+                cfv_sort.field_id == sort_field.id
+            )
+        )
+
+        # Add order by
+        if params.sort.direction == "desc":
+            query = query.order_by(desc(sort_column))
+        else:
+            query = query.order_by(asc(sort_column))
+
+    # Apply pagination
+    if params.limit:
+        query = query.limit(params.limit)
+    if params.offset:
+        query = query.offset(params.offset)
+
+    # Execute
+    result = await session.execute(query)
+    return [row[0] for row in result.all()]
+
+
+async def get_document_table_data(
+        session: AsyncSession,
+        document_type_id: uuid.UUID,
+        filters: Optional[list[schema.CustomFieldFilter]] = None,
+        sort: Optional[schema.CustomFieldSort] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None
+) -> tuple[list[schema.CustomField], list[dict]]:
+    """
+    Get complete table data for UI display
+
+    Returns:
+        Tuple of:
+        - List of custom fields (columns)
+        - List of row dicts with structure:
+          {
+              'document_id': UUID,
+              'document_title': str,
+              'field_<field_id>': <value>
+          }
+
+    This is optimized for your UI table use case.
+    """
+    # Get all custom fields for this document type
+    stmt = select(orm.CustomField).join(
+        orm.DocumentTypeCustomField,
+        orm.DocumentTypeCustomField.custom_field_id == orm.CustomField.id
+    ).where(
+        orm.DocumentTypeCustomField.document_type_id == document_type_id
+    ).order_by(orm.CustomField.name)
+
+    fields = (await session.execute(stmt)).scalars().all()
+    field_models = [schema.CustomField.model_validate(f) for f in fields]
+
+    # Build query params
+    query_params = schema.DocumentQueryParams(
+        document_type_id=document_type_id,
+        filters=filters or [],
+        sort=sort,
+        limit=limit,
+        offset=offset
+    )
+
+    # Get matching document IDs
+    doc_ids = await query_documents_by_custom_fields(session, query_params)
+
+    # Fetch document details and all custom field values
+    rows = []
+    for doc_id in doc_ids:
+        # Get document
+        doc = await session.get(orm.Document, doc_id)
+        if not doc:
+            continue
+
+        row = {
+            'document_id': doc_id,
+            'document_title': doc.title
+        }
+
+        # Get all custom field values for this document
+        for field in fields:
+            value = await get_custom_field_value(session, doc_id, field.id)
+            row[f'field_{field.id}'] = value
+
+        rows.append(row)
+
+    return field_models, rows
+
+
+
 
 def _build_custom_field_filter_conditions(
-        filters: Dict[str, Dict[str, Any]],
-        created_user,
-        updated_user,
-        deleted_user,
-        archived_user
+    filters: Dict[str, Dict[str, Any]],
+    created_user,
+    updated_user,
+    deleted_user,
+    archived_user
 ) -> list:
     """Build SQLAlchemy WHERE conditions from filters dictionary for custom fields."""
     conditions = []
@@ -609,13 +886,13 @@ def _build_custom_field_filter_conditions(
 
 
 def _apply_custom_field_sorting(
-        query,
-        sort_by: str,
-        sort_direction: str,
-        created_user,
-        updated_user,
-        deleted_user,
-        archived_user,
+    query,
+    sort_by: str,
+    sort_direction: str,
+    created_user,
+    updated_user,
+    deleted_user,
+    archived_user,
 ):
     """Apply sorting to the custom fields query."""
     sort_column = None

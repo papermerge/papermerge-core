@@ -1,37 +1,41 @@
 from enum import Enum
 from datetime import datetime
 from uuid import UUID
-from typing import Optional, Dict, Any, Literal
+from typing import Optional, Dict, Any, Literal, Union
 
 from fastapi import Query
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from papermerge.core.schemas.common import ByUser, OwnedBy
 
 
 class CustomFieldType(str, Enum):
+    """Available custom field type handlers"""
     text = "text"
-    date = "date"
+    integer = "integer"
+    number = "number"
     boolean = "boolean"
-    int = "int"
-    float = "float"
+    date = "date"
+    datetime = "datetime"
     monetary = "monetary"
-    # for salaries: e.g. "February, 2023"
+    select = "select"
+    multiselect = "multiselect"
+    url = "url"
+    email = "email"
     yearmonth = "yearmonth"
 
 
 class CustomField(BaseModel):
+    """Custom field definition"""
     id: UUID
     name: str
-    type: CustomFieldType
-    # for sqlite database JSON field is stored as string
-    # for pg database JSON field is stored as JSON data
-    # and when fetched - is presented as python dictionary
-    # Basically `extra_data` is either a stringified JSON i.e. json.dumps(...)
-    # or an actually python dict (or None)
-    extra_data: str | dict | None
+    type_handler: str
+    config: dict[str, Any] = Field(default_factory=dict)
+    user_id: Optional[UUID] = None
+    group_id: Optional[UUID] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
 
-    # Config
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -67,30 +71,80 @@ class CustomFieldEx(CustomField):
     deleted_by: ByUser | None = None
 
 
-class CreateCustomField(BaseModel):
-    name: str
-    type: CustomFieldType
-    extra_data: str | None = None
-    group_id: UUID | None = None
+class CustomFieldValueData(BaseModel):
+    """
+    Core data structure for custom field values stored in JSONB
 
-    # Config
+    This is what gets stored in the database value column
+    """
+    raw: Union[str, int, float, bool, list, None] = None
+    sortable: Optional[str] = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CustomFieldValue(BaseModel):
+    """Custom field value for a document"""
+    id: UUID
+    document_id: UUID
+    field_id: UUID
+    value: CustomFieldValueData
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CreateCustomField(BaseModel):
+    """Schema for creating a custom field"""
+    name: str
+    type_handler: str
+    config: dict[str, Any] = Field(default_factory=dict)
+    group_id: Optional[UUID] = None
+
     model_config = ConfigDict(from_attributes=True)
 
 
 class UpdateCustomField(BaseModel):
-    name: str | None = None
-    type: CustomFieldType | None = None
-    extra_data: str | None = None
-    group_id: UUID | None = None
-    user_id: UUID | None = None
+    """Schema for updating a custom field"""
+    name: Optional[str] = None
+    type_handler: Optional[str] = None
+    config: Optional[dict[str, Any]] = None
+    group_id: Optional[UUID] = None
+    user_id: Optional[UUID] = None
 
 
-class CustomFieldValue(CustomField):
-    # notice that attribue `id` indicates the ID of
-    # custom field value
-    value: str | None = None
-    # the ID of the custom field
+class SetCustomFieldValue(BaseModel):
+    """Schema for setting a custom field value"""
     field_id: UUID
+    value: Any  # Type depends on field type
+
+
+class CustomFieldFilter(BaseModel):
+    """Filter specification for custom field queries"""
+    field_id: UUID
+    operator: str  # eq, ne, gt, gte, lt, lte, in, not_in, like, ilike, etc.
+    value: Any
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CustomFieldSort(BaseModel):
+    """Sort specification for custom field queries"""
+    field_id: UUID
+    direction: str = Field(default="asc", pattern="^(asc|desc)$")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DocumentQueryParams(BaseModel):
+    """Parameters for querying documents by custom fields"""
+    document_type_id: UUID
+    filters: list[CustomFieldFilter] = Field(default_factory=list)
+    sort: Optional[CustomFieldSort] = None
+    limit: Optional[int] = None
+    offset: Optional[int] = None
 
 class CustomFieldParams(BaseModel):
     # Pagination parameters

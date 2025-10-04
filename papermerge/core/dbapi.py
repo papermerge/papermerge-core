@@ -30,6 +30,7 @@ from .features.document.db.api import (
     get_doc_version_download_url,
     get_doc_id_from_doc_ver_id,
     version_bump,
+    bulk_set_custom_field_values,
     load_doc
 )
 from .features.nodes.db.api import get_nodes, get_folder
@@ -75,6 +76,7 @@ __all__ = [
     "get_doc_ver_pages",
     "get_doc_ver",
     "get_doc",
+    "bulk_set_custom_field_values",
     "get_doc_cfv",
     "get_docs_by_type",
     "update_doc_type",

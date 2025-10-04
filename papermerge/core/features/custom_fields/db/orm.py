@@ -1,52 +1,155 @@
-from datetime import datetime
-from uuid import UUID
+from datetime import datetime, date
 from decimal import Decimal
+from uuid import UUID
 
-from sqlalchemy import ForeignKey, func, CheckConstraint
+from sqlalchemy import (
+    ForeignKey, CheckConstraint, Computed, Index,
+    String, Text, Numeric, Date, DateTime, Boolean
+)
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
 
 from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.db.base import Base
 
 
 class CustomField(Base, AuditColumns):
+    """Custom field definition"""
     __tablename__ = "custom_fields"
 
-    id: Mapped[UUID] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(unique=True)
-    type: Mapped[str]
-    extra_data: Mapped[str] = mapped_column(nullable=True)
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    type_handler: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    config: Mapped[dict] = mapped_column(JSONB, nullable=True, server_default='{}')
+
     user_id: Mapped[UUID] = mapped_column(
-        ForeignKey("users.id", name="custom_fields_user_id_fkey"), nullable=True
+        PGUUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True
     )
     group_id: Mapped[UUID] = mapped_column(
-        ForeignKey("groups.id", name="custom_fields_group_id_fkey"), nullable=True
+        PGUUID(as_uuid=True),
+        ForeignKey("groups.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True
     )
 
     __table_args__ = (
         CheckConstraint(
             "user_id IS NOT NULL OR group_id IS NOT NULL",
-            name="check__user_id_not_null__or__group_id_not_null",
+            name="custom_fields_owner_check"
         ),
+        Index('idx_custom_fields_type', 'type_handler'),
+        Index('idx_custom_fields_name', 'name'),
     )
 
 
 class CustomFieldValue(Base):
+    """Custom field values for documents"""
     __tablename__ = "custom_field_values"
 
-    id: Mapped[UUID] = mapped_column(primary_key=True)
+    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True)
     document_id: Mapped[UUID] = mapped_column(
-        ForeignKey("documents.node_id", ondelete="CASCADE")
+        PGUUID(as_uuid=True),
+        ForeignKey("documents.node_id", ondelete="CASCADE"),
+        nullable=False
     )
-    field_id: Mapped[UUID] = mapped_column(ForeignKey("custom_fields.id"))
-    value_text: Mapped[str] = mapped_column(nullable=True)
-    value_boolean: Mapped[bool] = mapped_column(nullable=True)
-    value_date: Mapped[datetime] = mapped_column(nullable=True)
-    value_int: Mapped[int] = mapped_column(nullable=True)
-    value_float: Mapped[float] = mapped_column(nullable=True)
-    value_monetary: Mapped[Decimal] = mapped_column(nullable=True)
-    value_yearmonth: Mapped[float] = mapped_column(nullable=True)
-    created_at: Mapped[datetime] = mapped_column(insert_default=func.now())
+    field_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("custom_fields.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    # Primary storage: JSONB
+    # Structure matches CustomFieldValueData Pydantic model:
+    # {
+    #   "raw": <value>,
+    #   "sortable": "<string>",
+    #   "metadata": {...}
+    # }
+    value: Mapped[dict] = mapped_column(JSONB, nullable=False)
+
+    # Generated columns for performance
+    value_text: Mapped[str | None] = mapped_column(
+        Text,
+        Computed("(value->>'sortable')"),
+        stored=True,
+        nullable=True
+    )
+
+    value_numeric: Mapped[Decimal | None] = mapped_column(
+        Numeric(20, 6),
+        Computed("""
+            CASE
+                WHEN jsonb_typeof(value->'raw') = 'number'
+                THEN (value->>'raw')::NUMERIC
+                ELSE NULL
+            END
+        """),
+        stored=True,
+        nullable=True
+    )
+
+    value_date: Mapped[date | None] = mapped_column(
+        Date,
+        Computed("""
+            CASE
+                WHEN value->>'raw' ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                THEN (value->>'raw')::DATE
+                ELSE NULL
+            END
+        """),
+        stored=True,
+        nullable=True
+    )
+
+    value_datetime: Mapped[datetime | None] = mapped_column(
+        DateTime,
+        Computed("""
+            CASE
+                WHEN value->>'raw' ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T'
+                THEN (value->>'raw')::TIMESTAMP
+                ELSE NULL
+            END
+        """),
+        stored=True,
+        nullable=True
+    )
+
+    value_boolean: Mapped[bool | None] = mapped_column(
+        Boolean,
+        Computed("""
+            CASE
+                WHEN jsonb_typeof(value->'raw') = 'boolean'
+                THEN (value->>'raw')::BOOLEAN
+                ELSE NULL
+            END
+        """),
+        stored=True,
+        nullable=True
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default="now()",
+        nullable=False
+    )
+    updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        onupdate=datetime.utcnow,
+        nullable=True
+    )
+
+    __table_args__ = (
+        Index('idx_cfv_unique_doc_field', 'document_id', 'field_id', unique=True),
+        Index('idx_cfv_doc', 'document_id'),
+        Index('idx_cfv_field_text', 'field_id', 'value_text'),
+        Index('idx_cfv_field_numeric', 'field_id', 'value_numeric'),
+        Index('idx_cfv_field_date', 'field_id', 'value_date'),
+        Index('idx_cfv_field_datetime', 'field_id', 'value_datetime'),
+        Index('idx_cfv_field_boolean', 'field_id', 'value_boolean'),
+    )
 
     def __repr__(self):
-        return f"CustomFieldValue(ID={self.id})"
+        return f"CustomFieldValue(id={self.id}, document={self.document_id}, field={self.field_id})"

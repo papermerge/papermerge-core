@@ -146,50 +146,29 @@ async def get_custom_field(
 )
 @utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_CREATE)
 async def create_custom_field(
-    cfield: cf_schema.CreateCustomField,
+    data: schema.CreateCustomField,
     user: Annotated[
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_CREATE])
     ],
     db_session: AsyncSession = Depends(get_db),
 ) -> cf_schema.CustomField:
-    """Creates custom field
-
-    If attribute `group_id` is present, custom field will be owned
-    by respective group, otherwise ownership is set to current user.
-    If attribute `group_id` is present then current user should
-    belong to that group, otherwise http status 403 (Forbidden) will
-    be raised.
-
-    Required scope: `{scope}`
-    """
-    kwargs = {
-        "name": cfield.name,
-        "type": cfield.type,
-        "extra_data": cfield.extra_data,
-    }
-    if cfield.group_id:
-        kwargs["group_id"] = cfield.group_id
-    else:
-        kwargs["user_id"] = user.id
-
-    if cfield.group_id:
-        group_id = cfield.group_id
-        ok = await user_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
-        if not ok:
-            detail = f"User {user.id=} does not belong to group {group_id=}"
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
-
+    """Create a new custom field"""
     try:
-        async with AsyncAuditContext(
+        return await dbapi.create_custom_field(
             db_session,
             user_id=user.id,
-            username=user.username
-        ):
-            custom_field = await dbapi.create_custom_field(db_session, **kwargs)
+            data=data
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
     except IntegrityError:
-        raise HTTPException(status_code=400, detail="Duplicate custom field name")
-
-    return custom_field
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Duplicate custom field name"
+        )
 
 
 @router.delete(
@@ -249,7 +228,7 @@ async def delete_custom_field(
 @utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_UPDATE)
 async def update_custom_field(
     custom_field_id: uuid.UUID,
-    attrs: cf_schema.UpdateCustomField,
+    data: schema.UpdateCustomField,
     cur_user: Annotated[
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_UPDATE])
     ],
@@ -259,7 +238,7 @@ async def update_custom_field(
 
     Required scope: `{scope}`
     """
-    if attrs.group_id:
+    if data.group_id:
         group_id = attrs.group_id
         ok = await user_dbapi.user_belongs_to(
             db_session, user_id=cur_user.id, group_id=group_id
@@ -269,7 +248,7 @@ async def update_custom_field(
             detail = f"User {user_id=} does not belong to group {group_id=}"
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
     else:
-        attrs.user_id = cur_user.id
+        data.user_id = cur_user.id
     try:
         async with AsyncAuditContext(
             db_session,
@@ -277,7 +256,7 @@ async def update_custom_field(
             username=cur_user.username
         ):
             cfield: cf_schema.CustomField = await dbapi.update_custom_field(
-                db_session, custom_field_id=custom_field_id, attrs=attrs
+                db_session, field_id=custom_field_id, data=data
             )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Not found")

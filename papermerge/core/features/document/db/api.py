@@ -5,11 +5,21 @@ from os.path import getsize
 import uuid
 import tempfile
 from pathlib import Path
-from typing import Tuple, Sequence
+from typing import Tuple, Sequence, Any, Optional
 
+from pydantic import ValidationError
 import img2pdf
 from pikepdf import Pdf
-from sqlalchemy import delete, func, insert, select, update, distinct, Select
+from sqlalchemy import (
+    delete,
+    func,
+    insert,
+    select,
+    update,
+    distinct,
+    Select,
+    and_
+)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +34,8 @@ from papermerge.core.types import (
     CFVValueColumn,
     ImagePreviewStatus,
 )
+from papermerge.core.features.custom_fields.cf_types.registry import \
+    TypeRegistry
 from papermerge.core.db.common import get_ancestors, get_node_owner
 from papermerge.core.utils.misc import str2date, str2float, float2str
 from papermerge.core.pathlib import (
@@ -1034,3 +1046,196 @@ async def get_docs_thumbnail_img_status(
             items.append(item)
 
     return items, doc_ids_not_yet_considered_for_preview
+
+
+
+async def set_custom_field_value(
+    session: AsyncSession,
+    document_id: uuid.UUID,
+    data: schema.SetCustomFieldValue
+) -> schema.CustomFieldValue:
+    """
+    Set a custom field value
+
+    Args:
+        session: Database session
+        document_id: Document ID
+        data: Value setting data (Pydantic model)
+
+    Returns:
+        Created/updated custom field value (Pydantic model)
+    """
+    # Get field definition
+    field = await session.get(orm.CustomField, data.field_id)
+    if not field:
+        raise ValueError(f"Custom field {data.field_id} not found")
+
+    # Get type
+    # Get type handler
+    handler = TypeRegistry.get_handler(field.type_handler)
+
+    # Parse and validate configuration
+    try:
+        config = handler.parse_config(field.config or {})
+    except ValidationError as e:
+        raise ValueError(f"Invalid field configuration: {e}")
+
+    # Validate value
+    validation_result = handler.validate(data.value, config)
+    if not validation_result.is_valid:
+        raise ValueError(f"Validation failed: {validation_result.error}")
+
+    # Convert to storage format (Pydantic model)
+    storage_data = handler.to_storage(data.value, config)
+
+    # Find or create value record
+    stmt = select(orm.CustomFieldValue).where(
+        and_(
+            orm.CustomFieldValue.document_id == document_id,
+            orm.CustomFieldValue.field_id == data.field_id
+        )
+    )
+    cfv = (await session.execute(stmt)).scalar_one_or_none()
+
+    if not cfv:
+        cfv = orm.CustomFieldValue(
+            id=uuid.uuid4(),
+            document_id=document_id,
+            field_id=data.field_id,
+            value=storage_data.model_dump()  # Convert Pydantic to dict for JSONB
+        )
+        session.add(cfv)
+    else:
+        cfv.value = storage_data.model_dump()  # Update JSONB
+
+    await session.commit()
+    await session.refresh(cfv)  # Refresh to get computed generated columns
+
+    # Convert ORM to Pydantic with nested model
+    return schema.CustomFieldValue(
+        id=cfv.id,
+        document_id=cfv.document_id,
+        field_id=cfv.field_id,
+        value=schema.CustomFieldValueData(**cfv.value),
+        created_at=cfv.created_at,
+        updated_at=cfv.updated_at
+    )
+
+
+
+async def bulk_set_custom_field_values(
+    session: AsyncSession,
+    document_id: uuid.UUID,
+    values: dict[uuid.UUID, Any]
+) -> list[schema.CustomFieldValue]:
+    """
+    Set multiple custom field values at once
+
+    Args:
+        session: Database session
+        document_id: Document ID
+        values: Dict mapping field_id -> value
+
+    Returns:
+        List of created/updated custom field values
+    """
+    results = []
+
+    for field_id, value in values.items():
+        set_data = schema.SetCustomFieldValue(
+            field_id=field_id,
+            value=value
+        )
+        cfv = await set_custom_field_value(session, document_id, set_data)
+        results.append(cfv)
+
+    return results
+
+
+async def get_custom_field_value(
+    session: AsyncSession,
+    document_id: uuid.UUID,
+    field_id: uuid.UUID
+) -> Any:
+    """Get a custom field value with automatic type handling"""
+
+    # Get field definition
+    field = await session.get(orm.CustomField, field_id)
+    if not field:
+        raise ValueError(f"Custom field {field_id} not found")
+
+    # Get value record
+    stmt = select(orm.CustomFieldValue).where(
+        and_(
+            orm.CustomFieldValue.document_id == document_id,
+            orm.CustomFieldValue.field_id == field_id
+        )
+    )
+    cfv = (await session.execute(stmt)).scalar_one_or_none()
+
+    if not cfv:
+        return None
+
+    # Get type handler and deserialize
+    handler = TypeRegistry.get_handler(field.type_handler)
+    typed_column = f"value_{handler.storage_column}"
+    typed_value = getattr(cfv, typed_column)
+
+    return handler.deserialize(typed_value, cfv.value_full, field.config or {})
+
+
+
+async def query_documents_by_custom_field(
+    session: AsyncSession,
+    field_id: uuid.UUID,
+    operator: str,
+    value: Any,
+    order_by: Optional[str] = None,
+    limit: Optional[int] = None
+) -> list[uuid.UUID]:
+    """
+    Query documents by custom field value
+
+    This is FAST because it uses indexed typed columns
+    """
+
+    # Get field definition
+    field: orm.CustomField = await session.get(orm.CustomField, field_id)
+    if not field:
+        raise ValueError(f"Custom field {field_id} not found")
+
+    # Get type handler
+    handler = TypeRegistry.get_handler(field.type_handler)
+
+    # Build query using typed column
+    typed_column_name = f"value_{handler.storage_column}"
+    typed_column = getattr(orm.CustomFieldValue, typed_column_name)
+
+    # Get filter expression from handler
+    filter_expr = handler.get_filter_expression(
+        typed_column, operator, value, field.config or {}
+    )
+
+    # Build query
+    stmt = select(orm.CustomFieldValue.document_id).where(
+        and_(
+            orm.CustomFieldValue.field_id == field_id,
+            filter_expr
+        )
+    )
+
+    # Add sorting if requested
+    if order_by:
+        sort_expr = handler.get_sort_expression(typed_column)
+        if order_by == "desc":
+            stmt = stmt.order_by(sort_expr.desc())
+        else:
+            stmt = stmt.order_by(sort_expr.asc())
+
+    # Add limit
+    if limit:
+        stmt = stmt.limit(limit)
+
+    # Execute
+    result = await session.execute(stmt)
+    return [row[0] for row in result.all()]

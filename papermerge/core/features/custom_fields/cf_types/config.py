@@ -38,7 +38,7 @@ class NumberConfig(BaseModel):
 
 class MonetaryConfig(BaseModel):
     """Configuration for monetary type"""
-    currency: str = "USD"
+    currency: str = "EUR"
     precision: int = Field(default=2, ge=0, le=6)
     show_symbol: bool = True
     symbol_position: Literal["before", "after"] = "before"

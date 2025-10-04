@@ -1,5 +1,6 @@
+from decimal import Decimal
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, date
 from uuid import UUID
 from typing import Optional, Dict, Any, Literal, Union
 
@@ -89,7 +90,15 @@ class CustomFieldValue(BaseModel):
     id: UUID
     document_id: UUID
     field_id: UUID
+
     value: CustomFieldValueData
+
+    value_text: str | None = None
+    value_numeric: Decimal | None = None
+    value_date: date | None = None
+    value_datetime: datetime | None = None
+    value_boolean: bool | None = None
+
     created_at: datetime
     updated_at: Optional[datetime] = None
 
@@ -101,7 +110,6 @@ class CreateCustomField(BaseModel):
     name: str
     type_handler: str
     config: dict[str, Any] = Field(default_factory=dict)
-    group_id: Optional[UUID] = None
 
     model_config = ConfigDict(from_attributes=True)
 

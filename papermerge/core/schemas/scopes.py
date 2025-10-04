@@ -1,13 +1,13 @@
 from typing import Dict
 
-from pydantic import RootModel
+from pydantic import RootModel, ConfigDict
 
 ScopesBase = RootModel[Dict[str, str]]
 
 
 class Scopes(ScopesBase):
-    model_config = {
-        "json_schema_extra": {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "node.create": "Create nodes",
@@ -17,4 +17,4 @@ class Scopes(ScopesBase):
                 },
             ]
         }
-    }
+    )

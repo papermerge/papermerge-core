@@ -275,8 +275,8 @@ class NewDocument(BaseModel):
     size: int = 0
     page_count: int = 0
 
-    model_config = {
-        "json_schema_extra": {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "title": "invoice.pdf",
@@ -285,7 +285,7 @@ class NewDocument(BaseModel):
                 }
             ]
         }
-    }
+    )
 
 
 class Thumbnail(BaseModel):

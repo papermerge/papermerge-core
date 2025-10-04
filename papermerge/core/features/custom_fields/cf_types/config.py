@@ -51,6 +51,7 @@ class DateConfig(BaseModel):
     """Configuration for date type"""
     min_date: Optional[date] = None
     max_date: Optional[date] = None
+    format: Optional[str] = None
     required: bool = False
 
 

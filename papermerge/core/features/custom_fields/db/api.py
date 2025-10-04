@@ -4,7 +4,7 @@ import uuid
 from typing import Optional, Dict, Any
 
 from pydantic import ValidationError
-from sqlalchemy import select, func, or_, and_, asc, desc
+from sqlalchemy import select, func, or_, and_, asc, desc, delete
 from sqlalchemy.orm import aliased
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -268,23 +268,33 @@ async def get_custom_fields_without_pagination(
 
     return items
 
-
 async def create_custom_field(
     session: AsyncSession,
-    user_id: uuid.UUID,
-    data: schema.CreateCustomField
+    data: schema.CreateCustomField,
+    user_id: uuid.UUID | None = None,
+    group_id: uuid.UUID | None = None
 ) -> schema.CustomField:
     """
     Create a new custom field
 
     Args:
         session: Database session
-        user_id: Owner user ID
         data: Field creation data (Pydantic model)
+        user_id: Owner user ID (mutually exclusive with group_id)
+        group_id: Owner group ID (mutually exclusive with user_id)
 
     Returns:
         Created custom field (Pydantic model)
+
+    Raises:
+        ValueError: If neither or both user_id and group_id are provided
     """
+    # Validate that exactly one of user_id or group_id is provided
+    if user_id is None and group_id is None:
+        raise ValueError("Either user_id or group_id must be provided")
+    if user_id is not None and group_id is not None:
+        raise ValueError("Cannot specify both user_id and group_id")
+
     # Validate type handler exists
     try:
         handler = TypeRegistry.get_handler(data.type_handler)
@@ -304,8 +314,8 @@ async def create_custom_field(
         name=data.name,
         type_handler=data.type_handler,
         config=config_dict,
-        user_id=user_id if not data.group_id else None,
-        group_id=data.group_id
+        user_id=user_id,
+        group_id=group_id
     )
 
     session.add(field)
@@ -842,6 +852,8 @@ async def set_custom_field_value(
             id=uuid.uuid4(),
             document_id=document_id,
             field_id=data.field_id,
+            created_at=utc_now(),
+            updated_at=utc_now(),
             value=storage_data.model_dump()  # Convert Pydantic to dict for JSONB
         )
         session.add(cfv)
@@ -857,6 +869,11 @@ async def set_custom_field_value(
         document_id=cfv.document_id,
         field_id=cfv.field_id,
         value=schema.CustomFieldValueData(**cfv.value),
+        value_text=cfv.value_text,
+        value_numeric=cfv.value_numeric,
+        value_date=cfv.value_date,
+        value_datetime=cfv.value_datetime,
+        value_boolean=cfv.value_boolean,
         created_at=cfv.created_at,
         updated_at=cfv.updated_at
     )
@@ -896,7 +913,7 @@ async def get_custom_field_value(
     session: AsyncSession,
     document_id: uuid.UUID,
     field_id: uuid.UUID
-) -> Any:
+) -> schema.CustomFieldValue | None:  # Changed return type
     """Get a custom field value with automatic type handling"""
 
     # Get field definition
@@ -916,13 +933,69 @@ async def get_custom_field_value(
     if not cfv:
         return None
 
-    # Get type handler and deserialize
-    handler = TypeRegistry.get_handler(field.type_handler)
-    typed_column = f"value_{handler.storage_column}"
-    typed_value = getattr(cfv, typed_column)
+    # Convert ORM to Pydantic with nested model (same pattern as set_custom_field_value)
+    return schema.CustomFieldValue(
+        id=cfv.id,
+        document_id=cfv.document_id,
+        field_id=cfv.field_id,
+        value=schema.CustomFieldValueData(**cfv.value),
+        created_at=cfv.created_at,
+        updated_at=cfv.updated_at
+    )
 
-    return handler.deserialize(typed_value, cfv.value_full, field.config or {})
 
+async def get_custom_field_values(
+    session: AsyncSession,
+    document_id: uuid.UUID
+) -> list[schema.CustomFieldValue]:
+    """
+    Get all custom field values for a document
+
+    Args:
+        session: Database session
+        document_id: Document ID
+
+    Returns:
+        List of custom field values (Pydantic models)
+    """
+    stmt = (
+        select(orm.CustomFieldValue)
+        .where(orm.CustomFieldValue.document_id == document_id)
+    )
+
+    result = await session.execute(stmt)
+    cfvs = result.scalars().all()
+
+    return [schema.CustomFieldValue.model_validate(cfv) for cfv in cfvs]
+
+
+async def delete_custom_field_value(
+        session: AsyncSession,
+        document_id: uuid.UUID,
+        field_id: uuid.UUID
+) -> None:
+    """
+    Delete a custom field value for a specific document and field
+
+    Args:
+        session: Database session
+        document_id: Document ID
+        field_id: Custom field ID
+
+    Returns:
+        None
+    """
+    # Build delete statement
+    stmt = delete(orm.CustomFieldValue).where(
+        and_(
+            orm.CustomFieldValue.document_id == document_id,
+            orm.CustomFieldValue.field_id == field_id
+        )
+    )
+
+    # Execute deletion
+    await session.execute(stmt)
+    await session.commit()
 
 def _build_custom_field_filter_conditions(
     filters: Dict[str, Dict[str, Any]],

@@ -88,9 +88,8 @@ class UserDetails(BaseModel):
     updated_by: ByUser | None = None
 
     # Config
-    model_config = {
-        "from_attributes": True,
-        "json_schema_extra": {
+    model_config = ConfigDict(from_attributes=True,
+        json_schema_extra={
             "examples": [
                 {
                     "id": uuid.uuid4(),
@@ -108,7 +107,8 @@ class UserDetails(BaseModel):
                 }
             ]
         }
-    }
+    )
+
 
 
 class CreateUser(BaseModel):

@@ -13,6 +13,7 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
 from sqlalchemy.schema import Computed
 
 from papermerge.core.db.audit_cols import AuditColumns
+from papermerge.core.utils.tz import utc_now
 from papermerge.core.db.base import Base
 
 
@@ -67,7 +68,6 @@ class CustomFieldValue(Base):
     # Primary storage: JSONB
     value: Mapped[dict] = mapped_column(JSONB, nullable=False)
 
-    # Generated columns - simplified to trust data format
     value_text: Mapped[str | None] = mapped_column(
         Text,
         Computed("(value->>'sortable')"),
@@ -117,7 +117,7 @@ class CustomFieldValue(Base):
     )
     updated_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
-        onupdate=datetime.utcnow,
+        onupdate=utc_now,
         nullable=True
     )
 

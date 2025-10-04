@@ -13,13 +13,15 @@ import {
 } from "@mantine/core"
 import {useEffect, useState} from "react"
 
-import {CURRENCIES} from "@/cconstants"
 import {
   useEditCustomFieldMutation,
   useGetCustomFieldQuery
 } from "@/features/custom-fields/storage/api"
+import {
+  getCurrencies,
+  getCustomFieldTypes
+} from "@/features/custom-fields/utils"
 import {useTranslation} from "react-i18next"
-import {getCustomFieldTypes} from "../utils"
 
 interface Args {
   opened: boolean
@@ -28,7 +30,7 @@ interface Args {
   onCancel: () => void
 }
 
-export default function EditGroupModal({
+export default function EditCustomFieldModal({
   customFieldId,
   onSubmit,
   onCancel,
@@ -41,7 +43,7 @@ export default function EditGroupModal({
     useEditCustomFieldMutation()
   const [name, setName] = useState<string>("")
   const [dataType, setDataType] = useState<CustomFieldDataType>(
-    data?.type || "text"
+    data?.type_handler || "text"
   )
   const [owner, setOwner] = useState<ComboboxItem>({value: "", label: "Me"})
 
@@ -70,7 +72,7 @@ export default function EditGroupModal({
     const updatedData = {
       id: customFieldId,
       name: name,
-      type: dataType,
+      type_handler: dataType,
       extra_data: extra_data
     }
 
@@ -106,6 +108,7 @@ export default function EditGroupModal({
       opened={opened}
       size="lg"
       onClose={onLocalCancel}
+      transitionProps={{duration: 0}}
     >
       <LoadingOverlay
         visible={data == null || isLoading}
@@ -134,7 +137,7 @@ export default function EditGroupModal({
           searchable
           label="Currency"
           value={currency}
-          data={CURRENCIES}
+          data={getCurrencies(t)}
           onChange={onCurrencyChange}
         />
       )}

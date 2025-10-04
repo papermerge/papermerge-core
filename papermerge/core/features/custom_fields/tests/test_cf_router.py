@@ -222,3 +222,57 @@ async def test__positive__custom_fields_all_route_with_group_id_param(
     assert response.status_code == 200, response.json()
     dtype_names = {schema.CustomField(**kw).name for kw in response.json()}
     assert dtype_names == {"CF Research 1", "CF Research 2"}
+
+
+async def test_get_custom_field(
+    auth_api_client: AuthTestClient,
+    db_session: AsyncSession,
+    make_custom_field_v2
+):
+    """Test retrieving a custom field by ID"""
+    field = await make_custom_field_v2(
+        name="Invoice Number",
+        type_handler="text"
+    )
+
+    response = await auth_api_client.get(f"/custom-fields/{field.id}")
+
+    assert response.status_code == 200
+    custom_field = schema.CustomFieldDetails(**response.json())
+    assert custom_field.id == field.id
+    assert custom_field.name == "Invoice Number"
+    assert custom_field.type_handler == "text"
+
+
+async def test_get_custom_field_not_found(
+    auth_api_client: AuthTestClient,
+    db_session: AsyncSession,
+):
+    """Test 404 when custom field doesn't exist"""
+    non_existent_id = uuid.uuid4()
+
+    response = await auth_api_client.get(f"/custom-fields/{non_existent_id}")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Custom field not found"
+
+
+async def test_get_custom_field_forbidden(
+    make_api_client,
+    make_custom_field_v2,
+    db_session: AsyncSession,
+):
+    """Test 403 when user doesn't have permission to access the custom field"""
+    # Create custom field as user1
+    client1 = await make_api_client("user1")
+    field = await make_custom_field_v2(
+        name="Private Field",
+        type_handler="text"
+    )
+
+    # Try to access as user2
+    client2 = await make_api_client("user2")
+    response = await client2.get(f"/custom-fields/{field.id}")
+
+    assert response.status_code == 403
+    assert "permission" in response.json()["detail"].lower()

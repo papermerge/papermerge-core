@@ -220,10 +220,9 @@ async def get_custom_fields(
         custom_field_data = {
             "id": custom_field.id,
             "name": custom_field.name,
-            "type": custom_field.type,
-            "extra_data": custom_field.extra_data,
+            "type_handler": custom_field.type_handler,
+            "config": custom_field.config,
             "group_id": row.group_id,
-            "group_name": row.group_name,
             "created_at": custom_field.created_at,
             "updated_at": custom_field.updated_at,
             "deleted_at": custom_field.deleted_at,

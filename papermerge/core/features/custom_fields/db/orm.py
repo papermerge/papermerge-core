@@ -1,13 +1,16 @@
+# papermerge/core/features/custom_fields/db/orm.py
+
 from datetime import datetime, date
 from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import (
-    ForeignKey, CheckConstraint, Computed, Index,
+    ForeignKey, CheckConstraint, Index,
     String, Text, Numeric, Date, DateTime, Boolean
 )
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
+from sqlalchemy.schema import Computed
 
 from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.db.base import Base
@@ -62,19 +65,12 @@ class CustomFieldValue(Base):
     )
 
     # Primary storage: JSONB
-    # Structure matches CustomFieldValueData Pydantic model:
-    # {
-    #   "raw": <value>,
-    #   "sortable": "<string>",
-    #   "metadata": {...}
-    # }
     value: Mapped[dict] = mapped_column(JSONB, nullable=False)
 
-    # Generated columns for performance
+    # Generated columns - simplified to trust data format
     value_text: Mapped[str | None] = mapped_column(
         Text,
         Computed("(value->>'sortable')"),
-        stored=True,
         nullable=True
     )
 
@@ -87,33 +83,18 @@ class CustomFieldValue(Base):
                 ELSE NULL
             END
         """),
-        stored=True,
         nullable=True
     )
 
     value_date: Mapped[date | None] = mapped_column(
         Date,
-        Computed("""
-            CASE
-                WHEN value->>'raw' ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
-                THEN (value->>'raw')::DATE
-                ELSE NULL
-            END
-        """),
-        stored=True,
+        Computed("jsonb_text_to_date(value->'raw')"),
         nullable=True
     )
 
     value_datetime: Mapped[datetime | None] = mapped_column(
         DateTime,
-        Computed("""
-            CASE
-                WHEN value->>'raw' ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T'
-                THEN (value->>'raw')::TIMESTAMP
-                ELSE NULL
-            END
-        """),
-        stored=True,
+        Computed("jsonb_text_to_timestamp(value->'raw')"),
         nullable=True
     )
 
@@ -126,7 +107,6 @@ class CustomFieldValue(Base):
                 ELSE NULL
             END
         """),
-        stored=True,
         nullable=True
     )
 

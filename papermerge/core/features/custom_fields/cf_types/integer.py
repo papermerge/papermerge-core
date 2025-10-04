@@ -5,7 +5,7 @@ from typing import Any, Type
 from .base import CustomFieldTypeHandler, ValidationResult
 from .config import IntegerConfig
 from .registry import TypeRegistry
-from papermerge/core/features/custom_fields/schema import CustomFieldValueData
+from papermerge.core.features.custom_fields.schema import CustomFieldValueData
 
 
 @TypeRegistry.register

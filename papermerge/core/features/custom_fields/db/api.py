@@ -18,7 +18,7 @@ from papermerge.core.features.custom_fields.cf_types.registry import \
 logger = logging.getLogger(__name__)
 
 
-
+"""
 ORDER_BY_MAP = {
     "type": orm.CustomField.type.asc(),
     "-type": orm.CustomField.type.desc(),
@@ -27,7 +27,7 @@ ORDER_BY_MAP = {
     "group_name": orm.Group.name.asc().nullsfirst(),
     "-group_name": orm.Group.name.desc().nullslast(),
 }
-
+"""
 
 async def get_custom_fields(
     db_session: AsyncSession,
@@ -586,53 +586,6 @@ async def update_custom_field(
 
 
 
-
-async def get_custom_field_value(
-    session: AsyncSession,
-    document_id: uuid.UID,
-    field_id: uuid.UUID
-) -> Any:
-    """
-    Get a custom field value (returns Python type)
-
-    Args:
-        session: Database session
-        document_id: Document ID
-        field_id: Field ID
-
-    Returns:
-        Python value of appropriate type (str, int, float, bool, date, etc.)
-    """
-    # Get field definition
-    field = await session.get(orm.CustomField, field_id)
-    if not field:
-        raise ValueError(f"Custom field {field_id} not found")
-
-    # Get value record
-    stmt = select(orm.CustomFieldValue).where(
-        and_(
-            orm.CustomFieldValue.document_id == document_id,
-            orm.CustomFieldValue.field_id == field_id
-        )
-    )
-    cfv = (await session.execute(stmt)).scalar_one_or_none()
-
-    if not cfv:
-        return None
-
-    # Get type handler
-    handler = TypeRegistry.get_handler(field.type_handler)
-
-    # Parse configuration
-    config = handler.parse_config(field.config or {})
-
-    # Convert JSONB dict to Pydantic model
-    storage_data = schema.CustomFieldValueData(**cfv.value)
-
-    # Deserialize to Python value
-    return handler.from_storage(storage_data, config)
-
-
 async def get_document_custom_field_values(
     session: AsyncSession,
     document_id: uuid.UUID
@@ -836,6 +789,139 @@ async def get_document_table_data(
     return field_models, rows
 
 
+async def set_custom_field_value(
+    session: AsyncSession,
+    document_id: uuid.UUID,
+    data: schema.SetCustomFieldValue
+) -> schema.CustomFieldValue:
+    """
+    Set a custom field value
+
+    Args:
+        session: Database session
+        document_id: Document ID
+        data: Value setting data (Pydantic model)
+
+    Returns:
+        Created/updated custom field value (Pydantic model)
+    """
+    # Get field definition
+    field = await session.get(orm.CustomField, data.field_id)
+    if not field:
+        raise ValueError(f"Custom field {data.field_id} not found")
+
+    # Get type
+    # Get type handler
+    handler = TypeRegistry.get_handler(field.type_handler)
+
+    # Parse and validate configuration
+    try:
+        config = handler.parse_config(field.config or {})
+    except ValidationError as e:
+        raise ValueError(f"Invalid field configuration: {e}")
+
+    # Validate value
+    validation_result = handler.validate(data.value, config)
+    if not validation_result.is_valid:
+        raise ValueError(f"Validation failed: {validation_result.error}")
+
+    # Convert to storage format (Pydantic model)
+    storage_data = handler.to_storage(data.value, config)
+
+    # Find or create value record
+    stmt = select(orm.CustomFieldValue).where(
+        and_(
+            orm.CustomFieldValue.document_id == document_id,
+            orm.CustomFieldValue.field_id == data.field_id
+        )
+    )
+    cfv = (await session.execute(stmt)).scalar_one_or_none()
+
+    if not cfv:
+        cfv = orm.CustomFieldValue(
+            id=uuid.uuid4(),
+            document_id=document_id,
+            field_id=data.field_id,
+            value=storage_data.model_dump()  # Convert Pydantic to dict for JSONB
+        )
+        session.add(cfv)
+    else:
+        cfv.value = storage_data.model_dump()  # Update JSONB
+
+    await session.commit()
+    await session.refresh(cfv)  # Refresh to get computed generated columns
+
+    # Convert ORM to Pydantic with nested model
+    return schema.CustomFieldValue(
+        id=cfv.id,
+        document_id=cfv.document_id,
+        field_id=cfv.field_id,
+        value=schema.CustomFieldValueData(**cfv.value),
+        created_at=cfv.created_at,
+        updated_at=cfv.updated_at
+    )
+
+
+
+async def bulk_set_custom_field_values(
+    session: AsyncSession,
+    document_id: uuid.UUID,
+    values: dict[uuid.UUID, Any]
+) -> list[schema.CustomFieldValue]:
+    """
+    Set multiple custom field values at once
+
+    Args:
+        session: Database session
+        document_id: Document ID
+        values: Dict mapping field_id -> value
+
+    Returns:
+        List of created/updated custom field values
+    """
+    results = []
+
+    for field_id, value in values.items():
+        set_data = schema.SetCustomFieldValue(
+            field_id=field_id,
+            value=value
+        )
+        cfv = await set_custom_field_value(session, document_id, set_data)
+        results.append(cfv)
+
+    return results
+
+
+async def get_custom_field_value(
+    session: AsyncSession,
+    document_id: uuid.UUID,
+    field_id: uuid.UUID
+) -> Any:
+    """Get a custom field value with automatic type handling"""
+
+    # Get field definition
+    field = await session.get(orm.CustomField, field_id)
+    if not field:
+        raise ValueError(f"Custom field {field_id} not found")
+
+    # Get value record
+    stmt = select(orm.CustomFieldValue).where(
+        and_(
+            orm.CustomFieldValue.document_id == document_id,
+            orm.CustomFieldValue.field_id == field_id
+        )
+    )
+    cfv = (await session.execute(stmt)).scalar_one_or_none()
+
+    if not cfv:
+        return None
+
+    # Get type handler and deserialize
+    handler = TypeRegistry.get_handler(field.type_handler)
+    typed_column = f"value_{handler.storage_column}"
+    typed_value = getattr(cfv, typed_column)
+
+    return handler.deserialize(typed_value, cfv.value_full, field.config or {})
 
 
 def _build_custom_field_filter_conditions(

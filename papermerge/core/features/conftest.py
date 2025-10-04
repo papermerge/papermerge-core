@@ -845,3 +845,77 @@ def make_document_zdf(db_session: AsyncSession, document_type_zdf):
         return doc
 
     return _make_receipt
+
+
+@pytest.fixture
+def make_custom_field_v2(db_session: AsyncSession, user):
+    """Create custom field using new v2 architecture with type_handler"""
+    async def _maker(
+            name: str,
+            type_handler: str = "text",
+            config: dict | None = None,
+            user_id: uuid.UUID | None = None,
+            group_id: uuid.UUID | None = None
+    ):
+        from papermerge.core.features.custom_fields import schema as cf_schema
+        from papermerge.core.features.custom_fields.db import api as cf_dbapi
+
+        if config is None:
+            config = {}
+
+        field_data = cf_schema.CreateCustomField(
+            name=name,
+            type_handler=type_handler,
+            config=config
+        )
+
+        if user_id:
+            owner_id = user_id
+        elif group_id:
+            owner_id = group_id
+        else:
+            owner_id = user.id
+
+        if group_id:
+            field = await cf_dbapi.create_custom_field(
+                db_session,
+                field_data,
+                group_id=group_id
+            )
+        else:
+            field = await cf_dbapi.create_custom_field(
+                db_session,
+                field_data,
+                user_id=owner_id
+            )
+
+        return field
+
+    return _maker
+
+
+@pytest.fixture
+def make_custom_field_value(db_session: AsyncSession):
+    """Create custom field value using new v2 architecture"""
+    async def _maker(
+            document_id: uuid.UUID,
+            field_id: uuid.UUID,
+            value: any
+    ):
+        from papermerge.core.features.custom_fields import schema as cf_schema
+        from papermerge.core.features.custom_fields.db import api as cf_dbapi
+
+        value_data = cf_schema.SetCustomFieldValue(
+            field_id=field_id,
+            value=value
+        )
+
+        cfv = await cf_dbapi.set_custom_field_value(
+            db_session,
+            document_id,
+            value_data
+        )
+
+        return cfv
+
+    return _maker

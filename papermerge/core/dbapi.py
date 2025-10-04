@@ -30,7 +30,6 @@ from .features.document.db.api import (
     get_doc_version_download_url,
     get_doc_id_from_doc_ver_id,
     version_bump,
-    bulk_set_custom_field_values,
     load_doc
 )
 from .features.nodes.db.api import get_nodes, get_folder
@@ -57,7 +56,7 @@ from .features.document_types.db.api import (
     update_document_type,
     document_type_cf_count
 )
-from .features.custom_fields.db.api import create_custom_field
+from .features.custom_fields.db.api import create_custom_field, bulk_set_custom_field_values
 from .features.shared_nodes.db.api import (
     get_paginated_shared_nodes,
     create_shared_nodes,

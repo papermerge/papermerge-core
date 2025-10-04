@@ -1,7 +1,7 @@
 import io
 import logging
 import uuid
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import (
     APIRouter,
@@ -43,7 +43,7 @@ config = get_settings()
 
 
 @router.patch(
-    "/{document_id}/custom-fields",
+    "/{document_id}/custom-fields/values/bulk",
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": f"No `{scopes.NODE_UPDATE}` permission on the node",
@@ -52,9 +52,9 @@ config = get_settings()
     },
 )
 @utils.docstring_parameter(scope=scopes.NODE_UPDATE)
-async def update_document_custom_field_values(
+async def bulk_set_document_custom_field_values(
     document_id: uuid.UUID,
-    custom_fields_update: list[schema.DocumentCustomFieldsUpdate],
+    values: dict[uuid.UUID, Any],
     user: Annotated[
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
@@ -64,12 +64,6 @@ async def update_document_custom_field_values(
     Update document's custom fields
     Required scope: `{scope}`
     """
-    custom_fields = {}
-    for cf in custom_fields_update:
-        if cf.value is None and cf.custom_field_value_id is None:
-            continue
-        custom_fields[cf.key] = cf.value
-
     if not await dbapi_common.has_node_perm(
         db_session,
         node_id=document_id,
@@ -80,14 +74,14 @@ async def update_document_custom_field_values(
 
     try:
         async with AsyncAuditContext(
-                db_session,
-                user_id=user.id,
-                username=user.username
+            db_session,
+            user_id=user.id,
+            username=user.username
         ):
-            updated_entries = await dbapi.update_doc_cfv(
+            updated_entries = await dbapi.bulk_set_custom_field_values(
                 db_session,
                 document_id=document_id,
-                custom_fields=custom_fields,
+                values=values
             )
     except NoResultFound:
         raise exc.HTTP404NotFound()

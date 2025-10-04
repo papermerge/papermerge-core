@@ -5,11 +5,20 @@ from os.path import getsize
 import uuid
 import tempfile
 from pathlib import Path
-from typing import Tuple, Sequence
+from typing import Tuple, Sequence, Any, Optional
 
 import img2pdf
 from pikepdf import Pdf
-from sqlalchemy import delete, func, insert, select, update, distinct, Select
+from sqlalchemy import (
+    delete,
+    func,
+    insert,
+    select,
+    update,
+    distinct,
+    Select,
+    and_
+)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +33,8 @@ from papermerge.core.types import (
     CFVValueColumn,
     ImagePreviewStatus,
 )
+from papermerge.core.features.custom_fields.cf_types.registry import \
+    TypeRegistry
 from papermerge.core.db.common import get_ancestors, get_node_owner
 from papermerge.core.utils.misc import str2date, str2float, float2str
 from papermerge.core.pathlib import (
@@ -1034,3 +1045,61 @@ async def get_docs_thumbnail_img_status(
             items.append(item)
 
     return items, doc_ids_not_yet_considered_for_preview
+
+
+
+
+async def query_documents_by_custom_field(
+    session: AsyncSession,
+    field_id: uuid.UUID,
+    operator: str,
+    value: Any,
+    order_by: Optional[str] = None,
+    limit: Optional[int] = None
+) -> list[uuid.UUID]:
+    """
+    Query documents by custom field value
+
+    This is FAST because it uses indexed typed columns
+    """
+
+    # Get field definition
+    field: orm.CustomField = await session.get(orm.CustomField, field_id)
+    if not field:
+        raise ValueError(f"Custom field {field_id} not found")
+
+    # Get type handler
+    handler = TypeRegistry.get_handler(field.type_handler)
+
+    # Build query using typed column
+    typed_column_name = f"value_{handler.storage_column}"
+    typed_column = getattr(orm.CustomFieldValue, typed_column_name)
+
+    # Get filter expression from handler
+    filter_expr = handler.get_filter_expression(
+        typed_column, operator, value, field.config or {}
+    )
+
+    # Build query
+    stmt = select(orm.CustomFieldValue.document_id).where(
+        and_(
+            orm.CustomFieldValue.field_id == field_id,
+            filter_expr
+        )
+    )
+
+    # Add sorting if requested
+    if order_by:
+        sort_expr = handler.get_sort_expression(typed_column)
+        if order_by == "desc":
+            stmt = stmt.order_by(sort_expr.desc())
+        else:
+            stmt = stmt.order_by(sort_expr.asc())
+
+    # Add limit
+    if limit:
+        stmt = stmt.limit(limit)
+
+    # Execute
+    result = await session.execute(stmt)
+    return [row[0] for row in result.all()]

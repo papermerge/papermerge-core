@@ -34,7 +34,16 @@ from .features.document.schema import (
     DownloadURL
 )
 from .features.users.schema import User, UserEx, CreateUser, UserDetails, UpdateUser, ChangeUserPassword, UserHomes, UserInboxes, UserHome, UserInbox
-from .features.custom_fields.schema import CustomField, CustomFieldEx, CustomFieldDetails, UpdateCustomField, CustomFieldType, CustomFieldValue
+from .features.custom_fields.schema import (
+    CustomField, CustomFieldEx, CustomFieldDetails,
+    CreateCustomField,
+    CustomFieldValueData,
+    SetCustomFieldValue,
+    DocumentQueryParams,
+    CustomFieldSort,
+    CustomFieldFilter,
+    UpdateCustomField, CustomFieldType, CustomFieldValue,
+)
 from .features.tags.schema import Tag, TagEx, TagDetails, UpdateTag, CreateTag
 from .features.document_types.schema import DocumentType, DocumentTypeEx, DocumentTypeDetails, UpdateDocumentType, CreateDocumentType
 from .features.groups.schema import Group, GroupEx, GroupDetails, CreateGroup, UpdateGroup
@@ -81,6 +90,12 @@ __all__ = [
     'CustomField',
     'CustomFieldEx',
     'UpdateCustomField',
+    'CreateCustomField',
+    'CustomFieldValueData',
+    'SetCustomFieldValue',
+    'CustomFieldFilter',
+    'CustomFieldSort',
+    'DocumentQueryParams',
     'CustomFieldType',
     'CustomFieldValue',
     'CustomFieldDetails',

@@ -101,7 +101,6 @@ class CreateCustomField(BaseModel):
     name: str
     type_handler: str
     config: dict[str, Any] = Field(default_factory=dict)
-    group_id: Optional[UUID] = None
 
     model_config = ConfigDict(from_attributes=True)
 

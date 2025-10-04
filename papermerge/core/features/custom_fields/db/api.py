@@ -268,23 +268,33 @@ async def get_custom_fields_without_pagination(
 
     return items
 
-
 async def create_custom_field(
     session: AsyncSession,
-    user_id: uuid.UUID,
-    data: schema.CreateCustomField
+    data: schema.CreateCustomField,
+    user_id: uuid.UUID | None = None,
+    group_id: uuid.UUID | None = None
 ) -> schema.CustomField:
     """
     Create a new custom field
 
     Args:
         session: Database session
-        user_id: Owner user ID
         data: Field creation data (Pydantic model)
+        user_id: Owner user ID (mutually exclusive with group_id)
+        group_id: Owner group ID (mutually exclusive with user_id)
 
     Returns:
         Created custom field (Pydantic model)
+
+    Raises:
+        ValueError: If neither or both user_id and group_id are provided
     """
+    # Validate that exactly one of user_id or group_id is provided
+    if user_id is None and group_id is None:
+        raise ValueError("Either user_id or group_id must be provided")
+    if user_id is not None and group_id is not None:
+        raise ValueError("Cannot specify both user_id and group_id")
+
     # Validate type handler exists
     try:
         handler = TypeRegistry.get_handler(data.type_handler)
@@ -304,8 +314,8 @@ async def create_custom_field(
         name=data.name,
         type_handler=data.type_handler,
         config=config_dict,
-        user_id=user_id if not data.group_id else None,
-        group_id=data.group_id
+        user_id=user_id,
+        group_id=group_id
     )
 
     session.add(field)

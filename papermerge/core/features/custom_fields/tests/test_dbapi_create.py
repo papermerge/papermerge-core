@@ -7,7 +7,6 @@ from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.custom_fields import schema as cf_schema
 
 
-@pytest.mark.asyncio
 async def test_create_text_field(db_session, user):
     """Create a simple text custom field"""
     field_data = cf_schema.CreateCustomField(
@@ -41,7 +40,6 @@ async def test_create_text_field(db_session, user):
 
 
 
-@pytest.mark.asyncio
 async def test_create_monetary_field_with_config(db_session, user):
     """Create monetary field with currency config"""
     field_data = cf_schema.CreateCustomField(
@@ -64,7 +62,7 @@ async def test_create_monetary_field_with_config(db_session, user):
     assert field.config["currency"] == "EUR"
     assert field.config["precision"] == 2
 
-@pytest.mark.asyncio
+
 async def test_create_field_for_group(db_session, make_group):
     """Create custom field owned by a group"""
     group = await make_group("Accounting")
@@ -86,7 +84,6 @@ async def test_create_field_for_group(db_session, make_group):
     assert field.user_id is None
 
 
-@pytest.mark.asyncio
 async def test_create_date_field(db_session, user):
     """Create date custom field"""
     field_data = cf_schema.CreateCustomField(

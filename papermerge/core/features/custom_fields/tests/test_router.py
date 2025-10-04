@@ -1,4 +1,3 @@
-import json
 import uuid
 
 from sqlalchemy import func, select
@@ -9,7 +8,10 @@ from papermerge.core import schema, orm
 from papermerge.core.tests.types import AuthTestClient
 
 
-async def test_create_custom_field(auth_api_client: AuthTestClient, db_session: AsyncSession):
+async def test_create_custom_field(
+    auth_api_client: AuthTestClient,
+    db_session: AsyncSession
+):
     # Use async query methods for AsyncSession
     count_before_result = await db_session.execute(select(func.count(orm.CustomField.id)))
     count_before = count_before_result.scalar()
@@ -17,7 +19,7 @@ async def test_create_custom_field(auth_api_client: AuthTestClient, db_session: 
 
     # Make async HTTP request
     response = await auth_api_client.test_client.post(
-        "/custom-fields/", json={"name": "cf1", "type": "int"}
+        "/custom-fields/", json={"name": "cf1", "type_handler": "integer", "config": {}}
     )
     assert response.status_code == 201, response.json()
 
@@ -36,8 +38,8 @@ async def test_create_monetary_custom_field(
 
     data = {
         "name": "Price",
-        "type": "monetary",
-        "extra_data": json.dumps({"currency": "EUR"}),
+        "type_handler": "monetary",
+        "config": {"currency": "EUR", "precision": 2},
     }
     response = await auth_api_client.post(
         "/custom-fields/",
@@ -63,13 +65,13 @@ async def test_custom_field_duplicate_name(
     assert count_before == 0
 
     response = await auth_api_client.post(
-        "/custom-fields/", json={"name": "cf1", "type": "int"}
+        "/custom-fields/", json={"name": "cf1", "type_handler": "integer", "config": {}}
     )
     assert response.status_code == 201, response.json()
 
     # custom field with same name
     response = await auth_api_client.post(
-        "/custom-fields/", json={"name": "cf1", "type": "text"}
+        "/custom-fields/", json={"name": "cf1", "type_handler": "text", "config": {}}
     )
     assert response.status_code == 400, response.json()
     assert response.json() == {"detail": "Duplicate custom field name"}
@@ -78,15 +80,20 @@ async def test_custom_field_duplicate_name(
 async def test_update_custom_field(
     auth_api_client: AuthTestClient,
     db_session: AsyncSession,
-    custom_field_cf1,
+    make_custom_field_v2
 ):
+    field = await make_custom_field_v2(
+        name="Shop Name",
+        type_handler="text"
+    )
+
     count_before_result = await db_session.execute(select(func.count(orm.CustomField.id)))
     count_before = count_before_result.scalar()
     assert count_before == 1
 
     response = await auth_api_client.patch(
-        f"/custom-fields/{custom_field_cf1.id}",
-        json={"name": "cf1_updated", "type": "int"},
+        f"/custom-fields/{field.id}",
+        json={"name": "cf1_updated"},
     )
     assert response.status_code == 200
     updated_cf = schema.CustomField(**response.json())
@@ -96,13 +103,18 @@ async def test_update_custom_field(
 async def test_delete_custom_field(
     auth_api_client: AuthTestClient,
     db_session: AsyncSession,
-    custom_field_cf1,
+    make_custom_field_v2,
 ):
+    field = await make_custom_field_v2(
+        name="Shop Name",
+        type_handler="text"
+    )
+
     count_before_result = await db_session.execute(select(func.count(orm.CustomField.id)))
     count_before = count_before_result.scalar()
     assert count_before == 1
 
-    response = await auth_api_client.delete(f"/custom-fields/{custom_field_cf1.id}")
+    response = await auth_api_client.delete(f"/custom-fields/{field.id}")
     assert response.status_code == 204
 
     stmt = select(
@@ -116,11 +128,11 @@ async def test_delete_custom_field(
 
 
 async def test_custom_fields_paginated_result__8_items_first_page(
-    make_custom_field, auth_api_client: AuthTestClient
+    make_custom_field_v2, auth_api_client: AuthTestClient
 ):
     total_groups = 8
     for i in range(total_groups):
-        await make_custom_field(name=f"CF {i}", type=schema.CustomFieldType.text)
+        await make_custom_field_v2(name=f"CF {i}", type_handler="text")
 
     params = {"page_size": 5, "page_number": 1}
     response = await auth_api_client.get("/custom-fields/", params=params)
@@ -136,11 +148,11 @@ async def test_custom_fields_paginated_result__8_items_first_page(
 
 
 async def test_custom_fields_without_pagination(
-    make_custom_field, auth_api_client: AuthTestClient
+    make_custom_field_v2, auth_api_client: AuthTestClient
 ):
     total_groups = 8
     for i in range(total_groups):
-        await make_custom_field(name=f"CF {i}", type=schema.CustomFieldType.text)
+        await make_custom_field_v2(name=f"CF {i}", type_handler="text")
 
     response = await auth_api_client.get("/custom-fields/all")
 
@@ -152,13 +164,13 @@ async def test_custom_fields_without_pagination(
 
 
 async def test__negative__custom_fields_all_route_with_group_id_param(
-    make_custom_field, auth_api_client: AuthTestClient
+    make_custom_field_v2, auth_api_client: AuthTestClient
 ):
     """In this scenario current user does not belong to the
     group provided as parameter"""
     total_groups = 8
     for i in range(total_groups):
-        await make_custom_field(name=f"CF {i}", type=schema.CustomFieldType.text)
+        await make_custom_field_v2(name=f"CF {i}", type_handler="text")
 
     group_id = uuid.uuid4()
     response = await auth_api_client.get(
@@ -170,7 +182,7 @@ async def test__negative__custom_fields_all_route_with_group_id_param(
 
 async def test__positive__custom_fields_all_route_with_group_id_param(
     db_session: AsyncSession,
-    make_custom_field,
+    make_custom_field_v2,
     auth_api_client: AuthTestClient,
     user,
     make_group
@@ -189,13 +201,13 @@ async def test__positive__custom_fields_all_route_with_group_id_param(
     total_groups = 8
     for i in range(total_groups):
         # privately owned custom fields
-        await make_custom_field(name=f"CF {i}", type=schema.CustomFieldType.text)
+        await make_custom_field_v2(name=f"CF {i}", type_handler="text")
 
-    await make_custom_field(
-        name=f"CF Research 1", type=schema.CustomFieldType.text, group_id=group.id
+    await make_custom_field_v2(
+        name=f"CF Research 1", type_handler="text", group_id=group.id
     )
-    await make_custom_field(
-        name=f"CF Research 2", type=schema.CustomFieldType.text, group_id=group.id
+    await make_custom_field_v2(
+        name=f"CF Research 2", type_handler="text", group_id=group.id
     )
 
     user_group = orm.UserGroup(user_id=user.id, group_id=group.id)

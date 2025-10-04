@@ -239,7 +239,7 @@ async def update_custom_field(
     Required scope: `{scope}`
     """
     if data.group_id:
-        group_id = attrs.group_id
+        group_id = data.group_id
         ok = await user_dbapi.user_belongs_to(
             db_session, user_id=cur_user.id, group_id=group_id
         )

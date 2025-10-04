@@ -6,11 +6,9 @@
 .yarn/install-state.gz
 .pnp.*
 
-
 # env vars
 
 .envok.yaml
-
 
 *.pid
 .idea/
@@ -25,8 +23,6 @@ __pycache__
 *.swn
 *.swo
 *.log
-*.sqlite3
-*.sublime-project
 *.png~
 papermerge_core.egg-info/
 dist

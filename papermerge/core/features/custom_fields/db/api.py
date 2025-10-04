@@ -1017,7 +1017,7 @@ def _build_custom_field_filter_conditions(
 
         if filter_name == "types":
             if operator == "in" and isinstance(value, list):
-                condition = orm.CustomField.type.in_(value)
+                condition = orm.CustomField.type_handler.in_(value)
 
         elif filter_name == "free_text":
             # Search across multiple text fields
@@ -1025,7 +1025,7 @@ def _build_custom_field_filter_conditions(
 
             condition = or_(
                 orm.CustomField.name.ilike(search_term),
-                orm.CustomField.type.ilike(search_term),
+                orm.CustomField.type_handler.ilike(search_term),
                 orm.Group.name.ilike(search_term),  # Group name search
             )
 
@@ -1061,7 +1061,7 @@ def _apply_custom_field_sorting(
     elif sort_by == "name":
         sort_column = orm.CustomField.name
     elif sort_by == "type":
-        sort_column = orm.CustomField.type
+        sort_column = orm.CustomField.type_handler
     elif sort_by == "created_at":
         sort_column = orm.CustomField.created_at
     elif sort_by == "updated_at":

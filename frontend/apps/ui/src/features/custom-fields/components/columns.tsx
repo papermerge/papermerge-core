@@ -30,7 +30,7 @@ export default function customFieldColumns(t?: TFunction) {
       }
     },
     {
-      key: "type",
+      key: "type_handler",
       label: t?.("customFieldColumns.type") || "Type",
       sortable: true,
       filterable: true,

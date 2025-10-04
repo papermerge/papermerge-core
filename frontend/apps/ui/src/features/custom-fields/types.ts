@@ -1,6 +1,6 @@
 import type {ByUser, OwnedBy, PaginatedArgs} from "@/types"
 
-export type SortBy = "name" | "created_at" | "created_by"
+export type SortBy = "name" | "created_at" | "created_by" | "type_handler"
 
 export type CustomFieldType =
   | "date"
@@ -30,7 +30,7 @@ export interface CustomFieldQueryParams extends Partial<PaginatedArgs> {
 export interface CustomFieldItem {
   id: string
   name: string
-  type: CustomFieldType
+  type_handler: CustomFieldType
   created_at: string
   updated_at: string
   created_by: ByUser

@@ -269,10 +269,9 @@ export type CustomFieldDataType =
 
 export type NewCustomField = {
   name: string
-  type: CustomFieldDataType
-  extra_data?: string
+  type_handler: CustomFieldDataType
+  config?: string
   group_id?: string
-  group_name?: string
 }
 
 export type CustomField = NewCustomField & {
@@ -281,7 +280,7 @@ export type CustomField = NewCustomField & {
 
 export type CustomFieldUpdate = Pick<
   CustomField,
-  "id" | "name" | "type" | "extra_data"
+  "id" | "name" | "type_handler" | "config"
 >
 
 export type FileItemStatus = "uploading" | "success" | "failure"

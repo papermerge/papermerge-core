@@ -30,7 +30,7 @@ export default function CustomFieldForm({customField, t}: Args) {
       <NativeSelect
         mt="sm"
         label={t?.("customFieldColumns.type") || "Type"}
-        value={customField?.type || ""}
+        value={customField?.type_handler || ""}
         data={getCustomFieldTypes(t)}
         onChange={() => {}}
       />

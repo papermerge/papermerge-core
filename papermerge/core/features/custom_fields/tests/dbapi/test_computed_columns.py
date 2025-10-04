@@ -20,7 +20,6 @@ async def test_text_computed_column(
 
 
 async def test_numeric_computed_column(
-    self,
     db_session,
     user,
     make_document,
@@ -28,7 +27,13 @@ async def test_numeric_computed_column(
     make_custom_field_value
 ):
     """Verify value_numeric is computed correctly"""
-    field = await make_custom_field_v2(name="Amount", type_handler="number")
+    field = await make_custom_field_v2(
+        name="Amount",
+        type_handler="number",
+        config={
+            "precision": 6
+        }
+    )
     doc = await make_document("Doc.pdf", parent=user.home_folder, user=user)
 
     cfv = await make_custom_field_value(doc.id, field.id, 1234.567890)
@@ -58,7 +63,6 @@ async def test_date_computed_column(
 
 
 async def test_boolean_computed_column(
-
     db_session,
     user,
     make_document,

@@ -62,4 +62,4 @@ async def test_get_single_value(
     )
 
     assert retrieved.id == cfv.id
-    assert retrieved.value["raw"] == 999.99
+    assert retrieved.value.raw == 999.99

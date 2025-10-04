@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional
 from typing import List
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 
 class DateFormat(str, Enum):
@@ -155,7 +155,7 @@ class Preferences(BaseModel):
 
     @field_validator('timestamp_format')
     @classmethod
-    def validate_date_format(cls, v):
+    def validate_timestamp_format(cls, v):
         allowed = [fmt.value for fmt in TimestampFormat]
         if v not in allowed:
             raise ValueError(f"Invalid timestamp format. Allowed: {allowed}")
@@ -239,7 +239,7 @@ class UserPreferencesResponse(BaseModel):
     created_at: str
     updated_at: str
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SystemPreferencesResponse(BaseModel):
@@ -251,7 +251,7 @@ class SystemPreferencesResponse(BaseModel):
     updated_at: str
     updated_by: Optional[str] = None
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SelectOption(BaseModel):

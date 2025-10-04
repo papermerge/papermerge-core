@@ -4,7 +4,7 @@ import uuid
 from typing import Optional, Dict, Any
 
 from pydantic import ValidationError
-from sqlalchemy import select, func, or_, and_, asc, desc
+from sqlalchemy import select, func, or_, and_, asc, desc, delete
 from sqlalchemy.orm import aliased
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -913,7 +913,7 @@ async def get_custom_field_value(
     session: AsyncSession,
     document_id: uuid.UUID,
     field_id: uuid.UUID
-) -> Any:
+) -> schema.CustomFieldValue | None:  # Changed return type
     """Get a custom field value with automatic type handling"""
 
     # Get field definition
@@ -933,13 +933,69 @@ async def get_custom_field_value(
     if not cfv:
         return None
 
-    # Get type handler and deserialize
-    handler = TypeRegistry.get_handler(field.type_handler)
-    typed_column = f"value_{handler.storage_column}"
-    typed_value = getattr(cfv, typed_column)
+    # Convert ORM to Pydantic with nested model (same pattern as set_custom_field_value)
+    return schema.CustomFieldValue(
+        id=cfv.id,
+        document_id=cfv.document_id,
+        field_id=cfv.field_id,
+        value=schema.CustomFieldValueData(**cfv.value),
+        created_at=cfv.created_at,
+        updated_at=cfv.updated_at
+    )
 
-    return handler.deserialize(typed_value, cfv.value_full, field.config or {})
 
+async def get_custom_field_values(
+    session: AsyncSession,
+    document_id: uuid.UUID
+) -> list[schema.CustomFieldValue]:
+    """
+    Get all custom field values for a document
+
+    Args:
+        session: Database session
+        document_id: Document ID
+
+    Returns:
+        List of custom field values (Pydantic models)
+    """
+    stmt = (
+        select(orm.CustomFieldValue)
+        .where(orm.CustomFieldValue.document_id == document_id)
+    )
+
+    result = await session.execute(stmt)
+    cfvs = result.scalars().all()
+
+    return [schema.CustomFieldValue.model_validate(cfv) for cfv in cfvs]
+
+
+async def delete_custom_field_value(
+        session: AsyncSession,
+        document_id: uuid.UUID,
+        field_id: uuid.UUID
+) -> None:
+    """
+    Delete a custom field value for a specific document and field
+
+    Args:
+        session: Database session
+        document_id: Document ID
+        field_id: Custom field ID
+
+    Returns:
+        None
+    """
+    # Build delete statement
+    stmt = delete(orm.CustomFieldValue).where(
+        and_(
+            orm.CustomFieldValue.document_id == document_id,
+            orm.CustomFieldValue.field_id == field_id
+        )
+    )
+
+    # Execute deletion
+    await session.execute(stmt)
+    await session.commit()
 
 def _build_custom_field_filter_conditions(
     filters: Dict[str, Dict[str, Any]],

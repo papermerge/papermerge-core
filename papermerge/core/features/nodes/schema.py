@@ -1,11 +1,8 @@
 from enum import Enum
 from typing import Optional
-
-
 from datetime import datetime
 from typing import List, Literal, Tuple
 from uuid import UUID
-
 
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
@@ -122,8 +119,8 @@ class NewFolder(BaseModel):
     ctype: Literal["folder"]
     parent_id: UUID | None
 
-    model_config = {
-        "json_schema_extra": {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {
                     "title": "My Documents",
@@ -132,7 +129,7 @@ class NewFolder(BaseModel):
                 },
             ]
         }
-    }
+    )
 
 
 class Folder(NewFolder):

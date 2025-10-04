@@ -852,6 +852,8 @@ async def set_custom_field_value(
             id=uuid.uuid4(),
             document_id=document_id,
             field_id=data.field_id,
+            created_at=utc_now(),
+            updated_at=utc_now(),
             value=storage_data.model_dump()  # Convert Pydantic to dict for JSONB
         )
         session.add(cfv)
@@ -867,6 +869,11 @@ async def set_custom_field_value(
         document_id=cfv.document_id,
         field_id=cfv.field_id,
         value=schema.CustomFieldValueData(**cfv.value),
+        value_text=cfv.value_text,
+        value_numeric=cfv.value_numeric,
+        value_date=cfv.value_date,
+        value_datetime=cfv.value_datetime,
+        value_boolean=cfv.value_boolean,
         created_at=cfv.created_at,
         updated_at=cfv.updated_at
     )

@@ -31,7 +31,7 @@ async def test_set_text_value(
         value="REWE Supermarket"
     )
 
-    cfv = await cf_dbapi.set_custom_field_value(
+    cfv: cf_schema.CustomFieldValue = await cf_dbapi.set_custom_field_value(
         db_session,
         doc.id,
         value_data
@@ -39,8 +39,8 @@ async def test_set_text_value(
 
     assert cfv.document_id == doc.id
     assert cfv.field_id == field.id
-    assert cfv.value["raw"] == "REWE Supermarket"
-    assert cfv.value["sortable"] == "rewe supermarket"
+    assert cfv.value.raw == "REWE Supermarket"
+    assert cfv.value.sortable == "rewe supermarket"
     assert cfv.value_text == "rewe supermarket"
 
 
@@ -73,7 +73,7 @@ async def test_set_numeric_value(
         value_data
     )
 
-    assert cfv.value["raw"] == 1234.56
+    assert cfv.value.raw == 1234.56
     assert cfv.value_numeric == Decimal("1234.56")
 
 
@@ -87,7 +87,7 @@ async def test_set_monetary_value(
     field = await make_custom_field_v2(
         name="Price",
         type_handler="monetary",
-        config={"currency": "EUR", "precision": 2}
+        config={"currency": "EUR"}
     )
 
     doc = await make_document(
@@ -107,13 +107,12 @@ async def test_set_monetary_value(
         value_data
     )
 
-    assert cfv.value["raw"] == 99.99
-    assert cfv.value["metadata"]["currency"] == "EUR"
+    assert cfv.value.raw == 99.99
+    assert cfv.value.metadata["currency"] == "EUR"
     assert cfv.value_numeric == Decimal("99.99")
 
 
 async def test_set_date_value(
-    self,
     db_session,
     user,
     make_document,
@@ -143,12 +142,11 @@ async def test_set_date_value(
         value_data
     )
 
-    assert cfv.value["raw"] == "2024-12-25"
+    assert cfv.value.raw == "2024-12-25"
     assert cfv.value_date == test_date
 
 
 async def test_set_boolean_value(
-    self,
     db_session,
     user,
     make_document,
@@ -177,7 +175,7 @@ async def test_set_boolean_value(
         value_data
     )
 
-    assert cfv.value["raw"] is True
+    assert cfv.value.raw is True
     assert cfv.value_boolean is True
 
 
@@ -223,5 +221,5 @@ async def test_update_existing_value(
 
     # Should be same record, updated
     assert cfv1.id == cfv2.id
-    assert cfv2.value["raw"] == "Published"
+    assert cfv2.value.raw == "Published"
     assert cfv2.value_text == "published"

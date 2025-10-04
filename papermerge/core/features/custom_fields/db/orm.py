@@ -67,7 +67,6 @@ class CustomFieldValue(Base):
     # Primary storage: JSONB
     value: Mapped[dict] = mapped_column(JSONB, nullable=False)
 
-    # Generated columns - simplified to trust data format
     value_text: Mapped[str | None] = mapped_column(
         Text,
         Computed("(value->>'sortable')"),

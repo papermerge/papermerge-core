@@ -1,5 +1,3 @@
-# papermerge/core/features/custom_fields/types/boolean.py
-
 from typing import Any, Type
 
 from .base import CustomFieldTypeHandler, ValidationResult

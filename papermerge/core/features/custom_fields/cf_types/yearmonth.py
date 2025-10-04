@@ -1,5 +1,3 @@
-# papermerge/core/features/custom_fields/types/yearmonth.py
-
 from typing import Any, Type
 from datetime import datetime
 import re

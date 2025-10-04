@@ -1,5 +1,3 @@
-# papermerge/core/features/custom_fields/types/url.py
-
 from typing import Any, Type
 from urllib.parse import urlparse
 

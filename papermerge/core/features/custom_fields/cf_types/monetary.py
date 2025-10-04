@@ -1,5 +1,3 @@
-# papermerge/core/features/custom_fields/types/monetary.py
-
 from decimal import Decimal, InvalidOperation
 from typing import Any, Type
 

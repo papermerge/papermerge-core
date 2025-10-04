@@ -1,5 +1,3 @@
-# papermerge/core/features/custom_fields/types/datetime.py
-
 from datetime import datetime
 from typing import Any, Type
 

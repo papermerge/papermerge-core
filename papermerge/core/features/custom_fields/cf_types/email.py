@@ -1,5 +1,3 @@
-# papermerge/core/features/custom_fields/types/email.py
-
 from typing import Any, Type
 import re
 

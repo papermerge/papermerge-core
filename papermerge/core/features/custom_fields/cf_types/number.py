@@ -1,5 +1,3 @@
-# papermerge/core/features/custom_fields/types/number.py
-
 from typing import Any, Type
 from decimal import Decimal, InvalidOperation
 

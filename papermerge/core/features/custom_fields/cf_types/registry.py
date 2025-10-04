@@ -1,5 +1,3 @@
-# papermerge/core/features/custom_fields/types/registry.py
-
 from typing import Dict, Type
 
 from pydantic import BaseModel

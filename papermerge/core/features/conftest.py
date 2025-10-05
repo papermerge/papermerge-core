@@ -43,7 +43,7 @@ from papermerge.core.features.roles import router as roles_router
 from papermerge.core.features.tags import router as tags_router
 from papermerge.core.features.users import router as usr_router
 from papermerge.core.features.liveness_probe import router as probe_router
-from papermerge.core import orm, dbapi, schema
+from papermerge.core import orm, dbapi
 from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core import config
@@ -642,9 +642,9 @@ def token():
 async def make_document_type(
     db_session,
     make_user,
-    make_custom_field
+    make_custom_field_v2
 ):
-    cf = await make_custom_field(name="some-random-cf", type=schema.CustomFieldType.boolean)
+    cf = await make_custom_field_v2(name="some-random-cf", type_handler="boolean")
 
     async def _make_document_type(
         name: str,

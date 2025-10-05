@@ -54,7 +54,14 @@ from .features.document_types.db.api import (
     update_document_type,
     document_type_cf_count
 )
-from .features.custom_fields.db.api import create_custom_field, bulk_set_custom_field_values
+from .features.custom_fields.db.api import (
+    create_custom_field,
+    bulk_set_custom_field_values,
+    get_document_table_data,
+    get_custom_field_values,
+    get_document_custom_field_values,
+    update_document_custom_field_values
+)
 from .features.shared_nodes.db.api import (
     get_paginated_shared_nodes,
     create_shared_nodes,
@@ -74,10 +81,12 @@ __all__ = [
     "get_doc_ver",
     "get_doc",
     "bulk_set_custom_field_values",
-    "get_doc_cfv",
+    "get_document_table_data",
+    "get_custom_field_values",
     "get_docs_by_type",
     "update_doc_type",
-    "update_doc_cfv",
+    "get_document_custom_field_values",
+    "update_document_custom_field_values",
     "get_docs_count_by_type",
     "upload",
     "get_docs_thumbnail_img_status",

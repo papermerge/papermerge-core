@@ -109,7 +109,7 @@ async def get_document_custom_field_values(
     document_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     db_session: AsyncSession = Depends(get_db),
-) -> list[schema.CFV]:
+) -> list[tuple[schema.CustomField, Any]]:
     """
     Get document custom field values
 
@@ -124,7 +124,7 @@ async def get_document_custom_field_values(
         raise exc.HTTP403Forbidden()
 
     try:
-        doc = await dbapi.get_doc_cfv(
+        doc = await dbapi.get_document_custom_field_values(
             db_session,
             document_id=document_id,
         )

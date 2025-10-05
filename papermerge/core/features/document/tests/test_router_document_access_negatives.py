@@ -1,7 +1,6 @@
 import os
+import uuid
 from pathlib import Path
-
-from papermerge.core.features.document import schema
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "resources"
@@ -16,12 +15,13 @@ async def test_update_cf(make_user, make_document, login_as):
     doc = await make_document("doc.pdf", parent=user_a.home_folder, user=user_a)
 
     user_b_api_client = await login_as(user_b)
-    payload = [
-        schema.DocumentCustomFieldsUpdate(key="asn", value="D123354").model_dump()
-    ]
+    uid = str(uuid.uuid4())
+    payload = {
+        uid: "some-value"
+    }
 
     response = await user_b_api_client.patch(
-        f"/documents/{doc.id}/custom-fields", json=payload
+        f"/documents/{doc.id}/custom-fields/values/bulk", json=payload
     )
 
     assert response.status_code == 403, response.json()

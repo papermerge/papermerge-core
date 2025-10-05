@@ -43,7 +43,7 @@ from papermerge.core.features.roles import router as roles_router
 from papermerge.core.features.tags import router as tags_router
 from papermerge.core.features.users import router as usr_router
 from papermerge.core.features.liveness_probe import router as probe_router
-from papermerge.core import orm, dbapi, schema
+from papermerge.core import orm, dbapi
 from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core import config
@@ -531,10 +531,10 @@ async def make_user(db_session: AsyncSession):
 
 
 @pytest.fixture
-async def document_type_groceries(db_session: AsyncSession, user, make_custom_field):
-    cf1 = await make_custom_field(name="Shop", type=CustomFieldType.text)
-    cf2 = await make_custom_field(name="Total", type=CustomFieldType.monetary)
-    cf3 = await make_custom_field(name="EffectiveDate", type=CustomFieldType.date)
+async def document_type_groceries(db_session: AsyncSession, user, make_custom_field_v2):
+    cf1 = await make_custom_field_v2(name="Shop", type_handler="text")
+    cf2 = await make_custom_field_v2(name="Total", type_handler="monetary")
+    cf3 = await make_custom_field_v2(name="EffectiveDate", type_handler="date")
 
     return await dbapi.create_document_type(
         db_session,
@@ -586,8 +586,8 @@ async def document_type_salary(db_session: AsyncSession, user, make_custom_field
 
 
 @pytest.fixture
-async def document_type_tax(db_session: AsyncSession, user, make_custom_field):
-    cf = await make_custom_field(name="Year", type=CustomFieldType.int)
+async def document_type_tax(db_session: AsyncSession, user, make_custom_field_v2):
+    cf = await make_custom_field_v2(name="Year", type_handler="integer")
 
     return await dbapi.create_document_type(
         db_session,
@@ -642,9 +642,9 @@ def token():
 async def make_document_type(
     db_session,
     make_user,
-    make_custom_field
+    make_custom_field_v2
 ):
-    cf = await make_custom_field(name="some-random-cf", type=schema.CustomFieldType.boolean)
+    cf = await make_custom_field_v2(name="some-random-cf", type_handler="boolean")
 
     async def _make_document_type(
         name: str,

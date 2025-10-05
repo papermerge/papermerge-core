@@ -12,7 +12,6 @@ from pikepdf import Pdf
 from sqlalchemy import (
     delete,
     func,
-    insert,
     select,
     update,
     distinct,
@@ -36,7 +35,6 @@ from papermerge.core.types import (
 from papermerge.core.features.custom_fields.cf_types.registry import \
     TypeRegistry
 from papermerge.core.db.common import get_ancestors, get_node_owner
-from papermerge.core.utils.misc import str2date, str2float, float2str
 from papermerge.core.pathlib import (
     abs_docver_path,
 )
@@ -44,7 +42,7 @@ from papermerge.core.features.document.schema import DocumentCFVRow
 from papermerge.core.features.document.ordered_document_cfv import \
     OrderedDocumentCFV
 from papermerge.core import config
-from .selectors import select_doc_cfv, select_docs_by_type
+from .selectors import select_docs_by_type
 
 settings = config.get_settings()
 logger = logging.getLogger(__name__)
@@ -66,109 +64,6 @@ async def count_docs(session: AsyncSession) -> int:
     result = await session.scalars(stmt)
 
     return result.one()
-
-
-async def get_doc_cfv(session: AsyncSession, document_id: uuid.UUID) -> list[schema.CFV]:
-    """
-    Fetch document's custom field values for each CF name, even if CFV is NULL
-
-    Example: Say there is one document with ID=123 and document type Grocery.
-    Document type Grocery has 3 custom fields: Shop, Total, Date.
-
-    get_doc_cfv(ID=123) will return one list with 3 items in it:
-
-    1. doc_id=123 cf_name=Shop cf_value=None
-    2. doc_id=123 cf_name=Total cf_value=17.29
-    3. doc_id=123 cf_name=Date cf_value=None
-
-    Notice that item 1 and 3 have cf_value=None, which indicates
-    that there is no value for it in `custom_field_values` table.
-    """
-
-    stmt = select_doc_cfv(document_id)
-    result = []
-    for row in await session.execute(stmt):
-        if row.cf_type == "date":
-            value = str2date(row.cf_value)
-        elif row.cf_type == "yearmonth":
-            value = float2str(row.cf_value)
-        else:
-            value = row.cf_value
-
-        result.append(
-            schema.CFV(
-                document_id=row.doc_id,
-                document_type_id=row.document_type_id,
-                custom_field_id=row.cf_id,
-                name=row.cf_name,
-                type=row.cf_type,
-                extra_data=row.cf_extra_data,
-                custom_field_value_id=row.cfv_id,
-                value=value,
-            )
-        )
-
-    return result
-
-
-async def update_doc_cfv(
-    session: AsyncSession,
-    document_id: uuid.UUID,
-    custom_fields: dict,
-) -> list[schema.CFV]:
-    """
-    Update document's custom field values
-    """
-    items = await get_doc_cfv(session, document_id=document_id)
-    insert_values = []
-    update_values = []
-
-    stmt = (
-        select(orm.CustomField.name)
-        .select_from(orm.CustomFieldValue)
-        .join(orm.CustomField)
-        .where(orm.CustomFieldValue.document_id == document_id)
-    )
-    result = await session.execute(stmt)
-    existing_cf_name = [row[0] for row in result.all()]
-    for item in items:
-        if item.name not in custom_fields.keys():
-            continue
-
-        if item.name not in existing_cf_name:
-            # prepare insert values
-            v = dict(
-                id=uuid.uuid4(),
-                document_id=document_id,
-                field_id=item.custom_field_id,
-            )
-            if item.type.value == "date":
-                v[f"value_{item.type.value}"] = str2date(custom_fields[item.name])
-            elif item.type.value == "yearmonth":
-                v[f"value_{item.type.value}"] = str2float(custom_fields[item.name])
-            else:
-                v[f"value_{item.type.value}"] = custom_fields[item.name]
-            insert_values.append(v)
-        else:
-            # prepare update values
-            v = dict(id=item.custom_field_value_id)
-            if item.type == "date":
-                v[f"value_{item.type.value}"] = str2date(custom_fields[item.name])
-            elif item.type.value == "yearmonth":
-                v[f"value_{item.type.value}"] = str2float(custom_fields[item.name])
-            else:
-                v[f"value_{item.type.value}"] = custom_fields[item.name]
-            update_values.append(v)
-
-    if len(insert_values) > 0:
-        await session.execute(insert(orm.CustomFieldValue), insert_values)
-
-    if len(update_values) > 0:
-        await session.execute(update(orm.CustomFieldValue), update_values)
-
-    await session.commit()
-
-    return items
 
 
 async def update_doc_type(

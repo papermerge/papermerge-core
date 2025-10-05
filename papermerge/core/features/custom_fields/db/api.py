@@ -630,8 +630,9 @@ async def get_document_custom_field_values(
 
 
 async def query_documents_by_custom_fields(
-    session: AsyncSession,
-    params: schema.DocumentQueryParams
+        session: AsyncSession,
+        params: schema.DocumentQueryParams,
+        user_id: Optional[uuid.UUID] = None
 ) -> list[uuid.UUID]:
     """
     Query documents by custom field values with filtering and sorting
@@ -639,6 +640,7 @@ async def query_documents_by_custom_fields(
     Args:
         session: Database session
         params: Query parameters (Pydantic model)
+        user_id: Optional user ID to filter documents by owner
 
     Returns:
         List of document IDs matching the criteria
@@ -646,9 +648,13 @@ async def query_documents_by_custom_fields(
     from sqlalchemy.orm import aliased
 
     # Start with documents of this type
-    query = select(orm.Document.id).where(
-        orm.Document.document_type_id == params.document_type_id
-    )
+    conditions = [orm.Document.document_type_id == params.document_type_id]
+
+    # Add user filter if provided
+    if user_id is not None:
+        conditions.append(orm.Document.user_id == user_id)
+
+    query = select(orm.Document.id).where(and_(*conditions))
 
     # Apply filters
     for i, filter_spec in enumerate(params.filters):
@@ -729,28 +735,107 @@ async def query_documents_by_custom_fields(
     return [row[0] for row in result.all()]
 
 
+
+async def update_document_custom_field_values(
+    session: AsyncSession,
+    document_id: uuid.UUID,
+    custom_fields: dict[str, Any],
+) -> list[tuple[schema.CustomField, Any]]:
+    """
+    Update document's custom field values using new JSONB schema
+
+    Args:
+        session: Database session
+        document_id: Document ID
+        custom_fields: Dict mapping custom field names to values
+
+    Returns:
+        List of (field, value) tuples - same format as get_document_custom_field_values()
+    """
+    from papermerge.core.features.custom_fields.cf_types import TypeRegistry
+    from papermerge.core.features.custom_fields.db import orm
+    from papermerge.core.utils.tz import utc_now
+    from sqlalchemy import select, and_
+
+    # Get all custom fields for this document type
+    field_value_pairs = await get_document_custom_field_values(
+        session,
+        document_id=document_id
+    )
+
+    # Process each custom field that's in the input dict
+    for field_model, current_value in field_value_pairs:
+        if field_model.name not in custom_fields:
+            continue
+
+        input_value = custom_fields[field_model.name]
+
+        # Get the type handler for this field
+        handler = TypeRegistry.get_handler(field_model.type_handler)
+
+        # Parse the field configuration
+        config = handler.parse_config(field_model.config or {})
+
+        # Special handling for date fields to support flexible input formats
+        # like "2024-10-28 00:00:00" or "2024-10-28 anything"
+        if field_model.type_handler == "date" and isinstance(input_value, str):
+            # Extract just the date part (YYYY-MM-DD)
+            input_value = input_value.split()[0]  # Take first part before any space
+
+        # Validate the value
+        validation_result = handler.validate(input_value, config)
+        if not validation_result.is_valid:
+            raise ValueError(
+                f"Validation failed for field '{field_model.name}': "
+                f"{validation_result.error}"
+            )
+
+        # Convert to storage format
+        storage_data = handler.to_storage(input_value, config)
+
+        # Find or create the value record
+        stmt = select(orm.CustomFieldValue).where(
+            and_(
+                orm.CustomFieldValue.document_id == document_id,
+                orm.CustomFieldValue.field_id == field_model.id
+            )
+        )
+        cfv = (await session.execute(stmt)).scalar_one_or_none()
+
+        if not cfv:
+            # Create new value record
+            cfv = orm.CustomFieldValue(
+                id=uuid.uuid4(),
+                document_id=document_id,
+                field_id=field_model.id,
+                created_at=utc_now(),
+                updated_at=utc_now(),
+                value=storage_data.model_dump()  # Convert Pydantic to dict for JSONB
+            )
+            session.add(cfv)
+        else:
+            # Update existing value record
+            cfv.value = storage_data.model_dump()
+            cfv.updated_at = utc_now()
+
+    await session.commit()
+
+    # Return updated values in the same format as get_document_custom_field_values()
+    return await get_document_custom_field_values(session, document_id)
+
+
 async def get_document_table_data(
-        session: AsyncSession,
-        document_type_id: uuid.UUID,
-        filters: Optional[list[schema.CustomFieldFilter]] = None,
-        sort: Optional[schema.CustomFieldSort] = None,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None
+    session: AsyncSession,
+    document_type_id: uuid.UUID,
+    user_id: Optional[uuid.UUID] = None,
+    filters: Optional[list[schema.CustomFieldFilter]] = None,
+    sort: Optional[schema.CustomFieldSort] = None,
+    limit: Optional[int] = None,
+    offset: Optional[int] = None
 ) -> tuple[list[schema.CustomField], list[dict]]:
     """
     Get complete table data for UI display
-
-    Returns:
-        Tuple of:
-        - List of custom fields (columns)
-        - List of row dicts with structure:
-          {
-              'document_id': UUID,
-              'document_title': str,
-              'field_<field_id>': <value>
-          }
-
-    This is optimized for your UI table use case.
+    ...
     """
     # Get all custom fields for this document type
     stmt = select(orm.CustomField).join(
@@ -772,8 +857,8 @@ async def get_document_table_data(
         offset=offset
     )
 
-    # Get matching document IDs
-    doc_ids = await query_documents_by_custom_fields(session, query_params)
+    # Get matching document IDs (now with user_id filter)
+    doc_ids = await query_documents_by_custom_fields(session, query_params, user_id=user_id)
 
     # Fetch document details and all custom field values
     rows = []
@@ -932,12 +1017,16 @@ async def get_custom_field_value(
     if not cfv:
         return None
 
-    # Convert ORM to Pydantic with nested model (same pattern as set_custom_field_value)
     return schema.CustomFieldValue(
         id=cfv.id,
         document_id=cfv.document_id,
         field_id=cfv.field_id,
         value=schema.CustomFieldValueData(**cfv.value),
+        value_text=cfv.value_text,
+        value_numeric=cfv.value_numeric,
+        value_date=cfv.value_date,
+        value_datetime=cfv.value_datetime,
+        value_boolean=cfv.value_boolean,
         created_at=cfv.created_at,
         updated_at=cfv.updated_at
     )

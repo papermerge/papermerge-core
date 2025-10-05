@@ -17,7 +17,11 @@ async def test_get_document_details(
 
 
 async def test_update_document_type(
-    auth_api_client, make_document, user, make_document_type, db_session: AsyncSession
+    auth_api_client,
+    make_document,
+    user,
+    make_document_type,
+    db_session: AsyncSession
 ):
     doc = await make_document(title="document.pdf", user=user, parent=user.home_folder)
     dt1: orm.DocumentType = await make_document_type(name="dt1")

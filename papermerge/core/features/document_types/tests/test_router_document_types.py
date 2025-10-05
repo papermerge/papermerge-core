@@ -51,10 +51,10 @@ async def test_update_document_type_with_path_template(
 
 
 async def test_create_document_type_owned_by_user(
-    make_custom_field, auth_api_client: AuthTestClient, db_session: AsyncSession
+    make_custom_field_v2, auth_api_client: AuthTestClient, db_session: AsyncSession
 ):
-    cf1: schema.CustomField = await make_custom_field(name="shop", type="text")
-    cf2: schema.CustomField = await make_custom_field(name="total", type="monetary")
+    cf1: schema.CustomField = await make_custom_field_v2(name="shop", type_handler="text")
+    cf2: schema.CustomField = await make_custom_field_v2(name="total", type_handler="monetary")
 
     count_before = (await db_session.execute(
         select(func.count(orm.DocumentType.id))
@@ -80,15 +80,15 @@ async def test_create_document_type_owned_by_user(
 
 
 async def test_create_document_type_owned_by_group(
-    make_custom_field, auth_api_client: AuthTestClient, db_session: AsyncSession, make_group
+    make_custom_field_v2, auth_api_client: AuthTestClient, db_session: AsyncSession, make_group
 ):
     """Create a document type owned by the group"""
     group: orm.Group = await make_group("Family", with_special_folders=True)
-    cf1: schema.CustomField = await make_custom_field(
-        name="shop", type="text", group_id=group.id
+    cf1: schema.CustomField = await make_custom_field_v2(
+        name="shop", type_handler="text", group_id=group.id
     )
-    cf2: schema.CustomField = await make_custom_field(
-        name="total", type="monetary", group_id=group.id
+    cf2: schema.CustomField = await make_custom_field_v2(
+        name="total", type_handler="monetary", group_id=group.id
     )
 
     count_before = (await db_session.execute(select(func.count(orm.DocumentType.id)))).scalar()
@@ -127,10 +127,10 @@ async def test_update_document_type(
     auth_api_client: AuthTestClient,
     db_session: AsyncSession,
     make_document_type,
-    make_custom_field,
+    make_custom_field_v2,
 ):
-    cf1 = await make_custom_field(name="cf1", type="text")
-    cf2 = await make_custom_field(name="cf2", type="boolean")
+    cf1 = await make_custom_field_v2(name="cf1", type_handler="text")
+    cf2 = await make_custom_field_v2(name="cf2", type_handler="boolean")
     doc_type = await make_document_type(name="Invoice")
 
     response = await auth_api_client.patch(

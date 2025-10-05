@@ -558,10 +558,10 @@ def make_document_type_without_cf(db_session: AsyncSession, user, make_custom_fi
 
 
 @pytest.fixture
-async def document_type_zdf(db_session: AsyncSession, user, make_custom_field):
-    cf1 = await make_custom_field(name="Start Date", type=CustomFieldType.date)
-    cf2 = await make_custom_field(name="End Date", type=CustomFieldType.date)
-    cf3 = await make_custom_field(name="Total Due", type=CustomFieldType.monetary)
+async def document_type_zdf(db_session: AsyncSession, user, make_custom_field_v2):
+    cf1 = await make_custom_field_v2(name="Start Date", type_handler="date")
+    cf2 = await make_custom_field_v2(name="End Date", type_handler="date")
+    cf3 = await make_custom_field_v2(name="Total Due", type_handler="monetary")
 
     return await dbapi.create_document_type(
         db_session,

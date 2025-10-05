@@ -348,7 +348,15 @@ async def db_session():
         yield session
     finally:
         await session.close()
-        await transaction.rollback()
+
+        # Handle case where transaction was already rolled back
+        try:
+            if transaction.is_active:  # ← Check if transaction is still active
+                await transaction.rollback()
+        except Exception:
+            # Transaction already rolled back or in invalid state - ignore
+            pass
+
         await connection.close()
 
 

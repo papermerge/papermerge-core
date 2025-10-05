@@ -88,3 +88,5 @@ class Role(Base, AuditColumns):
             postgresql_where=text('deleted_at IS NULL')
         ),
     )
+
+    __mapper_args__ = {"confirm_deleted_rows": False}

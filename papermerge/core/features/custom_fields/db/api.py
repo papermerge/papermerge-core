@@ -6,7 +6,7 @@ from typing import Optional, Dict, Any
 from pydantic import ValidationError
 from sqlalchemy import select, func, or_, and_, asc, desc, delete
 from sqlalchemy.orm import aliased
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import schema, orm
@@ -318,8 +318,12 @@ async def create_custom_field(
     )
 
     session.add(field)
-    await session.commit()
-    await session.refresh(field)
+    try:
+        await session.commit()
+        await session.refresh(field)
+    except IntegrityError:
+        await session.rollback()
+        raise
 
     return schema.CustomField.model_validate(field)
 

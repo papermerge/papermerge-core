@@ -25,8 +25,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from papermerge.core.features.document import s3
 from papermerge.core.utils.misc import copy_file
 from papermerge.core import schema, orm, constants, tasks
-from papermerge.core.features.document_types.db.api import \
-    document_type_cf_count
 from papermerge.core.types import (
     OrderEnum,
     CFVValueColumn,
@@ -38,11 +36,7 @@ from papermerge.core.db.common import get_ancestors, get_node_owner
 from papermerge.core.pathlib import (
     abs_docver_path,
 )
-from papermerge.core.features.document.schema import DocumentCFVRow
-from papermerge.core.features.document.ordered_document_cfv import \
-    OrderedDocumentCFV
 from papermerge.core import config
-from .selectors import select_docs_by_type
 
 settings = config.get_settings()
 logger = logging.getLogger(__name__)
@@ -162,67 +156,107 @@ async def get_docs_by_type_no_cf(
     return results
 
 
-async def get_docs_by_type(
-    session: AsyncSession,
-    type_id: uuid.UUID,
-    user_id: uuid.UUID,
-    order_by: str | None = None,
-    order: OrderEnum = OrderEnum.desc,
-    page_number: int = 1,
-    page_size: int = 5,
-) -> list[schema.DocumentCFV]:
+async def get_documents_by_type_paginated(
+        session: AsyncSession,
+        document_type_id: uuid.UUID,
+        user_id: uuid.UUID,
+        page_size: int,
+        page_number: int,
+        sort_by: Optional[str] = None,
+        sort_direction: Optional[str] = None,
+) -> schema.PaginatedResponse[schema.DocumentCFV]:
     """
-    Returns list of documents + doc CFv for all documents with of given type
+    Get paginated documents of a specific type with custom field values
+
+    Returns:
+        PaginatedResponse with DocumentCFV items
     """
-    if page_number < 1:
-        raise ValueError(f"page_number must be >= 1; got value={page_number}")
+    from papermerge.core.features.custom_fields.db import api as cf_dbapi
+    from papermerge.core.features.custom_fields import schema as cf_schema
+    import math
 
-    if page_size < 1:
-        raise ValueError(f"page_size must be >= 1; got value={page_size}")
+    # Calculate limit and offset
+    limit = page_size
+    offset = (page_number - 1) * page_size
 
-    cf_count = await document_type_cf_count(session, document_type_id=type_id)
-
-    if cf_count == 0:
-        return await get_docs_by_type_no_cf(
-            session,
-            type_id=type_id,
-            order_by=order_by,
-            order=order,
-            limit=page_size,
-            offset=(page_number - 1) * page_size
+    # Prepare sort parameter if needed
+    sort_param = None
+    if sort_by and sort_direction:
+        # Get the custom field by name to get its ID
+        stmt = select(orm.CustomField).join(
+            orm.DocumentTypeCustomField,
+            orm.DocumentTypeCustomField.custom_field_id == orm.CustomField.id
+        ).where(
+            and_(
+                orm.DocumentTypeCustomField.document_type_id == document_type_id,
+                orm.CustomField.name == sort_by
+            )
         )
+        field_result = await session.execute(stmt)
+        sort_field = field_result.scalar_one_or_none()
 
-    cfv_column_name = None
+        if sort_field:
+            sort_param = cf_schema.CustomFieldSort(
+                field_id=sort_field.id,
+                direction=sort_direction
+            )
 
-    if order_by is not None:
-        cfv_column_name = await get_cfv_column_name(session, order_by)
-
-    stmt = select_docs_by_type(
-        document_type_id=type_id,
+    # Get document table data
+    fields, rows = await cf_dbapi.get_document_table_data(
+        session,
+        document_type_id=document_type_id,
         user_id=user_id,
-        order_by=order_by,
-        order=order,
-        cfv_column_name=cfv_column_name,
-        limit=cf_count * page_size,
-        offset=cf_count * (page_number - 1) * page_size
+        sort=sort_param,
+        limit=limit,
+        offset=offset
     )
 
-    ordered_doc_cfvs = OrderedDocumentCFV()
-    counter = 0
-    for row in (await session.execute(stmt)).all():
-        counter += 1
-        entry = DocumentCFVRow(
-            title=row.title,
-            doc_id=row.doc_id,
-            document_type_id=row.document_type_id,
-            cf_name=row.cf_name,
-            cf_type=row.cf_type,
-            cf_value=row.cf_value
+    # Transform rows to DocumentCFV format
+    items = []
+    for row in rows:
+        custom_fields_list = []
+
+        for field in fields:
+            field_key = f'field_{field.id}'
+            cfv = row.get(field_key)
+
+            # Extract value
+            if cfv is not None:
+                value = cfv.value.raw if hasattr(cfv, 'value') else None
+            else:
+                value = None
+
+            # Get CustomFieldType
+            try:
+                from papermerge.core.features.custom_fields.schema import CustomFieldType
+                cf_type = CustomFieldType(field.type_handler)
+            except (ValueError, AttributeError):
+                cf_type = field.type_handler
+
+            custom_fields_list.append((field.name, value, cf_type))
+
+        doc_cfv = schema.DocumentCFV(
+            id=row['document_id'],
+            title=row.get('title', ''),
+            document_type_id=document_type_id,
+            thumbnail_url=row.get('thumbnail_url'),
+            custom_fields=custom_fields_list
         )
+        items.append(doc_cfv)
 
-        ordered_doc_cfvs.add(entry)
+    # Get total count
+    total_count = await get_docs_count_by_type(session, type_id=document_type_id)
 
-    return list(ordered_doc_cfvs)
+    # Calculate number of pages
+    num_pages = math.ceil(total_count / page_size) if total_count > 0 else 1
+
+    return schema.PaginatedResponse(
+        page_size=page_size,
+        page_number=page_number,
+        num_pages=num_pages,
+        total_items=total_count,
+        items=items,
+    )
 
 
 async def create_document(

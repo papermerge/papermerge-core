@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import TypeAlias, List
 from uuid import UUID
-from typing import Annotated, Literal
+from typing import Optional, Literal, Annotated
 
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, \
@@ -398,3 +398,39 @@ class DocumentCFVRow(BaseModel):
 
 class DownloadURL(BaseModel):
     downloadURL: str
+
+
+class DocumentsByTypeParams(BaseModel):
+    """Query parameters for getting documents by type"""
+
+    # Pagination parameters
+    page_size: int = Query(
+        5,
+        ge=1,
+        le=100,
+        description="Number of items per page"
+    )
+    page_number: int = Query(
+        1,
+        ge=1,
+        description="Page number (1-based)"
+    )
+
+    # Sorting parameters
+    sort_by: Optional[str] = Query(
+        None,
+        description="Custom field name to sort by"
+    )
+    sort_direction: Optional[Literal["asc", "desc"]] = Query(
+        None,
+        description="Sort direction: asc or desc"
+    )
+
+    def to_sort(self) -> Optional[dict]:
+        """Convert to sort parameter for dbapi"""
+        if self.sort_by and self.sort_direction:
+            return {
+                "field_name": self.sort_by,
+                "direction": self.sort_direction
+            }
+        return None

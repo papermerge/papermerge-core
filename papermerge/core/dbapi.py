@@ -21,8 +21,6 @@ from .features.document.db.api import (
     get_docs_by_type,
     get_docs_count_by_type,
     update_doc_type,
-    update_doc_cfv,
-    get_doc_cfv,
     get_doc_ver_pages,
     get_docs_thumbnail_img_status,
     get_document_last_version,

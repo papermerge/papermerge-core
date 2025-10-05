@@ -2,6 +2,7 @@ import os
 import io
 from datetime import date as Date
 from datetime import datetime
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -99,50 +100,48 @@ async def test_document_update_custom_field_of_type_date(
     receipt = await make_document_receipt(title="receipt-1.pdf", user=user)
 
     # add some value (for first time)
-    await dbapi.update_doc_cfv(
+    await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt.id,
         custom_fields={"EffectiveDate": "2024-09-26"},
     )
 
     # update existing value
-    await dbapi.update_doc_cfv(
+    items: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt.id,
         custom_fields={"EffectiveDate": "2024-09-27"},
     )
 
-    items: list[schema.CFV] = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
-    eff_date_cf = next(item for item in items if item.name == "EffectiveDate")
+    eff_date_cf = next(item for item in items if item[0].name == "EffectiveDate")
 
     # notice it is 27, not 26
-    assert eff_date_cf.value == Date(2024, 9, 27)
+    assert eff_date_cf[1].value_date == Date(2024, 9, 27)
 
 
 async def test_document_add_multiple_CFVs(db_session: AsyncSession, make_document_receipt, user):
     """
     In this scenario we pass multiple custom field values to
-    `db.update_doc_cfv` function
+    `cf_dbapi.update_document_custom_field_values` function
     Initial document does NOT have custom field values before the update.
     """
     receipt = await make_document_receipt(title="receipt-1.pdf", user=user)
 
     # pass 3 custom field values in one shot
     cf = {"EffectiveDate": "2024-09-26", "Shop": "Aldi", "Total": "32.97"}
-    await dbapi.update_doc_cfv(
+    items: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt.id,
         custom_fields=cf,
     )
 
-    items: list[schema.CFV] = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
-    eff_date_cf = next(item for item in items if item.name == "EffectiveDate")
-    shop_cf = next(item for item in items if item.name == "Shop")
-    total_cf = next(item for item in items if item.name == "Total")
+    eff_date_cf = next(item for item in items if item[0].name == "EffectiveDate")
+    shop_cf = next(item for item in items if item[0].name == "Shop")
+    total_cf = next(item for item in items if item[0].name == "Total")
 
-    assert eff_date_cf.value == Date(2024, 9, 26)
-    assert shop_cf.value == "Aldi"
-    assert total_cf.value == 32.97
+    assert eff_date_cf[1].value_date == Date(2024, 9, 26)
+    assert shop_cf[1].value.raw == "Aldi"  # Use .value.raw to get original text (not lowercase)
+    assert total_cf[1].value_numeric == Decimal("32.97")  # Monetary/number stored as Decimal
 
 
 async def test_document_update_multiple_CFVs(
@@ -150,14 +149,14 @@ async def test_document_update_multiple_CFVs(
 ):
     """
     In this scenario we pass multiple custom field values to
-    `db.update_doc_cfv` function.
+    `cf_dbapi.update_document_custom_field_values` function.
     Initial document does have custom field values before the update.
     """
     receipt = await make_document_receipt(title="receipt-1.pdf", user=user)
 
     # set initial CFVs
     cf = {"EffectiveDate": "2024-09-26", "Shop": "Aldi", "Total": "32.97"}
-    await dbapi.update_doc_cfv(
+    await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt.id,
         custom_fields=cf,
@@ -165,20 +164,19 @@ async def test_document_update_multiple_CFVs(
 
     # Update all existing CFVs in one shot
     cf = {"EffectiveDate": "2024-09-27", "Shop": "Lidl", "Total": "40.22"}
-    await dbapi.update_doc_cfv(
+    items: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt.id,
         custom_fields=cf,
     )
 
-    items: list[schema.CFV] = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
-    eff_date_cf = next(item for item in items if item.name == "EffectiveDate")
-    shop_cf = next(item for item in items if item.name == "Shop")
-    total_cf = next(item for item in items if item.name == "Total")
+    eff_date_cf = next(item for item in items if item[0].name == "EffectiveDate")
+    shop_cf = next(item for item in items if item[0].name == "Shop")
+    total_cf = next(item for item in items if item[0].name == "Total")
 
-    assert eff_date_cf.value == Date(2024, 9, 27)
-    assert shop_cf.value == "Lidl"
-    assert total_cf.value == 40.22
+    assert eff_date_cf[1].value_date == Date(2024, 9, 27)
+    assert shop_cf[1].value.raw == "Lidl"
+    assert total_cf[1].value_numeric == Decimal("40.22")
 
 
 async def test_document_without_cfv_update_document_type_to_none(
@@ -193,13 +191,19 @@ async def test_document_without_cfv_update_document_type_to_none(
     In this scenario document does not have associated CFV
     """
     receipt = await make_document_receipt(title="receipt-1.pdf", user=user)
-    items = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
+    items: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.get_document_custom_field_values(
+        db_session,
+        document_id=receipt.id
+    )
     # document is of type Groceries, thus there are custom fields
     assert len(items) == 3
 
     await dbapi.update_doc_type(db_session, document_id=receipt.id, document_type_id=None)
 
-    items = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
+    items = await cf_dbapi.get_document_custom_field_values(
+        db_session,
+        document_id=receipt.id
+    )
     # document does not have any type associated, thus no custom fields
     assert len(items) == 0
 
@@ -222,12 +226,15 @@ async def test_document_with_cfv_update_document_type_to_none(
     """
     receipt = await make_document_receipt(title="receipt-1.pdf", user=user)
     # add some cfv
-    await dbapi.update_doc_cfv(
+    await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt.id,
         custom_fields={"EffectiveDate": "2024-09-27"},
     )
-    items = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
+    items: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.get_document_custom_field_values(
+        db_session,
+        document_id=receipt.id
+    )
     # document is of type Groceries, thus there are custom fields
     assert len(items) == 3
     # there is exactly one cfv: one value for EffectiveDate
@@ -239,7 +246,10 @@ async def test_document_with_cfv_update_document_type_to_none(
     # set document type to None
     await dbapi.update_doc_type(db_session, document_id=receipt.id, document_type_id=None)
 
-    items = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
+    items = await cf_dbapi.get_document_custom_field_values(
+        db_session,
+        document_id=receipt.id
+    )
     # document does not have any type associated, thus no custom fields
     assert len(items) == 0
 
@@ -261,23 +271,22 @@ async def test_document_update_string_custom_field_value_multiple_times(
     receipt = await make_document_receipt(title="receipt-1.pdf", user=user)
 
     # add some value (for first time)
-    await dbapi.update_doc_cfv(
+    await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt.id,
         custom_fields={"Shop": "lidl"},
     )
 
     # update existing value
-    await dbapi.update_doc_cfv(
+    items: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt.id,
         custom_fields={"Shop": "rewe"},
     )
 
-    items: list[schema.CFV] = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
-    shop_cf = next(item for item in items if item.name == "Shop")
+    shop_cf = next(item for item in items if item[0].name == "Shop")
 
-    assert shop_cf.value == "rewe"
+    assert shop_cf[1].value.raw == "rewe"
 
 
 async def test_get_docs_by_type_without_cf(

@@ -1,6 +1,6 @@
 from typing import Dict, Type
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from .base import CustomFieldTypeHandler
 
@@ -11,8 +11,7 @@ class TypeHandlerInfo(BaseModel):
     config_model_name: str
     sort_column: str
 
-    class Config:
-        frozen = True
+    model_config = ConfigDict(frozen=True)
 
 
 class TypeRegistry:

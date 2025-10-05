@@ -1,13 +1,13 @@
 import uuid
-import pytest
 
+import pytest
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from papermerge.core import orm, schema
 from papermerge.core.features.nodes.db import api as dbapi
-from papermerge.core.features.document.db import api as docs_dbapi
+from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.db import common as common_dbapi
 
 
@@ -127,7 +127,7 @@ async def test_delete_document_which_has_custom_fields(
     # set initial CFVs
     cf = {"EffectiveDate": "2024-09-26", "Shop": "Aldi", "Total": "32.97"}
 
-    await docs_dbapi.update_doc_cfv(
+    await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt.id,
         custom_fields=cf,
@@ -168,17 +168,18 @@ async def test_delete_recursively_documents_which_has_custom_fields(
     # set initial CFVs
     cf = {"EffectiveDate": "2024-09-26", "Shop": "Aldi", "Total": "32.97"}
 
-    await docs_dbapi.update_doc_cfv(
+    await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt1.id,
         custom_fields=cf,
     )
 
-    await docs_dbapi.update_doc_cfv(
+    await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt2.id,
         custom_fields=cf,
     )
+
     doc_count_before = (await db_session.execute(
         select(func.count(orm.Document.id)).where(
             orm.Document.title.in_(["receipt-1.pdf", "receipt-2.pdf"])
@@ -208,7 +209,6 @@ async def test_delete_recursively_documents_which_has_custom_fields(
     assert doc_count_after == 0
     # its custom fields must be deleted as well
     assert cfv_count == 0
-
 
 async def test_delete_folder_recursively_with_its_content(
     db_session: AsyncSession, make_document, make_folder, user

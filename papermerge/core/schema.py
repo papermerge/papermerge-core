@@ -31,7 +31,8 @@ from .features.document.schema import (
     StatusForSize,
     Pagination,
     DocVerListItem,
-    DownloadURL
+    DownloadURL,
+    DocumentsByTypeParams
 )
 from .features.users.schema import User, UserEx, CreateUser, UserDetails, UpdateUser, ChangeUserPassword, UserHomes, UserInboxes, UserHome, UserInbox
 from .features.custom_fields.schema import (
@@ -138,5 +139,6 @@ __all__ = [
     'DownloadURL',
     'AuditLog',
     'AuditLogDetails',
-    'OwnedBy'
+    'OwnedBy',
+    'DocumentsByTypeParams'
 ]

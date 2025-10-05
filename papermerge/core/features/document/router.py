@@ -17,17 +17,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import exceptions as exc
 from papermerge.core import constants as const
-from papermerge.core import utils, dbapi, schema
+from papermerge.core import utils, dbapi
 from papermerge.core.features.auth import get_current_user, scopes
 from papermerge.core.features.document.schema import (
     DocumentTypeArg,
-    PageNumber,
-    PageSize,
-    OrderBy,
 )
+from papermerge.core import schema
 from papermerge.core.config import get_settings, FileServer
 from papermerge.core.tasks import send_task
-from papermerge.core.types import OrderEnum, PaginatedResponse
 from papermerge.core.db import common as dbapi_common
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.db.engine import get_db
@@ -372,39 +369,42 @@ async def update_document_type(
     )
 
 
-@router.get("/type/{document_type_id}")
+@router.get("/type/{document_type_id}", response_model=schema.PaginatedResponse[schema.DocumentCFV])
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def get_documents_by_type(
-    document_type_id: uuid.UUID,
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
-    page_size: PageSize = 5,
-    page_number: PageNumber = 1,
-    order_by: OrderBy = None,
-    order: OrderEnum = OrderEnum.desc,
-    db_session: AsyncSession = Depends(get_db),
-) -> PaginatedResponse[schema.DocumentCFV]:
+        document_type_id: uuid.UUID,
+        user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+        params: schema.DocumentsByTypeParams = Depends(),
+        db_session: AsyncSession = Depends(get_db),
+) -> schema.PaginatedResponse[schema.DocumentCFV]:
     """
     Get all documents of specific type with all custom field values
 
     Required scope: `{scope}`
     """
-    items = await dbapi.get_docs_by_type(
-        db_session,
-        type_id=document_type_id,
-        user_id=user.id,
-        order_by=order_by,
-        order=order,
-        page_number=page_number,
-        page_size=page_size,
-    )
-    total_count = await dbapi.get_docs_count_by_type(db_session, type_id=document_type_id)
+    try:
+        result = await dbapi.get_documents_by_type_paginated(
+            db_session,
+            document_type_id=document_type_id,
+            user_id=user.id,
+            page_size=params.page_size,
+            page_number=params.page_number,
+            sort_by=params.sort_by,
+            sort_direction=params.sort_direction,
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid parameters: {str(e)}"
+        )
+    except Exception as e:
+        logger.error(
+            f"Error fetching documents by type for user {user.id}: {e}",
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail="Internal server error")
 
-    return PaginatedResponse(
-        page_size=page_size,
-        page_number=page_number,
-        num_pages=int(total_count / page_size) + 1,
-        items=items,
-    )
+    return result
 
 
 @router.get(

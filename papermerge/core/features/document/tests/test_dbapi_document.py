@@ -301,11 +301,15 @@ async def test_get_docs_by_type_without_cf(
     await dbapi.update_doc_type(db_session, document_id=doc_1.id, document_type_id=dtype.id)
     await dbapi.update_doc_type(db_session, document_id=doc_2.id, document_type_id=dtype.id)
 
-    items: list[schema.DocumentCFV] = await dbapi.get_docs_by_type(
-        db_session, type_id=dtype.id, user_id=user.id
+    items = await dbapi.get_documents_by_type_paginated(
+        db_session,
+        document_type_id=dtype.id,
+        user_id=user.id,
+        page_size=5,
+        page_number=1
     )
 
-    assert len(items) == 2
+    assert items.total_items == 2
 
 
 async def test_get_docs_by_type_basic(db_session: AsyncSession, make_document_receipt, user):

@@ -38,6 +38,23 @@ async def test_update_document_type(
     assert fresh_doc.document_type == dt1
 
 
+async def test_get_documents_by_type(
+    auth_api_client,
+    make_document,
+    user,
+    make_document_type,
+    db_session: AsyncSession
+):
+    doc = await make_document(title="document.pdf", user=user, parent=user.home_folder)
+    type: orm.DocumentType = await make_document_type(name="dt1")
+
+
+    response = await auth_api_client.get(f"/documents/type/{type.id}")
+
+    assert response.status_code == 200, response.json()
+
+
+
 async def test_get_document_custom_fields_values(
     auth_api_client, make_document_receipt, user
 ):

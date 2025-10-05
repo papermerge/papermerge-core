@@ -630,8 +630,9 @@ async def get_document_custom_field_values(
 
 
 async def query_documents_by_custom_fields(
-    session: AsyncSession,
-    params: schema.DocumentQueryParams
+        session: AsyncSession,
+        params: schema.DocumentQueryParams,
+        user_id: Optional[uuid.UUID] = None
 ) -> list[uuid.UUID]:
     """
     Query documents by custom field values with filtering and sorting
@@ -639,6 +640,7 @@ async def query_documents_by_custom_fields(
     Args:
         session: Database session
         params: Query parameters (Pydantic model)
+        user_id: Optional user ID to filter documents by owner
 
     Returns:
         List of document IDs matching the criteria
@@ -646,9 +648,13 @@ async def query_documents_by_custom_fields(
     from sqlalchemy.orm import aliased
 
     # Start with documents of this type
-    query = select(orm.Document.id).where(
-        orm.Document.document_type_id == params.document_type_id
-    )
+    conditions = [orm.Document.document_type_id == params.document_type_id]
+
+    # Add user filter if provided
+    if user_id is not None:
+        conditions.append(orm.Document.user_id == user_id)
+
+    query = select(orm.Document.id).where(and_(*conditions))
 
     # Apply filters
     for i, filter_spec in enumerate(params.filters):
@@ -727,6 +733,7 @@ async def query_documents_by_custom_fields(
     # Execute
     result = await session.execute(query)
     return [row[0] for row in result.all()]
+
 
 
 async def update_document_custom_field_values(
@@ -817,10 +824,10 @@ async def update_document_custom_field_values(
     return await get_document_custom_field_values(session, document_id)
 
 
-
 async def get_document_table_data(
     session: AsyncSession,
     document_type_id: uuid.UUID,
+    user_id: Optional[uuid.UUID] = None,
     filters: Optional[list[schema.CustomFieldFilter]] = None,
     sort: Optional[schema.CustomFieldSort] = None,
     limit: Optional[int] = None,
@@ -828,18 +835,7 @@ async def get_document_table_data(
 ) -> tuple[list[schema.CustomField], list[dict]]:
     """
     Get complete table data for UI display
-
-    Returns:
-        Tuple of:
-        - List of custom fields (columns)
-        - List of row dicts with structure:
-          {
-              'document_id': UUID,
-              'document_title': str,
-              'field_<field_id>': <value>
-          }
-
-    This is optimized for your UI table use case.
+    ...
     """
     # Get all custom fields for this document type
     stmt = select(orm.CustomField).join(
@@ -861,8 +857,8 @@ async def get_document_table_data(
         offset=offset
     )
 
-    # Get matching document IDs
-    doc_ids = await query_documents_by_custom_fields(session, query_params)
+    # Get matching document IDs (now with user_id filter)
+    doc_ids = await query_documents_by_custom_fields(session, query_params, user_id=user_id)
 
     # Fetch document details and all custom field values
     rows = []

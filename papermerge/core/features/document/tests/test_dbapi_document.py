@@ -3,6 +3,7 @@ import io
 from datetime import date as Date
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import pytest
 from sqlalchemy import func, select
@@ -15,6 +16,8 @@ from papermerge.core.features.document import schema
 from papermerge.core.features.document.db import api as dbapi
 from papermerge.core.features.document.db import orm as docs_orm
 from papermerge.core.schemas import error as err_schema
+from papermerge.core.features.custom_fields.db import api as cf_dbapi
+from papermerge.core.features.custom_fields import schema as cf_schema
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "resources"
@@ -43,25 +46,22 @@ async def test_get_doc_cfv_only_empty_values(
     Groceries document type has following custom fields:
         - Effective Date (date)
         - Total (monetary)
-        - Shop (string)
-
-    `db.get_doc_cfv` method should return 3 items (each corresponding
-    to one custom field) with all values (i.e. custom field values, in short cfv)
-    set to None. In other words, document custom fields are returned in
-    regardless if custom field has set a value or no
+        - Shop (text)
     """
     receipt = await make_document_receipt(title="receipt-1.pdf", user=user)
-    items: list[schema.CFV] = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
+    items: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.get_document_custom_field_values(
+        db_session,
+        document_id=receipt.id
+    )
+
     assert len(items) == 3
-    # with just value set to None it is ambiguous:
-    # was value was set to None or was value not set at all ?
-    assert items[0].value is None
-    # when `custom_field_value_id` is None => value was not set yet
-    assert items[0].custom_field_value_id is None
-    assert items[1].value is None
-    assert items[1].custom_field_value_id is None
-    assert items[2].value is None
-    assert items[2].custom_field_value_id is None
+
+    assert items[0][1] is None
+    assert items[0][0].name in {"EffectiveDate", "Total", "Shop"}
+    assert items[1][1] is None
+    assert items[1][0].name in {"EffectiveDate", "Total", "Shop"}
+    assert items[2][1] is None
+    assert items[2][0].name in {"EffectiveDate", "Total", "Shop"}
 
 
 @pytest.mark.parametrize(
@@ -69,7 +69,10 @@ async def test_get_doc_cfv_only_empty_values(
     ["2024-10-28", "2024-10-28 00:00:00", "2024-10-28 00", "2024-10-28 anything here"],
 )
 async def test_document_add_valid_date_cfv(
-    effective_date_input, db_session: AsyncSession, make_document_receipt, user
+    effective_date_input,
+    db_session: AsyncSession,
+    make_document_receipt,
+    user
 ):
     """
     Custom field of type `date` is set to string "2024-10-28"
@@ -79,12 +82,15 @@ async def test_document_add_valid_date_cfv(
     # value = custom field value
     cf = {"EffectiveDate": effective_date_input}
 
-    await dbapi.update_doc_cfv(db_session, document_id=receipt.id, custom_fields=cf)
+    items: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.update_document_custom_field_values(
+        db_session,
+        document_id=receipt.id,
+        custom_fields=cf
+    )
 
-    items: list[schema.CFV] = await dbapi.get_doc_cfv(db_session, document_id=receipt.id)
-    eff_date_cf = next(item for item in items if item.name == "EffectiveDate")
+    eff_date_cf = next(item for item in items if item[0].name == "EffectiveDate")
 
-    assert eff_date_cf.value == Date(2024, 10, 28)
+    assert eff_date_cf[1].value_date == Date(2024, 10, 28)
 
 
 async def test_document_update_custom_field_of_type_date(

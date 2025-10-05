@@ -531,10 +531,10 @@ async def make_user(db_session: AsyncSession):
 
 
 @pytest.fixture
-async def document_type_groceries(db_session: AsyncSession, user, make_custom_field):
-    cf1 = await make_custom_field(name="Shop", type=CustomFieldType.text)
-    cf2 = await make_custom_field(name="Total", type=CustomFieldType.monetary)
-    cf3 = await make_custom_field(name="EffectiveDate", type=CustomFieldType.date)
+async def document_type_groceries(db_session: AsyncSession, user, make_custom_field_v2):
+    cf1 = await make_custom_field_v2(name="Shop", type_handler="text")
+    cf2 = await make_custom_field_v2(name="Total", type_handler="monetary")
+    cf3 = await make_custom_field_v2(name="EffectiveDate", type_handler="date")
 
     return await dbapi.create_document_type(
         db_session,
@@ -586,8 +586,8 @@ async def document_type_salary(db_session: AsyncSession, user, make_custom_field
 
 
 @pytest.fixture
-async def document_type_tax(db_session: AsyncSession, user, make_custom_field):
-    cf = await make_custom_field(name="Year", type=CustomFieldType.int)
+async def document_type_tax(db_session: AsyncSession, user, make_custom_field_v2):
+    cf = await make_custom_field_v2(name="Year", type_handler="integer")
 
     return await dbapi.create_document_type(
         db_session,

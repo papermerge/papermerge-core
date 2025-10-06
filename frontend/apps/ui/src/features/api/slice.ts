@@ -79,7 +79,8 @@ export const apiSlice = createApi({
     "PreferenceOptionTimezones",
     "PreferenceOptionDateFormats",
     "PreferenceOptionNumberFormats",
-    "PreferenceOptionTimestampFormats"
+    "PreferenceOptionTimestampFormats",
+    "DocumentsByCategory"
   ],
   endpoints: _ => ({})
 })

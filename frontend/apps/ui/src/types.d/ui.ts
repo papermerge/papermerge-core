@@ -18,3 +18,4 @@ export type PanelComponent =
   | "customFieldDetails"
   | "usersList"
   | "userDetails"
+  | "documentsListByCategory"

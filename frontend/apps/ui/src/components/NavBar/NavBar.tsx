@@ -57,7 +57,9 @@ function NavBarFull() {
   const categoryID = useAppSelector(s =>
     selectCommanderDocumentTypeID(s, "main")
   )
-  const categoryURL = categoryID ? `/documents/${categoryID}` : "/documents"
+  const categoryURL = categoryID
+    ? `/documents/by/category/${categoryID}`
+    : "/documents/by/category"
 
   const user = useSelector(selectCurrentUser) as User
   const status = useSelector(selectCurrentUserStatus)
@@ -175,7 +177,9 @@ function NavBarCollapsed() {
   const categoryID = useAppSelector(s =>
     selectCommanderDocumentTypeID(s, "main")
   )
-  const categoryURL = categoryID ? `/documents/${categoryID}` : "/documents"
+  const categoryURL = categoryID
+    ? `/documents/by/category/${categoryID}`
+    : "/documents/by/category"
 
   const onClick = () => {
     if (viewOption == "document-type") {

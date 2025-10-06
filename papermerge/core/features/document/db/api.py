@@ -1,3 +1,4 @@
+import math
 import io
 import logging
 import os
@@ -26,10 +27,10 @@ from papermerge.core.features.document import s3
 from papermerge.core.utils.misc import copy_file
 from papermerge.core import schema, orm, constants, tasks
 from papermerge.core.types import (
-    OrderEnum,
-    CFVValueColumn,
     ImagePreviewStatus,
 )
+from papermerge.core.features.custom_fields.db import api as cf_dbapi
+from papermerge.core.features.custom_fields import schema as cf_schema
 from papermerge.core.features.custom_fields.cf_types.registry import \
     TypeRegistry
 from papermerge.core.db.common import get_ancestors, get_node_owner
@@ -95,75 +96,14 @@ async def get_docs_count_by_type(session: AsyncSession, type_id: uuid.UUID):
     return result.one()
 
 
-async def get_cfv_column_name(db_session: AsyncSession, cf_name: str) -> CFVValueColumn:
-    result = await db_session.execute(
-        select(orm.CustomField.type).where(
-            orm.CustomField.name == cf_name
-        )
-    )
-
-    value = result.scalar()
-
-    match value:
-        case "text":
-            ret = CFVValueColumn.TEXT
-        case "monetary":
-            ret = CFVValueColumn.MONETARY
-        case "date":
-            ret = CFVValueColumn.DATE
-        case "boolean":
-            ret = CFVValueColumn.BOOLEAN
-        case "yearmonth":
-            ret = CFVValueColumn.YEARMONTH
-        case "int":
-            ret = CFVValueColumn.INT
-        case "float":
-            ret = CFVValueColumn.FLOAT
-        case _:
-            raise ValueError("Unexpected custom field type")
-
-    return ret
-
-
-async def get_docs_by_type_no_cf(
-    session: AsyncSession,
-    type_id: uuid.UUID,
-    limit: int,
-    offset: int,
-    order_by: str | None = None,
-    order: OrderEnum = OrderEnum.desc,
-) -> list[schema.DocumentCFV]:
-    """Return all documents of specific type (with their empty custom fields)
-
-    This method works correctly only in case document type does
-    not have custom fields
-    """
-    stmt = select(orm.Document).where(
-        orm.Document.document_type_id == type_id
-    ).limit(limit).offset(offset)
-
-    results = []
-
-    for doc in (await session.execute(stmt)).scalars():
-        item = schema.DocumentCFV(
-            id=doc.id,
-            title=doc.title,
-            document_type_id=type_id,
-            custom_fields=[]
-        )
-        results.append(item)
-
-    return results
-
-
 async def get_documents_by_type_paginated(
-        session: AsyncSession,
-        document_type_id: uuid.UUID,
-        user_id: uuid.UUID,
-        page_size: int,
-        page_number: int,
-        sort_by: Optional[str] = None,
-        sort_direction: Optional[str] = None,
+    session: AsyncSession,
+    document_type_id: uuid.UUID,
+    user_id: uuid.UUID,
+    page_size: int,
+    page_number: int,
+    sort_by: Optional[str] = None,
+    sort_direction: Optional[str] = None,
 ) -> schema.PaginatedResponse[schema.DocumentCFV]:
     """
     Get paginated documents of a specific type with custom field values
@@ -171,9 +111,7 @@ async def get_documents_by_type_paginated(
     Returns:
         PaginatedResponse with DocumentCFV items
     """
-    from papermerge.core.features.custom_fields.db import api as cf_dbapi
-    from papermerge.core.features.custom_fields import schema as cf_schema
-    import math
+
 
     # Calculate limit and offset
     limit = page_size
@@ -201,7 +139,6 @@ async def get_documents_by_type_paginated(
                 direction=sort_direction
             )
 
-    # Get document table data
     fields, rows = await cf_dbapi.get_document_table_data(
         session,
         document_type_id=document_type_id,
@@ -215,29 +152,17 @@ async def get_documents_by_type_paginated(
     items = []
     for row in rows:
         custom_fields_list = []
-
         for field in fields:
             field_key = f'field_{field.id}'
             cfv = row.get(field_key)
-
-            # Extract value
-            if cfv is not None:
-                value = cfv.value.raw if hasattr(cfv, 'value') else None
-            else:
-                value = None
-
-            # Get CustomFieldType
-            try:
-                from papermerge.core.features.custom_fields.schema import CustomFieldType
-                cf_type = CustomFieldType(field.type_handler)
-            except (ValueError, AttributeError):
-                cf_type = field.type_handler
-
-            custom_fields_list.append((field.name, value, cf_type))
+            custom_fields_list.append(schema.CustomFieldRow(
+                custom_field=field,
+                custom_field_value=cfv
+            ))
 
         doc_cfv = schema.DocumentCFV(
             id=row['document_id'],
-            title=row.get('title', ''),
+            title=row.get('document_title', ''),
             document_type_id=document_type_id,
             thumbnail_url=row.get('thumbnail_url'),
             custom_fields=custom_fields_list

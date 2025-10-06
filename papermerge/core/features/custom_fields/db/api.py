@@ -634,9 +634,9 @@ async def get_document_custom_field_values(
 
 
 async def query_documents_by_custom_fields(
-        session: AsyncSession,
-        params: schema.DocumentQueryParams,
-        user_id: Optional[uuid.UUID] = None
+    session: AsyncSession,
+    params: schema.DocumentQueryParams,
+    user_id: Optional[uuid.UUID] = None
 ) -> list[uuid.UUID]:
     """
     Query documents by custom field values with filtering and sorting
@@ -658,7 +658,7 @@ async def query_documents_by_custom_fields(
     if user_id is not None:
         conditions.append(orm.Document.user_id == user_id)
 
-    query = select(orm.Document.id).where(and_(*conditions))
+    query = select(orm.Document.id, orm.Document.title).where(and_(*conditions))
 
     # Apply filters
     for i, filter_spec in enumerate(params.filters):
@@ -737,7 +737,6 @@ async def query_documents_by_custom_fields(
     # Execute
     result = await session.execute(query)
     return [row[0] for row in result.all()]
-
 
 
 async def update_document_custom_field_values(

@@ -52,6 +52,18 @@ const documentsByCategorySlice = createSlice({
         state.secondaryDocumentsByCategoryDetails = undefined
       }
     },
+    documentCategoryIDUpdated: (
+      state,
+      action: PayloadAction<{
+        id?: string
+        mode: PanelMode
+      }>
+    ) => {
+      const {mode, id} = action.payload
+      const key = mode === "main" ? "mainCategoryID" : "secondaryCategoryID"
+
+      state[key] = id
+    },
     selectionSet: (
       state,
       action: PayloadAction<{ids: string[]; mode: PanelMode}>
@@ -216,6 +228,7 @@ const documentsByCategorySlice = createSlice({
 export const {
   mainPanelDocumentsByCategoryDetailsUpdated,
   secondaryPanelDocumentsByCategoryDetailsUpdated,
+  documentCategoryIDUpdated,
   rolePageNumberValueUpdated,
   rolePaginationUpdated,
   selectionSet,
@@ -239,6 +252,14 @@ export const selectSelectedIDs = (state: RootState, mode: PanelMode) => {
   }
 
   return state.documentsByCategory.secondaryDocumentsByCategoryList?.selectedIDs
+}
+
+export const selectDocumentCategoryID = (state: RootState, mode: PanelMode) => {
+  if (mode == "main") {
+    return state.documentsByCategory.mainCategoryID
+  }
+
+  return state.documentsByCategory.secondaryCategoryID
 }
 
 export const selectPageSize = (state: RootState, mode: PanelMode): number => {

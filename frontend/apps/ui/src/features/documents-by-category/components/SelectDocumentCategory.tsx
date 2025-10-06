@@ -3,9 +3,9 @@ import PanelContext from "@/contexts/PanelContext"
 import {useGetDocumentTypesGroupedQuery} from "@/features/document-types/storage/api"
 import {DocTypeGrouped} from "@/features/document-types/types"
 import {
-  commanderDocumentTypeIDUpdated,
-  selectCommanderDocumentTypeID
-} from "@/features/ui/uiSlice"
+  documentCategoryIDUpdated,
+  selectDocumentCategoryID
+} from "@/features/documents-by-category/storage/documentsByCategory"
 import {Select} from "@mantine/core"
 import {useContext, useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
@@ -15,12 +15,11 @@ import type {PanelMode} from "@/types"
 
 export default function SelectDocumentCategory() {
   const {t} = useTranslation()
-  const mode: PanelMode = useContext(PanelContext)
-  const lastDocumentTypeID = useAppSelector(s =>
-    selectCommanderDocumentTypeID(s, mode)
-  )
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+
+  const mode: PanelMode = useContext(PanelContext)
+  const categoryID = useAppSelector(s => selectDocumentCategoryID(s, mode))
   const {data: allDocumentTypes = []} = useGetDocumentTypesGroupedQuery()
   const [currentDocumentTypeName, setCurrentDocumentTypeName] = useState<
     string | undefined
@@ -28,7 +27,7 @@ export default function SelectDocumentCategory() {
 
   useEffect(() => {
     if (allDocumentTypes && allDocumentTypes.length > 0) {
-      let curName = getDocTypeNameFromID(allDocumentTypes, lastDocumentTypeID)
+      let curName = getDocTypeNameFromID(allDocumentTypes, categoryID)
       setCurrentDocumentTypeName(curName)
     }
   }, [allDocumentTypes.length])
@@ -45,12 +44,12 @@ export default function SelectDocumentCategory() {
 
     setCurrentDocumentTypeName(newValue)
     dispatch(
-      commanderDocumentTypeIDUpdated({
+      documentCategoryIDUpdated({
         mode,
-        documentTypeID: document_type_id
+        id: document_type_id
       })
     )
-    navigate(`/documents/${document_type_id}`)
+    navigate(`/documents/by/category/${document_type_id}`)
   }
 
   return (

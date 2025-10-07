@@ -9,6 +9,7 @@ from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, \
     field_validator
 
+from papermerge.core.schemas.common import ByUser
 from papermerge.core.features.custom_fields.schema import (
     CustomFieldType,
     CustomFieldValueData
@@ -96,6 +97,12 @@ class CustomFieldRow(BaseModel):
 class DocumentCFV(BaseModel):
     id: UUID
     title: str
+
+    created_at: datetime
+    updated_at: datetime
+    created_by: ByUser | None = None
+    updated_by: ByUser | None = None
+
     document_type_id: UUID | None = None
     thumbnail_url: str | None = None
     custom_fields: list[CustomFieldRow]

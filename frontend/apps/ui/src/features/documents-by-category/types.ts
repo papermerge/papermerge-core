@@ -24,9 +24,36 @@ export interface ByUser {
   username: string
 }
 
-export interface RoleItem {
+type CustomFieldValueData = {
+  raw?: any
+  sortable?: boolean
+  metadata?: Record<string, any>
+}
+
+type CustomField = {
   id: string
   name: string
+  type_handler: string
+  config: Record<string, any>
+}
+
+type CustomFieldValue = {
+  value: CustomFieldValueData
+  value_text?: string
+  value_numeric?: number
+  value_datetime?: string
+  value_boolean?: boolean
+}
+
+type CustomFieldRow = {
+  custom_field: CustomField
+  custom_field_value: CustomFieldValue
+}
+
+export interface DocumentByCategoryItem {
+  id: string
+  title: string
+  custom_fields: CustomFieldRow[]
   created_at: string
   updated_at: string
   created_by: ByUser

@@ -160,9 +160,29 @@ async def get_documents_by_type_paginated(
                 custom_field_value=cfv
             ))
 
+        # Build created_by info
+        created_by = None
+        if row.get('created_by_id'):
+            created_by = schema.ByUser(
+                id=row['created_by_id'],
+                username=row['created_by_username']
+            )
+
+        # Build updated_by info
+        updated_by = None
+        if row.get('updated_by_id'):
+            updated_by = schema.ByUser(
+                id=row['updated_by_id'],
+                username=row['updated_by_username']
+            )
+
         doc_cfv = schema.DocumentCFV(
             id=row['document_id'],
             title=row.get('document_title', ''),
+            created_at=row['created_at'],
+            updated_at=row['updated_at'],
+            created_by=created_by,
+            updated_by=updated_by,
             document_type_id=document_type_id,
             thumbnail_url=row.get('thumbnail_url'),
             custom_fields=custom_fields_list

@@ -204,7 +204,7 @@ const documentsByCategorySlice = createSlice({
         sorting: value
       }
     },
-    roleListVisibleColumnsUpdated(
+    documentsByCategoryListVisibleColumnsUpdated(
       state,
       action: PayloadAction<{mode: PanelMode; value: Array<string>}>
     ) {
@@ -234,7 +234,7 @@ export const {
   selectionSet,
   clearSelection,
   roleListSortingUpdated,
-  roleListVisibleColumnsUpdated,
+  documentsByCategoryListVisibleColumnsUpdated,
   documentsByCategoryTableFiltersUpdated
 } = documentsByCategorySlice.actions
 export default documentsByCategorySlice.reducer

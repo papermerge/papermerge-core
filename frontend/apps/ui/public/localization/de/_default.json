@@ -569,6 +569,7 @@
   "nothingFound": "Nichts gefunden",
   "failedToLoad": "Fehler beim Laden",
   "name": "Name",
+  "title": "Titel",
   "cancel": "Abrechen",
   "save": "Speichern",
   "currency": {

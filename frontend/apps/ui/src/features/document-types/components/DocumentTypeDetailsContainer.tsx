@@ -6,7 +6,7 @@ import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
 import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
-import {formatTimestamp} from "@/utils/formatTimestamp"
+import {formatTimestamp} from "@/utils/formatTime"
 import {
   Breadcrumbs,
   Group,

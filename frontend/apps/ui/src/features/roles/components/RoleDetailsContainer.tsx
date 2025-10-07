@@ -12,7 +12,7 @@ import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
 import {server2clientPerms} from "@/features/roles/utils"
 import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
-import {formatTimestamp} from "@/utils/formatTimestamp"
+import {formatTimestamp} from "@/utils/formatTime"
 import {
   Breadcrumbs,
   Group,

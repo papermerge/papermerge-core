@@ -6,7 +6,7 @@ import {useGetUserQuery} from "@/features/users/storage/api"
 import {selectUserDetailsID} from "@/features/users/storage/user"
 import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
-import {formatTimestamp} from "@/utils/formatTimestamp"
+import {formatTimestamp} from "@/utils/formatTime"
 import {
   Breadcrumbs,
   Group,

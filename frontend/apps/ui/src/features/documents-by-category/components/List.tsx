@@ -7,11 +7,12 @@ import useVisibleColumns from "@/features/documents-by-category/hooks/useVisible
 import {selectDocumentCategoryID} from "@/features/documents-by-category/storage/documentsByCategory"
 import {isHTTP403Forbidden} from "@/services/helpers"
 import type {PanelMode} from "@/types"
-import {Stack} from "@mantine/core"
+import {Group, Stack} from "@mantine/core"
 import {DataTable, TablePagination} from "kommon"
 import {useContext} from "react"
 import {useTranslation} from "react-i18next"
 import {useNavigate} from "react-router-dom"
+import ActionButtons from "./ActionButtons"
 import PickupDocumentCategory from "./PickupDocumentCategory"
 
 export default function DocumentsListByCagegory() {
@@ -24,7 +25,6 @@ export default function DocumentsListByCagegory() {
   const visibleColumns = useVisibleColumns(
     documentByCategoryColumns({items: data?.items, t})
   )
-
   if (!categoryID) {
     return <PickupDocumentCategory />
   }
@@ -35,6 +35,9 @@ export default function DocumentsListByCagegory() {
 
   return (
     <Stack style={{height: "100%"}}>
+      <Group w={"100%"}>
+        <ActionButtons items={data?.items || []} />
+      </Group>
       <DataTable
         data={data?.items || []}
         columns={visibleColumns}

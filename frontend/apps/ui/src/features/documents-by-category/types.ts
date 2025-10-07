@@ -30,7 +30,7 @@ type CustomFieldValueData = {
   metadata?: Record<string, any>
 }
 
-type CustomField = {
+export type CustomField = {
   id: string
   name: string
   type_handler: string
@@ -45,7 +45,7 @@ type CustomFieldValue = {
   value_boolean?: boolean
 }
 
-type CustomFieldRow = {
+export type CustomFieldRow = {
   custom_field: CustomField
   custom_field_value: CustomFieldValue
 }

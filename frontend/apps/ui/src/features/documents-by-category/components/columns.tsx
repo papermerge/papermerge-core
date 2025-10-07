@@ -1,3 +1,4 @@
+import DateFMT from "@/components/DateFMT"
 import TimestampZ from "@/components/Timestampz"
 import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
 import {Box, Text} from "@mantine/core"
@@ -105,6 +106,9 @@ export default function documentByCategoryColumns({items, t}: Args) {
         const rowCFValue = rowCF?.custom_field_value?.value?.raw
 
         if (rowCFValue) {
+          if (customFieldColumn.custom_field.type_handler == "date") {
+            return <DateFMT value={rowCFValue} />
+          }
           return <Text size="sm">{rowCFValue}</Text>
         }
 

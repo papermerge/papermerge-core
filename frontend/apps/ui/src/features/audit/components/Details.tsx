@@ -1,6 +1,6 @@
 import {useAppSelector} from "@/app/hooks"
 import {selectMyPreferences} from "@/features/preferences/storage/preference"
-import {formatTimestamp} from "@/utils/formatTimestamp"
+import {formatTimestamp} from "@/utils/formatTime"
 import {Paper} from "@mantine/core"
 import {TFunction} from "i18next"
 import {CopyableTextArea, CopyableTextInput} from "kommon"

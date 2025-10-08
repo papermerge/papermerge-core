@@ -59,6 +59,7 @@ from .features.custom_fields.db.api import (
     bulk_set_custom_field_values,
     get_document_table_data,
     get_custom_field_values,
+    get_custom_fields,
     get_document_custom_field_values,
     update_document_custom_field_values
 )
@@ -99,6 +100,7 @@ __all__ = [
     "update_document_type",
     "document_type_cf_count",
     "create_custom_field",
+    "get_custom_fields",
     "get_doc_versions_list",
     "get_doc_version_download_url",
     "get_doc_id_from_doc_ver_id",

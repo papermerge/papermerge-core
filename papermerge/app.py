@@ -27,7 +27,6 @@ from papermerge.core.features.document.router_document_version import (
 )
 from papermerge.core.features.liveness_probe.router import \
     router as probe_router
-from papermerge.search.routers.search import router as search_router
 from papermerge.core.features.tasks.router import router as tasks_router
 from papermerge.core.features.shared_nodes.router import \
     router as shared_nodes_router
@@ -87,12 +86,11 @@ app.include_router(version_router, prefix=prefix)
 app.include_router(audit_log_router, prefix=prefix)
 app.include_router(preferences_router, prefix=prefix)
 
-if config.papermerge__search__url:
-    app.include_router(search_router, prefix=prefix)
 
 logging_config_path = Path(
     os.environ.get("PAPERMERGE__MAIN__LOGGING_CFG", "/etc/papermerge/logging.yaml")
 )
+
 if logging_config_path.exists() and logging_config_path.is_file():
     with open(logging_config_path, "r") as stream:
         config = yaml.load(stream, Loader=yaml.FullLoader)

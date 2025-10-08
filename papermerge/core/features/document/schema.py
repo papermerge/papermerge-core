@@ -406,15 +406,6 @@ class DocumentCFVWithIndex(BaseModel):
     index: int
 
 
-class DocumentCFVRow(BaseModel):
-    title: str
-    doc_id: UUID
-    document_type_id: UUID
-    cf_name: CFNameType
-    cf_type: CustomFieldType
-    cf_value: CFValueType
-
-
 class DownloadURL(BaseModel):
     downloadURL: str
 

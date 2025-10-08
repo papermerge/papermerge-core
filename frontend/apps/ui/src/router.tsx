@@ -13,7 +13,7 @@ import {
   DocumentTypeDetails,
   DocumentTypesList
 } from "@/features/document-types/pages"
-import DocumentsByCategoryDetails from "@/features/documents-by-category/pages/Details"
+import {DocumentByCategoryDetails} from "@/features/documents-by-category/pages"
 import {GroupDetails, GroupsList} from "@/features/groups/pages"
 import {RoleDetails, RolesList} from "@/features/roles/pages"
 import SharedDocumentView, {
@@ -95,7 +95,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/documents/by/category/:id",
-        element: <DocumentsByCategoryDetails />,
+        element: <DocumentByCategoryDetails />,
         loader: documentsByCategoryDetailsLoader
       },
       {

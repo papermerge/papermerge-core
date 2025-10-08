@@ -127,7 +127,7 @@ const documentsByCategorySlice = createSlice({
         excludeScopeFilterValue
       }
     },
-    rolePaginationUpdated(
+    documentsByCategoryPaginationUpdated(
       state,
       action: PayloadAction<{mode: PanelMode; value: Pagination}>
     ) {
@@ -168,7 +168,7 @@ const documentsByCategorySlice = createSlice({
         ...newValue
       }
     },
-    rolePageNumberValueUpdated(
+    documentsByCategoryPageNumberValueUpdated(
       state,
       action: PayloadAction<{mode: PanelMode; value: number}>
     ) {
@@ -186,7 +186,7 @@ const documentsByCategorySlice = createSlice({
         pageNumber: value
       }
     },
-    roleListSortingUpdated(
+    documentsByCategoryListSortingUpdated(
       state,
       action: PayloadAction<{mode: PanelMode; value: SortState}>
     ) {
@@ -229,11 +229,11 @@ export const {
   mainPanelDocumentsByCategoryDetailsUpdated,
   secondaryPanelDocumentsByCategoryDetailsUpdated,
   documentCategoryIDUpdated,
-  rolePageNumberValueUpdated,
-  rolePaginationUpdated,
+  documentsByCategoryPageNumberValueUpdated,
+  documentsByCategoryPaginationUpdated,
   selectionSet,
   clearSelection,
-  roleListSortingUpdated,
+  documentsByCategoryListSortingUpdated,
   documentsByCategoryListVisibleColumnsUpdated,
   documentsByCategoryTableFiltersUpdated
 } = documentsByCategorySlice.actions

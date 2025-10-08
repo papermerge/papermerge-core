@@ -1,3 +1,4 @@
+import DocumentByCategoryDetails from "./Details"
 import DocumentsListByCategory from "./List"
 
-export default DocumentsListByCategory
+export {DocumentByCategoryDetails, DocumentsListByCategory}

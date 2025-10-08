@@ -1,7 +1,8 @@
-import {useAppSelector} from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
 import PanelContext from "@/contexts/PanelContext"
 import documentByCategoryColumns from "@/features/documents-by-category/components/columns"
+import {showDocumentDetailsInSecondaryPanel} from "@/features/documents-by-category/hooks/thunks"
 import useDocumentsByCategoryTable from "@/features/documents-by-category/hooks/useDocumentsByCategoryTable"
 import useVisibleColumns from "@/features/documents-by-category/hooks/useVisibleColumns"
 import {selectDocumentCategoryID} from "@/features/documents-by-category/storage/documentsByCategory"
@@ -12,11 +13,13 @@ import {DataTable, TablePagination} from "kommon"
 import {useContext} from "react"
 import {useTranslation} from "react-i18next"
 import {useNavigate} from "react-router-dom"
+import {DocumentByCategoryItem} from "../types"
 import ActionButtons from "./ActionButtons"
 import PickupDocumentCategory from "./PickupDocumentCategory"
 
 export default function DocumentsListByCagegory() {
   const {t} = useTranslation()
+  const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const mode: PanelMode = useContext(PanelContext)
   const categoryID = useAppSelector(s => selectDocumentCategoryID(s, mode))
@@ -25,6 +28,20 @@ export default function DocumentsListByCagegory() {
   const visibleColumns = useVisibleColumns(
     documentByCategoryColumns({items: data?.items, t})
   )
+
+  const getRowId = (row: DocumentByCategoryItem) => row.id
+
+  const onTableRowClick = (
+    row: DocumentByCategoryItem,
+    openInSecondaryPanel: boolean
+  ) => {
+    if (openInSecondaryPanel) {
+      dispatch(showDocumentDetailsInSecondaryPanel(row.id))
+    } else {
+      navigate(`/documents/${row.id}`)
+    }
+  }
+
   if (!categoryID) {
     return <PickupDocumentCategory />
   }
@@ -50,6 +67,8 @@ export default function DocumentsListByCagegory() {
           defaultValue: "No roles found"
         })}
         withCheckbox={true}
+        onRowClick={onTableRowClick}
+        getRowId={getRowId}
       />
       <TablePagination
         currentPage={data?.page_number || 1}

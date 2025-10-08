@@ -1,4 +1,5 @@
 import DateFMT from "@/components/DateFMT"
+import {MonetaryFMT, NumberFMT} from "@/components/NumberFMT"
 import TimestampZ from "@/components/Timestampz"
 import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
 import {Box, Text} from "@mantine/core"
@@ -109,6 +110,17 @@ export default function documentByCategoryColumns({items, t}: Args) {
           if (customFieldColumn.custom_field.type_handler == "date") {
             return <DateFMT value={rowCFValue} />
           }
+          if (customFieldColumn.custom_field.type_handler == "monetary") {
+            return <MonetaryFMT value={rowCFValue} />
+          }
+          if (
+            ["integer", "number"].includes(
+              customFieldColumn.custom_field.type_handler
+            )
+          ) {
+            return <NumberFMT value={rowCFValue} />
+          }
+
           return <Text size="sm">{rowCFValue}</Text>
         }
 

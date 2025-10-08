@@ -6,44 +6,11 @@ import yaml
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from papermerge.core.features.users.router import router as usr_router
-from papermerge.core.features.tags.router import router as tags_router
-from papermerge.core.features.groups.router import router as groups_router
-from papermerge.core.features.roles.router import router as roles_router
-from papermerge.core.features.preferences.router import \
-    router as preferences_router
-from papermerge.core.features.document_types.router import router as dt_router
-from papermerge.core.features.custom_fields.router import router as cf_router
-from papermerge.core.features.nodes.router import router as nodes_router
-from papermerge.core.features.nodes.router_folders import \
-    router as folders_router
-from papermerge.core.features.nodes.router_thumbnails import \
-    router as thumbnails_router
-from papermerge.core.features.document.router import router as document_router
-from papermerge.core.features.document.router_pages import \
-    router as pages_router
-from papermerge.core.features.document.router_document_version import (
-    router as document_versions_router,
-)
-from papermerge.core.features.liveness_probe.router import \
-    router as probe_router
-from papermerge.core.features.tasks.router import router as tasks_router
-from papermerge.core.features.shared_nodes.router import \
-    router as shared_nodes_router
-from papermerge.core.features.shared_nodes.router_folders import (
-    router as shared_folder_router,
-)
-from papermerge.core.features.shared_nodes.router_documents import (
-    router as shared_document_router,
-)
-from papermerge.core.features.audit.router import (
-    router as audit_log_router
-)
-from papermerge.core.routers.version import (
-    router as version_router,
-)
+from papermerge.core.router_loader import discover_routers
 from papermerge.core.version import __version__
 from papermerge.core.config import get_settings
+from papermerge.core.routers.version import router as version_router
+from papermerge.core.routers.scopes import router as scopes_router
 
 config = get_settings()
 prefix = config.papermerge__main__api_prefix
@@ -65,26 +32,15 @@ app.add_middleware(
     ]
 )
 
-app.include_router(nodes_router, prefix=prefix)
-app.include_router(shared_nodes_router, prefix=prefix)
-app.include_router(folders_router, prefix=prefix)
-app.include_router(shared_folder_router, prefix=prefix)
-app.include_router(shared_document_router, prefix=prefix)
-app.include_router(thumbnails_router, prefix=prefix)
-app.include_router(document_router, prefix=prefix)
-app.include_router(document_versions_router, prefix=prefix)
-app.include_router(pages_router, prefix=prefix)
-app.include_router(dt_router, prefix=prefix)
-app.include_router(cf_router, prefix=prefix)
-app.include_router(usr_router, prefix=prefix)
-app.include_router(tags_router, prefix=prefix)
-app.include_router(groups_router, prefix=prefix)
-app.include_router(roles_router, prefix=prefix)
-app.include_router(probe_router, prefix=prefix)
-app.include_router(tasks_router, prefix=prefix)
+# Auto-discover and register all feature routers
+features_path = Path(__file__).parent / "core"
+routers = discover_routers(features_path)
+
+for router, feature_name in routers:
+    app.include_router(router, prefix=prefix)
+
 app.include_router(version_router, prefix=prefix)
-app.include_router(audit_log_router, prefix=prefix)
-app.include_router(preferences_router, prefix=prefix)
+app.include_router(scopes_router, prefix=prefix)
 
 
 logging_config_path = Path(

@@ -1,4 +1,3 @@
-from argparse import Namespace
 from typing import AbstractSet, Annotated
 
 from fastapi import APIRouter, Security

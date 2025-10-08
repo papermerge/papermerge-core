@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from papermerge.core import schemas
+from papermerge.core import schema
 from papermerge.core.features import auth
 from core.features.auth import scopes
 
@@ -15,9 +15,9 @@ router = APIRouter(
 logger = logging.getLogger(__name__)
 
 
-@router.get("/", response_model=schemas.Scopes)
+@router.get("/", response_model=list[str])
 async def get_all_scopes(
-    user: Annotated[schemas.User, Depends(auth.get_current_user)],
+    user: Annotated[schema.User, Depends(auth.get_current_user)],
 ):
     """Returns all existing scopes"""
     return scopes.SCOPES

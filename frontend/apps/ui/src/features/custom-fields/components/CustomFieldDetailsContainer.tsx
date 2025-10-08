@@ -7,7 +7,7 @@ import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
 import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
 import type {CustomFieldDetails} from "@/types.d/customFields"
-import {formatTimestamp} from "@/utils/formatTimestamp"
+import {formatTimestamp} from "@/utils/formatTime"
 import {
   Breadcrumbs,
   Group,

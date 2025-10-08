@@ -11,8 +11,11 @@ import {ThumbnailList} from "viewer"
 import usePageList from "../PageList/usePageList"
 import Thumbnail from "../Thumbnail"
 
-export default function ThumbnailListContainer() {
-  const {docVer} = useCurrentDocVer()
+interface Args {
+  docVer: ReturnType<typeof useCurrentDocVer>["docVer"]
+}
+
+export default function ThumbnailListContainer({docVer}: Args) {
   const dispatch = useAppDispatch()
   const pageNumber = useAppSelector(s =>
     selectDocVerPaginationThumnailPageNumber(s, docVer?.id)

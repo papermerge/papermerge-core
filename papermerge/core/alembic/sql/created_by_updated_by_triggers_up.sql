@@ -39,12 +39,10 @@ CREATE TRIGGER set_created_by_updated_by_trigger_roles
     FOR EACH ROW
     EXECUTE FUNCTION set_created_by_updated_by();
 
-
 CREATE TRIGGER set_created_by_updated_by_trigger_users
     BEFORE INSERT OR UPDATE ON users
     FOR EACH ROW
     EXECUTE FUNCTION set_created_by_updated_by();
-
 
 CREATE TRIGGER set_created_by_updated_by_trigger_groups
     BEFORE INSERT OR UPDATE ON groups
@@ -63,5 +61,10 @@ CREATE TRIGGER set_created_by_updated_by_trigger_document_types
 
 CREATE TRIGGER set_created_by_updated_by_trigger_tags
     BEFORE INSERT OR UPDATE ON tags
+    FOR EACH ROW
+    EXECUTE FUNCTION set_created_by_updated_by();
+
+CREATE TRIGGER set_created_by_updated_by_trigger_nodes
+    BEFORE INSERT OR UPDATE ON nodes
     FOR EACH ROW
     EXECUTE FUNCTION set_created_by_updated_by();

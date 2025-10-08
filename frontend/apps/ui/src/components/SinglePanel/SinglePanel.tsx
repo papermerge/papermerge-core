@@ -17,6 +17,10 @@ import {
   DocumentTypeDetails,
   DocumentTypesList
 } from "@/features/document-types/components"
+import {
+  DocumentsByCategoryDetails,
+  DocumentsListByCategory
+} from "@/features/documents-by-category/components"
 import {GroupDetails, GroupsList} from "@/features/groups/components"
 import Commander from "@/features/nodes/components/Commander"
 import {RoleDetails, RolesList} from "@/features/roles/components"
@@ -48,7 +52,9 @@ const PANEL_COMPONENTS_SAFE = {
   tagsList: TagsList,
   tagDetails: TagDetails,
   usersList: UsersList,
-  userDetails: UserDetails
+  userDetails: UserDetails,
+  documentsListByCategory: DocumentsListByCategory,
+  documentsByCategoryDetails: DocumentsByCategoryDetails
 } satisfies Record<PanelComponent, React.ComponentType>
 
 interface Args {

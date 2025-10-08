@@ -423,6 +423,9 @@
     "updateErrorTitle": "Fehler",
     "updateErrorMessage": "Einstellungen konnten nicht aktualisiert werden"
   },
+  "documentsListByCategory": {
+    "selectCategory": "Bitte wähle eine Kategorie aus, um Dokumente anzuzeigen"
+  },
   "roles.name": "Rollen",
   "roles.new.title": "Neue Rolle",
   "roles.edit.title": "Rolle bearbeiten",
@@ -566,6 +569,7 @@
   "nothingFound": "Nichts gefunden",
   "failedToLoad": "Fehler beim Laden",
   "name": "Name",
+  "title": "Titel",
   "cancel": "Abrechen",
   "save": "Speichern",
   "currency": {

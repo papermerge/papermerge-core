@@ -38,6 +38,29 @@ export const formatTimestamp = (
   }
 }
 
+export const formatDate = (date: string, formatString: string): string => {
+  if (!date) return ""
+
+  try {
+    // Parse the UTC date
+    const utcDate = parseISO(date)
+
+    // Check if date is valid
+    if (isNaN(utcDate.getTime())) {
+      return "Invalid date"
+    }
+
+    // Convert backend format to date-fns format
+    const dateFnsFormat = convertFormatString(formatString)
+
+    // Format the date
+    return format(utcDate, dateFnsFormat)
+  } catch (error) {
+    console.error("Error formatting date:", error)
+    return "Invalid date"
+  }
+}
+
 /**
  * Converts backend format string (uppercase) to date-fns format (lowercase)
  * Backend uses: YYYY, MM, DD, HH, mm, ss

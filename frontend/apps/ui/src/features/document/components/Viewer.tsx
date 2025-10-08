@@ -43,9 +43,19 @@ import PagesHaveChangedDialog from "./PageHaveChangedDialog"
 import PageList from "./PageList"
 import ThumbnailList from "./ThumbnailList"
 
-export default function Viewer() {
+export default function ViewerContainer() {
   const {doc} = useCurrentDoc()
   const {docVer} = useCurrentDocVer()
+
+  return <Viewer doc={doc} docVer={docVer} />
+}
+
+interface Args {
+  doc: ReturnType<typeof useCurrentDoc>["doc"]
+  docVer: ReturnType<typeof useCurrentDocVer>["docVer"]
+}
+
+export function Viewer({doc, docVer}: Args) {
   const user = useAppSelector(selectCurrentUser)
 
   const ref = useRef<HTMLDivElement>(null)
@@ -173,7 +183,7 @@ export default function Viewer() {
   }
 
   if (!docVer) {
-    return <Loader />
+    return <>No Doc Ver</>
   }
 
   if (!allPreviewsAreAvailable) {
@@ -193,9 +203,9 @@ export default function Viewer() {
         <DocumentDetailsToggle />
       </Group>
       <Flex className={classes.inner} style={{height: "100%"}}>
-        {thumbnailsIsOpen && <ThumbnailList />}
+        {thumbnailsIsOpen && <ThumbnailList docVer={docVer} />}
         <ThumbnailsToggle />
-        <PageList />
+        <PageList docVer={docVer} />
         <DocumentDetails
           docVer={docVer}
           doc={doc}

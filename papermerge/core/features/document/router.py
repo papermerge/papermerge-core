@@ -372,10 +372,10 @@ async def update_document_type(
 @router.get("/type/{document_type_id}", response_model=schema.PaginatedResponse[schema.DocumentCFV])
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def get_documents_by_type(
-        document_type_id: uuid.UUID,
-        user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
-        params: schema.DocumentsByTypeParams = Depends(),
-        db_session: AsyncSession = Depends(get_db),
+    document_type_id: uuid.UUID,
+    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    params: schema.DocumentsByTypeParams = Depends(),
+    db_session: AsyncSession = Depends(get_db),
 ) -> schema.PaginatedResponse[schema.DocumentCFV]:
     """
     Get all documents of specific type with all custom field values

@@ -13,10 +13,8 @@ import {
   DocumentTypeDetails,
   DocumentTypesList
 } from "@/features/document-types/pages"
+import DocumentsListByCategory from "@/features/documents-by-category/pages/List"
 import {GroupDetails, GroupsList} from "@/features/groups/pages"
-import DocumentsListView, {
-  loader as categoryLoader
-} from "@/features/nodes/pages/CategoryListView"
 import {RoleDetails, RolesList} from "@/features/roles/pages"
 import SharedDocumentView, {
   loader as sharedDocumentLoader
@@ -41,6 +39,7 @@ import {loader as customFieldsLoader} from "@/features/custom-fields/pages/Detai
 import {loader as customFieldsListLoader} from "@/features/custom-fields/pages/List"
 import {loader as documentTypeDetailsLoader} from "@/features/document-types/pages/Details"
 import {loader as documentTypesListLoader} from "@/features/document-types/pages/List"
+import {loader as documentsByCategoryListLoader} from "@/features/documents-by-category/pages/List"
 import {loader as groupsDetailsLoader} from "@/features/groups/pages/Details"
 import {loader as groupsListLoader} from "@/features/groups/pages/List"
 import {loader as rolesDetailsLoader} from "@/features/roles/pages/Details"
@@ -89,14 +88,14 @@ const router = createBrowserRouter([
         loader: documentLoader
       },
       {
-        path: "/documents",
-        element: <DocumentsListView />,
-        loader: categoryLoader
+        path: "/documents/by/category",
+        element: <DocumentTypesList />,
+        loader: documentsByCategoryListLoader
       },
       {
-        path: "/documents/:categoryId",
-        element: <DocumentsListView />,
-        loader: categoryLoader
+        path: "/documents/by/category/:id",
+        element: <DocumentsListByCategory />,
+        loader: documentsByCategoryListLoader
       },
       {
         path: "/shared",

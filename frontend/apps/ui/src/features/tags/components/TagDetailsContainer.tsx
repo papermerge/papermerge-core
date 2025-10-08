@@ -7,7 +7,7 @@ import {selectTagDetailsID} from "@/features/tags/storage/tag"
 import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
 import type {TagDetails} from "@/types.d/tags"
-import {formatTimestamp} from "@/utils/formatTimestamp"
+import {formatTimestamp} from "@/utils/formatTime"
 import {
   Breadcrumbs,
   Group,

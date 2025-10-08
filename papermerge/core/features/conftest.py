@@ -22,34 +22,16 @@ from papermerge.core import constants
 from papermerge.core.features.auth.scopes import SCOPES
 from papermerge.core.db.base import Base
 from papermerge.core.db.engine import engine, get_db
-from papermerge.core.features.custom_fields import router as cf_router
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.document import schema as doc_schema
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
-from papermerge.core.features.nodes import router as nodes_router
-from papermerge.core.features.nodes import router_folders as folders_router
-from papermerge.core.features.document import router as docs_router
-from papermerge.core.features.document import router_pages as pages_router
-from papermerge.core.features.document import (
-    router_document_version as document_versions_router,
-)
-from papermerge.core.features.nodes import \
-    router_thumbnails as thumbnails_router
 from papermerge.core.features.custom_fields.schema import CustomFieldType
-from papermerge.core.features.document_types import \
-    router as document_types_router
-from papermerge.core.features.groups import router as groups_router
-from papermerge.core.features.roles import router as roles_router
-from papermerge.core.features.tags import router as tags_router
-from papermerge.core.features.users import router as usr_router
-from papermerge.core.features.liveness_probe import router as probe_router
+from papermerge.core.router_loader import discover_routers
 from papermerge.core import orm, dbapi
 from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core import config
 from papermerge.core.constants import ContentType
-from papermerge.core.features.shared_nodes.router import \
-    router as shared_nodes_router
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "document" / "tests" / "resources"
@@ -291,20 +273,11 @@ async def my_documents_folder(db_session: AsyncSession, user, make_folder):
 def get_app_with_routes():
     app = FastAPI()
 
-    app.include_router(document_types_router.router, prefix="")
-    app.include_router(groups_router.router, prefix="")
-    app.include_router(roles_router.router, prefix="")
-    app.include_router(cf_router.router, prefix="")
-    app.include_router(nodes_router.router, prefix="")
-    app.include_router(shared_nodes_router, prefix="")
-    app.include_router(folders_router.router, prefix="")
-    app.include_router(docs_router.router, prefix="")
-    app.include_router(pages_router.router, prefix="")
-    app.include_router(document_versions_router.router, prefix="")
-    app.include_router(thumbnails_router.router, prefix="")
-    app.include_router(usr_router.router, prefix="")
-    app.include_router(tags_router.router, prefix="")
-    app.include_router(probe_router.router, prefix="")
+    features_path = Path(__file__).parent.parent
+    routers = discover_routers(features_path)
+
+    for router, feature_name in routers:
+        app.include_router(router, prefix="")
 
     return app
 

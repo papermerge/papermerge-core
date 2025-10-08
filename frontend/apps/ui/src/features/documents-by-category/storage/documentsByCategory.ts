@@ -15,7 +15,7 @@ interface DocumentsByCategoryPanelList extends PanelListBase {
 }
 
 interface DocumentsByCategoryPanelDetails {
-  document_id: string // document ID
+  document_id: string
 }
 
 export type DocumentsByCategorySlice = {
@@ -308,10 +308,7 @@ export const selectDocumentsByCategorySorting = (
   return state.documentsByCategory.secondaryDocumentsByCategoryList?.sorting
 }
 
-export const selectDocumentsByCategoryDetailsID = (
-  state: RootState,
-  mode: PanelMode
-) => {
+export const selectCurrentDocumentID = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {
     return state.documentsByCategory.mainDocumentsByCategoryDetails?.document_id
   }

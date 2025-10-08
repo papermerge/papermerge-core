@@ -14,7 +14,7 @@ export const showDocumentDetailsInSecondaryPanel = (
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
   return (dispatch: AppDispatch) => {
     dispatch(secondaryPanelDocumentsByCategoryDetailsUpdated(documentId))
-    dispatch(secondaryPanelComponentUpdated("viewer"))
+    dispatch(secondaryPanelComponentUpdated("documentsByCategoryDetails"))
   }
 }
 
@@ -23,7 +23,7 @@ export const showDocumentDetailsInMainPanel = (
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
   return (dispatch: AppDispatch) => {
     dispatch(mainPanelDocumentsByCategoryDetailsUpdated(documentId))
-    dispatch(mainPanelComponentUpdated("viewer"))
+    dispatch(mainPanelComponentUpdated("documentsByCategoryDetails"))
   }
 }
 

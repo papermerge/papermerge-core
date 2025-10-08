@@ -15,8 +15,11 @@ import {PageList} from "viewer"
 import Page from "../Page"
 import usePageList from "./usePageList"
 
-export default function PageListContainer() {
-  const {docVer} = useCurrentDocVer()
+interface Args {
+  docVer: ReturnType<typeof useCurrentDocVer>["docVer"]
+}
+
+export default function PageListContainer({docVer}: Args) {
   const dispatch = useAppDispatch()
   const mode: PanelMode = useContext(PanelContext)
   const zoomFactor = useAppSelector(s => selectZoomFactor(s, mode))

@@ -6,10 +6,8 @@ import {
   selectDocVerByID
 } from "@/features/document/store/documentVersSlice"
 import {clientDVFromDV} from "@/features/document/utils"
-import {
-  currentDocVerUpdated,
-  selectCurrentDocumentID
-} from "@/features/ui/uiSlice"
+import {selectCurrentDocumentID} from "@/features/documents-by-category/storage/documentsByCategory"
+import {currentDocVerUpdated} from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {ClientDocumentVersion} from "@/types"
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query"

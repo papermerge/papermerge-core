@@ -1,3 +1,4 @@
-import DocumentsListByCagegory from "./List"
+import DocumentsByCategoryDetails from "./DetailsContainer"
+import DocumentsListByCategory from "./List"
 
-export {DocumentsListByCagegory}
+export {DocumentsByCategoryDetails, DocumentsListByCategory}

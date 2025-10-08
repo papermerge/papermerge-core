@@ -38,7 +38,7 @@ export default function DocumentsListByCagegory() {
     if (openInSecondaryPanel) {
       dispatch(showDocumentDetailsInSecondaryPanel(row.id))
     } else {
-      navigate(`/documents/${row.id}`)
+      navigate(`/document/${row.id}`)
     }
   }
 

@@ -183,7 +183,7 @@ export function Viewer({doc, docVer}: Args) {
   }
 
   if (!docVer) {
-    return <Loader />
+    return <>No Doc Ver</>
   }
 
   if (!allPreviewsAreAvailable) {
@@ -203,9 +203,9 @@ export function Viewer({doc, docVer}: Args) {
         <DocumentDetailsToggle />
       </Group>
       <Flex className={classes.inner} style={{height: "100%"}}>
-        {thumbnailsIsOpen && <ThumbnailList />}
+        {thumbnailsIsOpen && <ThumbnailList docVer={docVer} />}
         <ThumbnailsToggle />
-        <PageList />
+        <PageList docVer={docVer} />
         <DocumentDetails
           docVer={docVer}
           doc={doc}

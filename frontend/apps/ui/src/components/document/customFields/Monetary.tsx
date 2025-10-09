@@ -2,32 +2,8 @@ import {NumberInput} from "@mantine/core"
 import {useEffect, useState} from "react"
 import {CustomFieldArgs} from "./types"
 
-type MonetaryExtraDataType = {
+type MonetaryConfigType = {
   currency: string
-}
-
-function getCurrency(
-  extraData?: string | MonetaryExtraDataType
-): string | undefined {
-  if (!extraData) {
-    return
-  }
-
-  if (typeof extraData == "string") {
-    const extra_data = JSON.parse(extraData) as MonetaryExtraDataType
-
-    if (extra_data) {
-      return extra_data.currency
-    }
-
-    return
-  }
-
-  if (extraData.currency) {
-    return extraData.currency
-  }
-
-  return
 }
 
 export default function CustomFieldMonetary({
@@ -35,9 +11,12 @@ export default function CustomFieldMonetary({
   onChange
 }: CustomFieldArgs) {
   const [value, setValue] = useState<string | number>(
-    customField.value ? customField.value.toString() : ""
+    customField?.value?.value?.raw
   )
-  const currency = getCurrency(customField.extra_data)
+
+  const config = customField?.custom_field
+    ?.config as unknown as MonetaryConfigType
+  const currency = config.currency
 
   const onLocalChange = (v: number | string) => {
     setValue(v)
@@ -45,17 +24,25 @@ export default function CustomFieldMonetary({
   }
 
   useEffect(() => {
-    setValue(customField.value ? customField.value.toString() : "")
-  }, [customField.value])
+    setValue(customField.value?.value?.raw)
+  }, [customField.value?.value?.raw])
 
   return (
     <NumberInput
-      label={customField.name}
+      label={customField.custom_field.name}
       decimalScale={2}
       fixedDecimalScale
-      suffix={` ${currency}`} // one space
+      prefix={currency === "USD" ? "$" : ""} // Prefix for USD
+      suffix={currency !== "USD" ? ` ${currency}` : ""} // Suffix for other currencies
       onChange={onLocalChange}
       value={value}
+      hideControls
+      min={0}
+      styles={{
+        input: {
+          textAlign: "right" // Right-align numbers (common for monetary values)
+        }
+      }}
     />
   )
 }

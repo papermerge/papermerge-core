@@ -105,6 +105,11 @@ class CustomFieldValue(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class CustomFieldWithValue(BaseModel):
+    custom_field: CustomField
+    value: CustomFieldValue | None
+
+
 class CreateCustomField(BaseModel):
     """Schema for creating a custom field"""
     name: str

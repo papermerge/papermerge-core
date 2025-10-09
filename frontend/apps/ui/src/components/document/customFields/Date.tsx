@@ -1,9 +1,9 @@
-import { rem } from "@mantine/core"
-import { DatePickerInput, DateValue } from "@mantine/dates"
-import { IconCalendar } from "@tabler/icons-react"
+import {rem} from "@mantine/core"
+import {DatePickerInput, DateValue} from "@mantine/dates"
+import {IconCalendar} from "@tabler/icons-react"
 import dayjs from "dayjs"
-import { useEffect, useState } from "react"
-import { CustomFieldArgs } from "./types"
+import {useEffect, useState} from "react"
+import {CustomFieldArgs} from "./types"
 
 export default function CustomFieldDate({
   customField,
@@ -15,8 +15,8 @@ export default function CustomFieldDate({
   )
 
   useEffect(() => {
-    if (customField.value && customField.value.toString().length > 0) {
-      const parts = customField.value.toString().split("-")
+    if (customField.value?.value?.raw) {
+      const parts = customField.value?.value?.raw.toString().split("-")
       if (parts.length < 3) {
         setValue(null)
       } else {
@@ -49,7 +49,7 @@ export default function CustomFieldDate({
       clearable
       // `valueFormat` will be retrieved from user preferences
       valueFormat="DD.MM.YYYY"
-      label={customField.name}
+      label={customField.custom_field.name}
       placeholder="Pick date"
       value={value}
       onChange={onLocalChange}

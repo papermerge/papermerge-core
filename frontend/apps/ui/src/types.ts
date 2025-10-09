@@ -278,6 +278,27 @@ export type CustomField = NewCustomField & {
   id: string
 }
 
+export type CustomFieldValueData = {
+  raw?: any
+  sortable?: string
+  metadata?: Record<string, any>
+}
+
+export type CustomFieldValue = {
+  field_id?: string
+  value?: CustomFieldValueData
+  value_text?: string
+  value_numeric?: number
+  value_date?: string
+  value_datetime?: string
+  value_boolean?: boolean
+}
+
+export type CustomFieldWithValue = {
+  custom_field: CustomField
+  value?: CustomFieldValue
+}
+
 export type CustomFieldUpdate = Pick<
   CustomField,
   "id" | "name" | "type_handler" | "config"
@@ -448,17 +469,6 @@ export interface AddCustomFieldValueType {
 export interface UpdateCustomFieldValueType {
   custom_field_value_id: string
   value: string
-}
-
-export type CFV = {
-  custom_field_id: string
-  custom_field_value_id?: string
-  document_id: string
-  document_type_id: string
-  name: string
-  type: string
-  extra_data?: string
-  value: string | boolean
 }
 
 export type DocumentCFV = {

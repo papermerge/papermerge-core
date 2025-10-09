@@ -30,7 +30,6 @@ class Settings(BaseSettings):
     #   start schedule OCR on upload; also in this case use can choose to
     #   scheduler OCR later on any document.
     papermerge__ocr__automatic: bool = False
-    papermerge__search__url: str | None = None
 
 settings = Settings()
 

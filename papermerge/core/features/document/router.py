@@ -94,6 +94,7 @@ async def bulk_set_document_custom_field_values(
 
 @router.get(
     "/{document_id}/custom-fields",
+    response_model=list[schema.CustomFieldWithValue],
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": f"No `{scopes.NODE_VIEW}` permission on the node",
@@ -106,7 +107,7 @@ async def get_document_custom_field_values(
     document_id: uuid.UUID,
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     db_session: AsyncSession = Depends(get_db),
-) -> list[tuple[schema.CustomField, Any]]:
+) -> list[schema.CustomFieldWithValue]:
     """
     Get document custom field values
 

@@ -682,7 +682,7 @@ async def update_custom_field(
 async def get_document_custom_field_values(
     session: AsyncSession,
     document_id: uuid.UUID
-) -> list[tuple[schema.CustomField, Any]]:
+) -> list[schema.CustomFieldWithValue]:
     """
     Get all custom field values for a document
 
@@ -708,7 +708,9 @@ async def get_document_custom_field_values(
     for field in fields:
         value = await get_custom_field_value(session, document_id, field.id)
         field_model = schema.CustomField.model_validate(field)
-        result.append((field_model, value))
+        result.append(
+            schema.CustomFieldWithValue(custom_field=field_model, value=value)
+        )
 
     return result
 

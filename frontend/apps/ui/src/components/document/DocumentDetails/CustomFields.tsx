@@ -1,6 +1,5 @@
 import {useEffect, useState} from "react"
 
-import {skipToken} from "@reduxjs/toolkit/query"
 import {
   CustomFieldDate,
   CustomFieldMonetary,
@@ -8,13 +7,13 @@ import {
 } from "../customFields"
 
 import {useGetDocumentTypesQuery} from "@/features/document-types/storage/api"
+import useDocumentCustomFields from "@/features/document/hooks/useDocumentCustomFields"
 import {
-  useGetDocumentCustomFieldsQuery,
   useUpdateDocumentCustomFieldsMutation,
   useUpdateDocumentTypeMutation
 } from "@/features/document/store/apiSlice"
 import type {DocumentType} from "@/features/document/types"
-import type {CFV} from "@/types"
+import type {CustomFieldWithValue} from "@/types"
 import {
   Button,
   ComboboxItem,
@@ -36,7 +35,6 @@ interface Args {
 export default function CustomFields({doc, docID, isLoading}: Args) {
   const {t} = useTranslation()
   const [showSaveButton, setShowSaveButton] = useState<boolean>(false)
-  const [customFieldValues, setCustomFieldValues] = useState<CFV[]>([])
   const [documentTypeID, setDocumentTypeID] = useState<ComboboxItem | null>(
     null
   )
@@ -46,22 +44,11 @@ export default function CustomFields({doc, docID, isLoading}: Args) {
     useUpdateDocumentCustomFieldsMutation()
   const [updateDocumentType] = useUpdateDocumentTypeMutation()
   const {
-    data: documentCustomFields,
-    isSuccess: isSuccessDocumentCustomFields,
     isError: isErrorGetDocCF,
-    refetch: refetchCustomFields
-  } = useGetDocumentCustomFieldsQuery(docID ?? skipToken)
-
-  useEffect(() => {
-    if (documentCustomFields && documentCustomFields.length > 0) {
-      const initialCustFieldValues = documentCustomFields.map(i => {
-        return {...i, value: i.value}
-      })
-
-      console.log(initialCustFieldValues)
-      setCustomFieldValues(initialCustFieldValues)
-    }
-  }, [documentCustomFields, isSuccessDocumentCustomFields])
+    refetch: refetchCustomFields,
+    customFieldValues,
+    setCustomFieldValues
+  } = useDocumentCustomFields({docID})
 
   useEffect(() => {
     /* Update (local) documentTypeID state based on the
@@ -95,11 +82,11 @@ export default function CustomFields({doc, docID, isLoading}: Args) {
     customField,
     value
   }: {
-    customField: CFV
+    customField: CustomFieldWithValue
     value: string | boolean
   }) => {
     const newCustomFieldValues = customFieldValues.map(cf => {
-      if (cf.name == customField.name) {
+      if (cf.custom_field.name == customField.custom_field.name) {
         return {...cf, value}
       }
 
@@ -112,7 +99,7 @@ export default function CustomFields({doc, docID, isLoading}: Args) {
 
   const genericCustomFieldsComponents = customFieldValues.map(cf => (
     <GenericCustomField
-      key={cf.name}
+      key={cf.custom_field.name}
       documentID={docID}
       customField={cf}
       onChange={onCustomFieldValueChanged}
@@ -152,9 +139,9 @@ export default function CustomFields({doc, docID, isLoading}: Args) {
       // we need to update existing custom field value
       const content = customFieldValues.map(i => {
         return {
-          custom_field_value_id: i.custom_field_value_id,
-          key: i.name,
-          value: i.value
+          custom_field_value_id: i.value?.field_id,
+          key: i.custom_field.name,
+          value: i.value?.value?.raw
         }
       })
 
@@ -205,13 +192,13 @@ export default function CustomFields({doc, docID, isLoading}: Args) {
 }
 
 interface GenericCustomFieldArg {
-  customField: CFV
+  customField: CustomFieldWithValue
   documentID?: string
   onChange: ({
     customField,
     value
   }: {
-    customField: CFV
+    customField: CustomFieldWithValue
     value: string | boolean
   }) => void
 }
@@ -221,7 +208,9 @@ function GenericCustomField({
   documentID,
   onChange
 }: GenericCustomFieldArg) {
-  const [value, setValue] = useState<string | boolean>(customField.value)
+  const [value, setValue] = useState<string | boolean>(
+    customField.value?.value?.raw
+  )
 
   const onLocalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.currentTarget.value)
@@ -229,26 +218,26 @@ function GenericCustomField({
   }
 
   useEffect(() => {
-    setValue(customField.value)
+    setValue(customField.value?.value?.raw)
   }, [customField.value])
 
   if (!documentID) {
     return <Skeleton height={"20"} />
   }
 
-  if (customField.type == "date") {
+  if (customField.custom_field.type_handler == "date") {
     return <CustomFieldDate customField={customField} onChange={onChange} />
   }
 
-  if (customField.type == "monetary") {
+  if (customField.custom_field.type_handler == "monetary") {
     return <CustomFieldMonetary customField={customField} onChange={onChange} />
   }
 
-  if (customField.type == "boolean") {
+  if (customField.custom_field.type_handler == "boolean") {
     return <CustomFieldBoolean customField={customField} onChange={onChange} />
   }
 
-  if (customField.type == "yearmonth") {
+  if (customField.custom_field.type_handler == "yearmonth") {
     return (
       <CustomFieldYearMonth customField={customField} onChange={onChange} />
     )
@@ -256,7 +245,7 @@ function GenericCustomField({
 
   return (
     <TextInput
-      label={customField.name}
+      label={customField.custom_field.name}
       value={value ? value.toString() : ""}
       onChange={onLocalChange}
     />

@@ -1,6 +1,7 @@
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 import {apiSlice} from "@/features/api/slice"
 import type {
+  CustomFieldWithValue,
   DocumentCFV,
   ExtractPagesResponse,
   MovePagesReturnType,
@@ -9,7 +10,7 @@ import type {
   ServerNotifPayload,
   ServerNotifType
 } from "@/types"
-import {CFV, ExtractStrategyType, MovePagesType, OrderType} from "@/types"
+import {ExtractStrategyType, MovePagesType, OrderType} from "@/types"
 import {getRemoteUserID, getWSURL} from "@/utils"
 
 import type {DocVersList, PagesType} from "@/features/document/types"
@@ -201,7 +202,7 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
         ]
       }
     }),
-    getDocumentCustomFields: builder.query<CFV[], string>({
+    getDocumentCustomFields: builder.query<CustomFieldWithValue[], string>({
       query: documentID => ({
         url: `/documents/${documentID}/custom-fields`
       }),

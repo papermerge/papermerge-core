@@ -56,7 +56,7 @@ async def bulk_set_document_custom_field_values(
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
     db_session: AsyncSession = Depends(get_db),
-) -> list[schema.CFV]:
+) -> list[schema.CustomFieldValue]:
     """
     Update document's custom fields
     Required scope: `{scope}`

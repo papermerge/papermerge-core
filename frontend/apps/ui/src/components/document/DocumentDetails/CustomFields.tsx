@@ -87,7 +87,15 @@ export default function CustomFields({doc, docID, isLoading}: Args) {
   }) => {
     const newCustomFieldValues = customFieldValues.map(cf => {
       if (cf.custom_field.name == customField.custom_field.name) {
-        return {...cf, value}
+        return {
+          ...cf,
+          value: {
+            field_id: cf.value?.field_id,
+            value: {
+              raw: value
+            }
+          }
+        }
       }
 
       return cf
@@ -134,26 +142,40 @@ export default function CustomFields({doc, docID, isLoading}: Args) {
   }
 
   const onSave = async () => {
-    if (customFieldValues && customFieldValues.length > 0) {
-      // document already has custom fields associated
-      // we need to update existing custom field value
-      const content = customFieldValues.map(i => {
-        return {
-          custom_field_value_id: i.value?.field_id,
-          key: i.custom_field.name,
-          value: i.value?.value?.raw
-        }
-      })
-
-      const data = {
-        documentID: docID!,
-        documentTypeID: documentTypeID?.value!,
-        body: content
-      }
-      await updateDocumentCustomFields(data)
+    if (!customFieldValues || customFieldValues.length === 0) {
+      return
     }
 
-    setShowSaveButton(false)
+    // Convert array to dict: { field_id: value }
+    const content = customFieldValues.reduce(
+      (acc, cf) => {
+        const fieldId = cf.custom_field.id
+        const value = cf.value?.value?.raw ?? cf.value
+
+        if (fieldId) {
+          acc[fieldId] = value
+        }
+
+        return acc
+      },
+      {} as Record<string, any>
+    )
+
+    if (Object.keys(content).length === 0) {
+      return
+    }
+
+    try {
+      await updateDocumentCustomFields({
+        documentID: docID!,
+        body: content
+      }).unwrap()
+
+      setShowSaveButton(false)
+    } catch (error) {
+      console.error("Failed to update custom fields:", error)
+      // TODO: Show error notification to user
+    }
   }
 
   if (isLoading || !docID || !doc) {
@@ -246,7 +268,7 @@ function GenericCustomField({
   return (
     <TextInput
       label={customField.custom_field.name}
-      value={value ? value.toString() : ""}
+      value={customField.value?.value?.raw}
       onChange={onLocalChange}
     />
   )

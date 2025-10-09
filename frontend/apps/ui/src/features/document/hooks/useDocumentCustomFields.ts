@@ -33,7 +33,6 @@ export default function useDocumentCustomFields({
         return {...i, value: i.value}
       })
 
-      console.log(initialCustFieldValues)
       setCustomFieldValues(initialCustFieldValues)
     }
   }, [data, isSuccess])

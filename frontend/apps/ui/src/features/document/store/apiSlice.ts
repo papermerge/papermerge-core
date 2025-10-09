@@ -15,6 +15,7 @@ import {getRemoteUserID, getWSURL} from "@/utils"
 
 import type {DocVersList, PagesType} from "@/features/document/types"
 import {DocumentType, DocumentVersion} from "@/features/document/types"
+import type {CustomFieldValue} from "@/types"
 import {documentMovedNotifReceived} from "./documentVersSlice"
 
 type ApplyPagesType = {
@@ -35,12 +36,7 @@ type ExtractPagesType = {
 
 type UpdateDocumentCustomFields = {
   documentID: string
-  documentTypeID: string
-  body: Array<{
-    custom_field_value_id?: string
-    key: string
-    value: string | boolean
-  }>
+  body: Record<string, any>
 }
 
 interface UpdateDocumentTypeArgs {
@@ -174,20 +170,40 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       }
     }),
     updateDocumentCustomFields: builder.mutation<
-      void,
+      CustomFieldValue[],
       UpdateDocumentCustomFields
     >({
       query: data => ({
-        url: `/documents/${data.documentID}/custom-fields`,
+        url: `/documents/${data.documentID}/custom-fields/values/bulk`,
         method: "PATCH",
         body: data.body
       }),
-      invalidatesTags: (_result, _error, arg) => {
-        return [
-          {type: "DocumentCustomField", id: arg.documentID},
-          {type: "DocumentCFV", id: arg.documentTypeID}
-        ]
-      }
+      onQueryStarted: async (arg, {dispatch, queryFulfilled}) => {
+        // Optimistically update the UI immediately
+        const patchResult = dispatch(
+          apiSliceWithDocuments.util.updateQueryData(
+            "getDocumentCustomFields",
+            arg.documentID,
+            draft => {
+              Object.entries(arg.body).forEach(([fieldId, value]) => {
+                const field = draft.find(f => f.custom_field.id === fieldId)
+                if (field && field.value && field.value.value) {
+                  field.value.value.raw = value
+                }
+              })
+            }
+          )
+        )
+        try {
+          await queryFulfilled
+        } catch {
+          patchResult.undo() // Revert on error
+        }
+      },
+      invalidatesTags: (_result, _error, arg) => [
+        {type: "Document", id: arg.documentID},
+        {type: "DocumentCustomField", id: arg.documentID}
+      ]
     }),
     updateDocumentType: builder.mutation<void, UpdateDocumentTypeArgs>({
       query: data => ({

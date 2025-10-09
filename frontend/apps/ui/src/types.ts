@@ -285,7 +285,7 @@ export type CustomFieldValueData = {
 }
 
 export type CustomFieldValue = {
-  field_id: string
+  field_id?: string
   value?: CustomFieldValueData
   value_text?: string
   value_numeric?: number

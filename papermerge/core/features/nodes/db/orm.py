@@ -92,23 +92,6 @@ class Folder(Node):
         insert_default=uuid.uuid4,
     )
 
-    # Add these relationships to support the Group home_folder and inbox_folder
-    home_group: Mapped["Group"] = relationship(
-        "Group",
-        primaryjoin="Folder.id == Group.home_folder_id",
-        foreign_keys="Group.home_folder_id",
-        back_populates="home_folder",
-        viewonly=True,
-    )
-
-    inbox_group: Mapped["Group"] = relationship(
-        "Group",
-        primaryjoin="Folder.id == Group.inbox_folder_id",
-        foreign_keys="Group.inbox_folder_id",
-        back_populates="inbox_folder",
-        viewonly=True,
-    )
-
     __mapper_args__ = {
         "polymorphic_identity": "folder",
     }

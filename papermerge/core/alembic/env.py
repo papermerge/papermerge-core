@@ -33,6 +33,7 @@ from papermerge.core.features.document_types.db.orm import DocumentType, Documen
 from papermerge.core.features.shared_nodes.db.orm import SharedNode # noqa
 from papermerge.core.features.audit.db.orm import AuditLog  # noqa
 from papermerge.core.features.preferences.db.orm import SystemPreferences, UserPreferences  # noqa
+from papermerge.core.features.special_folders.db.orm import SpecialFolder # noqa
 
 target_metadata = Base.metadata
 

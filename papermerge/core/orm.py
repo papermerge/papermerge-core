@@ -8,6 +8,7 @@ from .features.roles.db.orm import Role, Permission, roles_permissions_associati
 from .features.document_types.db.orm import DocumentType, DocumentTypeCustomField
 from .features.shared_nodes.db.orm import SharedNode
 from .features.audit.db.orm import AuditLog
+from .features.special_folders.db.orm import SpecialFolder
 
 
 __all__ = [
@@ -31,5 +32,6 @@ __all__ = [
     'DocumentType',
     'DocumentTypeCustomField',
     'SharedNode',
-    'AuditLog'
+    'AuditLog',
+    'SpecialFolder',
 ]

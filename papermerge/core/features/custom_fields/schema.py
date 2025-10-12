@@ -32,8 +32,7 @@ class CustomField(BaseModel):
     name: str
     type_handler: str
     config: dict[str, Any] = Field(default_factory=dict)
-    user_id: Optional[UUID] = None
-    group_id: Optional[UUID] = None
+    owned_by: OwnedBy
     created_at: datetime
     updated_at: Optional[datetime] = None
 
@@ -115,6 +114,8 @@ class CreateCustomField(BaseModel):
     name: str
     type_handler: str
     config: dict[str, Any] = Field(default_factory=dict)
+    owner_type: Literal["user", "group"] | None = None
+    owner_id: UUID | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -124,8 +125,10 @@ class UpdateCustomField(BaseModel):
     name: Optional[str] = None
     type_handler: Optional[str] = None
     config: Optional[dict[str, Any]] = None
-    group_id: Optional[UUID] = None
-    user_id: Optional[UUID] = None
+    owner_type: Literal["user", "group"]
+    owner_id: UUID
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SetCustomFieldValue(BaseModel):

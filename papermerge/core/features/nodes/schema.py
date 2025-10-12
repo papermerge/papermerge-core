@@ -6,6 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
+from papermerge.core.schemas.common import OwnedBy
 from papermerge.core.types import OCRStatusEnum
 
 
@@ -64,7 +65,7 @@ class Node(BaseModel):
     created_at: datetime
     updated_at: datetime
     parent_id: UUID | None
-    user_id: UUID
+    owned_by: OwnedBy
     document: DocumentNode | None = None
 
     @field_validator("document", mode="before")
@@ -101,6 +102,8 @@ class CreateNode(BaseModel):
     title: str
     ctype: NodeType.folder
     parent_id: UUID | None
+    owner_type: Literal["user", "group"]
+    owner_id: UUID
 
     # Configs
     model_config = ConfigDict(from_attributes=True)
@@ -137,8 +140,7 @@ class Folder(NewFolder):
     tags: List[Tag] = []
     created_at: datetime
     updated_at: datetime
-    user_id: UUID | None = None
-    group_id: UUID | None = None
+    owned_by: OwnedBy
     perms: list[str] = []
     is_shared: bool = False
 
@@ -159,9 +161,3 @@ class DeleteDocumentsData(BaseModel):
     document_ids: list[UUID]
     document_version_ids: list[UUID]
     page_ids: list[UUID]
-
-
-class Owner(BaseModel):
-    name: str
-    user_id: UUID | None = None
-    group_id: UUID | None = None

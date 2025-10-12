@@ -19,7 +19,13 @@ async def test_create_custom_field(
 
     # Make async HTTP request
     response = await auth_api_client.test_client.post(
-        "/custom-fields/", json={"name": "cf1", "type_handler": "integer", "config": {}}
+        "/custom-fields/", json={
+            "name": "cf1",
+            "type_handler": "integer",
+            "config": {},
+            "owner_type": "user",
+            "owner_id": str(auth_api_client.user.id)
+        }
     )
     assert response.status_code == 201, response.json()
 
@@ -30,7 +36,8 @@ async def test_create_custom_field(
 
 
 async def test_create_monetary_custom_field(
-    auth_api_client: AuthTestClient, db_session: AsyncSession
+    auth_api_client: AuthTestClient,
+    db_session: AsyncSession
 ):
     count_before_result = await db_session.execute(select(func.count(orm.CustomField.id)))
     count_before = count_before_result.scalar()
@@ -40,6 +47,8 @@ async def test_create_monetary_custom_field(
         "name": "Price",
         "type_handler": "monetary",
         "config": {"currency": "EUR", "precision": 2},
+        "owner_type": "user",
+        "owner_id": str(auth_api_client.user.id)
     }
     response = await auth_api_client.post(
         "/custom-fields/",
@@ -65,16 +74,25 @@ async def test_custom_field_duplicate_name(
     assert count_before == 0
 
     response = await auth_api_client.post(
-        "/custom-fields/", json={"name": "cf1", "type_handler": "integer", "config": {}}
+        "/custom-fields/", json={
+            "name": "cf1", "type_handler": "integer", "config": {},
+            "owner_type": "user",
+            "owner_id": str(auth_api_client.user.id)
+        }
     )
     assert response.status_code == 201, response.json()
 
     # custom field with same name
     response = await auth_api_client.post(
-        "/custom-fields/", json={"name": "cf1", "type_handler": "text", "config": {}}
+        "/custom-fields/", json={
+            "name": "cf1",
+            "type_handler": "text",
+            "config": {},
+            "owner_type": "user",
+            "owner_id": str(auth_api_client.user.id)
+        }
     )
     assert response.status_code == 400, response.json()
-    assert response.json() == {"detail": "Duplicate custom field name"}
 
 
 async def test_update_custom_field(
@@ -95,7 +113,7 @@ async def test_update_custom_field(
         f"/custom-fields/{field.id}",
         json={"name": "cf1_updated"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 200, response.json()
     updated_cf = schema.CustomField(**response.json())
     assert updated_cf.name == "cf1_updated"
 

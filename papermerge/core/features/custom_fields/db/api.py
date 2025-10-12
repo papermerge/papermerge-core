@@ -16,6 +16,7 @@ from papermerge.core.features.custom_fields.cf_types.registry import \
     TypeRegistry
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.types import OwnerType, ResourceType
+from papermerge.core.features.ownership.db.orm import Ownership
 
 logger = logging.getLogger(__name__)
 
@@ -161,47 +162,70 @@ async def get_custom_fields(
         page_number: Page number (1-based)
         sort_by: Column to sort by
         sort_direction: Sort direction ('asc' or 'desc')
-        filters: Dictionary of filters with format:
-            {
-                "filter_name": {
-                    "value": filter_value,
-                    "operator": "in" | "like" | "eq" | "free_text"
-                }
-            }
+        filters: Dictionary of filters
         include_deleted: Whether to include soft-deleted custom fields
         include_archived: Whether to include archived custom fields
 
     Returns:
         Paginated response with custom fields including full audit trail
     """
-
     # Create user aliases for all audit trail joins
     created_user = aliased(orm.User, name='created_user')
     updated_user = aliased(orm.User, name='updated_user')
     deleted_user = aliased(orm.User, name='deleted_user')
     archived_user = aliased(orm.User, name='archived_user')
     owner_user = aliased(orm.User, name='owner_user')
+    owner_group = aliased(orm.Group, name='owner_group')
 
     # Subquery to get user's group IDs (for access control)
     user_groups_subquery = select(orm.UserGroup.group_id).where(
         orm.UserGroup.user_id == user_id
     )
 
-    # Build base query with joins for all audit user data and group info
+    # Build base query with ownership join
     base_query = (
         select(orm.CustomField)
+        .join(
+            Ownership,
+            and_(
+                Ownership.resource_type == ResourceType.CUSTOM_FIELD.value,
+                Ownership.resource_id == orm.CustomField.id
+            )
+        )
         .join(created_user, orm.CustomField.created_by == created_user.id, isouter=True)
         .join(updated_user, orm.CustomField.updated_by == updated_user.id, isouter=True)
         .join(deleted_user, orm.CustomField.deleted_by == deleted_user.id, isouter=True)
         .join(archived_user, orm.CustomField.archived_by == archived_user.id, isouter=True)
-        .join(owner_user, orm.CustomField.user_id == owner_user.id, isouter=True)
-        .join(orm.Group, orm.Group.id == orm.CustomField.group_id, isouter=True)
+        # Join to owner_user when owner is a user
+        .join(
+            owner_user,
+            and_(
+                Ownership.owner_type == 'user',
+                Ownership.owner_id == owner_user.id
+            ),
+            isouter=True
+        )
+        # Join to owner_group when owner is a group
+        .join(
+            owner_group,
+            and_(
+                Ownership.owner_type == 'group',
+                Ownership.owner_id == owner_group.id
+            ),
+            isouter=True
+        )
     )
 
     # Apply access control - user can see custom fields they own or from their groups
     access_control_condition = or_(
-        orm.CustomField.user_id == user_id,
-        orm.CustomField.group_id.in_(user_groups_subquery)
+        and_(
+            Ownership.owner_type == 'user',
+            Ownership.owner_id == user_id
+        ),
+        and_(
+            Ownership.owner_type == 'group',
+            Ownership.owner_id.in_(user_groups_subquery)
+        )
     )
 
     where_conditions = [access_control_condition]
@@ -225,11 +249,17 @@ async def get_custom_fields(
     # Count total items (using the same filters)
     count_query = (
         select(func.count(orm.CustomField.id))
+        .join(
+            Ownership,
+            and_(
+                Ownership.resource_type == ResourceType.CUSTOM_FIELD.value,
+                Ownership.resource_id == orm.CustomField.id
+            )
+        )
         .join(created_user, orm.CustomField.created_by == created_user.id, isouter=True)
         .join(updated_user, orm.CustomField.updated_by == updated_user.id, isouter=True)
         .join(deleted_user, orm.CustomField.deleted_by == deleted_user.id, isouter=True)
         .join(archived_user, orm.CustomField.archived_by == archived_user.id, isouter=True)
-        .join(orm.Group, orm.Group.id == orm.CustomField.group_id, isouter=True)
         .where(and_(*where_conditions))
     )
 
@@ -251,13 +281,19 @@ async def get_custom_fields(
     # Apply pagination
     offset = page_size * (page_number - 1)
 
-    # Modify query to include all audit user data and group info
+    # Modify query to include all audit user data and ownership info
     paginated_query_with_users = (
         base_query
         .add_columns(
-            # Group info
-            orm.Group.id.label('group_id'),
-            orm.Group.name.label('group_name'),
+            # Ownership info
+            Ownership.owner_type.label('owner_type'),
+            Ownership.owner_id.label('owner_id'),
+            # Owner user info (if owner is user)
+            owner_user.id.label('owner_user_id'),
+            owner_user.username.label('owner_username'),
+            # Owner group info (if owner is group)
+            owner_group.id.label('owner_group_id'),
+            owner_group.name.label('owner_group_name'),
             # Created by user
             created_user.id.label('created_by_id'),
             created_user.username.label('created_by_username'),
@@ -270,8 +306,6 @@ async def get_custom_fields(
             # Archived by user
             archived_user.id.label('archived_by_id'),
             archived_user.username.label('archived_by_username'),
-            owner_user.id.label('owner_user_id'),
-            owner_user.username.label('owner_username'),
         )
         .limit(page_size)
         .offset(offset)
@@ -314,25 +348,29 @@ async def get_custom_fields(
                 username=row.archived_by_username
             )
 
-        if custom_field.user_id:
+        # Build owned_by from ownership data
+        if row.owner_type == 'user':
             owned_by = schema.OwnedBy(
-                id=custom_field.user_id,
+                id=row.owner_user_id,
                 name=row.owner_username,
                 type="user"
             )
-        else:  # group_id is not null (enforced by check constraint)
+        elif row.owner_type == 'group':
             owned_by = schema.OwnedBy(
-                id=row.group_id,
-                name=row.group_name,
+                id=row.owner_group_id,
+                name=row.owner_group_name,
                 type="group"
             )
+        else:
+            # Shouldn't happen, but handle gracefully
+            raise ValueError(f"Unknown owner type: {row.owner_type}")
 
         custom_field_data = {
             "id": custom_field.id,
             "name": custom_field.name,
             "type_handler": custom_field.type_handler,
             "config": custom_field.config,
-            "group_id": row.group_id,
+            "group_id": row.owner_group_id if row.owner_type == 'group' else None,  # For backward compatibility
             "created_at": custom_field.created_at,
             "updated_at": custom_field.updated_at,
             "deleted_at": custom_field.deleted_at,
@@ -356,7 +394,6 @@ async def get_custom_fields(
         num_pages=total_pages,
         total_items=total_custom_fields
     )
-
 
 
 async def get_custom_field(

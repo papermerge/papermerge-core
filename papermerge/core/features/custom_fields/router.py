@@ -154,11 +154,15 @@ async def create_custom_field(
 ) -> cf_schema.CustomField:
     """Create a new custom field"""
     try:
-        return await dbapi.create_custom_field(
+        async with AsyncAuditContext(
             db_session,
             user_id=user.id,
-            data=data
-        )
+            username=user.username
+        ):
+            ret = await dbapi.create_custom_field(
+                db_session,
+                data=data
+            )
     except ValueError as e:
         await db_session.rollback()
         raise HTTPException(
@@ -170,6 +174,8 @@ async def create_custom_field(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Duplicate custom field name"
         )
+
+    return ret
 
 
 @router.delete(

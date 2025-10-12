@@ -6,6 +6,7 @@ import uuid
 import json
 import tempfile
 from pathlib import Path
+from uuid import UUID
 
 import pytest
 from httpx import AsyncClient
@@ -33,6 +34,8 @@ from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core import config
 from papermerge.core.constants import ContentType
+from papermerge.core.types import OwnerType, ResourceType
+from papermerge.core.features.ownership.db import api as ownership_api
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "document" / "tests" / "resources"
@@ -504,13 +507,35 @@ async def document_type_groceries(db_session: AsyncSession, user, make_custom_fi
     cf2 = await make_custom_field_v2(name="Total", type_handler="monetary")
     cf3 = await make_custom_field_v2(name="EffectiveDate", type_handler="date")
 
-    return await dbapi.create_document_type(
-        db_session,
-        name="Groceries",
-        custom_field_ids=[cf1.id, cf2.id, cf3.id],
-        user_id=user.id,
+    # Create document type WITHOUT user parameter
+    dt = orm.DocumentType(
+        id=uuid.uuid4(),
+        name="groceries"
+    )
+    db_session.add(dt)
+    await db_session.flush()
+
+    # Set ownership
+    await ownership_api.set_owner(
+        session=db_session,
+        resource_type=ResourceType.DOCUMENT_TYPE,
+        resource_id=dt.id,
+        owner_type=OwnerType.USER,
+        owner_id=user.id
     )
 
+    # Associate custom fields
+    for cf in [cf1, cf2, cf3]:
+        dt_cf = orm.DocumentTypeCustomField(
+            document_type_id=dt.id,
+            custom_field_id=cf.id
+        )
+        db_session.add(dt_cf)
+
+    await db_session.commit()
+    await db_session.refresh(dt)
+
+    return dt
 
 @pytest.fixture
 def make_document_type_without_cf(db_session: AsyncSession, user, make_custom_field):
@@ -525,32 +550,70 @@ def make_document_type_without_cf(db_session: AsyncSession, user, make_custom_fi
     return _make_document_type
 
 
-@pytest.fixture
-async def document_type_zdf(db_session: AsyncSession, user, make_custom_field_v2):
-    cf1 = await make_custom_field_v2(name="Start Date", type_handler="date")
-    cf2 = await make_custom_field_v2(name="End Date", type_handler="date")
-    cf3 = await make_custom_field_v2(name="Total Due", type_handler="monetary")
-
-    return await dbapi.create_document_type(
-        db_session,
-        name="ZDF",
-        custom_field_ids=[cf1.id, cf2.id, cf3.id],
-        user_id=user.id,
-    )
-
 
 @pytest.fixture
-async def document_type_salary(db_session: AsyncSession, user, make_custom_field):
-    cf1 = await make_custom_field(name="Month", type=CustomFieldType.yearmonth)
-    cf2 = await make_custom_field(name="Total", type=CustomFieldType.monetary)
-    cf3 = await make_custom_field(name="Company", type=CustomFieldType.date)
+def make_document_zdf(db_session: AsyncSession, document_type_zdf):
+    async def _make_receipt(title: str, user: orm.User):
+        doc = orm.Document(
+            id=uuid.uuid4(),
+            ctype="document",
+            title=title,
+            document_type_id=document_type_zdf.id,
+            parent_id=user.home_folder_id,
+        )
+        db_session.add(doc)
+        await db_session.flush()
 
-    return await dbapi.create_document_type(
-        db_session,
-        name="Salary",
-        custom_field_ids=[cf1.id, cf2.id, cf3.id],
-        user_id=user.id,
-    )
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.NODE,
+            resource_id=doc.id,
+            owner_type=OwnerType.USER,
+            owner_id=user.id
+        )
+
+        await db_session.commit()
+        return doc
+
+    return _make_receipt
+
+
+@pytest.fixture
+def make_document_salary(db_session: AsyncSession, document_type_salary):
+    """
+    UPDATED: Create document and set ownership
+    """
+    async def _make_salary(title: str, user: orm.User, parent=None):
+        if parent is None:
+            parent_id = user.home_folder_id
+        else:
+            parent_id = parent.id
+
+        # Create document WITHOUT user parameter
+        doc = orm.Document(
+            id=uuid.uuid4(),
+            ctype="document",
+            title=title,
+            document_type_id=document_type_salary.id,
+            parent_id=parent_id,
+            lang="deu",
+        )
+        db_session.add(doc)
+        await db_session.flush()
+
+        # Set ownership
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.NODE,
+            resource_id=doc.id,
+            owner_type=OwnerType.USER,
+            owner_id=user.id
+        )
+
+        await db_session.commit()
+        return doc
+
+    return _make_salary
 
 
 @pytest.fixture
@@ -606,40 +669,59 @@ def token():
     return f"ignore_me.{payload}.ignore_me_too"
 
 
-@pytest.fixture
-async def make_document_type(
-    db_session,
-    make_user,
-    make_custom_field_v2
-):
-    cf = await make_custom_field_v2(name="some-random-cf", type_handler="boolean")
-
-    async def _make_document_type(
-        name: str,
-        user: orm.User | None = None,
-        path_template: str | None = None,
-        group_id: uuid.UUID | None = None,
+@pytest.fixture()
+def make_document_type(db_session, user):
+    """
+    UPDATED: Create document type with ownership
+    """
+    async def _maker(
+            name: str,
+            custom_fields: list = None,
+            user: orm.User | None = None,
+            group_id: UUID | None = None
     ):
-        if group_id is None:
-            if user is None:
-                user = await make_user("john")
-            return await dbapi.create_document_type(
-                db_session,
-                name=name,
-                custom_field_ids=[cf.id],
-                path_template=path_template,
-                user_id=user.id,
-            )
-        # document_type belongs to group_id
-        return await dbapi.create_document_type(
-            db_session,
-            name=name,
-            custom_field_ids=[cf.id],
-            path_template=path_template,
-            group_id=group_id,
+        if custom_fields is None:
+            custom_fields = []
+
+        # Determine owner
+        if group_id:
+            owner_type = OwnerType.GROUP
+            owner_id = group_id
+        else:
+            owner_type = OwnerType.USER
+            owner_id = user.id if user else user.id
+
+        # Create document type WITHOUT user_id/group_id
+        dt = orm.DocumentType(
+            id=uuid.uuid4(),
+            name=name
+        )
+        db_session.add(dt)
+        await db_session.flush()
+
+        # Set ownership
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.DOCUMENT_TYPE,
+            resource_id=dt.id,
+            owner_type=owner_type,
+            owner_id=owner_id
         )
 
-    return _make_document_type
+        # Associate custom fields
+        for cf in custom_fields:
+            dt_cf = orm.DocumentTypeCustomField(
+                document_type_id=dt.id,
+                custom_field_id=cf.id
+            )
+            db_session.add(dt_cf)
+
+        await db_session.commit()
+        await db_session.refresh(dt)
+
+        return dt
+
+    return _maker
 
 
 @pytest.fixture
@@ -829,49 +911,57 @@ def make_document_zdf(db_session: AsyncSession, document_type_zdf):
 
 @pytest.fixture
 def make_custom_field_v2(db_session: AsyncSession, user):
-    """Create custom field using new v2 architecture with type_handler"""
+    """
+    UPDATED: Create custom field with ownership instead of user_id/group_id
+    """
     async def _maker(
             name: str,
             type_handler: str = "text",
             config: dict | None = None,
-            user_id: uuid.UUID | None = None,
-            group_id: uuid.UUID | None = None
+            user_id: UUID | None = None,
+            group_id: UUID | None = None
     ):
-        from papermerge.core.features.custom_fields import schema as cf_schema
-        from papermerge.core.features.custom_fields.db import api as cf_dbapi
-
         if config is None:
             config = {}
 
-        field_data = cf_schema.CreateCustomField(
+        # Determine owner
+        if user_id:
+            owner_type = OwnerType.USER
+            owner_id = user_id
+        elif group_id:
+            owner_type = OwnerType.GROUP
+            owner_id = group_id
+        else:
+            # Default to the fixture user
+            owner_type = OwnerType.USER
+            owner_id = user.id
+
+        # Create custom field WITHOUT user_id/group_id
+        cf = orm.CustomField(
+            id=uuid.uuid4(),
             name=name,
             type_handler=type_handler,
             config=config
         )
+        db_session.add(cf)
+        await db_session.flush()
 
-        if user_id:
-            owner_id = user_id
-        elif group_id:
-            owner_id = group_id
-        else:
-            owner_id = user.id
+        # Set ownership
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.CUSTOM_FIELD,
+            resource_id=cf.id,
+            owner_type=owner_type,
+            owner_id=owner_id
+        )
 
-        if group_id:
-            field = await cf_dbapi.create_custom_field(
-                db_session,
-                field_data,
-                group_id=group_id
-            )
-        else:
-            field = await cf_dbapi.create_custom_field(
-                db_session,
-                field_data,
-                user_id=owner_id
-            )
+        await db_session.commit()
+        await db_session.refresh(cf)
 
-        return field
+        return cf
 
     return _maker
+
 
 
 @pytest.fixture
@@ -897,5 +987,87 @@ def make_custom_field_value(db_session: AsyncSession):
         )
 
         return cfv
+
+    return _maker
+
+
+@pytest.fixture
+async def make_tag_with_owner(db_session: AsyncSession):
+    """
+    NEW: Create tag with ownership
+    """
+    async def _maker(
+            name: str,
+            owner_type: OwnerType,
+            owner_id: UUID,
+            **kwargs
+    ):
+        tag = orm.Tag(
+            id=uuid.uuid4(),
+            name=name,
+            **kwargs
+        )
+        db_session.add(tag)
+        await db_session.flush()
+
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.TAG,
+            resource_id=tag.id,
+            owner_type=owner_type,
+            owner_id=owner_id
+        )
+
+        await db_session.commit()
+        await db_session.refresh(tag)
+        return tag
+
+    return _maker
+
+
+@pytest.fixture
+async def make_node_with_owner(db_session: AsyncSession):
+    """
+    NEW: Create node (folder/document) with ownership
+    """
+    async def _maker(
+        title: str,
+        ctype: str,
+        owner_type: OwnerType,
+        owner_id: UUID,
+        parent_id: UUID | None = None,
+        **kwargs
+    ):
+        if ctype == "folder":
+            node = orm.Folder(
+                id=uuid.uuid4(),
+                title=title,
+                ctype=ctype,
+                parent_id=parent_id,
+                **kwargs
+            )
+        else:
+            node = orm.Document(
+                id=uuid.uuid4(),
+                title=title,
+                ctype=ctype,
+                parent_id=parent_id,
+                **kwargs
+            )
+
+        db_session.add(node)
+        await db_session.flush()
+
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.NODE,
+            resource_id=node.id,
+            owner_type=owner_type,
+            owner_id=owner_id
+        )
+
+        await db_session.commit()
+        await db_session.refresh(node)
+        return node
 
     return _maker

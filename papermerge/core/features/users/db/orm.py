@@ -23,13 +23,6 @@ class User(Base, AuditColumns):
     is_staff: Mapped[bool] = mapped_column(default=False)
     is_active: Mapped[bool] = mapped_column(default=False)
 
-    # Regular nodes owned by this user
-    nodes: Mapped[list["Node"]] = relationship(
-        back_populates="user",
-        primaryjoin="User.id == Node.user_id",
-        cascade="delete"
-    )
-
     special_folders: Mapped[list["SpecialFolder"]] = relationship(
         "SpecialFolder",
         primaryjoin=(

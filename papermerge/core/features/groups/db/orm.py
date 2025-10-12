@@ -44,13 +44,6 @@ class Group(Base, AuditColumns):
     # associated documents and folders
     delete_me: Mapped[bool] = mapped_column(default=False, nullable=True)
 
-    # Regular nodes owned by this group
-    nodes: Mapped[list["Node"]] = relationship(
-        back_populates="group",
-        primaryjoin="Group.id == Node.group_id",
-        cascade="delete",
-    )
-
     special_folders: Mapped[list["SpecialFolder"]] = relationship(
         "SpecialFolder",
         primaryjoin=(

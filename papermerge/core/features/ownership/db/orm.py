@@ -1,7 +1,12 @@
+from datetime import datetime
+from uuid import UUID
+
 from sqlalchemy import (
-    Column, Integer, String, DateTime, CheckConstraint,
+    String, DateTime, CheckConstraint,
     Index, UniqueConstraint, func
 )
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
 
 from papermerge.core.db.base import Base
 from papermerge.core.types import OwnerType, ResourceType
@@ -16,35 +21,45 @@ class Ownership(Base):
     """
     __tablename__ = "ownerships"
 
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     # Who owns it
-    owner_type = Column(String(20), nullable=False)
-    owner_id = Column(Integer, nullable=False)
+    owner_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    owner_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
 
     # What is owned
-    resource_type = Column(String(50), nullable=False)
-    resource_id = Column(Integer, nullable=False)
+    resource_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    resource_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
 
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
 
     __table_args__ = (
+        # Ensure valid owner types
         CheckConstraint(
-            owner_type.in_([e.value for e in OwnerType]),
+            "owner_type IN ('user', 'group'",
             name="ownerships_owner_type_check"
         ),
 
+        # Ensure valid resource types
         CheckConstraint(
-            resource_type.in_([e.value for e in ResourceType]),
+            "resource_type IN ('node', 'custom_field', 'document_type', 'tag')",
             name="ownerships_resource_type_check"
         ),
 
+        # ONE owner per resource (remove if you want multi-ownership)
         UniqueConstraint('resource_type', 'resource_id', name='uq_resource_owner'),
 
+        # Fast lookups by owner
         Index('idx_ownerships_owner', 'owner_type', 'owner_id'),
 
+        # Fast lookups by resource
         Index('idx_ownerships_resource', 'resource_type', 'resource_id'),
 
+        # Composite index for filtered queries
         Index('idx_ownerships_owner_resource', 'owner_type', 'owner_id', 'resource_type'),
     )
 

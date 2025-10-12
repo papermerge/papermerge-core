@@ -1075,7 +1075,6 @@ async def set_custom_field_value(
     )
 
 
-
 async def bulk_set_custom_field_values(
     session: AsyncSession,
     document_id: uuid.UUID,

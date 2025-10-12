@@ -1,8 +1,9 @@
 import uuid
 
-from sqlalchemy import ForeignKey, UniqueConstraint, CheckConstraint
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
+from papermerge.core.features.ownership.db.orm import OwnedResourceMixin
 from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.db.base import Base
 
@@ -18,7 +19,7 @@ class NodeTagsAssociation(Base):
     )
 
 
-class Tag(Base, AuditColumns):
+class Tag(Base, AuditColumns, OwnedResourceMixin):
     __tablename__ = "tags"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
@@ -27,19 +28,6 @@ class Tag(Base, AuditColumns):
     bg_color: Mapped[str] = mapped_column(nullable=True, default="#c41fff")
     pinned: Mapped[bool] = mapped_column(default=False)
     description: Mapped[str] = mapped_column(nullable=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("users.id", use_alter=True, name="tag_user_id_fk"), nullable=True
-    )
-    group_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("groups.id"), nullable=True)
-
-    __table_args__ = (
-        UniqueConstraint("name", "user_id", name="unique tag name per user"),
-        UniqueConstraint("name", "group_id", name="unique tag name per group"),
-        CheckConstraint(
-            "user_id IS NOT NULL OR group_id IS NOT NULL",
-            name="check__user_id_not_null__or__group_id_not_null",
-        ),
-    )
 
     def __repr__(self):
         return f"Tag(name={self.name})"

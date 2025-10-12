@@ -5,19 +5,20 @@ from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import (
-    ForeignKey, CheckConstraint, Index,
+    ForeignKey, Index,
     String, Text, Numeric, Date, DateTime, Boolean
 )
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
 from sqlalchemy.schema import Computed
 
+from papermerge.core.features.ownership.db.orm import OwnedResourceMixin
 from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.utils.tz import utc_now
 from papermerge.core.db.base import Base
 
 
-class CustomField(Base, AuditColumns):
+class CustomField(Base, AuditColumns, OwnedResourceMixin):
     """Custom field definition"""
     __tablename__ = "custom_fields"
 
@@ -26,24 +27,7 @@ class CustomField(Base, AuditColumns):
     type_handler: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     config: Mapped[dict] = mapped_column(JSONB, nullable=True, server_default='{}')
 
-    user_id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True),
-        ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=True,
-        index=True
-    )
-    group_id: Mapped[UUID] = mapped_column(
-        PGUUID(as_uuid=True),
-        ForeignKey("groups.id", ondelete="CASCADE"),
-        nullable=True,
-        index=True
-    )
-
     __table_args__ = (
-        CheckConstraint(
-            "user_id IS NOT NULL OR group_id IS NOT NULL",
-            name="custom_fields_owner_check"
-        ),
         Index('idx_custom_fields_type', 'type_handler'),
         Index('idx_custom_fields_name', 'name'),
     )

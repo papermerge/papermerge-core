@@ -114,3 +114,11 @@ class OwnerType(str, Enum):
     """
     USER = "user"
     GROUP = "group"
+
+
+class ResourceType(str, Enum):
+    """Resources that can be owned"""
+    NODE = "node"
+    CUSTOM_FIELD = "custom_field"
+    DOCUMENT_TYPE = "document_type"
+    TAG = "tag"

@@ -5,6 +5,11 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict
 
 
+class Owner(BaseModel):
+    owner_type: Literal["user", "group",]
+    owner_id: UUID
+
+
 class OwnerInfo(BaseModel):
     """Basic owner information"""
     owner_type: Literal["user", "group",]

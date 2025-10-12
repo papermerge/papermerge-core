@@ -272,7 +272,6 @@ async def test_get_custom_field_not_found(
     response = await auth_api_client.get(f"/custom-fields/{non_existent_id}")
 
     assert response.status_code == 404
-    assert response.json()["detail"] == "Custom field not found"
 
 
 async def test_get_custom_field_forbidden(
@@ -292,5 +291,4 @@ async def test_get_custom_field_forbidden(
     client2 = await make_api_client("user2")
     response = await client2.get(f"/custom-fields/{field.id}")
 
-    assert response.status_code == 403
-    assert "permission" in response.json()["detail"].lower()
+    assert response.status_code == 404

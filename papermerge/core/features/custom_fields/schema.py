@@ -125,8 +125,8 @@ class UpdateCustomField(BaseModel):
     name: Optional[str] = None
     type_handler: Optional[str] = None
     config: Optional[dict[str, Any]] = None
-    owner_type: Literal["user", "group"]
-    owner_id: UUID
+    owner_type: Literal["user", "group"] | None = None
+    owner_id: UUID | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

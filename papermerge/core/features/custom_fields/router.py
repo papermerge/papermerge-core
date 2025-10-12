@@ -17,6 +17,7 @@ from papermerge.core.features.users.schema import User
 from papermerge.core.features.users.db import api as user_dbapi
 from papermerge.core.db.engine import get_db
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
+from papermerge.core.types import ResourceType
 from .schema import CustomFieldParams
 
 router = APIRouter(
@@ -58,13 +59,22 @@ async def get_custom_fields_without_pagination(
 
     Required scope: `{scope}`
     """
+    owner_id = group_id or user.id
+    if group_id:
+        owner_type = 'group'
+    else:
+        owner_type = 'user'
+
+    owner=schema.Owner(owner_id=owner_id, owner_type=owner_type)
+
     if group_id:
         ok = await user_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
         if not ok:
             detail = f"User {user.id=} does not belong to group {group_id=}"
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
+
     result = await dbapi.get_custom_fields_without_pagination(
-        db_session, user_id=user.id, group_id=group_id
+        db_session, owner=owner
     )
 
     return result
@@ -120,10 +130,25 @@ async def get_custom_field(
 
     Required scope: `{scope}`
     """
+    from papermerge.core.features.ownership.db import api as ownership_api
+    from papermerge.core.types import ResourceType
+
+    has_access = await ownership_api.user_can_access_resource(
+        session=db_session,
+        user_id=user.id,
+        resource_type=ResourceType.CUSTOM_FIELD,
+        resource_id=custom_field_id
+    )
+
+    if not has_access:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,  # Use 404 to not leak existence
+            detail=f"{ResourceType.CUSTOM_FIELD.value.replace('_', ' ').title()} not found"
+        )
+
     try:
         result = await dbapi.get_custom_field(
             db_session,
-            user_id=user.id,
             custom_field_id=custom_field_id
         )
     except NoResultFound:
@@ -204,6 +229,20 @@ async def delete_custom_field(
 
     Required scope: `{scope}`
     """
+    from papermerge.core.features.ownership.db import api as ownership_api
+
+    has_access = await ownership_api.user_can_access_resource(
+        session=db_session,
+        user_id=user.id,
+        resource_type=ResourceType.CUSTOM_FIELD,
+        resource_id=custom_field_id
+    )
+    if not has_access:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,  # Use 404 to not leak existence
+            detail=f"{ResourceType.CUSTOM_FIELD.value.replace('_', ' ').title()} not found"
+        )
+
     try:
         async with AsyncAuditContext(
             db_session,
@@ -245,17 +284,21 @@ async def update_custom_field(
 
     Required scope: `{scope}`
     """
-    if data.group_id:
-        group_id = data.group_id
-        ok = await user_dbapi.user_belongs_to(
-            db_session, user_id=cur_user.id, group_id=group_id
+    from papermerge.core.features.ownership.db import api as ownership_api
+
+    has_access = await ownership_api.user_can_access_resource(
+        session=db_session,
+        user_id=cur_user.id,
+        resource_type=ResourceType.CUSTOM_FIELD,
+        resource_id=custom_field_id
+    )
+
+    if not has_access:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,  # Use 404 to not leak existence
+            detail=f"{ResourceType.CUSTOM_FIELD.value.replace('_', ' ').title()} not found"
         )
-        if not ok:
-            user_id = cur_user.id
-            detail = f"User {user_id=} does not belong to group {group_id=}"
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
-    else:
-        data.user_id = cur_user.id
+
     try:
         async with AsyncAuditContext(
             db_session,

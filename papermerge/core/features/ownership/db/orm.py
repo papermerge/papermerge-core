@@ -40,7 +40,7 @@ class Ownership(Base):
     __table_args__ = (
         # Ensure valid owner types
         CheckConstraint(
-            "owner_type IN ('user', 'group'",
+            "owner_type IN ('user', 'group')",
             name="ownerships_owner_type_check"
         ),
 

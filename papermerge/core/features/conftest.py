@@ -18,13 +18,14 @@ from sqlalchemy.orm import selectinload
 from core.utils.tz import utc_now
 from papermerge.core.tests.resource_file import ResourceFile
 from papermerge.core.types import OCRStatusEnum
-from papermerge.core import constants
 from papermerge.core.features.auth.scopes import SCOPES
 from papermerge.core.db.base import Base
 from papermerge.core.db.engine import engine, get_db
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.document import schema as doc_schema
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
+from papermerge.core.features.special_folders.db import \
+    api as special_folders_api
 from papermerge.core.features.custom_fields.schema import CustomFieldType
 from papermerge.core.router_loader import discover_routers
 from papermerge.core import orm, dbapi
@@ -452,31 +453,15 @@ async def user(make_user) -> orm.User:
 
 @pytest.fixture()
 async def make_user(db_session: AsyncSession):
+    """
+    Create test user with special folders.
+
+    CHANGED: No longer needs SET CONSTRAINTS ALL DEFERRED
+    """
     async def _maker(username: str, is_superuser: bool = True):
-        await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
-
         user_id = uuid.uuid4()
-        home_id = uuid.uuid4()
-        inbox_id = uuid.uuid4()
 
-        db_inbox = orm.Folder(
-            id=inbox_id,
-            title=constants.INBOX_TITLE,
-            ctype=constants.CTYPE_FOLDER,
-            lang="de",
-            user_id=user_id,
-        )
-        db_home = orm.Folder(
-            id=home_id,
-            title=constants.HOME_TITLE,
-            ctype=constants.CTYPE_FOLDER,
-            lang="de",
-            user_id=user_id,
-        )
-
-        db_session.add_all([db_home, db_inbox])
-        await db_session.flush()  # This ensures folders are inserted first
-
+        # Step 1: Create user
         db_user = orm.User(
             id=user_id,
             username=username,
@@ -486,27 +471,29 @@ async def make_user(db_session: AsyncSession):
             is_superuser=is_superuser,
             is_active=True,
             password="pwd",
-            home_folder_id=home_id,
-            inbox_folder_id=inbox_id
         )
-
         db_session.add(db_user)
         await db_session.flush()
+
+        # Step 2: Create special folders
+        await special_folders_api.create_special_folders_for_user(
+            db_session,
+            user_id
+        )
+
+        await db_session.commit()
         await db_session.refresh(db_user)
 
-        # Eagerly load the user with home_folder and inbox_folder relationships
-        from sqlalchemy.orm import selectinload
-        from sqlalchemy import select
-
-        stmt = select(orm.User).options(
-            selectinload(orm.User.home_folder),
-            selectinload(orm.User.inbox_folder),
-            selectinload(orm.User.user_groups),
-            selectinload(orm.User.user_roles)
-        ).where(orm.User.id == user_id)
-
+        # Eagerly load the user with special_folders relationship
+        stmt = (
+            select(orm.User)
+            .options(selectinload(orm.User.special_folders))
+            .where(orm.User.id == user_id)
+        )
         result = await db_session.execute(stmt)
-        return result.scalar_one()
+        user = result.scalar_one()
+
+        return user
 
     return _maker
 
@@ -738,28 +725,40 @@ def make_document_tax(db_session: AsyncSession, document_type_tax):
 
     return _make_tax
 
-
 @pytest.fixture()
-def make_group(db_session: AsyncSession):
-    async def _maker(name: str, with_special_folders=False):
-        if with_special_folders:
-            group = orm.Group(name=name)
-            uid = uuid.uuid4()
-            db_session.add(group)
-            folder = orm.Folder(id=uid, title="home", group=group, lang="de")
-            db_session.add(folder)
-            await db_session.commit()
-            group.home_folder_id = uid
-            await db_session.commit()
-        else:
-            group = orm.Group(name=name)
-            db_session.add(group)
-            await db_session.commit()
+async def make_group(db_session: AsyncSession):
+    """Create test group, optionally with special folders"""
+    async def _maker(name: str, with_special_folders: bool = False):
+        # REMOVED: await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
 
-        stmt = select(orm.Group).options(
-            selectinload(orm.Group.home_folder),
-            selectinload(orm.Group.inbox_folder)
-        ).where(orm.Group.id == group.id)
+        from papermerge.core.features.special_folders.db import api as special_folders_api
+
+        group_id = uuid.uuid4()
+
+        # Step 1: Create group
+        group = orm.Group(
+            id=group_id,
+            name=name,
+        )
+        db_session.add(group)
+        await db_session.flush()
+
+        # Step 2: Create special folders if requested
+        if with_special_folders:
+            await special_folders_api.create_special_folders_for_group(
+                db_session,
+                group_id
+            )
+
+        await db_session.commit()
+
+        # Reload with relationships
+        stmt = (
+            select(orm.Group)
+            .options(
+                selectinload(orm.Group.special_folders)
+            ).where(orm.Group.id == group.id)
+        )
         result = await db_session.execute(stmt)
         group = result.scalar_one()
 

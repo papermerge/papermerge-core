@@ -95,3 +95,22 @@ class MimeType(str, Enum):
     image_jpeg = "image/jpeg"
     image_png = "image/png"
     image_tiff = "image/tiff"
+
+
+
+class FolderType(str, Enum):
+    """
+    Type of special folder.
+    """
+    HOME = "home"
+    INBOX = "inbox"
+
+
+class OwnerType(str, Enum):
+    """
+    Type of owner for a special folder.
+
+    Special folders can be owned by either individual users or groups.
+    """
+    USER = "user"
+    GROUP = "group"

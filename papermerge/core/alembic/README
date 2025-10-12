@@ -17,7 +17,7 @@ Run migration:
 Create a migration:
 
 ```
-$ alembic revision -m "add value_yearmonth column to custom_field_values"
+  $ alembic revision -m "add value_yearmonth column to custom_field_values"
 ```
 
 Navigate back and forth:

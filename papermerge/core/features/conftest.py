@@ -24,6 +24,8 @@ from papermerge.core.db.engine import engine, get_db
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.document import schema as doc_schema
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
+from papermerge.core.features.special_folders.db import \
+    api as special_folders_api
 from papermerge.core.features.custom_fields.schema import CustomFieldType
 from papermerge.core.router_loader import discover_routers
 from papermerge.core import orm, dbapi
@@ -457,10 +459,6 @@ async def make_user(db_session: AsyncSession):
     CHANGED: No longer needs SET CONSTRAINTS ALL DEFERRED
     """
     async def _maker(username: str, is_superuser: bool = True):
-        # REMOVED: await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
-
-        from papermerge.core.features.special_folders.db import api as special_folders_api
-
         user_id = uuid.uuid4()
 
         # Step 1: Create user

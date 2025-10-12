@@ -48,7 +48,12 @@ class SpecialFolder(Base):
 
     # Polymorphic owner (user or group)
     owner_type: Mapped[OwnerType] = mapped_column(
-        SQLEnum(OwnerType, name="owner_type_enum", create_type=False),
+        SQLEnum(
+            OwnerType,
+            name="owner_type_enum",
+            values_callable=lambda x: [e.value for e in x],
+            create_type=False
+        ),
         nullable=False,
         index=True,
         comment="Type of owner: 'user' or 'group'"
@@ -63,7 +68,12 @@ class SpecialFolder(Base):
 
     # Type of special folder
     folder_type: Mapped[FolderType] = mapped_column(
-        SQLEnum(FolderType, name="folder_type_enum", create_type=False),
+        SQLEnum(
+            FolderType,
+            name="folder_type_enum",
+            values_callable=lambda x: [e.value for e in x],
+            create_type=False
+        ),
         nullable=False,
         comment="Type of special folder: 'home', 'inbox', etc."
     )

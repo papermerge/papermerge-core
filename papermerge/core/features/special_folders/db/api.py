@@ -13,9 +13,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, and_
 
 from papermerge.core import orm, constants
-from papermerge.core.types import OwnerType
-from papermerge.core.features.special_folders.db.orm import SpecialFolder, \
-    FolderType
+from papermerge.core.types import OwnerType, FolderType
+from papermerge.core.features.special_folders.db.orm import SpecialFolder
 
 
 async def create_special_folders_for_user(
@@ -53,15 +52,15 @@ async def create_special_folders_for_user(
 
     # Create special folder entries
     home_special = SpecialFolder(
-        owner_type=OwnerType.USER,
+        owner_type=OwnerType.USER.value,
         owner_id=user_id,
-        folder_type=FolderType.HOME,
+        folder_type=FolderType.HOME.value,
         folder_id=home_id
     )
     inbox_special = SpecialFolder(
-        owner_type=OwnerType.USER,
+        owner_type=OwnerType.USER.value,
         owner_id=user_id,
-        folder_type=FolderType.INBOX,
+        folder_type=FolderType.INBOX.value,
         folder_id=inbox_id
     )
 

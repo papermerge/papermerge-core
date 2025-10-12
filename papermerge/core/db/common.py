@@ -1,16 +1,18 @@
 from typing import List, Tuple
 from uuid import UUID
 
-from sqlalchemy import select, exists, literal
+from sqlalchemy import select, exists, literal, and_, or_
 from sqlalchemy.orm import aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.features.nodes.db import orm
 from papermerge.core.features.shared_nodes.db import orm as sn_orm
-from papermerge.core.features.groups.db import orm as groups_orm
 from papermerge.core.features.roles.db import orm as roles_orm
-from papermerge.core.features.nodes import schema as nodes_schema
-from papermerge.core.orm import UserGroup
+from papermerge.core.features.ownership.db import api as ownership_api
+from papermerge.core.types import ResourceType, OwnerType
+from papermerge.core.schemas.common import OwnedBy
+from papermerge.core.features.ownership.db.orm import Ownership
+from papermerge.core.features.groups.db.orm import UserGroup
 
 
 async def get_ancestors(
@@ -96,49 +98,41 @@ async def has_node_perm(
 ) -> bool:
     """
     Has user `codename` permission for `node_id`?
-
-    SELECT EXISTS(
-        SELECT nodes.id
-        FROM nodes
-        WHERE id = <node_id> AND
-        (
-            user_id = <user_id>
-            OR
-            group_id IN (
-                SELECT ug.group_id
-                FROM users_groups ug
-                WHERE ug.user_id =  <user_id>
-            )
-        )
-        UNION ALL
-        SELECT sn.id
-        FROM shared_nodes sn
-        JOIN nodes n ON n.id = sn.node_id
-        JOIN roles r ON r.id = sn.role_id
-        JOIN roles_permissions rp ON rp.role_id = r.id
-        JOIN permissions p ON p.id = rp.permission_id
-        WHERE (
-            sn.user_id = <user_id>
-            OR
-            sn.group_id IN (
-                SELECT ug.group_id
-                FROM users_groups ug
-                WHERE ug.user_id =  <user_id>
-            )
-        )
-        AND p.codename = <perm>
-        AND sn.node_id IN (<node_id> ancestors)
-    )
     """
     ancestor_ids = [item[0] for item in await get_ancestors(db_session, node_id)]
 
-    # groups user belongs to - use UserGroup model instead of non-existent association table
-    user_group_ids = select(UserGroup.group_id).where(UserGroup.user_id == user_id)
+    # Get groups user belongs to
+    user_groups_stmt = select(UserGroup.group_id).where(UserGroup.user_id == user_id)
+    user_group_ids_result = await db_session.execute(user_groups_stmt)
+    user_group_ids = [row[0] for row in user_group_ids_result]
 
-    node_access = select(orm.Node.id).where(
-        (orm.Node.id == node_id)
-        & ((orm.Node.user_id == user_id) | (orm.Node.group_id.in_(user_group_ids)))
+    # Check 1: Direct ownership - user owns OR user's group owns
+    node_access = (
+        select(orm.Node.id)
+        .select_from(orm.Node)
+        .join(
+            Ownership,
+            and_(
+                Ownership.resource_type == 'node',
+                Ownership.resource_id == orm.Node.id
+            )
+        )
+        .where(
+            orm.Node.id == node_id,
+            or_(
+                and_(
+                    Ownership.owner_type == OwnerType.USER.value,
+                    Ownership.owner_id == user_id
+                ),
+                and_(
+                    Ownership.owner_type == OwnerType.GROUP.value,
+                    Ownership.owner_id.in_(user_group_ids)
+                )
+            )
+        )
     )
+
+    # Check 2: Shared access (unchanged)
     sn = aliased(sn_orm.SharedNode)
     n = aliased(orm.Node)
     r = aliased(roles_orm.Role)
@@ -158,33 +152,28 @@ async def has_node_perm(
             & ((sn.user_id == user_id) | (sn.group_id.in_(user_group_ids)))
         )
     )
-    stmt = exists(node_access.union_all(node_shared_access)).select()
 
+    stmt = exists(node_access.union_all(node_shared_access)).select()
     has_access = (await db_session.execute(stmt)).scalar_one()
 
     return has_access
 
 
-async def get_node_owner(db_session: AsyncSession, node_id: UUID) -> nodes_schema.Owner:
-    stmt = (
-        select(
-            orm.Node.group_id,
-            groups_orm.Group.name.label("group_name"),
-            orm.Node.user_id,
-            orm.User.username,
-        )
-        .select_from(orm.Node)
-        .join(orm.User, orm.User.id == orm.Node.user_id, isouter=True)
-        .join(groups_orm.Group, groups_orm.Group.id == orm.Node.group_id, isouter=True)
-    ).where(orm.Node.id == node_id)
+async def get_node_owner(db_session: AsyncSession, node_id: UUID) -> OwnedBy:
+    """
+    Get the owner of a node using the ownerships table.
 
-    row = (await db_session.execute(stmt)).one()
+    Returns OwnedBy schema with owner information.
+    """
 
-    if row.user_id is None:
-        owner_name = row.group_name
-    else:
-        owner_name = row.username
-
-    return nodes_schema.Owner(
-        name=owner_name, user_id=row.user_id, group_id=row.group_id
+    # Use the ownership API helper function
+    owner = await ownership_api.get_owner_details(
+        session=db_session,
+        resource_type=ResourceType.NODE,
+        resource_id=node_id
     )
+
+    if owner is None:
+        raise ValueError(f"No owner found for node {node_id}")
+
+    return owner

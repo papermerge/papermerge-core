@@ -23,12 +23,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from papermerge.core.features.ownership.db import api as ownership_api
+from papermerge.core.types import OwnerType, ResourceType, ImagePreviewStatus
 from papermerge.core.features.document import s3
 from papermerge.core.utils.misc import copy_file
 from papermerge.core import schema, orm, constants, tasks
-from papermerge.core.types import (
-    ImagePreviewStatus,
-)
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.custom_fields import schema as cf_schema
 from papermerge.core.features.custom_fields.cf_types.registry import \
@@ -207,11 +206,42 @@ async def get_documents_by_type_paginated(
 async def create_document(
     db_session: AsyncSession, attrs: schema.NewDocument
 ) -> Tuple[schema.Document | None, schema.Error | None]:
+
     error = None
     doc_id = attrs.id or uuid.uuid4()
 
-    owner = await get_node_owner(db_session, node_id=attrs.parent_id)
+    # Get parent's owner to inherit ownership
+    parent_owner = await get_node_owner(db_session, node_id=attrs.parent_id)
 
+    # Determine owner type and id from parent
+    if parent_owner.type == "user":
+        owner_type = OwnerType.USER
+        owner_id = parent_owner.id
+    elif parent_owner.type == "group":
+        owner_type = OwnerType.GROUP
+        owner_id = parent_owner.id
+    else:
+        raise ValueError(f"Unsupported owner type: {parent_owner.type}")
+
+    # Check uniqueness before creating
+    is_unique = await ownership_api.check_name_unique_for_owner(
+        session=db_session,
+        resource_type=ResourceType.NODE,
+        owner_type=owner_type,
+        owner_id=owner_id,
+        name=attrs.title,
+        parent_id=attrs.parent_id
+    )
+
+    if not is_unique:
+        attr_err = schema.AttrError(
+            name="title",
+            message="Within a folder title must be unique"
+        )
+        error = schema.Error(attrs=[attr_err])
+        return None, error
+
+    # Create document WITHOUT user_id/group_id
     doc = orm.Document(
         id=doc_id,
         title=attrs.title,
@@ -220,9 +250,8 @@ async def create_document(
         parent_id=attrs.parent_id,
         ocr=attrs.ocr,
         lang=attrs.lang,
-        user_id=owner.user_id,
-        group_id=owner.group_id,
     )
+
     doc_ver = orm.DocumentVersion(
         id=uuid.uuid4(),
         document_id=doc_id,
@@ -233,31 +262,47 @@ async def create_document(
         lang=attrs.lang,
         short_description="Original",
     )
+
     db_session.add(doc)
+    db_session.add(doc_ver)
 
     try:
-        db_session.add(doc_ver)
+        await db_session.flush()
+
+        # Set ownership
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.NODE,
+            resource_id=doc_id,
+            owner_type=owner_type,
+            owner_id=owner_id
+        )
+
         await db_session.commit()
+
     except IntegrityError as e:
         await db_session.rollback()
         stre = str(e)
         # postgres unique integrity error
         if "unique" in stre and "title" in stre:
             attr_err = schema.AttrError(
-                name="title", message="Within a folder title must be unique"
+                name="title",
+                message="Within a folder title must be unique"
             )
             error = schema.Error(attrs=[attr_err])
         # sqlite unique integrity error
         elif "UNIQUE" in stre and ".title" in stre:
             attr_err = schema.AttrError(
-                name="title", message="Within a folder title must be unique"
+                name="title",
+                message="Within a folder title must be unique"
             )
             error = schema.Error(attrs=[attr_err])
         else:
             error = schema.Error(messages=[stre])
 
-    doc.owner_name = owner.name
+        return None, error
 
+    # Load the document with relationships
     stmt = select(orm.Document).options(
         selectinload(orm.Document.tags),
         selectinload(orm.Document.versions).selectinload(orm.DocumentVersion.pages)
@@ -265,11 +310,25 @@ async def create_document(
 
     result = await db_session.execute(stmt)
     doc_with_relations = result.scalar_one_or_none()
+
     if doc_with_relations:
+        # Get owner details for the response
+        owner_details = await ownership_api.get_owner_details(
+            session=db_session,
+            resource_type=ResourceType.NODE,
+            resource_id=doc_id
+        )
+
+        # Set owner_name for backward compatibility (if schema still has it)
+        if hasattr(doc_with_relations, 'owner_name'):
+            doc_with_relations.owner_name = owner_details.name
+
         return schema.Document.model_validate(doc_with_relations), error
 
+    # Shouldn't reach here, but handle it
     attr_err = schema.AttrError(
-        name="title", message="Within a folder title must be unique"
+        name="title",
+        message="Document creation failed"
     )
     error = schema.Error(attrs=[attr_err])
     return None, error

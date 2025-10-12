@@ -3,12 +3,14 @@ import math
 import uuid
 from typing import Optional, Dict, Any
 
-from sqlalchemy import select, func, text, and_, or_
+from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from papermerge.core.features.special_folders.db import \
+    api as special_folders_api
+from papermerge.core.types import OwnerType
 from papermerge.core import schema, orm
-from papermerge.core import constants
 
 logger = logging.getLogger(__name__)
 
@@ -377,6 +379,11 @@ async def create_group(
     with_special_folders: bool = False,
     exists_ok: bool = False
 ) -> schema.Group:
+    """
+    Create a new group, optionally with special folders.
+
+    REMOVED: No longer requires SET CONSTRAINTS ALL DEFERRED
+    """
     if exists_ok:
         stmt = select(orm.Group).where(orm.Group.name == name)
         result = (await db_session.execute(stmt)).scalars().all()
@@ -386,89 +393,72 @@ async def create_group(
 
     group_id = uuid.uuid4()
 
+    # REMOVED: await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
+
+    # Step 1: Create group first
+    group = orm.Group(
+        id=group_id,
+        name=name,
+    )
+    db_session.add(group)
+    await db_session.flush()
+
+    # Step 2: Create special folders if requested
     if with_special_folders:
-        await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
-
-        home_id = uuid.uuid4()
-        inbox_id = uuid.uuid4()
-        db_inbox = orm.Folder(
-            id=inbox_id,
-            title=constants.INBOX_TITLE,
-            ctype=constants.CTYPE_FOLDER,
-            group_id=group_id,  # owned by group
-            lang="xxx",  # not used
+        await special_folders_api.create_special_folders_for_group(
+            db_session,
+            group_id
         )
-        db_home = orm.Folder(
-            id=home_id,
-            title=constants.HOME_TITLE,
-            ctype=constants.CTYPE_FOLDER,
-            group_id=group_id,  # owned by group
-            lang="xxx",  # not used
-        )
-        group = orm.Group(
-            id=group_id,
-            name=name,
-            home_folder_id=home_id,
-            inbox_folder_id=inbox_id
-        )
-
-        db_session.add_all([db_home, db_inbox, group])
-    else:
-        group = orm.Group(id=group_id, name=name)
-        db_session.add(group)
 
     await db_session.commit()
+    await db_session.refresh(group)
 
     result = schema.Group.model_validate(group)
-
     return result
 
 
 async def update_group(
-    db_session: AsyncSession, group_id: uuid.UUID, attrs: schema.UpdateGroup
+    db_session: AsyncSession,
+    group_id: uuid.UUID,
+    attrs: schema.UpdateGroup
 ) -> schema.Group:
+    """
+    Update group properties.
+
+    Handles special folder creation/deletion based on with_special_folders flag.
+    """
     stmt = select(orm.Group).where(orm.Group.id == group_id)
-    group: schema.Group = (
-        (await db_session.execute(stmt, params={"id": group_id})).scalars().one()
-    )
-    group.name = attrs.name
-    if attrs.with_special_folders:
-        group.delete_special_folders = False
-        if group.home_folder_id and group.inbox_folder_id:
-            # nothing to do as both home and inbox are already there
-            pass
-        else:
-            # set home/inbox UUID
-            home_id = uuid.uuid4()
-            inbox_id = uuid.uuid4()
-            db_inbox = orm.Folder(
-                id=inbox_id,
-                title=constants.INBOX_TITLE,
-                ctype=constants.CTYPE_FOLDER,
-                group_id=group_id,  # owned by group
-                lang="xxx",  # not used
+    group = (await db_session.execute(stmt)).scalars().one()
+
+    # Update name if provided
+    if attrs.name is not None:
+        group.name = attrs.name
+
+    # Handle special folders changes
+    if attrs.with_special_folders is not None:
+        current_has_folders = await special_folders_api.has_special_folders(
+            db_session,
+            OwnerType.GROUP,
+            group_id
+        )
+
+        if attrs.with_special_folders and not current_has_folders:
+            # User wants special folders, but group doesn't have them yet
+            await special_folders_api.create_special_folders_for_group(
+                db_session,
+                group_id
             )
-            db_home = orm.Folder(
-                id=home_id,
-                title=constants.HOME_TITLE,
-                ctype=constants.CTYPE_FOLDER,
-                group_id=group.id,  # owned by group
-                lang="xxx",  # not used
+        elif not attrs.with_special_folders and current_has_folders:
+            # User wants to remove special folders
+            await special_folders_api.delete_special_folders_for_group(
+                db_session,
+                group_id
             )
-            db_session.add(db_home)
-            db_session.add(db_inbox)
-            await db_session.commit()
-            group.home_folder_id = home_id
-            group.inbox_folder_id = inbox_id
-            db_session.add(group)
-            await db_session.commit()
-    else:
-        group.delete_special_folders = True
 
     await db_session.commit()
+    await db_session.refresh(group)
 
-    result = schema.Group(id=group.id, name=group.name)
-
+    result = schema.Group.model_validate(group)
     return result
 
 

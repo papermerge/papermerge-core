@@ -4,18 +4,21 @@ import logging
 from typing import Tuple, Optional, Dict, Any
 
 from passlib.hash import pbkdf2_sha256
-from sqlalchemy import select, func, text, and_, or_, update
+from sqlalchemy import select, func, and_, or_, update
 from sqlalchemy.orm import selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, IntegrityError
 
 from papermerge.core.utils.tz import utc_now
 from papermerge.core import orm, schema
 from papermerge.core.utils.misc import is_valid_uuid
 from papermerge.core.features.auth import scopes
-from papermerge.core import constants
 from papermerge.core.schemas import error as err_schema
 from papermerge.core.features.preferences.db import api as prefs_dbapi
+from papermerge.core.features.special_folders.db import \
+    api as special_folders_api
+from papermerge.core.features.special_folders.db.orm import SpecialFolder
+from papermerge.core.types import OwnerType, FolderType
 from .orm import User
 
 DATETIME_FMT = "%Y-%m-%d %H:%M:%S.%f"
@@ -54,23 +57,34 @@ async def get_user(db_session: AsyncSession, user_id_or_username: str) -> schema
 async def get_user_group_homes(
     db_session: AsyncSession, user_id: uuid.UUID
 ) -> Tuple[list[schema.UserHome] | None, str | None]:
-    """Gets user group homes
+    """
+    Gets user group homes by joining through special_folders table.
 
-    SELECT g.name, g.home_folder_id
+    SELECT g.name, g.id, sf.folder_id
     FROM groups g
     JOIN users_groups ug ON ug.group_id = g.id
+    JOIN special_folders sf ON sf.owner_id = g.id
+        AND sf.owner_type = 'group'
+        AND sf.folder_type = 'home'
     WHERE ug.user_id = <user_id>
-    AND ug.deleted_at IS NULL  -- Only active group memberships
-    AND g.deleted_at IS NULL   -- Only active groups
+    AND ug.deleted_at IS NULL
+    AND g.deleted_at IS NULL
     """
     stmt = (
-        select(orm.Group.name, orm.Group.id, orm.Group.home_folder_id)
+        select(orm.Group.name, orm.Group.id, SpecialFolder.folder_id)
         .join(orm.UserGroup, orm.UserGroup.group_id == orm.Group.id)
+        .join(
+            SpecialFolder,
+            and_(
+                SpecialFolder.owner_id == orm.Group.id,
+                SpecialFolder.owner_type == OwnerType.GROUP,
+                SpecialFolder.folder_type == FolderType.HOME
+            )
+        )
         .where(
             orm.UserGroup.user_id == user_id,
-            orm.UserGroup.deleted_at.is_(None),  # Only active user-group relationships
-            orm.Group.deleted_at.is_(None),      # Only active groups
-            orm.Group.home_folder_id.is_not(None),  # Only groups with home folders
+            orm.UserGroup.deleted_at.is_(None),
+            orm.Group.deleted_at.is_(None)
         )
     )
 
@@ -83,31 +97,43 @@ async def get_user_group_homes(
             group_id=group_id,
             home_id=home_folder_id
         )
-        models.append(schema.UserHome.model_validate(home))
+        models.append(home)
 
     return models, None
 
 
+# Update get_user_group_inboxes function:
 async def get_user_group_inboxes(
     db_session: AsyncSession, user_id: uuid.UUID
 ) -> Tuple[list[schema.UserInbox] | None, str | None]:
-    """Gets user group inboxes
+    """
+    Gets user group inboxes by joining through special_folders table.
 
-    SELECT g.name, g.inbox_folder_id
+    SELECT g.name, g.id, sf.folder_id
     FROM groups g
     JOIN users_groups ug ON ug.group_id = g.id
+    JOIN special_folders sf ON sf.owner_id = g.id
+        AND sf.owner_type = 'group'
+        AND sf.folder_type = 'inbox'
     WHERE ug.user_id = <user_id>
-    AND ug.deleted_at IS NULL  -- Only active group memberships
-    AND g.deleted_at IS NULL   -- Only active groups
+    AND ug.deleted_at IS NULL
+    AND g.deleted_at IS NULL
     """
     stmt = (
-        select(orm.Group.name, orm.Group.id, orm.Group.inbox_folder_id)
+        select(orm.Group.name, orm.Group.id, SpecialFolder.folder_id)
         .join(orm.UserGroup, orm.UserGroup.group_id == orm.Group.id)
+        .join(
+            SpecialFolder,
+            and_(
+                SpecialFolder.owner_id == orm.Group.id,
+                SpecialFolder.owner_type == OwnerType.GROUP,
+                SpecialFolder.folder_type == FolderType.INBOX
+            )
+        )
         .where(
             orm.UserGroup.user_id == user_id,
-            orm.UserGroup.deleted_at.is_(None),  # Only active user-group relationships
-            orm.Group.deleted_at.is_(None),      # Only active groups
-            orm.Group.inbox_folder_id.is_not(None),  # Only groups with inbox folders
+            orm.UserGroup.deleted_at.is_(None),
+            orm.Group.deleted_at.is_(None)
         )
     )
 
@@ -115,14 +141,15 @@ async def get_user_group_inboxes(
 
     models = []
     for group_name, group_id, inbox_folder_id in results:
-        home = schema.UserInbox(
+        inbox = schema.UserInbox(
             group_name=group_name,
             group_id=group_id,
             inbox_id=inbox_folder_id
         )
-        models.append(schema.UserInbox.model_validate(home))
+        models.append(inbox)
 
     return models, None
+
 
 
 async def get_user_details(
@@ -447,107 +474,90 @@ async def create_user(
     is_active: bool = False,
     user_id: uuid.UUID | None = None,
 ) -> Tuple[schema.User | None, err_schema.Error | None]:
+    """
+    Create a new user with special folders.
+
+    REMOVED: No longer requires SET CONSTRAINTS ALL DEFERRED
+    The circular dependency has been eliminated!
+    """
     group_ids = group_ids or []
     role_ids = role_ids or []
-    _user_id = user_id or uuid.uuid4()  # Fixed variable name
-    await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
+    _user_id = user_id or uuid.uuid4()
+
+    # REMOVED: await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
+
     try:
-        home_folder_id = uuid.uuid4()
-        inbox_folder_id = uuid.uuid4()
-
-        home = orm.Folder(
-            id=home_folder_id,
-            title=constants.HOME_TITLE,
-            ctype=constants.CTYPE_FOLDER,
-            user_id=_user_id,
-            lang="xxx",
+        # Step 1: Create user first (no FK to folders anymore!)
+        user = orm.User(
+            id=_user_id,
+            username=username,
+            email=email,
+            password=password,
+            is_superuser=is_superuser,
+            is_active=is_active,
         )
-        inbox = orm.Folder(
-            id=inbox_folder_id,
-            title=constants.INBOX_TITLE,
-            ctype=constants.CTYPE_FOLDER,
-            user_id=_user_id,
-            lang="xxx",
+        db_session.add(user)
+        await db_session.flush()
+
+        # Step 2: Create special folders (no circular dependency!)
+        await special_folders_api.create_special_folders_for_user(
+            db_session,
+            _user_id
         )
 
-        # Associate groups if provided
-        groups = []
+        # Step 3: Associate groups if provided
         if group_ids:
-            # Fetch active groups by IDs
             groups_result = await db_session.execute(
                 select(orm.Group).where(
                     orm.Group.id.in_(group_ids),
-                    orm.Group.deleted_at.is_(None)  # Only fetch active groups
+                    orm.Group.deleted_at.is_(None)
                 )
             )
             groups = list(groups_result.scalars().all())
-
-            # Check if all requested groups were found
             found_group_ids = {group.id for group in groups}
             missing_group_ids = set(group_ids) - found_group_ids
             if missing_group_ids:
                 raise ValueError(f"Groups not found or inactive: {missing_group_ids}")
 
-        # Associate roles if provided
-        roles = []
+            for group in groups:
+                user_group = orm.UserGroup(user_id=user.id, group_id=group.id)
+                db_session.add(user_group)
+
+        # Step 4: Associate roles if provided
         if role_ids:
-            # Fetch active roles by IDs
             roles_result = await db_session.execute(
                 select(orm.Role).where(
                     orm.Role.id.in_(role_ids),
-                    orm.Role.deleted_at.is_(None)  # Only fetch active roles
+                    orm.Role.deleted_at.is_(None)
                 )
             )
             roles = list(roles_result.scalars().all())
-
-            # Check if all requested roles were found
             found_role_ids = {role.id for role in roles}
             missing_role_ids = set(role_ids) - found_role_ids
             if missing_role_ids:
                 raise ValueError(f"Roles not found or inactive: {missing_role_ids}")
 
-        user = orm.User(
-            id=_user_id,
-            username=username,
-            email=email,
-            password=pbkdf2_sha256.hash(password),
-            is_superuser=is_superuser,
-            is_active=is_active,
-            home_folder_id=home_folder_id,
-            inbox_folder_id=inbox_folder_id,
-        )
-
-        # Create UserGroup associations for groups (instead of user.groups = groups)
-        user_groups = []
-        if groups:
-            for group in groups:
-                user_group = orm.UserGroup(
-                    user_id=_user_id,
-                    group_id=group.id
-                )
-                user_groups.append(user_group)
-
-        # Create UserRole associations for roles (fixed the main issue)
-        user_roles = []
-        if roles:
             for role in roles:
-                user_role = orm.UserRole(
-                    user_id=_user_id,
-                    role_id=role.id
-                )
-                user_roles.append(user_role)
+                user_role = orm.UserRole(user_id=user.id, role_id=role.id)
+                db_session.add(user_role)
 
-        # Add all objects to session
-        db_session.add_all([user, home, inbox] + user_roles + user_groups)
-        await db_session.flush()
         await db_session.commit()
         await db_session.refresh(user)
+
         return schema.User.model_validate(user), None
 
+    except IntegrityError as e:
+        await db_session.rollback()
+        error_msg = str(e)
+        if "unique constraint" in error_msg.lower():
+            if "username" in error_msg.lower():
+                return None, err_schema.Error(msg=f"User with username '{username}' already exists")
+            elif "email" in error_msg.lower():
+                return None, err_schema.Error(msg=f"User with email '{email}' already exists")
+        return None, err_schema.Error(msg=f"Database error: {error_msg}")
     except Exception as e:
         await db_session.rollback()
-        return None, err_schema.Error(messages=[str(e)])
-
+        return None, err_schema.Error(msg=str(e))
 
 async def update_user(
     db_session: AsyncSession,

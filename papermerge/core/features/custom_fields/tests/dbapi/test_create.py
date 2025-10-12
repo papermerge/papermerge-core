@@ -11,19 +11,24 @@ async def test_create_text_field(db_session, user):
             "min_length": 0,
             "max_length": 100,
             "multiline": False
-        }
+        },
+        owner_type="user",
+        owner_id=user.id
     )
 
     field = await cf_dbapi.create_custom_field(
         db_session,
         data=field_data,
-        user_id=user.id
     )
 
     assert field.name == "Notes"
     assert field.type_handler == "text"
-    assert field.user_id == user.id
-    assert field.group_id is None
+
+    # Check ownership using new pattern
+    assert field.owned_by.id == user.id
+    assert field.owned_by.type == "user"
+    assert field.owned_by.name == user.username
+
     assert field.config == {
         "min_length": 0,
         "max_length": 100,
@@ -34,7 +39,6 @@ async def test_create_text_field(db_session, user):
     }
 
 
-
 async def test_create_monetary_field_with_config(db_session, user):
     """Create monetary field with currency config"""
     field_data = cf_schema.CreateCustomField(
@@ -43,13 +47,14 @@ async def test_create_monetary_field_with_config(db_session, user):
         config={
             "currency": "EUR",
             "precision": 2
-        }
+        },
+        owner_type="user",
+        owner_id=user.id
     )
 
     field = await cf_dbapi.create_custom_field(
         db_session,
-        data=field_data,
-        user_id=user.id
+        data=field_data
     )
 
     assert field.name == "Invoice Total"
@@ -65,18 +70,19 @@ async def test_create_field_for_group(db_session, make_group):
     field_data = cf_schema.CreateCustomField(
         name="Department Code",
         type_handler="text",
-        config={}
+        config={},
+        owner_type="group",
+        owner_id=group.id
     )
 
     field = await cf_dbapi.create_custom_field(
         db_session,
-        data=field_data,
-        group_id=group.id
+        data=field_data
     )
 
     assert field.name == "Department Code"
-    assert field.group_id == group.id
-    assert field.user_id is None
+    assert field.owned_by.id == group.id
+    assert field.owned_by.type is "group"
 
 
 async def test_create_date_field(db_session, user):
@@ -84,13 +90,14 @@ async def test_create_date_field(db_session, user):
     field_data = cf_schema.CreateCustomField(
         name="Effective Date",
         type_handler="date",
-        config={"format": "YYYY-MM-DD"}
+        config={"format": "YYYY-MM-DD"},
+        owner_type="user",
+        owner_id=user.id
     )
 
     field = await cf_dbapi.create_custom_field(
         db_session,
         data=field_data,
-        user_id=user.id
     )
 
     assert field.type_handler == "date"

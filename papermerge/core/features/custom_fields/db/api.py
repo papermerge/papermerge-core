@@ -14,6 +14,8 @@ from papermerge.core.db.exceptions import ResourceAccessDenied
 from papermerge.core.utils.tz import utc_now
 from papermerge.core.features.custom_fields.cf_types.registry import \
     TypeRegistry
+from papermerge.core.features.ownership.db import api as ownership_api
+from papermerge.core.types import OwnerType, ResourceType
 
 logger = logging.getLogger(__name__)
 
@@ -37,32 +39,30 @@ async def get_custom_fields_without_pagination(
 
     return items
 
+
 async def create_custom_field(
     session: AsyncSession,
     data: schema.CreateCustomField,
-    user_id: uuid.UUID | None = None,
-    group_id: uuid.UUID | None = None
 ) -> schema.CustomField:
     """
     Create a new custom field
 
     Args:
         session: Database session
-        data: Field creation data (Pydantic model)
-        user_id: Owner user ID (mutually exclusive with group_id)
-        group_id: Owner group ID (mutually exclusive with user_id)
+        data: Field creation data (must include owner_type and owner_id)
 
     Returns:
         Created custom field (Pydantic model)
 
     Raises:
-        ValueError: If neither or both user_id and group_id are provided
+        ValueError: If owner information is invalid or name is not unique
     """
-    # Validate that exactly one of user_id or group_id is provided
-    if user_id is None and group_id is None:
-        raise ValueError("Either user_id or group_id must be provided")
-    if user_id is not None and group_id is not None:
-        raise ValueError("Cannot specify both user_id and group_id")
+    # Validate owner info is provided
+    if not data.owner_type or not data.owner_id:
+        raise ValueError("owner_type and owner_id are required")
+
+    owner_type = OwnerType(data.owner_type)
+    owner_id = data.owner_id
 
     # Validate type handler exists
     try:
@@ -77,26 +77,66 @@ async def create_custom_field(
     except ValidationError as e:
         raise ValueError(f"Invalid configuration: {e}")
 
-    # Create ORM instance
+    # Check uniqueness
+    is_unique = await ownership_api.check_name_unique_for_owner(
+        session=session,
+        resource_type=ResourceType.CUSTOM_FIELD,
+        owner_type=owner_type,
+        owner_id=owner_id,
+        name=data.name
+    )
+
+    if not is_unique:
+        raise ValueError(
+            f"A custom field named '{data.name}' already exists for this {owner_type.value}"
+        )
+
+    # Create ORM instance WITHOUT user_id/group_id
     field = orm.CustomField(
         id=uuid.uuid4(),
         name=data.name,
         type_handler=data.type_handler,
         config=config_dict,
-        user_id=user_id,
-        group_id=group_id
     )
 
     session.add(field)
+
     try:
+        await session.flush()
+
+        # Set ownership
+        await ownership_api.set_owner(
+            session=session,
+            resource_type=ResourceType.CUSTOM_FIELD,
+            resource_id=field.id,
+            owner_type=owner_type,
+            owner_id=owner_id
+        )
+
         await session.commit()
         await session.refresh(field)
-    except IntegrityError:
+
+    except IntegrityError as e:
         await session.rollback()
-        raise
+        raise ValueError(f"Failed to create custom field: {str(e)}")
 
-    return schema.CustomField.model_validate(field)
+    # Get owner details for Pydantic model
+    owned_by = await ownership_api.get_owner_details(
+        session=session,
+        resource_type=ResourceType.CUSTOM_FIELD,
+        resource_id=field.id
+    )
 
+    # Build Pydantic model with owned_by
+    return schema.CustomField(
+        id=field.id,
+        name=field.name,
+        type_handler=field.type_handler,
+        config=field.config,
+        owned_by=owned_by,
+        created_at=field.created_at,
+        updated_at=field.updated_at,
+    )
 
 
 async def get_custom_fields(

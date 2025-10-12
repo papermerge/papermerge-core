@@ -49,19 +49,19 @@ async def test_get_doc_cfv_only_empty_values(
         - Shop (text)
     """
     receipt = await make_document_receipt(title="receipt-1.pdf", user=user)
-    items: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.get_document_custom_field_values(
+    items: list[cf_schema.CustomFieldWithValue] = await cf_dbapi.get_document_custom_field_values(
         db_session,
         document_id=receipt.id
     )
 
     assert len(items) == 3
 
-    assert items[0][1] is None
-    assert items[0][0].name in {"EffectiveDate", "Total", "Shop"}
-    assert items[1][1] is None
-    assert items[1][0].name in {"EffectiveDate", "Total", "Shop"}
-    assert items[2][1] is None
-    assert items[2][0].name in {"EffectiveDate", "Total", "Shop"}
+    assert items[0].value is None
+    assert items[0].custom_field.name in {"EffectiveDate", "Total", "Shop"}
+    assert items[1].value is None
+    assert items[1].custom_field.name in {"EffectiveDate", "Total", "Shop"}
+    assert items[2].value is None
+    assert items[2].custom_field.name in {"EffectiveDate", "Total", "Shop"}
 
 
 @pytest.mark.parametrize(
@@ -82,15 +82,15 @@ async def test_document_add_valid_date_cfv(
     # value = custom field value
     cf = {"EffectiveDate": effective_date_input}
 
-    items: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.update_document_custom_field_values(
+    items: list[cf_schema.CustomFieldWithValue] = await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt.id,
         custom_fields=cf
     )
 
-    eff_date_cf = next(item for item in items if item[0].name == "EffectiveDate")
+    eff_date_cf = next(item for item in items if item.custom_field.name == "EffectiveDate")
 
-    assert eff_date_cf[1].value_date == Date(2024, 10, 28)
+    assert eff_date_cf.value.value_date == Date(2024, 10, 28)
 
 
 async def test_document_update_custom_field_of_type_date(
@@ -106,16 +106,16 @@ async def test_document_update_custom_field_of_type_date(
     )
 
     # update existing value
-    items: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.update_document_custom_field_values(
+    items: list[cf_schema.CustomFieldWithValue] = await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt.id,
         custom_fields={"EffectiveDate": "2024-09-27"},
     )
 
-    eff_date_cf = next(item for item in items if item[0].name == "EffectiveDate")
+    eff_date_cf = next(item for item in items if item.custom_field.name == "EffectiveDate")
 
     # notice it is 27, not 26
-    assert eff_date_cf[1].value_date == Date(2024, 9, 27)
+    assert eff_date_cf.value.value_date == Date(2024, 9, 27)
 
 
 async def test_document_add_multiple_CFVs(db_session: AsyncSession, make_document_receipt, user):
@@ -128,19 +128,19 @@ async def test_document_add_multiple_CFVs(db_session: AsyncSession, make_documen
 
     # pass 3 custom field values in one shot
     cf = {"EffectiveDate": "2024-09-26", "Shop": "Aldi", "Total": "32.97"}
-    items: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.update_document_custom_field_values(
+    items: list[cf_schema.CustomFieldWithValue] = await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt.id,
         custom_fields=cf,
     )
 
-    eff_date_cf = next(item for item in items if item[0].name == "EffectiveDate")
-    shop_cf = next(item for item in items if item[0].name == "Shop")
-    total_cf = next(item for item in items if item[0].name == "Total")
+    eff_date_cf = next(item for item in items if item.custom_field.name == "EffectiveDate")
+    shop_cf = next(item for item in items if item.custom_field.name == "Shop")
+    total_cf = next(item for item in items if item.custom_field.name == "Total")
 
-    assert eff_date_cf[1].value_date == Date(2024, 9, 26)
-    assert shop_cf[1].value.raw == "Aldi"  # Use .value.raw to get original text (not lowercase)
-    assert total_cf[1].value_numeric == Decimal("32.97")  # Monetary/number stored as Decimal
+    assert eff_date_cf.value.value_date == Date(2024, 9, 26)
+    assert shop_cf.value.value.raw == "Aldi"  # Use .value.raw to get original text (not lowercase)
+    assert total_cf.value.value_numeric == Decimal("32.97")  # Monetary/number stored as Decimal
 
 
 async def test_document_update_multiple_CFVs(
@@ -163,19 +163,19 @@ async def test_document_update_multiple_CFVs(
 
     # Update all existing CFVs in one shot
     cf = {"EffectiveDate": "2024-09-27", "Shop": "Lidl", "Total": "40.22"}
-    items: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.update_document_custom_field_values(
+    items: list[cf_schema.CustomFieldWithValue] = await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt.id,
         custom_fields=cf,
     )
 
-    eff_date_cf = next(item for item in items if item[0].name == "EffectiveDate")
-    shop_cf = next(item for item in items if item[0].name == "Shop")
-    total_cf = next(item for item in items if item[0].name == "Total")
+    eff_date_cf = next(item for item in items if item.custom_field.name == "EffectiveDate")
+    shop_cf = next(item for item in items if item.custom_field.name == "Shop")
+    total_cf = next(item for item in items if item.custom_field.name == "Total")
 
-    assert eff_date_cf[1].value_date == Date(2024, 9, 27)
-    assert shop_cf[1].value.raw == "Lidl"
-    assert total_cf[1].value_numeric == Decimal("40.22")
+    assert eff_date_cf.value.value_date == Date(2024, 9, 27)
+    assert shop_cf.value.value.raw == "Lidl"
+    assert total_cf.value.value_numeric == Decimal("40.22")
 
 
 async def test_document_without_cfv_update_document_type_to_none(
@@ -277,15 +277,15 @@ async def test_document_update_string_custom_field_value_multiple_times(
     )
 
     # update existing value
-    items: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.update_document_custom_field_values(
+    items: list[cf_schema.CustomFieldWithValue] = await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=receipt.id,
         custom_fields={"Shop": "rewe"},
     )
 
-    shop_cf = next(item for item in items if item[0].name == "Shop")
+    shop_cf = next(item for item in items if item.custom_field.name == "Shop")
 
-    assert shop_cf[1].value.raw == "rewe"
+    assert shop_cf.value.value.raw == "rewe"
 
 
 async def test_get_docs_by_type_without_cf(
@@ -803,46 +803,46 @@ async def test_get_doc_cfv_when_multiple_documents_present(
         db_session, document_id=doc3.id, custom_fields=cf3
     )
 
-    items1: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.get_document_custom_field_values(
+    items1: list[cf_schema.CustomFieldWithValue] = await cf_dbapi.get_document_custom_field_values(
         db_session, document_id=doc1.id
     )
-    items2: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.get_document_custom_field_values(
+    items2: list[cf_schema.CustomFieldWithValue] = await cf_dbapi.get_document_custom_field_values(
         db_session, document_id=doc2.id
     )
-    items3: list[tuple[cf_schema.CustomField, Any]] = await cf_dbapi.get_document_custom_field_values(
+    items3: list[cf_schema.CustomFieldWithValue] = await cf_dbapi.get_document_custom_field_values(
         db_session, document_id=doc3.id
     )
 
     # Extract document IDs and field name/value pairs
-    doc_ids1 = {item[1].document_id for item in items1 if item[1] is not None}
+    doc_ids1 = {item.value.document_id for item in items1 if item.value is not None}
     result1 = set()
-    for field, value in items1:
-        if field.name == "EffectiveDate":
-            result1.add((field.name, value.value_date if value else None))
-        elif field.name == "Shop":
-            result1.add((field.name, value.value.raw if value else None))
-        elif field.name == "Total":
-            result1.add((field.name, value.value_numeric if value else None))
+    for i in items1:
+        if i.custom_field.name == "EffectiveDate":
+            result1.add((i.custom_field.name, i.value.value_date if i.value else None))
+        elif i.custom_field.name == "Shop":
+            result1.add((i.custom_field.name, i.value.value.raw if i.value else None))
+        elif i.custom_field.name == "Total":
+            result1.add((i.custom_field.name, i.value.value_numeric if i.value else None))
 
-    doc_ids2 = {item[1].document_id for item in items2 if item[1] is not None}
+    doc_ids2 = {item.value.document_id for item in items2 if item.value is not None}
     result2 = set()
-    for field, value in items2:
-        if field.name == "EffectiveDate":
-            result2.add((field.name, value.value_date if value else None))
-        elif field.name == "Shop":
-            result2.add((field.name, value.value.raw if value else None))
-        elif field.name == "Total":
-            result2.add((field.name, value.value_numeric if value else None))
+    for i in items2:
+        if i.custom_field.name == "EffectiveDate":
+            result2.add((i.custom_field.name, i.value.value_date if i.value else None))
+        elif i.custom_field.name == "Shop":
+            result2.add((i.custom_field.name, i.value.value.raw if i.value else None))
+        elif i.custom_field.name == "Total":
+            result2.add((i.custom_field.name, i.value.value_numeric if i.value else None))
 
-    doc_ids3 = {item[1].document_id for item in items3 if item[1] is not None}
+    doc_ids3 = {item.value.document_id for item in items3 if item.value is not None}
     result3 = set()
-    for field, value in items3:
-        if field.name == "EffectiveDate":
-            result3.add((field.name, value.value_date if value else None))
-        elif field.name == "Shop":
-            result3.add((field.name, value.value.raw if value else None))
-        elif field.name == "Total":
-            result3.add((field.name, value.value_numeric if value else None))
+    for i in items3:
+        if i.custom_field.name == "EffectiveDate":
+            result3.add((i.custom_field.name, i.value.value_date if i.value else None))
+        elif i.custom_field.name == "Shop":
+            result3.add((i.custom_field.name, i.value.value.raw if i.value else None))
+        elif i.custom_field.name == "Total":
+            result3.add((i.custom_field.name, i.value.value_numeric if i.value else None))
 
     assert len(items1) == 3
     assert len(doc_ids1) == 1

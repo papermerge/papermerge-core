@@ -13,13 +13,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, and_
 
 from papermerge.core import orm, constants
-from papermerge.core.types import OwnerType, FolderType
 from papermerge.core.features.special_folders.db.orm import SpecialFolder
+from papermerge.core.features.ownership.db import api as ownership_api
+from papermerge.core.types import OwnerType, ResourceType, FolderType
 
 
 async def create_special_folders_for_user(
-    db_session: AsyncSession,
-    user_id: UUID,
+        db_session: AsyncSession,
+        user_id: UUID,
 ) -> Dict[str, UUID]:
     """
     Create home and inbox folders for a user.
@@ -31,23 +32,43 @@ async def create_special_folders_for_user(
     Returns:
         Dictionary with 'home' and 'inbox' keys mapping to folder IDs
     """
+
     home_id = uuid.uuid4()
     inbox_id = uuid.uuid4()
 
-    # Create the actual folder nodes
+    # Create the actual folder nodes WITHOUT user_id
     home_folder = orm.Folder(
         id=home_id,
         title=constants.HOME_TITLE,
         ctype=constants.CTYPE_FOLDER,
-        user_id=user_id,
         lang="xxx",
     )
     inbox_folder = orm.Folder(
         id=inbox_id,
         title=constants.INBOX_TITLE,
         ctype=constants.CTYPE_FOLDER,
-        user_id=user_id,
         lang="xxx",
+    )
+
+    db_session.add(home_folder)
+    db_session.add(inbox_folder)
+    await db_session.flush()
+
+    # Set ownership for both folders
+    await ownership_api.set_owner(
+        session=db_session,
+        resource_type=ResourceType.NODE,
+        resource_id=home_id,
+        owner_type=OwnerType.USER,
+        owner_id=user_id
+    )
+
+    await ownership_api.set_owner(
+        session=db_session,
+        resource_type=ResourceType.NODE,
+        resource_id=inbox_id,
+        owner_type=OwnerType.USER,
+        owner_id=user_id
     )
 
     # Create special folder entries
@@ -64,7 +85,7 @@ async def create_special_folders_for_user(
         folder_id=inbox_id
     )
 
-    db_session.add_all([home_folder, inbox_folder, home_special, inbox_special])
+    db_session.add_all([home_special, inbox_special])
     await db_session.flush()
 
     return {
@@ -90,37 +111,56 @@ async def create_special_folders_for_group(
     home_id = uuid.uuid4()
     inbox_id = uuid.uuid4()
 
-    # Create the actual folder nodes
+    # Create the actual folder nodes WITHOUT group_id
     home_folder = orm.Folder(
         id=home_id,
         title=constants.HOME_TITLE,
         ctype=constants.CTYPE_FOLDER,
-        group_id=group_id,
         lang="xxx",
     )
     inbox_folder = orm.Folder(
         id=inbox_id,
         title=constants.INBOX_TITLE,
         ctype=constants.CTYPE_FOLDER,
-        group_id=group_id,
         lang="xxx",
+    )
+
+    db_session.add(home_folder)
+    db_session.add(inbox_folder)
+    await db_session.flush()
+
+    # Set ownership for both folders
+    await ownership_api.set_owner(
+        session=db_session,
+        resource_type=ResourceType.NODE,
+        resource_id=home_id,
+        owner_type=OwnerType.GROUP,
+        owner_id=group_id
+    )
+
+    await ownership_api.set_owner(
+        session=db_session,
+        resource_type=ResourceType.NODE,
+        resource_id=inbox_id,
+        owner_type=OwnerType.GROUP,
+        owner_id=group_id
     )
 
     # Create special folder entries
     home_special = SpecialFolder(
-        owner_type=OwnerType.GROUP,
+        owner_type=OwnerType.GROUP.value,
         owner_id=group_id,
-        folder_type=FolderType.HOME,
+        folder_type=FolderType.HOME.value,
         folder_id=home_id
     )
     inbox_special = SpecialFolder(
-        owner_type=OwnerType.GROUP,
+        owner_type=OwnerType.GROUP.value,
         owner_id=group_id,
-        folder_type=FolderType.INBOX,
+        folder_type=FolderType.INBOX.value,
         folder_id=inbox_id
     )
 
-    db_session.add_all([home_folder, inbox_folder, home_special, inbox_special])
+    db_session.add_all([home_special, inbox_special])
     await db_session.flush()
 
     return {

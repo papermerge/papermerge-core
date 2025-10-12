@@ -248,7 +248,6 @@ async def get_groups(
             "id": group.id,
             "name": group.name,
             "delete_me": group.delete_me,
-            "delete_special_folders": group.delete_special_folders,
             "home_folder_id": group.home_folder_id,
             "inbox_folder_id": group.inbox_folder_id,
             "created_at": group.created_at,

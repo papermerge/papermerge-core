@@ -9,8 +9,6 @@ async def test_group_create(db_session: AsyncSession):
 
     assert group_details.name == "G1"
 
-    await dbapi.delete_group(db_session, group.id)
-
 
 async def test_create_group_with_special_folders(db_session: AsyncSession):
     group = await dbapi.create_group(
@@ -23,5 +21,3 @@ async def test_create_group_with_special_folders(db_session: AsyncSession):
     assert group_details.name == "G1wSP"
     assert group_details.home_folder_id is not None
     assert group_details.inbox_folder_id is not None
-
-    await dbapi.delete_group(db_session, group.id)

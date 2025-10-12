@@ -14,8 +14,7 @@ class DocumentType(BaseModel):
     name: str
     path_template: str | None = None
     custom_fields: list[CustomField]
-    group_id: UUID | None = None
-    group_name: str | None = None
+    owned_by: OwnedBy
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -49,7 +48,8 @@ class CreateDocumentType(BaseModel):
     name: str
     path_template: str | None = None
     custom_field_ids: list[UUID]
-    group_id: UUID | None = None
+    owner_type: Literal["user", "group"]
+    owner_id: UUID
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -59,8 +59,7 @@ class UpdateDocumentType(BaseModel):
     name: str | None = None
     path_template: str | None = None
     custom_field_ids: list[UUID] | None = None
-    group_id: UUID | None = None
-    user_id: UUID | None = None
+    owner_type: Literal["user", "group"]
 
 
 class GroupedDocumentTypeItem(BaseModel):

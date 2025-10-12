@@ -1,55 +1,23 @@
 import uuid
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, String, UniqueConstraint, \
-    CheckConstraint
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from papermerge.core.features.users.db.orm import User
+from papermerge.core.features.ownership.db.orm import OwnedResourceMixin
 from papermerge.core.db.base import Base
 from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.types import CType
 
 
-class Node(Base, AuditColumns):
+class Node(Base, AuditColumns, OwnedResourceMixin):
     __tablename__ = "nodes"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, insert_default=uuid.uuid4())
     title: Mapped[str] = mapped_column(String(200))
     ctype: Mapped[CType]
     lang: Mapped[str] = mapped_column(String(8), default="deu")
-    user: Mapped["User"] = relationship(
-        back_populates="nodes",
-        primaryjoin="User.id == Node.user_id",
-        remote_side=User.id,
-        cascade="delete"
-    )
-    user_id: Mapped[UUID] = mapped_column(
-        ForeignKey(
-            "users.id",
-            use_alter=True,
-            name="nodes_user_id_fkey",
-            ondelete="CASCADE",
-            deferrable=True
-        ),
-        nullable=True,
-    )
-    group: Mapped["Group"] = relationship(
-        "Group",
-        back_populates="nodes",
-        primaryjoin="Group.id == Node.group_id",
-        foreign_keys="Node.group_id",  # Specify which foreign key to use
-        cascade="delete",
-    )
-    group_id: Mapped[UUID] = mapped_column(
-        ForeignKey(
-            "groups.id",
-            use_alter=True,
-            name="nodes_group_id_fkey",
-            ondelete="CASCADE",
-        ),
-        nullable=True,
-    )
+
     parent_id: Mapped[UUID] = mapped_column(ForeignKey("nodes.id"), nullable=True)
     tags: Mapped[list["Tag"]] = relationship(secondary="nodes_tags", lazy="selectin")
 
@@ -58,25 +26,6 @@ class Node(Base, AuditColumns):
         "polymorphic_on": "ctype",
         "confirm_deleted_rows": False,
     }
-
-    __table_args__ = (
-        UniqueConstraint(
-            "parent_id",
-            "title",
-            "user_id",
-            name="unique title per parent per user",
-        ),
-        UniqueConstraint(
-            "parent_id",
-            "title",
-            "group_id",
-            name="unique title per parent per group",
-        ),
-        CheckConstraint(
-            "user_id IS NOT NULL OR group_id IS NOT NULL",
-            name="check__user_id_not_null__or__group_id_not_null",
-        ),
-    )
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.title!r})"

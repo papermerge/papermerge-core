@@ -16,8 +16,7 @@ class Tag(BaseModel):
     fg_color: str | None = DEFAULT_TAG_FG_COLOR
     description: str | None = None
     pinned: bool = False
-    group_id: UUID | None = None
-    group_name: str | None = None
+    owned_by: OwnedBy
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -62,8 +61,8 @@ class CreateTag(BaseModel):
     fg_color: str = DEFAULT_TAG_FG_COLOR
     description: str | None = None
     pinned: bool = False
-    group_id: UUID | None = None
-    user_id: UUID | None = None
+    owner_type: Literal["user", "group"]
+    owner_id: UUID
 
     # Config
     model_config = ConfigDict(from_attributes=True)
@@ -75,8 +74,8 @@ class UpdateTag(BaseModel):
     fg_color: Optional[str] = None
     description: Optional[str] = None
     pinned: Optional[bool] = False
-    group_id: UUID | None = None
-    user_id: UUID | None = None
+    owner_type: Literal["user", "group"] | None = None
+    owner_id: UUID | None = None
 
     # Config
     model_config = ConfigDict(from_attributes=True)

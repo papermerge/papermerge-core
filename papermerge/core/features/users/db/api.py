@@ -1021,3 +1021,52 @@ def _apply_sorting(
             query = query.order_by(sort_column.asc())
 
     return query
+
+
+
+async def delete_user_safe(
+    session: AsyncSession,
+    user_id: uuid.UUID
+) -> Tuple[bool, str | None]:
+    """
+    Delete a user only if they don't own any resources.
+
+    Returns:
+        (success, error_message)
+    """
+    from papermerge.core.features.ownership.db import api as ownership_api
+
+    # Check if user owns any resources
+    has_resources = await ownership_api.has_owned_resources(
+        session=session,
+        owner_type=OwnerType.USER,
+        owner_id=user_id
+    )
+
+    if has_resources:
+        counts = await ownership_api.get_owned_resource_counts(
+            session=session,
+            owner_type=OwnerType.USER,
+            owner_id=user_id
+        )
+
+        resource_list = ", ".join([
+            f"{count} {rtype}(s)"
+            for rtype, count in counts.items()
+            if count > 0
+        ])
+
+        return (
+            False,
+            f"Cannot delete user: owns {resource_list}. "
+            f"Transfer or delete these resources first."
+        )
+
+    # Safe to delete
+    from papermerge.core.features.users.db import orm as user_orm
+    user = await session.get(user_orm.User, user_id)
+    if user:
+        await session.delete(user)
+        await session.commit()
+
+    return (True, None)

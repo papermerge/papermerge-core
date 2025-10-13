@@ -17,7 +17,8 @@ from papermerge.core.features.tags import schema as tags_schema
 from papermerge.core.exceptions import EntityNotFound
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
-from papermerge.core.db.exceptions import ResourceAccessDenied
+from papermerge.core.features.ownership.db import api as ownership_api
+from papermerge.core.types import ResourceType, OwnerType
 from .schema import TagParams
 
 router = APIRouter(
@@ -116,16 +117,25 @@ async def get_tag_details(
 
     Required scope: `{scope}`
     """
+    has_access = await ownership_api.user_can_access_resource(
+        session=db_session,
+        user_id=user.id,
+        resource_type=ResourceType.TAG,
+        resource_id=tag_id
+    )
+    if not has_access:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,  # Use 404 to not leak existence
+            detail=f"{ResourceType.TAG.value.replace('_', ' ').title()} not found"
+        )
+
     try:
         result = await tags_dbapi.get_tag(
             db_session,
-            user_id=user.id,
             tag_id=tag_id
         )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Tag not found")
-    except ResourceAccessDenied:
-        raise HTTPException(status_code=403, detail="Forbidden: You don't have permission to access this tag")
 
     return result
 
@@ -228,7 +238,19 @@ async def update_tag(
 
     Required scope: `{scope}`
     """
-    if attrs.group_id:
+    has_access = await ownership_api.user_can_access_resource(
+        session=db_session,
+        user_id=user.id,
+        resource_type=ResourceType.TAG,
+        resource_id=tag_id
+    )
+    if not has_access:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,  # Use 404 to not leak existence
+            detail=f"{ResourceType.TAG.value.replace('_', ' ').title()} not found"
+        )
+
+    if attrs.owner_type == OwnerType.GROUP:
         group_id = attrs.group_id
         ok = await users_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
         if not ok:
@@ -236,7 +258,7 @@ async def update_tag(
             detail = f"User {user_id=} does not belong to group {group_id=}"
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
     else:
-        attrs.user_id = user.id
+        attrs.owner_id = user.id
 
     async with AsyncAuditContext(
         db_session,

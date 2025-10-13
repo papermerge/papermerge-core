@@ -27,6 +27,6 @@ class ByUser(BaseModel):
 class OwnedBy(BaseModel):
     id: uuid.UUID  # owner ID user_id, group_id etc
     name: str  # user.name, group.name etc
-    type: OwnerType
+    type: OwnerType  # user, group etc
 
     model_config = ConfigDict(from_attributes=True)

@@ -11,6 +11,8 @@ from papermerge.core.exceptions import EntityNotFound
 from papermerge.core import schema
 from papermerge.core.db.exceptions import ResourceAccessDenied
 from papermerge.core import orm
+from papermerge.core.features.ownership.db import api as ownership_api
+from papermerge.core.types import OwnerType, ResourceType
 
 ORDER_BY_MAP = {
     "name": orm.Tag.name.asc(),
@@ -351,19 +353,82 @@ async def get_tag(
 
 
 async def create_tag(
-    db_session: AsyncSession, attrs: schema.CreateTag
+    db_session: AsyncSession,
+    attrs: schema.CreateTag
 ) -> Tuple[schema.Tag | None, schema.Error | None]:
+    # Validate owner info is provided
+    if not attrs.owner_type or not attrs.owner_id:
+        error = schema.Error(messages=["owner_type and owner_id are required"])
+        return None, error
 
-    db_tag = orm.Tag(**attrs.model_dump())
+    owner_type = OwnerType(attrs.owner_type)
+    owner_id = attrs.owner_id
+
+    # Check name uniqueness
+    is_unique = await ownership_api.check_name_unique_for_owner(
+        session=db_session,
+        resource_type=ResourceType.TAG,
+        owner_type=owner_type,
+        owner_id=owner_id,
+        name=attrs.name
+    )
+
+    if not is_unique:
+        error = schema.Error(
+            messages=[f"A tag named '{attrs.name}' already exists for this {owner_type.value}"]
+        )
+        return None, error
+
+    # Create tag WITHOUT owner fields
+    db_tag = orm.Tag(
+        name=attrs.name,
+        bg_color=attrs.bg_color,
+        fg_color=attrs.fg_color,
+        pinned=attrs.pinned if hasattr(attrs, 'pinned') else False,
+        description=attrs.description if hasattr(attrs, 'description') else None,
+    )
+
     db_session.add(db_tag)
 
     try:
+        await db_session.flush()
+
+        # Set ownership
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.TAG,
+            resource_id=db_tag.id,
+            owner_type=owner_type,
+            owner_id=owner_id
+        )
+
         await db_session.commit()
+        await db_session.refresh(db_tag)
+
     except Exception as e:
+        await db_session.rollback()
         error = schema.Error(messages=[str(e)])
         return None, error
 
-    return schema.Tag.model_validate(db_tag), None
+    # Get owner details for response
+    owned_by = await ownership_api.get_owner_details(
+        session=db_session,
+        resource_type=ResourceType.TAG,
+        resource_id=db_tag.id
+    )
+
+    # Build Pydantic response
+    tag = schema.Tag(
+        id=db_tag.id,
+        name=db_tag.name,
+        bg_color=db_tag.bg_color,
+        fg_color=db_tag.fg_color,
+        pinned=db_tag.pinned,
+        description=db_tag.description,
+        owned_by=owned_by,
+    )
+
+    return tag, None
 
 
 async def update_tag(

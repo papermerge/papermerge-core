@@ -158,11 +158,11 @@ async def create_tag(
 
     Required scope: `{scope}`
     """
-    if not attrs.group_id:
+    if not attrs.owner_type == "user":
         attrs.user_id = user.id
 
-    if attrs.group_id:
-        group_id = attrs.group_id
+    if attrs.owner_type == "group":
+        group_id = attrs.owner_id
         ok = await users_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
         if not ok:
             detail = f"User {user.id=} does not belong to group {group_id=}"

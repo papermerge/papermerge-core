@@ -8,14 +8,22 @@ from papermerge.core.tests.types import AuthTestClient
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 
 
-async def test_create_tag_route(auth_api_client: AuthTestClient, db_session: AsyncSession):
+async def test_create_tag_route(
+    auth_api_client: AuthTestClient,
+    db_session: AsyncSession,
+    user
+):
     count_before_result = await db_session.execute(select(func.count(orm.Tag.id)))
     count_before = count_before_result.scalar()
     assert count_before == 0
 
     response = await auth_api_client.post(
         "/tags/",
-        json={"name": "important"},
+        json={
+            "name": "important",
+            "owner_type": "user",
+            "owner_id": str(user.id)
+        },
     )
 
     assert response.status_code == 201, response.json()

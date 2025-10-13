@@ -78,21 +78,37 @@ def make_folder(db_session: AsyncSession):
         user: orm.User | None = None,
         group: orm.Group | None = None,
     ):
-        kwargs = {
-            "id": uuid.uuid4(),
-            "title": title,
-            "lang": "de",
-            "parent_id": parent.id,
-        }
+        # Determine owner
         if user:
-            kwargs["user"] = user
+            owner_type = OwnerType.USER
+            owner_id = user.id
         elif group:
-            kwargs["group"] = group
+            owner_type = OwnerType.GROUP
+            owner_id = group.id
         else:
             raise ValueError("Either user or group argument must be provided")
 
-        folder = orm.Folder(**kwargs)
+        # Create folder WITHOUT user/group
+        folder = orm.Folder(
+            id=uuid.uuid4(),
+            title=title,
+            lang="de",
+            parent_id=parent.id,
+            ctype="folder",  # Make sure ctype is set
+        )
+
         db_session.add(folder)
+        await db_session.flush()
+
+        # Set ownership
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.NODE,
+            resource_id=folder.id,
+            owner_type=owner_type,
+            owner_id=owner_id
+        )
+
         await db_session.commit()
         await db_session.refresh(folder)
 
@@ -266,12 +282,6 @@ def make_page(db_session: AsyncSession, user: orm.User):
         return db_pages[0]
 
     return _make
-
-
-@pytest.fixture()
-async def my_documents_folder(db_session: AsyncSession, user, make_folder):
-    my_docs = await make_folder(title="My Documents", user=user, parent=user.home_folder)
-    return my_docs
 
 
 def get_app_with_routes():

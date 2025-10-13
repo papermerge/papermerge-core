@@ -196,7 +196,6 @@ async def test_delete_tag_which_has_associated_document(
         db_session,
         node_id=doc.id,
         tags=["important"],
-        user_id=user.id,
     )
 
     # delete tagged folder

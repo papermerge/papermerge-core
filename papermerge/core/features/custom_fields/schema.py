@@ -8,6 +8,7 @@ from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field
 
 from papermerge.core.schemas.common import ByUser, OwnedBy
+from papermerge.core.types import OwnerType
 
 
 class CustomFieldType(str, Enum):
@@ -114,7 +115,7 @@ class CreateCustomField(BaseModel):
     name: str
     type_handler: str
     config: dict[str, Any] = Field(default_factory=dict)
-    owner_type: Literal["user", "group"] | None = None
+    owner_type: OwnerType | None = None
     owner_id: UUID | None = None
 
     model_config = ConfigDict(from_attributes=True)
@@ -125,8 +126,8 @@ class UpdateCustomField(BaseModel):
     name: Optional[str] = None
     type_handler: Optional[str] = None
     config: Optional[dict[str, Any]] = None
-    owner_type: Literal["user", "group"]
-    owner_id: UUID
+    owner_type: OwnerType | None = None
+    owner_id: UUID | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

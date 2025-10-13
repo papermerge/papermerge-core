@@ -1,8 +1,10 @@
 from collections.abc import Sequence
-from typing import Generic, TypeVar, Literal
+from typing import Generic, TypeVar
 import uuid
 
 from pydantic import BaseModel, ConfigDict
+
+from papermerge.core.types import OwnerType
 
 T = TypeVar("T")
 
@@ -23,8 +25,8 @@ class ByUser(BaseModel):
 
 
 class OwnedBy(BaseModel):
-    id: uuid.UUID
-    name: str  # Will be username for users, name for groups
-    type: Literal["user", "group"]  # To distinguish the owner type
+    id: uuid.UUID  # owner ID user_id, group_id etc
+    name: str  # user.name, group.name etc
+    type: OwnerType  # user, group etc
 
     model_config = ConfigDict(from_attributes=True)

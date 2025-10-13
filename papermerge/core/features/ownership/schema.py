@@ -4,6 +4,13 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from papermerge.core.types import OwnerType
+
+
+class Owner(BaseModel):
+    owner_type: Literal["user", "group",]
+    owner_id: UUID
+
 
 class OwnerInfo(BaseModel):
     """Basic owner information"""
@@ -16,7 +23,7 @@ class OwnerInfo(BaseModel):
 
 class SetOwner(BaseModel):
     """Request body to set/change ownership"""
-    owner_type: Literal["user", "group"]
+    owner_type: OwnerType
     owner_id: UUID
 
 
@@ -43,5 +50,5 @@ class TransferOwnershipRequest(BaseModel):
     """Request to transfer ownership of resources (future feature)"""
     resource_ids: list[UUID]
     resource_type: Literal["node", "tag", "custom_field", "document_type"]
-    new_owner_type: Literal["user", "group"]
+    new_owner_type: OwnerType
     new_owner_id: UUID

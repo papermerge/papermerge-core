@@ -55,6 +55,7 @@ from .features.audit.schema import AuditLog, AuditLogDetails
 from .schemas.error import Error, AttrError
 from .schemas.common import PaginatedResponse, OwnedBy, ByUser
 from .schemas.version import Version
+from .features.ownership.schema import Owner
 
 __all__ = [
     'Folder',
@@ -143,5 +144,6 @@ __all__ = [
     'AuditLog',
     'AuditLogDetails',
     'OwnedBy',
-    'DocumentsByTypeParams'
+    'DocumentsByTypeParams',
+    'Owner'
 ]

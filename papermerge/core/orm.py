@@ -9,7 +9,7 @@ from .features.document_types.db.orm import DocumentType, DocumentTypeCustomFiel
 from .features.shared_nodes.db.orm import SharedNode
 from .features.audit.db.orm import AuditLog
 from .features.special_folders.db.orm import SpecialFolder
-
+from .features.ownership.db.orm import Ownership
 
 __all__ = [
     'User',
@@ -34,4 +34,5 @@ __all__ = [
     'SharedNode',
     'AuditLog',
     'SpecialFolder',
+    'Ownership'
 ]

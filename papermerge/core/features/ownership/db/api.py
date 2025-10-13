@@ -68,7 +68,7 @@ async def get_owner_details(
             return OwnedBy(
                 id=user.id,
                 name=user.username,
-                type="user"
+                type=OwnerType.USER
             )
     elif owner_type == OwnerType.GROUP:
         group = await session.get(group_orm.Group, owner_id)
@@ -76,7 +76,7 @@ async def get_owner_details(
             return OwnedBy(
                 id=group.id,
                 name=group.name,
-                type="group"
+                type=OwnerType.GROUP
             )
     # Add PROJECT and WORKSPACE cases when implemented
 
@@ -523,3 +523,116 @@ async def get_nodes_for_owner(
 
     result = await session.execute(stmt)
     return list(result.scalars().all())
+
+
+async def user_can_access_resource(
+    session: AsyncSession,
+    user_id: UUID,
+    resource_type: ResourceType,
+    resource_id: UUID
+) -> bool:
+    """
+    Check if a user can access a resource based on ownership.
+
+    User can access a resource if:
+    1. They own it directly (owner_type = 'user' AND owner_id = user_id)
+    2. It's owned by a group they belong to (owner_type = 'group' AND user is member)
+
+    Args:
+        session: Database session
+        user_id: User's UUID
+        resource_type: Type of resource (node, tag, custom_field, etc.)
+        resource_id: Resource's UUID
+
+    Returns:
+        True if user can access, False otherwise
+    """
+    from papermerge.core.features.groups.db.orm import UserGroup
+
+    # Get the resource's ownership
+    stmt = select(Ownership).where(
+        Ownership.resource_type == resource_type.value,
+        Ownership.resource_id == resource_id
+    )
+    ownership = (await session.execute(stmt)).scalar_one_or_none()
+
+    if not ownership:
+        # No ownership record = no access
+        return False
+
+    # Check if user owns it directly
+    if ownership.owner_type == OwnerType.USER.value and ownership.owner_id == user_id:
+        return True
+
+    # Check if owned by a group the user belongs to
+    if ownership.owner_type == OwnerType.GROUP.value:
+        # Check if user is an active member of the group
+        stmt = (
+            select(func.count())
+            .select_from(UserGroup)
+            .where(
+                UserGroup.user_id == user_id,
+                UserGroup.group_id == ownership.owner_id,
+                UserGroup.deleted_at.is_(None),  # Only active memberships
+            )
+        )
+        result = (await session.execute(stmt)).scalar()
+        return result > 0
+
+    return False
+
+
+async def user_can_access_multiple_resources(
+    session: AsyncSession,
+    user_id: UUID,
+    resource_type: ResourceType,
+    resource_ids: list[UUID]
+) -> dict[UUID, bool]:
+    """
+    Batch check if user can access multiple resources.
+
+    More efficient than calling user_can_access_resource in a loop.
+
+    Args:
+        session: Database session
+        user_id: User's UUID
+        resource_type: Type of resources
+        resource_ids: List of resource UUIDs to check
+
+    Returns:
+        Dictionary mapping resource_id -> can_access (bool)
+    """
+    from papermerge.core.features.groups.db.orm import UserGroup
+
+    if not resource_ids:
+        return {}
+
+    # Get user's group IDs
+    user_groups_stmt = select(UserGroup.group_id).where(
+        UserGroup.user_id == user_id,
+        UserGroup.deleted_at.is_(None)
+    )
+    user_group_ids_result = await session.execute(user_groups_stmt)
+    user_group_ids = [row[0] for row in user_group_ids_result]
+
+    # Get ownerships for all requested resources
+    stmt = select(Ownership).where(
+        Ownership.resource_type == resource_type.value,
+        Ownership.resource_id.in_(resource_ids)
+    )
+    ownerships = (await session.execute(stmt)).scalars().all()
+
+    # Build access map
+    access_map = {}
+    for resource_id in resource_ids:
+        access_map[resource_id] = False  # Default: no access
+
+    for ownership in ownerships:
+        # Check if user has access
+        has_access = (
+                (ownership.owner_type == OwnerType.USER.value and ownership.owner_id == user_id) or
+                (ownership.owner_type == OwnerType.GROUP.value and ownership.owner_id in user_group_ids)
+        )
+        access_map[ownership.resource_id] = has_access
+
+    return access_map

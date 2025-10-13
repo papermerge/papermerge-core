@@ -9,8 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.exceptions import EntityNotFound
 from papermerge.core import schema
-from papermerge.core.db.exceptions import ResourceAccessDenied
 from papermerge.core import orm
+from papermerge.core.features.ownership.db import api as ownership_api
+from papermerge.core.types import OwnerType, ResourceType
 
 ORDER_BY_MAP = {
     "name": orm.Tag.name.asc(),
@@ -225,16 +226,14 @@ async def get_tags(
 
 
 async def get_tag(
-        db_session: AsyncSession,
-        user_id: uuid.UUID,
-        tag_id: uuid.UUID
+    db_session: AsyncSession,
+    tag_id: uuid.UUID
 ) -> schema.TagDetails:
     """
     Get a single tag with full audit trail.
 
     Args:
         db_session: Database session
-        user_id: Current user ID (for access control)
         tag_id: ID of the tag to retrieve
 
     Returns:
@@ -242,39 +241,55 @@ async def get_tag(
 
     Raises:
         NoResultFound: If tag doesn't exist
-        ResourceAccessDenied: If user doesn't have permission to access the tag
+
+    Note: Access control should be performed in the router layer
     """
-
-    # First check if the tag exists at all
-    exists_stmt = select(orm.Tag.id).where(orm.Tag.id == tag_id)
-    exists_result = await db_session.execute(exists_stmt)
-    if not exists_result.scalar():
-        raise NoResultFound(f"Tag with id {tag_id} not found")
-
     # Create user aliases for all audit trail joins
     created_user = aliased(orm.User, name='created_user')
     updated_user = aliased(orm.User, name='updated_user')
     owner_user = aliased(orm.User, name='owner_user')
+    owner_group = aliased(orm.Group, name='owner_group')
 
-    # Subquery to get user's group IDs (for access control)
-    user_groups_subquery = select(orm.UserGroup.group_id).where(
-        orm.UserGroup.user_id == user_id
-    )
-
-    # Build query with all audit user joins and group info
+    # Build query with ownership and all audit user joins
     stmt = (
         select(orm.Tag)
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.TAG.value,
+                orm.Ownership.resource_id == orm.Tag.id
+            )
+        )
         .join(created_user, orm.Tag.created_by == created_user.id, isouter=True)
         .join(updated_user, orm.Tag.updated_by == updated_user.id, isouter=True)
-        .join(orm.Group, orm.Group.id == orm.Tag.group_id, isouter=True)
-        .join(owner_user, orm.Tag.user_id == owner_user.id, isouter=True)
+        # Join to owner_user when owner is a user
+        .join(
+            owner_user,
+            and_(
+                orm.Ownership.owner_type == 'user',
+                orm.Ownership.owner_id == owner_user.id
+            ),
+            isouter=True
+        )
+        # Join to owner_group when owner is a group
+        .join(
+            owner_group,
+            and_(
+                orm.Ownership.owner_type == 'group',
+                orm.Ownership.owner_id == owner_group.id
+            ),
+            isouter=True
+        )
         .add_columns(
-            # Group info
-            orm.Group.id.label('group_id'),
-            orm.Group.name.label('group_name'),
-            # Owner user info
+            # Ownership info
+            orm.Ownership.owner_type,
+            orm.Ownership.owner_id,
+            # Owner user info (if owner is user)
             owner_user.id.label('owner_user_id'),
             owner_user.username.label('owner_username'),
+            # Owner group info (if owner is group)
+            owner_group.id.label('owner_group_id'),
+            owner_group.name.label('owner_group_name'),
             # Created by user
             created_user.id.label('created_by_id'),
             created_user.username.label('created_by_username'),
@@ -282,25 +297,15 @@ async def get_tag(
             updated_user.id.label('updated_by_id'),
             updated_user.username.label('updated_by_username')
         )
-        .where(
-            and_(
-                orm.Tag.id == tag_id,
-                # Access control: user can access if they own it directly or through group
-                or_(
-                    orm.Tag.user_id == user_id,
-                    orm.Tag.group_id.in_(user_groups_subquery)
-                )
-            )
-        )
+        .where(orm.Tag.id == tag_id)
     )
 
     # Execute query and get single result
     result = await db_session.execute(stmt)
-    row = result.unique().first()
+    row = result.first()
 
-    # If no row returned, user doesn't have access (we know the tag exists)
     if not row:
-        raise ResourceAccessDenied(f"User {user_id} does not have permission to access tag {tag_id}")
+        raise NoResultFound(f"Tag with id {tag_id} not found")
 
     tag = row[0]  # The Tag object
 
@@ -319,93 +324,234 @@ async def get_tag(
             username=row.updated_by_username
         )
 
-    # Determine owner based on which ID exists
-    if tag.user_id:
+    # Build owned_by from ownership data
+    if row.owner_type == 'user':
         owned_by = schema.OwnedBy(
-            id=tag.user_id,
+            id=row.owner_user_id,
             name=row.owner_username,
-            type="user"
+            type=OwnerType.USER
         )
-    else:  # group_id is not null (enforced by check constraint)
+    else:  # group
         owned_by = schema.OwnedBy(
-            id=row.group_id,
-            name=row.group_name,
-            type="group"
+            id=row.owner_group_id,
+            name=row.owner_group_name,
+            type=OwnerType.GROUP
         )
 
     # Build the complete TagDetails object
-    tag_data = {
-        "id": tag.id,
-        "name": tag.name,
-        "bg_color": tag.bg_color,
-        "fg_color": tag.fg_color,
-        "description": tag.description,
-        "owned_by": owned_by,
-        "created_at": tag.created_at,
-        "updated_at": tag.updated_at,
-        "created_by": created_by,
-        "updated_by": updated_by
-    }
-
-    return schema.TagDetails(**tag_data)
+    return schema.TagDetails(
+        id=tag.id,
+        name=tag.name,
+        bg_color=tag.bg_color,
+        fg_color=tag.fg_color,
+        description=tag.description,
+        owned_by=owned_by,
+        created_at=tag.created_at,
+        updated_at=tag.updated_at,
+        created_by=created_by,
+        updated_by=updated_by
+    )
 
 
 async def create_tag(
-    db_session: AsyncSession, attrs: schema.CreateTag
+    db_session: AsyncSession,
+    attrs: schema.CreateTag
 ) -> Tuple[schema.Tag | None, schema.Error | None]:
+    # Validate owner info is provided
+    if not attrs.owner_type or not attrs.owner_id:
+        error = schema.Error(messages=["owner_type and owner_id are required"])
+        return None, error
 
-    db_tag = orm.Tag(**attrs.model_dump())
+    owner_type = OwnerType(attrs.owner_type)
+    owner_id = attrs.owner_id
+
+    # Check name uniqueness
+    is_unique = await ownership_api.check_name_unique_for_owner(
+        session=db_session,
+        resource_type=ResourceType.TAG,
+        owner_type=owner_type,
+        owner_id=owner_id,
+        name=attrs.name
+    )
+
+    if not is_unique:
+        error = schema.Error(
+            messages=[f"A tag named '{attrs.name}' already exists for this {owner_type.value}"]
+        )
+        return None, error
+
+    # Create tag WITHOUT owner fields
+    db_tag = orm.Tag(
+        name=attrs.name,
+        bg_color=attrs.bg_color,
+        fg_color=attrs.fg_color,
+        pinned=attrs.pinned if hasattr(attrs, 'pinned') else False,
+        description=attrs.description if hasattr(attrs, 'description') else None,
+    )
+
     db_session.add(db_tag)
 
     try:
+        await db_session.flush()
+
+        # Set ownership
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.TAG,
+            resource_id=db_tag.id,
+            owner_type=owner_type,
+            owner_id=owner_id
+        )
+
         await db_session.commit()
+        await db_session.refresh(db_tag)
+
     except Exception as e:
+        await db_session.rollback()
         error = schema.Error(messages=[str(e)])
         return None, error
 
-    return schema.Tag.model_validate(db_tag), None
+    # Get owner details for response
+    owned_by = await ownership_api.get_owner_details(
+        session=db_session,
+        resource_type=ResourceType.TAG,
+        resource_id=db_tag.id
+    )
+
+    # Build Pydantic response
+    tag = schema.Tag(
+        id=db_tag.id,
+        name=db_tag.name,
+        bg_color=db_tag.bg_color,
+        fg_color=db_tag.fg_color,
+        pinned=db_tag.pinned,
+        description=db_tag.description,
+        owned_by=owned_by,
+    )
+
+    return tag, None
 
 
 async def update_tag(
-    db_session: AsyncSession, tag_id: uuid.UUID, attrs: schema.UpdateTag
+    db_session: AsyncSession,
+    tag_id: uuid.UUID,
+    attrs: schema.UpdateTag
 ) -> Tuple[schema.Tag | None, schema.Error | None]:
 
     stmt = select(orm.Tag).where(orm.Tag.id == tag_id)
-    tag = (await db_session.execute(stmt)).scalars().one()
-    db_session.add(tag)
+    tag = (await db_session.execute(stmt)).scalar_one_or_none()
 
-    if attrs.name:
+    if not tag:
+        error = schema.Error(messages=[f"Tag with id {tag_id} not found"])
+        return None, error
+
+    # Update basic fields
+    if attrs.name is not None:
+        # If changing ownership, check uniqueness under new owner
+        if attrs.owner_type and attrs.owner_id:
+            owner_type = attrs.owner_type
+            owner_id = attrs.owner_id
+        else:
+            # Get current owner for uniqueness check
+            current_owner = await ownership_api.get_owner_info(
+                session=db_session,
+                resource_type=ResourceType.TAG,
+                resource_id=tag_id
+            )
+            if current_owner:
+                owner_type, owner_id = current_owner
+            else:
+                error = schema.Error(messages=[f"No owner found for tag {tag_id}"])
+                return None, error
+
+        # Check name uniqueness
+        is_unique = await ownership_api.check_name_unique_for_owner(
+            session=db_session,
+            resource_type=ResourceType.TAG,
+            owner_type=owner_type,
+            owner_id=owner_id,
+            name=attrs.name,
+            exclude_id=tag_id
+        )
+
+        if not is_unique:
+            error = schema.Error(
+                messages=[f"A tag named '{attrs.name}' already exists for this {owner_type.value}"]
+            )
+            return None, error
+
         tag.name = attrs.name
 
-    if attrs.fg_color:
+    if attrs.fg_color is not None:
         tag.fg_color = attrs.fg_color
 
-    if attrs.bg_color:
+    if attrs.bg_color is not None:
         tag.bg_color = attrs.bg_color
 
-    if attrs.description:
+    if attrs.description is not None:
         tag.description = attrs.description
 
-    if attrs.group_id:
-        tag.user_id = None
-        tag.group_id = attrs.group_id
-    elif attrs.user_id:
-        tag.user_id = attrs.user_id
-        tag.group_id = None
-    else:
-        raise ValueError(
-            "Either attrs.user_id or attrs.group_id should be non-empty value"
+    if attrs.pinned is not None:
+        tag.pinned = attrs.pinned
+
+    # Handle ownership transfer
+    if attrs.owner_type is not None and attrs.owner_id is not None:
+        # Check name uniqueness under new owner (if name wasn't changed above)
+        if attrs.name is None:
+            is_unique = await ownership_api.check_name_unique_for_owner(
+                session=db_session,
+                resource_type=ResourceType.TAG,
+                owner_type=attrs.owner_type,
+                owner_id=attrs.owner_id,
+                name=tag.name,
+                exclude_id=tag_id
+            )
+
+            if not is_unique:
+                error = schema.Error(
+                    messages=[f"A tag named '{tag.name}' already exists for the target {attrs.owner_type.value}"]
+                )
+                return None, error
+
+        # Update ownership
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.TAG,
+            resource_id=tag_id,
+            owner_type=attrs.owner_type,
+            owner_id=attrs.owner_id
         )
 
     try:
+        db_session.add(tag)
         await db_session.commit()
-        db_tag = await db_session.get(orm.Tag, tag_id)
+        await db_session.refresh(tag)
     except Exception as e:
+        await db_session.rollback()
         error = schema.Error(messages=[str(e)])
         return None, error
 
-    return schema.Tag.model_validate(db_tag), None
+    # Get owner details for response
+    owned_by = await ownership_api.get_owner_details(
+        session=db_session,
+        resource_type=ResourceType.TAG,
+        resource_id=tag_id
+    )
 
+    # Build Pydantic response
+    tag_response = schema.Tag(
+        id=tag.id,
+        name=tag.name,
+        bg_color=tag.bg_color,
+        fg_color=tag.fg_color,
+        pinned=tag.pinned,
+        description=tag.description,
+        owned_by=owned_by,
+        created_at=tag.created_at,
+        updated_at=tag.updated_at,
+    )
+
+    return tag_response, None
 
 async def delete_tag(
     db_session: AsyncSession,

@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
 from papermerge.core.schemas.common import OwnedBy
 from papermerge.core.types import OCRStatusEnum
+from papermerge.core.types import OwnerType
 
 
 class OrderBy(str, Enum):
@@ -102,7 +103,7 @@ class CreateNode(BaseModel):
     title: str
     ctype: NodeType.folder
     parent_id: UUID | None
-    owner_type: Literal["user", "group"]
+    owner_type: OwnerType
     owner_id: UUID
 
     # Configs

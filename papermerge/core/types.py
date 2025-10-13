@@ -97,7 +97,6 @@ class MimeType(str, Enum):
     image_tiff = "image/tiff"
 
 
-
 class FolderType(str, Enum):
     """
     Type of special folder.

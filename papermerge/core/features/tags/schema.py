@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict
 
 from papermerge.core.constants import DEFAULT_TAG_BG_COLOR, DEFAULT_TAG_FG_COLOR
 from papermerge.core.schemas.common import ByUser, OwnedBy
+from papermerge.core.types import OwnerType
 
 
 class Tag(BaseModel):
@@ -61,7 +62,7 @@ class CreateTag(BaseModel):
     fg_color: str = DEFAULT_TAG_FG_COLOR
     description: str | None = None
     pinned: bool = False
-    owner_type: Literal["user", "group"]
+    owner_type: OwnerType
     owner_id: UUID
 
     # Config
@@ -74,7 +75,7 @@ class UpdateTag(BaseModel):
     fg_color: Optional[str] = None
     description: Optional[str] = None
     pinned: Optional[bool] = False
-    owner_type: Literal["user", "group"] | None = None
+    owner_type: OwnerType | None = None
     owner_id: UUID | None = None
 
     # Config

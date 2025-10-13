@@ -6,6 +6,7 @@ from fastapi import Query
 from pydantic import BaseModel, ConfigDict
 
 from papermerge.core.schemas.common import ByUser, OwnedBy
+from papermerge.core.types import OwnerType
 from papermerge.core.features.custom_fields.schema import CustomField
 
 
@@ -48,7 +49,7 @@ class CreateDocumentType(BaseModel):
     name: str
     path_template: str | None = None
     custom_field_ids: list[UUID]
-    owner_type: Literal["user", "group"]
+    owner_type: OwnerType
     owner_id: UUID
 
     # Config
@@ -59,7 +60,7 @@ class UpdateDocumentType(BaseModel):
     name: str | None = None
     path_template: str | None = None
     custom_field_ids: list[UUID] | None = None
-    owner_type: Literal["user", "group"]
+    owner_type: OwnerType
 
 
 class GroupedDocumentTypeItem(BaseModel):

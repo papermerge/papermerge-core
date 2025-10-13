@@ -1,3 +1,4 @@
+from papermerge.core.types import OwnerType
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.custom_fields import schema as cf_schema
 
@@ -12,7 +13,7 @@ async def test_create_text_field(db_session, user):
             "max_length": 100,
             "multiline": False
         },
-        owner_type="user",
+        owner_type=OwnerType.USER,
         owner_id=user.id
     )
 
@@ -48,7 +49,7 @@ async def test_create_monetary_field_with_config(db_session, user):
             "currency": "EUR",
             "precision": 2
         },
-        owner_type="user",
+        owner_type=OwnerType.USER,
         owner_id=user.id
     )
 
@@ -71,7 +72,7 @@ async def test_create_field_for_group(db_session, make_group):
         name="Department Code",
         type_handler="text",
         config={},
-        owner_type="group",
+        owner_type=OwnerType.GROUP,
         owner_id=group.id
     )
 
@@ -82,7 +83,7 @@ async def test_create_field_for_group(db_session, make_group):
 
     assert field.name == "Department Code"
     assert field.owned_by.id == group.id
-    assert field.owned_by.type is "group"
+    assert field.owned_by.type is OwnerType.GROUP
 
 
 async def test_create_date_field(db_session, user):
@@ -91,7 +92,7 @@ async def test_create_date_field(db_session, user):
         name="Effective Date",
         type_handler="date",
         config={"format": "YYYY-MM-DD"},
-        owner_type="user",
+        owner_type=OwnerType.USER,
         owner_id=user.id
     )
 

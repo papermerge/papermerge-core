@@ -204,6 +204,19 @@ async def delete_tag(
 
     Required scope: `{scope}`
     """
+
+    has_access = await ownership_api.user_can_access_resource(
+        session=db_session,
+        user_id=user.id,
+        resource_type=ResourceType.TAG,
+        resource_id=tag_id
+    )
+    if not has_access:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,  # Use 404 to not leak existence
+            detail=f"{ResourceType.TAG.value.replace('_', ' ').title()} not found"
+        )
+
     try:
         async with AsyncAuditContext(
                 db_session,

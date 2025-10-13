@@ -68,7 +68,7 @@ async def get_owner_details(
             return OwnedBy(
                 id=user.id,
                 name=user.username,
-                type="user"
+                type=OwnerType.USER
             )
     elif owner_type == OwnerType.GROUP:
         group = await session.get(group_orm.Group, owner_id)
@@ -76,7 +76,7 @@ async def get_owner_details(
             return OwnedBy(
                 id=group.id,
                 name=group.name,
-                type="group"
+                type=OwnerType.GROUP
             )
     # Add PROJECT and WORKSPACE cases when implemented
 

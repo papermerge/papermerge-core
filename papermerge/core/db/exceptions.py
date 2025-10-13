@@ -25,3 +25,7 @@ class DependenciesExist(Exception):
 
 class InvalidRequest(Exception):
     pass
+
+
+class ResourceHasNoOwner(Exception):
+    pass

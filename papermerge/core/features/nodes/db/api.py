@@ -4,15 +4,17 @@ import math
 from typing import Union, Tuple, Iterable
 from uuid import UUID
 
-from sqlalchemy import func, select, delete, update, exists
+from sqlalchemy import func, select, delete, update, exists, and_
 from sqlalchemy.orm import selectin_polymorphic, selectinload
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.db.exceptions import ResourceHasNoOwner
 from papermerge.core.exceptions import EntityNotFound
 from papermerge.core.db.common import get_ancestors, get_descendants
 from papermerge.core import schema
-from papermerge.core.types import PaginatedResponse
+from papermerge.core.types import PaginatedResponse, ResourceType
+from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.features.nodes import events
 from papermerge.core.features.nodes.schema import DeleteDocumentsData
 from papermerge.core import orm
@@ -222,50 +224,95 @@ async def create_folder(
 
 
 async def assign_node_tags(
-    db_session: AsyncSession, node_id: uuid.UUID, tags: list[str], user_id: uuid.UUID
-) -> Tuple[schema.Document | schema.Folder | None, schema.Error | None]:
+    db_session: AsyncSession,
+    node_id: uuid.UUID,
+    tags: list[str],
+) -> orm.Node:
     """Will assign tags with given name to the node
 
     Currently associated node tags not mentioned in the `tags` list will
     be disassociated (but tags won't be deleted).
     """
-    error = None
-
     stmt = select(orm.Node).where(orm.Node.id == node_id)
     node = (await db_session.scalars(stmt)).one_or_none()
 
     if node is None:
         raise EntityNotFound(f"Node {node_id} not found")
 
-    existing_db_tags = (await db_session.execute(
-        select(orm.Tag).where(orm.Tag.name.in_(tags))
-    )).scalars()
-    existing_db_tags_names = [t.name for t in existing_db_tags.all()]
-    # create new tags if they don't exist
-    new_db_tags = [
-        orm.Tag(name=name, user_id=node.user_id, group_id=node.group_id)
-        for name in tags
-        if name not in existing_db_tags_names
-    ]
-    db_session.add_all(new_db_tags)
-    await db_session.flush()
+    # Get node's owner to use for new tags
+    node_owner_info = await ownership_api.get_owner_info(
+        session=db_session,
+        resource_type=ResourceType.NODE,
+        resource_id=node_id
+    )
 
-    db_tags = (await db_session.execute(
-        select(orm.Tag).where(orm.Tag.name.in_(tags))
-    )).scalars()
+    if not node_owner_info:
+        raise ResourceHasNoOwner(f"Node {node_id} has no owner")
+
+    node_owner_type, node_owner_id = node_owner_info
+
+    # Get existing tags for this owner
+    existing_db_tags_stmt = (
+        select(orm.Tag)
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.TAG.value,
+                orm.Ownership.resource_id == orm.Tag.id
+            )
+        )
+        .where(
+            orm.Tag.name.in_(tags),
+            orm.Ownership.owner_type == node_owner_type.value,
+            orm.Ownership.owner_id == node_owner_id
+        )
+    )
+    existing_db_tags = (await db_session.execute(existing_db_tags_stmt)).scalars()
+    existing_db_tags_names = [t.name for t in existing_db_tags.all()]
+
+    # Create new tags if they don't exist (with same owner as node)
+    for name in tags:
+        if name not in existing_db_tags_names:
+            new_tag = orm.Tag(name=name)
+            db_session.add(new_tag)
+            await db_session.flush()
+
+            # Set ownership for new tag
+            await ownership_api.set_owner(
+                session=db_session,
+                resource_type=ResourceType.TAG,
+                resource_id=new_tag.id,
+                owner_type=node_owner_type,
+                owner_id=node_owner_id
+            )
+
+    # Get all tags (existing + newly created) and assign to node
+    all_tags_stmt = (
+        select(orm.Tag)
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.TAG.value,
+                orm.Ownership.resource_id == orm.Tag.id
+            )
+        )
+        .where(
+            orm.Tag.name.in_(tags),
+            orm.Ownership.owner_type == node_owner_type.value,
+            orm.Ownership.owner_id == node_owner_id
+        )
+    )
+    all_tags = (await db_session.execute(all_tags_stmt)).scalars().all()
+    node.tags = all_tags
 
     try:
-        node.tags = db_tags.all()
         await db_session.flush()
+        await db_session.commit()
     except Exception as e:
-        error = schema.Error(messages=[str(e)])
-        return None, error
+        await db_session.rollback()
+        raise
 
-    node = await load_node(db_session, node)
-    if node.ctype == "document":
-        return schema.Document.model_validate(node), error
-
-    return schema.Folder.model_validate(node), error
+    return node
 
 
 async def update_node_tags(

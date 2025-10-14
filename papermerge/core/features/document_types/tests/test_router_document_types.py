@@ -1,9 +1,10 @@
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.types import OwnerType
+from papermerge.core.types import OwnerType, ResourceType
 from papermerge.core import schema, orm
 from papermerge.core.tests.types import AuthTestClient
+from papermerge.core.features.ownership.db import api as ownership_dbapi
 
 
 async def test_create_document_type_with_path_template(
@@ -62,10 +63,13 @@ async def test_update_document_type_with_path_template(
 
 
 async def test_create_document_type_owned_by_user(
-    make_custom_field_v2, auth_api_client: AuthTestClient, db_session: AsyncSession
+    make_custom_field_v2,
+    auth_api_client: AuthTestClient,
+    db_session: AsyncSession
 ):
     cf1: schema.CustomField = await make_custom_field_v2(name="shop", type_handler="text")
     cf2: schema.CustomField = await make_custom_field_v2(name="total", type_handler="monetary")
+    user = auth_api_client.user
 
     count_before = (await db_session.execute(
         select(func.count(orm.DocumentType.id))
@@ -74,7 +78,12 @@ async def test_create_document_type_owned_by_user(
 
     response = await auth_api_client.post(
         "/document-types/",
-        json={"name": "Invoice", "custom_field_ids": [str(cf1.id), str(cf2.id)]},
+        json={
+            "name": "Invoice",
+            "custom_field_ids": [str(cf1.id), str(cf2.id)],
+            "owner_type": OwnerType.USER,
+            "owner_id": str(user.id)
+        },
     )
 
     assert response.status_code == 201, response.json()
@@ -82,12 +91,17 @@ async def test_create_document_type_owned_by_user(
     count_after = (await db_session.execute(select(func.count(orm.DocumentType.id)))).scalar()
     assert count_after == 1
 
-    document_type = schema.DocumentType.model_validate(response.json())
-    db_document_type = await db_session.get(orm.DocumentType, document_type.id)
+    document_type = schema.DocumentTypeShort.model_validate(response.json())
     assert document_type.name == "Invoice"
-    assert db_document_type.user_id == auth_api_client.user.id
-    assert len(document_type.custom_fields) == 2
-    assert set([cf.name for cf in document_type.custom_fields]) == {"shop", "total"}
+    owner_type, owner_id = await ownership_dbapi.get_owner_info(
+        db_session,
+        resource_type=ResourceType.DOCUMENT_TYPE,
+        resource_id=document_type.id
+    )
+
+    assert document_type.name == "Invoice"
+    assert owner_type == OwnerType.USER
+    assert owner_id == user.id
 
 
 async def test_create_document_type_owned_by_group(
@@ -110,7 +124,8 @@ async def test_create_document_type_owned_by_group(
         json={
             "name": "Invoice",
             "custom_field_ids": [str(cf1.id), str(cf2.id)],
-            "group_id": str(group.id),
+            "owner_id": str(group.id),
+            "owner_type": OwnerType.GROUP
         },
     )
 
@@ -119,12 +134,16 @@ async def test_create_document_type_owned_by_group(
     count_after = (await db_session.execute(select(func.count(orm.DocumentType.id)))).scalar()
     assert count_after == 1
 
-    document_type = schema.DocumentType.model_validate(response.json())
-    db_document_type = await db_session.get(orm.DocumentType, document_type.id)
+    document_type = schema.DocumentTypeShort.model_validate(response.json())
+    owner_type, owner_id = await ownership_dbapi.get_owner_info(
+        db_session,
+        resource_type=ResourceType.DOCUMENT_TYPE,
+        resource_id=document_type.id
+    )
 
     assert document_type.name == "Invoice"
-    assert db_document_type.user_id == None
-    assert db_document_type.group_id == group.id
+    assert owner_type == OwnerType.GROUP
+    assert owner_id == group.id
 
 
 async def test_list_document_types(make_document_type, auth_api_client: AuthTestClient):

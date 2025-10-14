@@ -10,15 +10,18 @@ from papermerge.core.types import OwnerType
 from papermerge.core.features.custom_fields.schema import CustomField
 
 
-class DocumentType(BaseModel):
+class DocumentTypeShort(BaseModel):
     id: UUID
     name: str
     path_template: str | None = None
-    custom_fields: list[CustomField]
-    owned_by: OwnedBy
 
     # Config
     model_config = ConfigDict(from_attributes=True)
+
+
+class DocumentType(DocumentTypeShort):
+    custom_fields: list[CustomField]
+    owned_by: OwnedBy
 
 
 class DocumentTypeDetails(BaseModel):
@@ -60,7 +63,7 @@ class UpdateDocumentType(BaseModel):
     name: str | None = None
     path_template: str | None = None
     custom_field_ids: list[UUID] | None = None
-    owner_type: OwnerType
+    owner_type: OwnerType | None = None
 
 
 class GroupedDocumentTypeItem(BaseModel):

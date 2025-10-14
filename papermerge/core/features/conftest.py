@@ -710,13 +710,13 @@ def make_document_type(db_session, user):
     async def _maker(
         name: str,
         custom_fields: list = None,
+        path_template: str | None = None,
         user: orm.User | None = None,
         group_id: UUID | None = None
     ):
         if custom_fields is None:
             custom_fields = []
 
-        # Determine owner
         if group_id:
             owner_type = OwnerType.GROUP
             owner_id = group_id
@@ -724,15 +724,14 @@ def make_document_type(db_session, user):
             owner_type = OwnerType.USER
             owner_id = user.id if user else user.id
 
-        # Create document type WITHOUT user_id/group_id
         dt = orm.DocumentType(
             id=uuid.uuid4(),
+            path_template=path_template,
             name=name
         )
         db_session.add(dt)
         await db_session.flush()
 
-        # Set ownership
         await ownership_api.set_owner(
             session=db_session,
             resource_type=ResourceType.DOCUMENT_TYPE,

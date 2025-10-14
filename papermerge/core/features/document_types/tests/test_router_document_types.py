@@ -1,13 +1,17 @@
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.types import OwnerType
 from papermerge.core import schema, orm
 from papermerge.core.tests.types import AuthTestClient
 
 
 async def test_create_document_type_with_path_template(
-    auth_api_client: AuthTestClient, db_session: AsyncSession
+    auth_api_client: AuthTestClient,
+    db_session: AsyncSession,
+    make_user,
 ):
+    user = await make_user(username="momo")
     count_before = (await db_session.execute(
         select(func.count(orm.DocumentType.id))
     )).scalar()
@@ -19,6 +23,8 @@ async def test_create_document_type_with_path_template(
             "name": "Invoice",
             "path_template": "/home/My ZDF/",
             "custom_field_ids": [],
+            "owner_id": str(user.id),
+            "owner_type": OwnerType.USER
         },
     )
     assert response.status_code == 201, response.json()
@@ -28,15 +34,18 @@ async def test_create_document_type_with_path_template(
     ).scalar()
     assert count_after == 1
 
-    document_type = schema.DocumentType.model_validate(response.json())
+    document_type = schema.DocumentTypeShort.model_validate(response.json())
     assert document_type.name == "Invoice"
     assert document_type.path_template == "/home/My ZDF/"
 
 
 async def test_update_document_type_with_path_template(
-    make_document_type, auth_api_client: AuthTestClient, db_session: AsyncSession
+    make_document_type,
+    auth_api_client: AuthTestClient,
+    db_session: AsyncSession
 ):
-    doc_type = await make_document_type(name="ZDF", path_template="/home/")
+    user = auth_api_client.user
+    doc_type = await make_document_type(name="ZDF", path_template="/home/", user=user)
     response = await auth_api_client.patch(
         f"/document-types/{doc_type.id}",
         json={
@@ -46,7 +55,9 @@ async def test_update_document_type_with_path_template(
         },
     )
 
-    document_type = schema.DocumentType.model_validate(response.json())
+    assert response.status_code == 200, response.json()
+
+    document_type = schema.DocumentTypeShort.model_validate(response.json())
     assert document_type.path_template == "/home/My ZDF/updated/"
 
 

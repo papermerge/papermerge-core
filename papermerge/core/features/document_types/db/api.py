@@ -9,13 +9,13 @@ from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy import select, func, and_, or_
 
 from papermerge.core.db.exceptions import ResourceAccessDenied, \
-    DependenciesExist, InvalidRequest
+    DependenciesExist
 from papermerge.core import schema, orm
 from papermerge.core import constants as const
 from papermerge.core.tasks import send_task
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.utils.tz import utc_now
-from papermerge.core.types import ResourceType
+from papermerge.core.types import ResourceType, OwnerType
 from .orm import DocumentType
 
 logger = logging.getLogger(__name__)
@@ -259,11 +259,11 @@ async def document_type_cf_count(session: AsyncSession, document_type_id: uuid.U
 async def create_document_type(
     session: AsyncSession,
     data: schema.CreateDocumentType
-) -> DocumentType:
+) -> orm.DocumentType:
 
     is_unique = await ownership_api.check_name_unique_for_owner(
         session=session,
-        resource_type=ResourceType.CUSTOM_FIELD,
+        resource_type=ResourceType.DOCUMENT_TYPE,
         owner_type=data.owner_type,
         owner_id=data.owner_id,
         name=data.name
@@ -299,6 +299,7 @@ async def create_document_type(
             owner_id=data.owner_id
         )
         await session.commit()
+        await session.refresh(dtype)
     except IntegrityError as e:
         await session.rollback()
         raise ValueError(f"Failed to create document type: {str(e)}")
@@ -565,7 +566,7 @@ async def update_document_type(
     session: AsyncSession,
     document_type_id: uuid.UUID,
     attrs: schema.UpdateDocumentType,
-) -> schema.DocumentType:
+) -> orm.DocumentType:
     """
     Update a document type with proper validation.
 
@@ -625,21 +626,35 @@ async def update_document_type(
     if attrs.name is not None:
         doc_type.name = attrs.name
 
-    # Update ownership - ensure mutual exclusivity
-    if attrs.group_id is not None and attrs.user_id is not None:
-        raise InvalidRequest("Cannot set both user_id and group_id - they are mutually exclusive")
+    if attrs.owner_type is not None and attrs.owner_id is not None:
+        owner_type = OwnerType(attrs.owner_type)
+        owner_id = attrs.owner_id
 
-    if attrs.group_id is not None:
-        doc_type.user_id = None
-        doc_type.group_id = attrs.group_id
-    elif attrs.user_id is not None:
-        doc_type.user_id = attrs.user_id
-        doc_type.group_id = None
-    # If both are None, keep existing ownership
+        # Check name uniqueness under new owner (if name wasn't changed above)
+        if attrs.name is None:
+            is_unique = await ownership_api.check_name_unique_for_owner(
+                session=session,
+                resource_type=ResourceType.DOCUMENT_TYPE,
+                owner_type=owner_type,
+                owner_id=owner_id,
+                name=doc_type.name,
+                exclude_id=doc_type.id
+            )
 
-    # Validate that at least one ownership field is set after update
-    if doc_type.user_id is None and doc_type.group_id is None:
-        raise InvalidRequest("Document type must have either user_id or group_id set")
+            if not is_unique:
+                raise ValueError(
+                    f"A custom document type '{doc_type.name}' already exists for the target {owner_type.value}"
+                )
+
+        # Update ownership
+        await ownership_api.set_owner(
+            session=session,
+            resource_type=ResourceType.DOCUMENT_TYPE,
+            resource_id=doc_type.id,
+            owner_type=owner_type,
+            owner_id=owner_id
+        )
+
 
     # Update path template and track if notification needed
     notify_path_tmpl_worker = False
@@ -650,9 +665,7 @@ async def update_document_type(
     # Commit changes
     session.add(doc_type)
     await session.commit()
-
-    # Convert to schema
-    result = schema.DocumentType.model_validate(doc_type)
+    await session.refresh(doc_type)
 
     # Send background task if path template changed
     if notify_path_tmpl_worker:
@@ -664,7 +677,7 @@ async def update_document_type(
             route_name="path_tmpl",
         )
 
-    return result
+    return doc_type
 
 
 def _build_document_type_filter_conditions(

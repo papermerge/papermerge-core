@@ -13,12 +13,14 @@ async def test_on_delete_document_type_which_has_docs_associated(
     should stay (they, documents, will have doc.document_type_id set to NULL)
     """
     # Arrange
-    doc: orm.Document = await make_document_receipt(title="receipt.pdf", user=user)
-    user_id = doc.document_type.user_id
+    doc: orm.Document = await make_document_receipt(
+        title="receipt.pdf",
+        user=user
+    )
 
     with pytest.raises(DependenciesExist):
         await dbapi.delete_document_type(
             db_session,
-            user_id=user_id,
+            user_id=user.id,
             document_type_id=doc.document_type_id
         )

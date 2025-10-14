@@ -177,23 +177,13 @@ async def create_document_type(
 
     Required scope: `{scope}`
     """
-    kwargs = {
-        "name": dtype.name,
-        "path_template": dtype.path_template,
-        "custom_field_ids": dtype.custom_field_ids,
-    }
-    if dtype.group_id:
-        kwargs["group_id"] = dtype.group_id
-    else:
-        kwargs["user_id"] = user.id
-
     try:
         async with AsyncAuditContext(
             db_session,
             user_id=user.id,
             username=user.username
         ):
-            document_type = await dbapi.create_document_type(db_session, **kwargs)
+            document_type = await dbapi.create_document_type(db_session, data=dtype)
     except Exception as e:
         error_msg = str(e)
         if "UNIQUE constraint failed" in error_msg:

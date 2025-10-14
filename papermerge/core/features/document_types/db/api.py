@@ -1,12 +1,11 @@
 import logging
 import math
 import uuid
-from itertools import groupby
 from typing import Optional, Dict, Any
 
 from sqlalchemy.orm import selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy import select, func, and_, or_
 
 from papermerge.core.db.exceptions import ResourceAccessDenied, \
@@ -14,8 +13,9 @@ from papermerge.core.db.exceptions import ResourceAccessDenied, \
 from papermerge.core import schema, orm
 from papermerge.core import constants as const
 from papermerge.core.tasks import send_task
-from papermerge.core.features.document_types import schema as dt_schema
+from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.utils.tz import utc_now
+from papermerge.core.types import ResourceType
 from .orm import DocumentType
 
 logger = logging.getLogger(__name__)
@@ -46,63 +46,24 @@ async def get_document_types_without_pagination(
     return items
 
 
-async def get_document_types_grouped_by_owner_without_pagination(
+async def get_document_types_by_owner_without_pagination(
     db_session: AsyncSession,
-    user_id: uuid.UUID,
-) -> list[dt_schema.GroupedDocumentType]:
+    owner: schema.Owner,
+) -> list[orm.DocumentType]:
     """
-    Returns all document types to which user has access to, grouped
-    by owner. Results are not paginated.
+    Returns all document types that belongs to given owner.
+    Results are not paginated.
     """
 
-    subquery = select(orm.UserGroup.group_id).where(
-        orm.UserGroup.user_id == user_id
-    )
-    stmt_base = (
-        select(
-            DocumentType.id,
-            DocumentType.name,
-            DocumentType.user_id,
-            DocumentType.group_id,
-            orm.Group.name.label("group_name"),
-        )
-        .select_from(DocumentType)
-        .join(orm.Group, orm.Group.id == DocumentType.group_id, isouter=True)
-        .order_by(
-            DocumentType.user_id,
-            DocumentType.group_id,
-            DocumentType.name.asc(),
-        )
+    document_type_ids = await ownership_api.get_resources_by_owner(
+        db_session, owner_type=owner.owner_type, owner_id=owner.owner_id,
+        resource_type=ResourceType.DOCUMENT_TYPE
     )
 
-    stmt = stmt_base.where(
-        or_(
-            DocumentType.user_id == user_id,
-            DocumentType.group_id.in_(subquery),
-        )
-    )
+    stmt = select(orm.DocumentType).where(orm.DocumentType.id.in_(document_type_ids))
+    result = (await db_session.execute(stmt)).all()
 
-    db_document_types = await db_session.execute(stmt)
-
-    def keyfunc(x):
-        if x.user_id:
-            return "My"
-
-        return x.group_name
-
-    results = []
-    document_types = list(db_document_types)
-
-    for key, group in groupby(document_types, keyfunc):
-        group_items = []
-        for item in group:
-            group_items.append(
-                dt_schema.GroupedDocumentTypeItem(name=item.name, id=item.id)
-            )
-
-        results.append(dt_schema.GroupedDocumentType(name=key, items=group_items))
-
-    return results
+    return result
 
 
 async def get_document_types(
@@ -297,29 +258,51 @@ async def document_type_cf_count(session: AsyncSession, document_type_id: uuid.U
 
 async def create_document_type(
     session: AsyncSession,
-    name: str,
-    user_id: uuid.UUID | None = None,
-    group_id: uuid.UUID | None = None,
-    custom_field_ids: list[uuid.UUID] | None = None,
-    path_template: str | None = None,
+    data: schema.CreateDocumentType
 ) -> DocumentType:
-    if custom_field_ids is None:
+
+    is_unique = await ownership_api.check_name_unique_for_owner(
+        session=session,
+        resource_type=ResourceType.CUSTOM_FIELD,
+        owner_type=data.owner_type,
+        owner_id=data.owner_id,
+        name=data.name
+    )
+
+    if not is_unique:
+        raise ValueError(
+            f"A Document type named '{data.name}' already exists for this {data.owner_type.value}"
+        )
+
+    if data.custom_field_ids is None:
         cf_ids = []
     else:
-        cf_ids = custom_field_ids
+        cf_ids = data.custom_field_ids
 
     stmt = select(orm.CustomField).where(orm.CustomField.id.in_(cf_ids))
     custom_fields = (await session.execute(stmt)).scalars().all()
     dtype = DocumentType(
         id=uuid.uuid4(),
-        name=name,
+        name=data.name,
         custom_fields=custom_fields,
-        path_template=path_template,
-        user_id=user_id,
-        group_id=group_id,
+        path_template=data.path_template,
     )
-    session.add(dtype)
-    await session.commit()
+
+    try:
+        session.add(dtype)
+        # Set ownership
+        await ownership_api.set_owner(
+            session=session,
+            resource_type=ResourceType.DOCUMENT_TYPE,
+            resource_id=dtype.id,
+            owner_type=data.owner_type,
+            owner_id=data.owner_id
+        )
+        await session.commit()
+    except IntegrityError as e:
+        await session.rollback()
+        raise ValueError(f"Failed to create document type: {str(e)}")
+
 
     return dtype
 
@@ -486,7 +469,7 @@ async def delete_document_type(
     document_type_id: uuid.UUID
 ):
     """
-    Soft delete a document type with access control and dependency validation.
+    Soft delete a document type
 
     Prevents deletion if:
     - Document type has associated custom fields (non-deleted)
@@ -494,7 +477,7 @@ async def delete_document_type(
 
     Args:
         session: Database session
-        user_id: Current user ID (for access control)
+        user_id: Current user ID
         document_type_id: ID of the document type to delete
 
     Raises:
@@ -511,32 +494,13 @@ async def delete_document_type(
     if not exists_result.scalar():
         raise NoResultFound(f"Document type with id {document_type_id} not found")
 
-    # Subquery to get user's group IDs (for access control)
-    user_groups_subquery = select(orm.UserGroup.group_id).where(
-        orm.UserGroup.user_id == user_id
-    )
-
-    # Check if user has access to this document type
-    access_stmt = (
+    stmt = (
         select(DocumentType)
-        .where(
-            and_(
-                DocumentType.id == document_type_id,
-                # Access control: user can delete if they own it directly or through group
-                or_(
-                    DocumentType.user_id == user_id,
-                    DocumentType.group_id.in_(user_groups_subquery)
-                )
-            )
-        )
+        .where(DocumentType.id == document_type_id)
     )
 
-    access_result = await session.execute(access_stmt)
-    document_type = access_result.scalars().first()
-
-    # If no result, user doesn't have access (we know the document type exists)
-    if not document_type:
-        raise ResourceAccessDenied(f"User {user_id} does not have permission to delete document type {document_type_id}")
+    result = await session.execute(stmt)
+    document_type = result.scalars().first()
 
     # Check if already soft deleted
     if document_type.deleted_at is not None:

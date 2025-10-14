@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 @router.get(
     "/all",
-    response_model=list[tags_schema.Tag],
+    response_model=list[tags_schema.TagShort],
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": "User does not belong to group",
@@ -61,9 +61,18 @@ async def retrieve_tags_without_pagination(
 
     Required scope: `{scope}`
     """
-    tags = await tags_dbapi.get_tags_without_pagination(
-        db_session, user_id=user.id, group_id=group_id
+    owner_id = group_id or user.id
+    if group_id:
+        owner_type = OwnerType.GROUP
+    else:
+        owner_type = OwnerType.USER
+
+    owner=schema.Owner(owner_id=owner_id, owner_type=owner_type)
+    db_tags = await tags_dbapi.get_tags_without_pagination(
+        db_session, owner=owner
     )
+
+    tags = [schema.TagShort.model_validate(db_item) for db_item in db_tags]
 
     return tags
 

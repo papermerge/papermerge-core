@@ -35,9 +35,6 @@ async def get_custom_fields_without_pagination(
     Returns:
         List of custom fields owned by the specified owner
     """
-    from papermerge.core.features.ownership.db.orm import Ownership
-    from papermerge.core.types import ResourceType
-
     # Create owner aliases for joins
     owner_user = aliased(orm.User, name='owner_user')
     owner_group = aliased(orm.Group, name='owner_group')

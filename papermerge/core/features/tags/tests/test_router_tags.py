@@ -115,7 +115,7 @@ async def test_get_all_tags_no_pagination(make_tag, auth_api_client: AuthTestCli
 
     assert response.status_code == 200, response.json()
 
-    items = [schema.Tag(**item) for item in response.json()]
+    items = [schema.TagShort(**item) for item in response.json()]
 
     assert len(items) == 8
 
@@ -148,14 +148,14 @@ async def test_get_all_tags_no_pagination_per_user(make_tag, make_api_client):
     response = await client_a.get("/tags/all")
 
     assert response.status_code == 200, response.json()
-    items_user_a = [schema.Tag(**item) for item in response.json()]
+    items_user_a = [schema.TagShort(**item) for item in response.json()]
 
     assert len(items_user_a) == user_a_tags_count
 
     # Client B / User B
     response = await client_b.get("/tags/all")
     assert response.status_code == 200, response.json()
-    items_user_b = [schema.Tag(**item) for item in response.json()]
+    items_user_b = [schema.TagShort(**item) for item in response.json()]
 
     assert len(items_user_b) == user_b_tags_count
 
@@ -239,5 +239,5 @@ async def test__positive__tags_all_route_with_group_id_param(
     response = await auth_api_client.get("/tags/all", params={"group_id": str(group.id)})
 
     assert response.status_code == 200, response.json()
-    dtype_names = {schema.Tag(**kw).name for kw in response.json()}
+    dtype_names = {schema.TagShort(**kw).name for kw in response.json()}
     assert dtype_names == {"tag research 1", "tag research 2"}

@@ -12,39 +12,31 @@ from papermerge.core import schema
 from papermerge.core import orm
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.types import OwnerType, ResourceType
-
-ORDER_BY_MAP = {
-    "name": orm.Tag.name.asc(),
-    "-name": orm.Tag.name.desc(),
-    "pinned": orm.Tag.pinned.asc(),
-    "-pinned": orm.Tag.pinned.desc(),
-    "description": orm.Tag.id.asc(),
-    "-description": orm.Tag.id.desc(),
-    "ID": orm.Tag.id.asc(),
-    "-ID": orm.Tag.id.desc(),
-    "group_name": orm.Group.name.asc(),
-    "-group_name": orm.Group.name.desc(),
-}
+from papermerge.core.features.ownership.db.orm import Ownership
 
 
 async def get_tags_without_pagination(
     db_session: AsyncSession,
-    *,
-    user_id: uuid.UUID | None = None,
-    group_id: uuid.UUID | None = None,
-) -> list[schema.Tag]:
-    if group_id:
-        stmt = select(orm.Tag).where(orm.Tag.group_id == group_id)
-    elif user_id:
-        stmt = select(orm.Tag).where(orm.Tag.user_id == user_id)
-    else:
-        raise ValueError("Both: group_id and user_id are missing")
+    owner: schema.Owner,
+) -> list[orm.Tag]:
+    stmt = (
+        select(orm.Tag)
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.TAG.value,
+                orm.Ownership.resource_id == orm.Tag.id
+            )
+        )
+        .where(
+            orm.Ownership.owner_type == owner.owner_type,
+            orm.Ownership.owner_id == owner.owner_id
+        )
+        .order_by(orm.Tag.name.asc())
+    )
 
     db_items = (await db_session.scalars(stmt)).all()
-    result = [schema.Tag.model_validate(db_item) for db_item in db_items]
-
-    return result
-
+    return db_items
 
 async def get_tags(
     db_session: AsyncSession,
@@ -77,30 +69,59 @@ async def get_tags(
     Returns:
         Paginated response with tags including full audit trail
     """
-
     # Create user aliases for all audit trail joins
     created_user = aliased(orm.User, name='created_user')
     updated_user = aliased(orm.User, name='updated_user')
     owner_user = aliased(orm.User, name='owner_user')
+    owner_group = aliased(orm.Group, name='owner_group')
 
     # Subquery to get user's group IDs (for access control)
     user_groups_subquery = select(orm.UserGroup.group_id).where(
         orm.UserGroup.user_id == user_id
     )
 
-    # Build base query with joins for all audit user data and group/owner info
+    # Build base query with ownership join
     base_query = (
         select(orm.Tag)
+        .join(
+            Ownership,
+            and_(
+                Ownership.resource_type == ResourceType.TAG.value,
+                Ownership.resource_id == orm.Tag.id
+            )
+        )
         .join(created_user, orm.Tag.created_by == created_user.id, isouter=True)
         .join(updated_user, orm.Tag.updated_by == updated_user.id, isouter=True)
-        .join(orm.Group, orm.Group.id == orm.Tag.group_id, isouter=True)
-        .join(owner_user, orm.Tag.user_id == owner_user.id, isouter=True)
+        # Join to owner_user when owner is a user
+        .join(
+            owner_user,
+            and_(
+                Ownership.owner_type == 'user',
+                Ownership.owner_id == owner_user.id
+            ),
+            isouter=True
+        )
+        # Join to owner_group when owner is a group
+        .join(
+            owner_group,
+            and_(
+                Ownership.owner_type == 'group',
+                Ownership.owner_id == owner_group.id
+            ),
+            isouter=True
+        )
     )
 
     # Apply access control - user can see tags they own or from their groups
     access_control_condition = or_(
-        orm.Tag.user_id == user_id,
-        orm.Tag.group_id.in_(user_groups_subquery)
+        and_(
+            Ownership.owner_type == OwnerType.USER.value,
+            Ownership.owner_id == user_id
+        ),
+        and_(
+            Ownership.owner_type == OwnerType.GROUP.value,
+            Ownership.owner_id.in_(user_groups_subquery)
+        )
     )
 
     where_conditions = [access_control_condition]
@@ -117,10 +138,31 @@ async def get_tags(
     # Count total items (using the same filters)
     count_query = (
         select(func.count(orm.Tag.id))
+        .join(
+            Ownership,
+            and_(
+                Ownership.resource_type == ResourceType.TAG.value,
+                Ownership.resource_id == orm.Tag.id
+            )
+        )
         .join(created_user, orm.Tag.created_by == created_user.id, isouter=True)
         .join(updated_user, orm.Tag.updated_by == updated_user.id, isouter=True)
-        .join(orm.Group, orm.Group.id == orm.Tag.group_id, isouter=True)
-        .join(owner_user, orm.Tag.user_id == owner_user.id, isouter=True)
+        .join(
+            owner_user,
+            and_(
+                Ownership.owner_type == 'user',
+                Ownership.owner_id == owner_user.id
+            ),
+            isouter=True
+        )
+        .join(
+            owner_group,
+            and_(
+                Ownership.owner_type == 'group',
+                Ownership.owner_id == owner_group.id
+            ),
+            isouter=True
+        )
         .where(and_(*where_conditions))
     )
 
@@ -140,16 +182,19 @@ async def get_tags(
     # Apply pagination
     offset = page_size * (page_number - 1)
 
-    # Modify query to include all audit user data and owner/group info
+    # Modify query to include all audit user data and owner info
     paginated_query_with_users = (
         base_query
         .add_columns(
-            # Group info
-            orm.Group.id.label('group_id'),
-            orm.Group.name.label('group_name'),
-            # Owner user info
+            # Ownership info
+            Ownership.owner_type,
+            Ownership.owner_id,
+            # Owner user info (if owner is user)
             owner_user.id.label('owner_user_id'),
             owner_user.username.label('owner_username'),
+            # Owner group info (if owner is group)
+            owner_group.id.label('owner_group_id'),
+            owner_group.name.label('owner_group_name'),
             # Created by user
             created_user.id.label('created_by_id'),
             created_user.username.label('created_by_username'),
@@ -184,18 +229,18 @@ async def get_tags(
                 username=row.updated_by_username
             )
 
-        # Determine owner based on which ID exists
-        if tag.user_id:
+        # Build owned_by from ownership data
+        if row.owner_type == 'user':
             owned_by = schema.OwnedBy(
-                id=tag.user_id,
+                id=row.owner_user_id,
                 name=row.owner_username,
-                type="user"
+                type=OwnerType.USER
             )
-        else:  # group_id is not null (enforced by check constraint)
+        else:  # group
             owned_by = schema.OwnedBy(
-                id=row.group_id,
-                name=row.group_name,
-                type="group"
+                id=row.owner_group_id,
+                name=row.owner_group_name,
+                type=OwnerType.GROUP
             )
 
         tag_data = {

@@ -8,7 +8,7 @@ from papermerge.core.types import OwnerType
 
 
 class Owner(BaseModel):
-    owner_type: Literal["user", "group",]
+    owner_type: OwnerType
     owner_id: UUID
 
 

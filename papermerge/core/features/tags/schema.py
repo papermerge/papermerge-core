@@ -10,6 +10,16 @@ from papermerge.core.schemas.common import ByUser, OwnedBy
 from papermerge.core.types import OwnerType
 
 
+class TagShort(BaseModel):
+    id: UUID
+    name: str
+    bg_color: str | None = DEFAULT_TAG_BG_COLOR
+    fg_color: str | None = DEFAULT_TAG_FG_COLOR
+
+    # Config
+    model_config = ConfigDict(from_attributes=True)
+
+
 class Tag(BaseModel):
     id: UUID
     name: str

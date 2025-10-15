@@ -9,6 +9,7 @@ from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, \
     field_validator
 
+from papermerge.core.features.nodes.schema import NodeShort
 from papermerge.core.schemas.common import ByUser
 from papermerge.core.features.custom_fields.schema import (
     CustomFieldType,
@@ -20,7 +21,6 @@ from papermerge.core.types import (
     ImagePreviewStatus,
     ImagePreviewSize,
 )
-from papermerge.core.features.nodes.schema import Node
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core import config
 from papermerge.core.features.document import s3
@@ -369,7 +369,7 @@ class ExtractPagesIn(BaseModel):
 
 class ExtractPagesOut(BaseModel):
     source: Document | None
-    target: list[Node]
+    target: list[NodeShort]
 
 
 class MovePagesOut(BaseModel):

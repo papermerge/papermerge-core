@@ -243,12 +243,22 @@ def make_document_version(db_session: AsyncSession):
             id=doc_id,
             ctype="document",
             title=f"Document {doc_id}",
-            user_id=user.id,
             parent_id=user.home_folder_id,
             lang=lang,
         )
-        db_doc_ver = orm.DocumentVersion(pages=db_pages, document=db_doc, lang=lang)
         db_session.add(db_doc)
+        await db_session.flush()
+
+        # Set ownership
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.NODE,
+            resource_id=db_doc.id,
+            owner_type=OwnerType.USER,
+            owner_id=user.id
+        )
+
+        db_doc_ver = orm.DocumentVersion(pages=db_pages, document=db_doc, lang=lang)
         db_session.add(db_doc_ver)
         await db_session.commit()
 

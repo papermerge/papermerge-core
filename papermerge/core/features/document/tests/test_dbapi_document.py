@@ -324,13 +324,12 @@ async def test_get_docs_by_type_basic(db_session: AsyncSession, make_document_re
     """
     doc_1 = await make_document_receipt(title="receipt_1.pdf", user=user)
     await make_document_receipt(title="receipt_2.pdf", user=user)
-    user_id = doc_1.user.id
     type_id = doc_1.document_type.id
 
     fields, rows = await cf_dbapi.get_document_table_data(
         db_session,
         document_type_id=type_id,
-        user_id=user_id
+        user_id=user.id
     )
 
     assert len(rows) == 2
@@ -359,7 +358,6 @@ async def test_get_docs_by_type_one_doc_with_nonempty_cfv(
     """
     doc_1 = await make_document_receipt(title="receipt_1.pdf", user=user)
     await make_document_receipt(title="receipt_2.pdf", user=user)
-    user_id = doc_1.user.id
     type_id = doc_1.document_type.id
 
     # update all CFV of receipt_1.pdf to non-empty values
@@ -372,7 +370,7 @@ async def test_get_docs_by_type_one_doc_with_nonempty_cfv(
     fields, rows = await cf_dbapi.get_document_table_data(
         db_session,
         document_type_id=type_id,
-        user_id=user_id
+        user_id=user.id
     )
 
     assert len(rows) == 2
@@ -412,7 +410,7 @@ async def test_get_docs_by_type_one_doc_with_nonempty_cfv_with_tax_docs(
     """
     doc_1 = await make_document_tax(title="tax_1.pdf", user=user)
     await make_document_tax(title="tax_2.pdf", user=user)
-    user_id = doc_1.user.id
+    user_id = user.id
     type_id = doc_1.document_type.id
 
     # tax_1.pdf has non-empty year values
@@ -455,7 +453,7 @@ async def test_get_docs_by_type_one_tax_doc_ordered_asc(
     Exception should not happen.
     """
     doc_1 = await make_document_tax(title="tax_1.pdf", user=user)
-    user_id = doc_1.user.id
+    user_id = user.id
     type_id = doc_1.document_type.id
 
     # tax_1.pdf has non-empty year values

@@ -83,9 +83,9 @@ async def test_update_document_type(make_user, make_document_type, make_document
     """
     User B should not be able to update document type of user's A private doc
     """
-    doc_type = await make_document_type(name="ZDF", path_template="/home/")
     user_a = await make_user("user_a", is_superuser=True)
     user_b = await make_user("user_b", is_superuser=True)
+    doc_type = await make_document_type(name="ZDF", path_template="/home/", user=user_a)
     doc = await make_document("doc.pdf", parent=user_a.home_folder, user=user_a)
 
     user_b_api_client = await login_as(user_b)

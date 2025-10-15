@@ -25,7 +25,6 @@ from papermerge.core.db.base import Base
 from papermerge.core.db.engine import engine, get_db
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.document import schema as doc_schema
-from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.special_folders.db import \
     api as special_folders_api
 from papermerge.core.features.custom_fields.schema import CustomFieldType
@@ -244,12 +243,22 @@ def make_document_version(db_session: AsyncSession):
             id=doc_id,
             ctype="document",
             title=f"Document {doc_id}",
-            user_id=user.id,
             parent_id=user.home_folder_id,
             lang=lang,
         )
-        db_doc_ver = orm.DocumentVersion(pages=db_pages, document=db_doc, lang=lang)
         db_session.add(db_doc)
+        await db_session.flush()
+
+        # Set ownership
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.NODE,
+            resource_id=db_doc.id,
+            owner_type=OwnerType.USER,
+            owner_id=user.id
+        )
+
+        db_doc_ver = orm.DocumentVersion(pages=db_pages, document=db_doc, lang=lang)
         db_session.add(db_doc_ver)
         await db_session.commit()
 
@@ -549,7 +558,7 @@ async def document_type_groceries(db_session: AsyncSession, user, make_custom_fi
     return dt
 
 @pytest.fixture
-def make_document_type_without_cf(db_session: AsyncSession, user, make_custom_field):
+def make_document_type_without_cf(db_session: AsyncSession, user):
     async def _make_document_type(name: str):
         create_data = schema.CreateDocumentType(
             name=name,
@@ -653,35 +662,17 @@ def make_document_salary(db_session: AsyncSession, document_type_salary):
 async def document_type_tax(db_session: AsyncSession, user, make_custom_field_v2):
     cf = await make_custom_field_v2(name="Year", type_handler="integer")
 
-    return await dbapi.create_document_type(
-        db_session,
+    create_data = schema.CreateDocumentType(
         name="Tax",
         custom_field_ids=[cf.id],
-        user_id=user.id,
+        owner_type=OwnerType.USER,
+        owner_id=user.id
     )
 
-
-@pytest.fixture
-def make_custom_field(db_session: AsyncSession, user):
-    async def _make_custom_field(
-        name: str, type: CustomFieldType, group_id: uuid.UUID | None = None
-    ):
-        if group_id:
-            return await cf_dbapi.create_custom_field(
-                db_session,
-                name=name,
-                type=type,
-                group_id=group_id,
-            )
-        else:
-            return await cf_dbapi.create_custom_field(
-                db_session,
-                name=name,
-                type=type,
-                user_id=user.id,
-            )
-
-    return _make_custom_field
+    return await dbapi.create_document_type(
+        db_session,
+        data=create_data
+    )
 
 
 def b64e(s):
@@ -847,16 +838,24 @@ def make_document_tax(db_session: AsyncSession, document_type_tax):
             id=doc_id,
             ctype="document",
             title=title,
-            user=user,
             document_type_id=document_type_tax.id,
             parent_id=parent_id,
             lang="deu",
         )
 
         db_session.add(doc)
+        await db_session.flush()
+
+        # Set ownership
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.NODE,
+            resource_id=doc.id,
+            owner_type=OwnerType.USER,
+            owner_id=user.id
+        )
 
         await db_session.commit()
-
         return doc
 
     return _make_tax

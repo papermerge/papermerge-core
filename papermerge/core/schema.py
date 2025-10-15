@@ -37,7 +37,10 @@ from .features.document.schema import (
 )
 from .features.users.schema import User, UserEx, CreateUser, UserDetails, UpdateUser, ChangeUserPassword, UserHomes, UserInboxes, UserHome, UserInbox
 from .features.custom_fields.schema import (
-    CustomField, CustomFieldEx, CustomFieldDetails,
+    CustomFieldShort,
+    CustomField,
+    CustomFieldEx,
+    CustomFieldDetails,
     CreateCustomField,
     CustomFieldValueData,
     CustomFieldWithValue,
@@ -100,6 +103,7 @@ __all__ = [
     'CustomFieldRow',
     'CustomFieldFilter',
     'CustomFieldSort',
+    'CustomFieldShort',
     'DocumentQueryParams',
     'CustomFieldType',
     'CustomFieldValue',

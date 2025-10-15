@@ -27,17 +27,21 @@ class CustomFieldType(str, Enum):
     yearmonth = "yearmonth"
 
 
-class CustomField(BaseModel):
+class CustomFieldShort(BaseModel):
     """Custom field definition"""
     id: UUID
     name: str
     type_handler: str
     config: dict[str, Any] = Field(default_factory=dict)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CustomField(CustomFieldShort):
+    """Custom field definition"""
     owned_by: OwnedBy
     created_at: datetime
     updated_at: Optional[datetime] = None
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class CustomFieldDetails(CustomField):
@@ -106,7 +110,7 @@ class CustomFieldValue(BaseModel):
 
 
 class CustomFieldWithValue(BaseModel):
-    custom_field: CustomField
+    custom_field: CustomFieldShort
     value: CustomFieldValue | None
 
 

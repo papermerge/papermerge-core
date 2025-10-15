@@ -58,7 +58,7 @@ class DocumentNode(BaseModel):
     thumbnail_url: str
 
 
-class Node(BaseModel):
+class NodeShort(BaseModel):
     id: UUID
     title: str
     ctype: NodeType
@@ -66,8 +66,13 @@ class Node(BaseModel):
     created_at: datetime
     updated_at: datetime
     parent_id: UUID | None
-    owned_by: OwnedBy
     document: DocumentNode | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class Node(NodeShort):
+    owned_by: OwnedBy
 
     @field_validator("document", mode="before")
     def document_validator(cls, value, info):

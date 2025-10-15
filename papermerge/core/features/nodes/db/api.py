@@ -5,19 +5,19 @@ from typing import Union, Tuple, Iterable
 from uuid import UUID
 
 from sqlalchemy import func, select, delete, update, exists, and_
-from sqlalchemy.orm import selectin_polymorphic, selectinload
+from sqlalchemy.orm import selectin_polymorphic, selectinload, aliased
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.db.exceptions import ResourceHasNoOwner
+from papermerge.core import schema, orm
+from papermerge.core.db.exceptions import ResourceHasNoOwner
 from papermerge.core.exceptions import EntityNotFound
 from papermerge.core.db.common import get_ancestors, get_descendants
-from papermerge.core import schema
-from papermerge.core.types import PaginatedResponse, ResourceType
+from papermerge.core.types import PaginatedResponse, ResourceType, OwnerType
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.features.nodes import events
 from papermerge.core.features.nodes.schema import DeleteDocumentsData
-from papermerge.core import orm
+from papermerge.core.features.ownership.db.orm import Ownership
 from .orm import Folder
 
 logger = logging.getLogger(__name__)
@@ -348,23 +348,100 @@ async def update_node_tags(
 
 
 async def get_node_tags(
-    db_session: AsyncSession, node_id: uuid.UUID, user_id: uuid.UUID
+        db_session: AsyncSession, node_id: uuid.UUID, user_id: uuid.UUID
 ) -> Tuple[Iterable[schema.Tag] | None, schema.Error | None]:
-    """Retrieves all node's tags"""
+    """Retrieves all node's tags with ownership information"""
 
+    # Create aliases for owner user and group
+    owner_user = aliased(orm.User, name='owner_user')
+    owner_group = aliased(orm.Group, name='owner_group')
+
+    # Subquery to get tag IDs associated with the node
     subq = select(orm.NodeTagsAssociation.tag_id).where(
         orm.NodeTagsAssociation.node_id == node_id
     )
 
-    stmt = select(orm.Tag).where(orm.Tag.id.in_(subq))
+    # Build query with ownership information
+    stmt = (
+        select(orm.Tag)
+        .join(
+            Ownership,
+            and_(
+                Ownership.resource_type == ResourceType.TAG.value,
+                Ownership.resource_id == orm.Tag.id
+            )
+        )
+        # Join to owner_user when owner is a user
+        .join(
+            owner_user,
+            and_(
+                Ownership.owner_type == OwnerType.USER.value,
+                Ownership.owner_id == owner_user.id
+            ),
+            isouter=True
+        )
+        # Join to owner_group when owner is a group
+        .join(
+            owner_group,
+            and_(
+                Ownership.owner_type == OwnerType.GROUP.value,
+                Ownership.owner_id == owner_group.id
+            ),
+            isouter=True
+        )
+        .add_columns(
+            # Ownership info
+            Ownership.owner_type.label('owner_type'),
+            Ownership.owner_id.label('owner_id'),
+            # Owner user info
+            owner_user.id.label('owner_user_id'),
+            owner_user.username.label('owner_username'),
+            # Owner group info
+            owner_group.id.label('owner_group_id'),
+            owner_group.name.label('owner_group_name')
+        )
+        .where(orm.Tag.id.in_(subq))
+    )
 
     try:
-        tags = (await db_session.execute(stmt)).scalars()
+        result = await db_session.execute(stmt)
+        rows = result.all()
+
+        tags = []
+        for row in rows:
+            tag = row[0]  # The Tag object
+
+            # Build owned_by from ownership data
+            if row.owner_type == OwnerType.USER.value:
+                owned_by = schema.OwnedBy(
+                    id=row.owner_id,
+                    name=row.owner_username,
+                    type="user"
+                )
+            else:  # OwnerType.GROUP
+                owned_by = schema.OwnedBy(
+                    id=row.owner_id,
+                    name=row.owner_group_name,
+                    type="group"
+                )
+
+            # Build tag dict with owned_by
+            tag_dict = {
+                "id": tag.id,
+                "name": tag.name,
+                "bg_color": tag.bg_color,
+                "fg_color": tag.fg_color,
+                "owned_by": owned_by,
+                # Add any other fields required by your Tag schema
+            }
+
+            tags.append(schema.Tag(**tag_dict))
+
     except Exception as e:
         error = schema.Error(messages=[str(e)])
         return None, error
 
-    return [schema.Tag.model_validate(t) for t in tags], None
+    return tags, None
 
 
 async def remove_node_tags(

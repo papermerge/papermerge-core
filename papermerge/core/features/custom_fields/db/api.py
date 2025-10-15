@@ -844,7 +844,7 @@ async def get_document_custom_field_values(
 async def query_documents_by_custom_fields(
     session: AsyncSession,
     params: schema.DocumentQueryParams,
-    user_id: Optional[uuid.UUID] = None
+    user_id:uuid.UUID
 ) -> list[uuid.UUID]:
     """
     Query documents by custom field values with filtering and sorting
@@ -852,21 +852,44 @@ async def query_documents_by_custom_fields(
     Args:
         session: Database session
         params: Query parameters (Pydantic model)
-        user_id: Optional user ID to filter documents by owner
+        user_id
 
     Returns:
         List of document IDs matching the criteria
     """
-    from sqlalchemy.orm import aliased
-
     # Start with documents of this type
     conditions = [orm.Document.document_type_id == params.document_type_id]
-
+    query = select(orm.Document.id, orm.Document.title)
     # Add user filter if provided
     if user_id is not None:
-        conditions.append(orm.Document.user_id == user_id)
+        # Subquery to get user's group IDs
+        user_groups_subquery = select(orm.UserGroup.group_id).where(
+            orm.UserGroup.user_id == user_id
+        )
 
-    query = select(orm.Document.id, orm.Document.title).where(and_(*conditions))
+        # Join with Ownership table for access control
+        query = query.join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.NODE.value,
+                orm.Ownership.resource_id == orm.Document.id
+            )
+        )
+
+        # User can access documents they own or from their groups
+        access_control_condition = or_(
+            and_(
+                orm.Ownership.owner_type == OwnerType.USER.value,
+                orm.Ownership.owner_id == user_id
+            ),
+            and_(
+                orm.Ownership.owner_type == OwnerType.GROUP.value,
+                orm.Ownership.owner_id.in_(user_groups_subquery)
+            )
+        )
+        conditions.append(access_control_condition)
+
+    query = query.where(and_(*conditions))
 
     # Apply filters
     for i, filter_spec in enumerate(params.filters):
@@ -1033,7 +1056,7 @@ async def update_document_custom_field_values(
 async def get_document_table_data(
     session: AsyncSession,
     document_type_id: uuid.UUID,
-    user_id: Optional[uuid.UUID] = None,
+    user_id: uuid.UUID,
     filters: Optional[list[schema.CustomFieldFilter]] = None,
     sort: Optional[schema.CustomFieldSort] = None,
     limit: Optional[int] = None,
@@ -1041,7 +1064,6 @@ async def get_document_table_data(
 ) -> tuple[list[schema.CustomField], list[dict]]:
     """
     Get complete table data for UI display
-    ...
     """
     # Get all custom fields for this document type
     stmt = select(orm.CustomField).join(
@@ -1052,7 +1074,7 @@ async def get_document_table_data(
     ).order_by(orm.CustomField.name)
 
     fields = (await session.execute(stmt)).scalars().all()
-    field_models = [schema.CustomField.model_validate(f) for f in fields]
+    field_models = [schema.CustomFieldShort.model_validate(f) for f in fields]
 
     # Build query params
     query_params = schema.DocumentQueryParams(
@@ -1063,7 +1085,6 @@ async def get_document_table_data(
         offset=offset
     )
 
-    # Get matching document IDs (now with user_id filter)
     doc_ids = await query_documents_by_custom_fields(session, query_params, user_id=user_id)
 
     # Create aliases for the user tables to avoid conflicts

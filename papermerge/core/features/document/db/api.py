@@ -17,7 +17,8 @@ from sqlalchemy import (
     update,
     distinct,
     Select,
-    and_
+    and_,
+    or_
 )
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
@@ -897,12 +898,29 @@ async def get_doc_ver(
 
 def select_last_doc_ver(document_id: uuid.UUID, user_id: uuid.UUID) -> Select:
     """Returns a selectable for the last version of the document"""
+    user_groups_subquery = select(orm.UserGroup.group_id).where(
+        orm.UserGroup.user_id == user_id
+    )
+
     stmt = (
         select(orm.DocumentVersion.id)
-        .join(orm.Document)
+        .join(orm.Document, orm.DocumentVersion.document_id == orm.Document.id)
+        .join(orm.Ownership, and_(
+            orm.Ownership.resource_type == ResourceType.NODE.value,
+            orm.Ownership.resource_id == orm.Document.id
+        ))
         .where(
             orm.DocumentVersion.document_id == document_id,
-            orm.Document.user_id == user_id,
+            or_(
+                and_(
+                    orm.Ownership.owner_type == OwnerType.USER,
+                    orm.Ownership.owner_id == user_id,
+                ),
+                and_(
+                    orm.Ownership.owner_type == OwnerType.GROUP,
+                    orm.Ownership.owner_id.in_(user_groups_subquery)
+                )
+            )
         )
         .order_by(orm.DocumentVersion.number.desc())
         .limit(1)

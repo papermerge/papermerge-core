@@ -47,7 +47,7 @@ async def get_document_types_without_pagination(
 async def get_document_types_by_owner_without_pagination(
     db_session: AsyncSession,
     owner: schema.Owner,
-) -> list[orm.DocumentType]:
+) -> Sequence[orm.DocumentType]:
     """
     Returns all document types that belongs to given owner.
     Results are not paginated.

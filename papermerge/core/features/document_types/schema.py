@@ -64,6 +64,7 @@ class UpdateDocumentType(BaseModel):
     path_template: str | None = None
     custom_field_ids: list[UUID] | None = None
     owner_type: OwnerType | None = None
+    owner_id: UUID | None = None
 
 
 class GroupedDocumentTypeItem(BaseModel):

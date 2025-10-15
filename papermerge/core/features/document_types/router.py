@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 @router.get(
     "/all",
-    response_model=list[schema.DocumentType],
+    response_model=list[schema.DocumentTypeShort],
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": """User does not belong to group""",
@@ -60,11 +60,18 @@ async def get_document_types_without_pagination(
 
     Required scope: `{scope}`
     """
-    result = await dbapi.get_document_types_without_pagination(
-        db_session, user_id=user.id, group_id=group_id
+    owner = schema.Owner.create_from(
+        user_id=user.id,
+        group_id=group_id
     )
 
-    return result
+    result = await dbapi.get_document_types_without_pagination(
+        db_session, owner=owner
+    )
+
+    items = [schema.DocumentTypeShort.model_validate(item) for item in result]
+
+    return items
 
 
 @router.get(
@@ -228,6 +235,19 @@ async def delete_document_type(
 
     Required scope: `{scope}`
     """
+    has_access = await ownership_api.user_can_access_resource(
+        session=db_session,
+        user_id=user.id,
+        resource_type=ResourceType.DOCUMENT_TYPE,
+        resource_id=document_type_id
+    )
+
+    if not has_access:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,  # Use 404 to not leak existence
+            detail=f"{ResourceType.DOCUMENT_TYPE.value.replace('_', ' ').title()} not found"
+        )
+
     try:
         async with AsyncAuditContext(
             db_session,

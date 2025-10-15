@@ -6,7 +6,7 @@ from typing import Optional, Dict, Any
 from sqlalchemy.orm import selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound, IntegrityError
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import select, func, and_, or_, Sequence
 
 from papermerge.core.db.exceptions import ResourceAccessDenied, \
     DependenciesExist
@@ -23,27 +23,25 @@ logger = logging.getLogger(__name__)
 
 async def get_document_types_without_pagination(
     db_session: AsyncSession,
-    user_id: uuid.UUID | None = None,
-    group_id: uuid.UUID | None = None,
-) -> list[schema.DocumentType]:
-    stmt_base = select(DocumentType).options(
-        selectinload(orm.DocumentType.custom_fields)
-    ).order_by(DocumentType.name.asc())
+    owner: schema.Owner,
+) -> Sequence[orm.DocumentType]:
+    stmt = (
+        select(orm.DocumentType)
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.DOCUMENT_TYPE.value,
+                orm.Ownership.resource_id == orm.DocumentType.id
+            )
+        )
+        .where(
+            orm.Ownership.owner_type == owner.owner_type,
+            orm.Ownership.owner_id == owner.owner_id
+        )
+        .order_by(orm.DocumentType.name.asc())
+    )
 
-    if group_id:
-        stmt = stmt_base.where(DocumentType.group_id == group_id)
-    elif user_id:
-        stmt = stmt_base.where(DocumentType.user_id == user_id)
-    else:
-        raise ValueError("Both: group_id and user_id are missing")
-
-    db_document_types = (await db_session.scalars(stmt)).all()
-    items = [
-        schema.DocumentType.model_validate(db_document_type)
-        for db_document_type in db_document_types
-    ]
-
-    return items
+    return (await db_session.execute(stmt)).scalars().all()
 
 
 async def get_document_types_by_owner_without_pagination(
@@ -110,20 +108,51 @@ async def get_document_types(
 
     # Create user alias for owner
     owner_user = aliased(orm.User, name='owner_user')
+    owner_group = aliased(orm.Group, name='owner_group')
 
     # Build base query with joins for all audit user data and group/owner info
     base_query = (
         select(orm.DocumentType)
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.DOCUMENT_TYPE.value,
+                orm.Ownership.resource_id == orm.DocumentType.id
+            )
+        )
         .join(created_user, orm.DocumentType.created_by == created_user.id, isouter=True)
         .join(updated_user, orm.DocumentType.updated_by == updated_user.id, isouter=True)
-        .join(orm.Group, orm.Group.id == orm.DocumentType.group_id, isouter=True)
-        .join(owner_user, orm.DocumentType.user_id == owner_user.id, isouter=True)
+        # Join to owner_user when owner is a user
+        .join(
+            owner_user,
+            and_(
+                orm.Ownership.owner_type == OwnerType.USER,
+                orm.Ownership.owner_id == owner_user.id
+            ),
+            isouter=True
+        )
+        # Join to owner_group when owner is a group
+        .join(
+            owner_group,
+            and_(
+                orm.Ownership.owner_type == OwnerType.GROUP,
+                orm.Ownership.owner_id == owner_group.id
+            ),
+            isouter=True
+        )
+
     )
 
     # Apply access control - user can see document types they own or from their groups
     access_control_condition = or_(
-        orm.DocumentType.user_id == user_id,
-        orm.DocumentType.group_id.in_(user_groups_subquery)
+        and_(
+            orm.Ownership.owner_type == OwnerType.USER,
+            orm.Ownership.owner_id == user_id
+        ),
+        and_(
+            orm.Ownership.owner_type == OwnerType.GROUP,
+            orm.Ownership.owner_id.in_(user_groups_subquery)
+        )
     )
 
     where_conditions = [access_control_condition]
@@ -142,10 +171,15 @@ async def get_document_types(
     # Count total items (using the same filters)
     count_query = (
         select(func.count(orm.DocumentType.id))
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.DOCUMENT_TYPE.value,
+                orm.Ownership.resource_id == orm.DocumentType.id
+            )
+        )
         .join(created_user, orm.DocumentType.created_by == created_user.id, isouter=True)
         .join(updated_user, orm.DocumentType.updated_by == updated_user.id, isouter=True)
-        .join(orm.Group, orm.Group.id == orm.DocumentType.group_id, isouter=True)
-        .join(owner_user, orm.DocumentType.user_id == owner_user.id, isouter=True)
         .where(and_(*where_conditions))
     )
 
@@ -169,9 +203,12 @@ async def get_document_types(
     paginated_query_with_users = (
         base_query
         .add_columns(
-            # Group info
-            orm.Group.id.label('group_id'),
-            orm.Group.name.label('group_name'),
+            # Ownership info
+            orm.Ownership.owner_type.label('owner_type'),
+            orm.Ownership.owner_id.label('owner_id'),
+            # Owner group info
+            owner_group.id.label('owner_group_id'),  # Changed from orm.Group
+            owner_group.name.label('owner_group_name'),  # Changed from orm.Group
             # Owner user info
             owner_user.id.label('owner_user_id'),
             owner_user.username.label('owner_username'),
@@ -194,6 +231,19 @@ async def get_document_types(
     for row in results:
         document_type = row[0]  # The DocumentType object
 
+        if row.owner_type == OwnerType.USER:
+            owned_by = schema.OwnedBy(
+                id=row.owner_user_id,
+                name=row.owner_username,
+                type=OwnerType.USER
+            )
+        elif row.owner_type == OwnerType.GROUP:
+            owned_by = schema.OwnedBy(
+                id=row.owner_group_id,
+                name=row.owner_group_name,
+                type=OwnerType.GROUP
+            )
+
         # Build audit user objects (handle None values)
         created_by = None
         if row.created_by_id:
@@ -207,20 +257,6 @@ async def get_document_types(
             updated_by = schema.ByUser(
                 id=row.updated_by_id,
                 username=row.updated_by_username
-            )
-
-        # Determine owner based on which ID exists
-        if document_type.user_id:
-            owned_by = schema.OwnedBy(
-                id=document_type.user_id,
-                name=row.owner_username,
-                type="user"
-            )
-        else:  # group_id is not null (enforced by check constraint)
-            owned_by = schema.OwnedBy(
-                id=row.group_id,
-                name=row.group_name,
-                type="group"
             )
 
         document_type_data = {

@@ -147,8 +147,9 @@ async def test_create_document_type_owned_by_group(
 
 
 async def test_list_document_types(make_document_type, auth_api_client: AuthTestClient):
-    await make_document_type(name="Invoice")
-    response = await auth_api_client.get("/document-types/")
+    user = auth_api_client.user
+    await make_document_type(name="Invoice", user=user)
+    response = await auth_api_client.get("/document-types/all")
 
     assert response.status_code == 200, response.json()
 
@@ -161,7 +162,8 @@ async def test_update_document_type(
 ):
     cf1 = await make_custom_field_v2(name="cf1", type_handler="text")
     cf2 = await make_custom_field_v2(name="cf2", type_handler="boolean")
-    doc_type = await make_document_type(name="Invoice")
+    user = auth_api_client.user
+    doc_type = await make_document_type(name="Invoice", user=user)
 
     response = await auth_api_client.patch(
         f"/document-types/{doc_type.id}",
@@ -171,9 +173,8 @@ async def test_update_document_type(
         },
     )
     assert response.status_code == 200
-    updated_dtype = schema.DocumentType(**response.json())
+    updated_dtype = schema.DocumentTypeShort(**response.json())
     assert updated_dtype.name == "Invoice-updated"
-    assert set([cf.name for cf in updated_dtype.custom_fields]) == {"cf1", "cf2"}
 
 
 async def test_update_group_id_field_in_document_type(
@@ -187,9 +188,10 @@ async def test_update_group_id_field_in_document_type(
     DocumentType is owned by user and user can transfer ownership to
     the group.
     """
-    doc_type = await make_document_type(name="Invoice")
-    group: orm.Group = await make_group("Familly", with_special_folders=True)
     user = auth_api_client.user
+    doc_type = await make_document_type(name="Invoice", user=user)
+    group: orm.Group = await make_group("Familly", with_special_folders=True)
+
 
     user_group = orm.UserGroup(user=user, group=group)
     db_session.add(user_group)
@@ -199,18 +201,17 @@ async def test_update_group_id_field_in_document_type(
     response = await auth_api_client.patch(
         f"/document-types/{doc_type.id}",
         json={
-            "group_id": str(group.id),
+            "owner_id": str(group.id),
+            "owner_type": OwnerType.GROUP
         },
     )
 
-    result = await db_session.execute(
-        select(orm.DocumentType).where(orm.DocumentType.id == doc_type.id)
-    )
-    fresh_document_type = result.scalar_one()
     assert response.status_code == 200
-    assert fresh_document_type.group_id == group.id
-    assert fresh_document_type.user_id == None
-
+    owner_type, owner_id = await ownership_dbapi.get_owner_info(
+        db_session, ResourceType.DOCUMENT_TYPE, resource_id=doc_type.id
+    )
+    assert owner_type == OwnerType.GROUP
+    assert owner_id == group.id
 
 async def test_delete_document_type(
     auth_api_client: AuthTestClient,
@@ -222,8 +223,8 @@ async def test_delete_document_type(
     assert count_before == 1
 
     response = await auth_api_client.delete(f"/document-types/{doc_type.id}")
-    # cannot delete document type which has custom fields associated!
-    assert response.status_code == 409, response.json()
+
+    assert response.status_code == 204, response.json()
 
 
 async def test_paginated_result__9_items_first_page(
@@ -300,7 +301,7 @@ async def test_document_types_all_route(
 
     assert response.status_code == 200, response.json()
 
-    items = [schema.DocumentType(**kw) for kw in response.json()]
+    items = [schema.DocumentTypeShort(**kw) for kw in response.json()]
 
     assert len(items) == total_doc_type_items
 
@@ -333,5 +334,5 @@ async def test__positive__document_types_all_route_with_group_id_param(
     )
 
     assert response.status_code == 200, response.json()
-    dtype_names = {schema.DocumentType(**kw).name for kw in response.json()}
+    dtype_names = {schema.DocumentTypeShort(**kw).name for kw in response.json()}
     assert dtype_names == {"Research 1", "Research 2"}

@@ -833,7 +833,7 @@ async def get_document_custom_field_values(
     result = []
     for field in fields:
         value = await get_custom_field_value(session, document_id, field.id)
-        field_model = schema.CustomField.model_validate(field)
+        field_model = schema.CustomFieldShort.model_validate(field)
         result.append(
             schema.CustomFieldWithValue(custom_field=field_model, value=value)
         )

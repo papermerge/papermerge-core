@@ -1,21 +1,21 @@
 import logging
 import math
 import uuid
-from itertools import groupby
 from typing import Optional, Dict, Any
 
 from sqlalchemy.orm import selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import NoResultFound
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy.exc import NoResultFound, IntegrityError
+from sqlalchemy import select, func, and_, or_, Sequence
 
 from papermerge.core.db.exceptions import ResourceAccessDenied, \
-    DependenciesExist, InvalidRequest
+    DependenciesExist
 from papermerge.core import schema, orm
 from papermerge.core import constants as const
 from papermerge.core.tasks import send_task
-from papermerge.core.features.document_types import schema as dt_schema
+from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.utils.tz import utc_now
+from papermerge.core.types import ResourceType, OwnerType
 from .orm import DocumentType
 
 logger = logging.getLogger(__name__)
@@ -23,86 +23,45 @@ logger = logging.getLogger(__name__)
 
 async def get_document_types_without_pagination(
     db_session: AsyncSession,
-    user_id: uuid.UUID | None = None,
-    group_id: uuid.UUID | None = None,
-) -> list[schema.DocumentType]:
-    stmt_base = select(DocumentType).options(
-        selectinload(orm.DocumentType.custom_fields)
-    ).order_by(DocumentType.name.asc())
-
-    if group_id:
-        stmt = stmt_base.where(DocumentType.group_id == group_id)
-    elif user_id:
-        stmt = stmt_base.where(DocumentType.user_id == user_id)
-    else:
-        raise ValueError("Both: group_id and user_id are missing")
-
-    db_document_types = (await db_session.scalars(stmt)).all()
-    items = [
-        schema.DocumentType.model_validate(db_document_type)
-        for db_document_type in db_document_types
-    ]
-
-    return items
-
-
-async def get_document_types_grouped_by_owner_without_pagination(
-    db_session: AsyncSession,
-    user_id: uuid.UUID,
-) -> list[dt_schema.GroupedDocumentType]:
-    """
-    Returns all document types to which user has access to, grouped
-    by owner. Results are not paginated.
-    """
-
-    subquery = select(orm.UserGroup.group_id).where(
-        orm.UserGroup.user_id == user_id
-    )
-    stmt_base = (
-        select(
-            DocumentType.id,
-            DocumentType.name,
-            DocumentType.user_id,
-            DocumentType.group_id,
-            orm.Group.name.label("group_name"),
-        )
-        .select_from(DocumentType)
-        .join(orm.Group, orm.Group.id == DocumentType.group_id, isouter=True)
-        .order_by(
-            DocumentType.user_id,
-            DocumentType.group_id,
-            DocumentType.name.asc(),
-        )
-    )
-
-    stmt = stmt_base.where(
-        or_(
-            DocumentType.user_id == user_id,
-            DocumentType.group_id.in_(subquery),
-        )
-    )
-
-    db_document_types = await db_session.execute(stmt)
-
-    def keyfunc(x):
-        if x.user_id:
-            return "My"
-
-        return x.group_name
-
-    results = []
-    document_types = list(db_document_types)
-
-    for key, group in groupby(document_types, keyfunc):
-        group_items = []
-        for item in group:
-            group_items.append(
-                dt_schema.GroupedDocumentTypeItem(name=item.name, id=item.id)
+    owner: schema.Owner,
+) -> Sequence[orm.DocumentType]:
+    stmt = (
+        select(orm.DocumentType)
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.DOCUMENT_TYPE.value,
+                orm.Ownership.resource_id == orm.DocumentType.id
             )
+        )
+        .where(
+            orm.Ownership.owner_type == owner.owner_type,
+            orm.Ownership.owner_id == owner.owner_id
+        )
+        .order_by(orm.DocumentType.name.asc())
+    )
 
-        results.append(dt_schema.GroupedDocumentType(name=key, items=group_items))
+    return (await db_session.execute(stmt)).scalars().all()
 
-    return results
+
+async def get_document_types_by_owner_without_pagination(
+    db_session: AsyncSession,
+    owner: schema.Owner,
+) -> Sequence[orm.DocumentType]:
+    """
+    Returns all document types that belongs to given owner.
+    Results are not paginated.
+    """
+
+    document_type_ids = await ownership_api.get_resources_by_owner(
+        db_session, owner_type=owner.owner_type, owner_id=owner.owner_id,
+        resource_type=ResourceType.DOCUMENT_TYPE
+    )
+
+    stmt = select(orm.DocumentType).where(orm.DocumentType.id.in_(document_type_ids))
+    result = (await db_session.execute(stmt)).all()
+
+    return result
 
 
 async def get_document_types(
@@ -149,20 +108,51 @@ async def get_document_types(
 
     # Create user alias for owner
     owner_user = aliased(orm.User, name='owner_user')
+    owner_group = aliased(orm.Group, name='owner_group')
 
     # Build base query with joins for all audit user data and group/owner info
     base_query = (
         select(orm.DocumentType)
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.DOCUMENT_TYPE.value,
+                orm.Ownership.resource_id == orm.DocumentType.id
+            )
+        )
         .join(created_user, orm.DocumentType.created_by == created_user.id, isouter=True)
         .join(updated_user, orm.DocumentType.updated_by == updated_user.id, isouter=True)
-        .join(orm.Group, orm.Group.id == orm.DocumentType.group_id, isouter=True)
-        .join(owner_user, orm.DocumentType.user_id == owner_user.id, isouter=True)
+        # Join to owner_user when owner is a user
+        .join(
+            owner_user,
+            and_(
+                orm.Ownership.owner_type == OwnerType.USER,
+                orm.Ownership.owner_id == owner_user.id
+            ),
+            isouter=True
+        )
+        # Join to owner_group when owner is a group
+        .join(
+            owner_group,
+            and_(
+                orm.Ownership.owner_type == OwnerType.GROUP,
+                orm.Ownership.owner_id == owner_group.id
+            ),
+            isouter=True
+        )
+
     )
 
     # Apply access control - user can see document types they own or from their groups
     access_control_condition = or_(
-        orm.DocumentType.user_id == user_id,
-        orm.DocumentType.group_id.in_(user_groups_subquery)
+        and_(
+            orm.Ownership.owner_type == OwnerType.USER,
+            orm.Ownership.owner_id == user_id
+        ),
+        and_(
+            orm.Ownership.owner_type == OwnerType.GROUP,
+            orm.Ownership.owner_id.in_(user_groups_subquery)
+        )
     )
 
     where_conditions = [access_control_condition]
@@ -181,10 +171,15 @@ async def get_document_types(
     # Count total items (using the same filters)
     count_query = (
         select(func.count(orm.DocumentType.id))
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.DOCUMENT_TYPE.value,
+                orm.Ownership.resource_id == orm.DocumentType.id
+            )
+        )
         .join(created_user, orm.DocumentType.created_by == created_user.id, isouter=True)
         .join(updated_user, orm.DocumentType.updated_by == updated_user.id, isouter=True)
-        .join(orm.Group, orm.Group.id == orm.DocumentType.group_id, isouter=True)
-        .join(owner_user, orm.DocumentType.user_id == owner_user.id, isouter=True)
         .where(and_(*where_conditions))
     )
 
@@ -208,9 +203,12 @@ async def get_document_types(
     paginated_query_with_users = (
         base_query
         .add_columns(
-            # Group info
-            orm.Group.id.label('group_id'),
-            orm.Group.name.label('group_name'),
+            # Ownership info
+            orm.Ownership.owner_type.label('owner_type'),
+            orm.Ownership.owner_id.label('owner_id'),
+            # Owner group info
+            owner_group.id.label('owner_group_id'),  # Changed from orm.Group
+            owner_group.name.label('owner_group_name'),  # Changed from orm.Group
             # Owner user info
             owner_user.id.label('owner_user_id'),
             owner_user.username.label('owner_username'),
@@ -233,6 +231,19 @@ async def get_document_types(
     for row in results:
         document_type = row[0]  # The DocumentType object
 
+        if row.owner_type == OwnerType.USER:
+            owned_by = schema.OwnedBy(
+                id=row.owner_user_id,
+                name=row.owner_username,
+                type=OwnerType.USER
+            )
+        elif row.owner_type == OwnerType.GROUP:
+            owned_by = schema.OwnedBy(
+                id=row.owner_group_id,
+                name=row.owner_group_name,
+                type=OwnerType.GROUP
+            )
+
         # Build audit user objects (handle None values)
         created_by = None
         if row.created_by_id:
@@ -246,20 +257,6 @@ async def get_document_types(
             updated_by = schema.ByUser(
                 id=row.updated_by_id,
                 username=row.updated_by_username
-            )
-
-        # Determine owner based on which ID exists
-        if document_type.user_id:
-            owned_by = schema.OwnedBy(
-                id=document_type.user_id,
-                name=row.owner_username,
-                type="user"
-            )
-        else:  # group_id is not null (enforced by check constraint)
-            owned_by = schema.OwnedBy(
-                id=row.group_id,
-                name=row.group_name,
-                type="group"
             )
 
         document_type_data = {
@@ -297,29 +294,52 @@ async def document_type_cf_count(session: AsyncSession, document_type_id: uuid.U
 
 async def create_document_type(
     session: AsyncSession,
-    name: str,
-    user_id: uuid.UUID | None = None,
-    group_id: uuid.UUID | None = None,
-    custom_field_ids: list[uuid.UUID] | None = None,
-    path_template: str | None = None,
-) -> DocumentType:
-    if custom_field_ids is None:
+    data: schema.CreateDocumentType
+) -> orm.DocumentType:
+
+    is_unique = await ownership_api.check_name_unique_for_owner(
+        session=session,
+        resource_type=ResourceType.DOCUMENT_TYPE,
+        owner_type=data.owner_type,
+        owner_id=data.owner_id,
+        name=data.name
+    )
+
+    if not is_unique:
+        raise ValueError(
+            f"A Document type named '{data.name}' already exists for this {data.owner_type.value}"
+        )
+
+    if data.custom_field_ids is None:
         cf_ids = []
     else:
-        cf_ids = custom_field_ids
+        cf_ids = data.custom_field_ids
 
     stmt = select(orm.CustomField).where(orm.CustomField.id.in_(cf_ids))
     custom_fields = (await session.execute(stmt)).scalars().all()
     dtype = DocumentType(
         id=uuid.uuid4(),
-        name=name,
+        name=data.name,
         custom_fields=custom_fields,
-        path_template=path_template,
-        user_id=user_id,
-        group_id=group_id,
+        path_template=data.path_template,
     )
-    session.add(dtype)
-    await session.commit()
+
+    try:
+        session.add(dtype)
+        # Set ownership
+        await ownership_api.set_owner(
+            session=session,
+            resource_type=ResourceType.DOCUMENT_TYPE,
+            resource_id=dtype.id,
+            owner_type=data.owner_type,
+            owner_id=data.owner_id
+        )
+        await session.commit()
+        await session.refresh(dtype)
+    except IntegrityError as e:
+        await session.rollback()
+        raise ValueError(f"Failed to create document type: {str(e)}")
+
 
     return dtype
 
@@ -486,7 +506,7 @@ async def delete_document_type(
     document_type_id: uuid.UUID
 ):
     """
-    Soft delete a document type with access control and dependency validation.
+    Soft delete a document type
 
     Prevents deletion if:
     - Document type has associated custom fields (non-deleted)
@@ -494,7 +514,7 @@ async def delete_document_type(
 
     Args:
         session: Database session
-        user_id: Current user ID (for access control)
+        user_id: Current user ID
         document_type_id: ID of the document type to delete
 
     Raises:
@@ -511,32 +531,13 @@ async def delete_document_type(
     if not exists_result.scalar():
         raise NoResultFound(f"Document type with id {document_type_id} not found")
 
-    # Subquery to get user's group IDs (for access control)
-    user_groups_subquery = select(orm.UserGroup.group_id).where(
-        orm.UserGroup.user_id == user_id
-    )
-
-    # Check if user has access to this document type
-    access_stmt = (
+    stmt = (
         select(DocumentType)
-        .where(
-            and_(
-                DocumentType.id == document_type_id,
-                # Access control: user can delete if they own it directly or through group
-                or_(
-                    DocumentType.user_id == user_id,
-                    DocumentType.group_id.in_(user_groups_subquery)
-                )
-            )
-        )
+        .where(DocumentType.id == document_type_id)
     )
 
-    access_result = await session.execute(access_stmt)
-    document_type = access_result.scalars().first()
-
-    # If no result, user doesn't have access (we know the document type exists)
-    if not document_type:
-        raise ResourceAccessDenied(f"User {user_id} does not have permission to delete document type {document_type_id}")
+    result = await session.execute(stmt)
+    document_type = result.scalars().first()
 
     # Check if already soft deleted
     if document_type.deleted_at is not None:
@@ -601,7 +602,7 @@ async def update_document_type(
     session: AsyncSession,
     document_type_id: uuid.UUID,
     attrs: schema.UpdateDocumentType,
-) -> schema.DocumentType:
+) -> orm.DocumentType:
     """
     Update a document type with proper validation.
 
@@ -661,21 +662,35 @@ async def update_document_type(
     if attrs.name is not None:
         doc_type.name = attrs.name
 
-    # Update ownership - ensure mutual exclusivity
-    if attrs.group_id is not None and attrs.user_id is not None:
-        raise InvalidRequest("Cannot set both user_id and group_id - they are mutually exclusive")
+    if attrs.owner_type is not None and attrs.owner_id is not None:
+        owner_type = OwnerType(attrs.owner_type)
+        owner_id = attrs.owner_id
 
-    if attrs.group_id is not None:
-        doc_type.user_id = None
-        doc_type.group_id = attrs.group_id
-    elif attrs.user_id is not None:
-        doc_type.user_id = attrs.user_id
-        doc_type.group_id = None
-    # If both are None, keep existing ownership
+        # Check name uniqueness under new owner (if name wasn't changed above)
+        if attrs.name is None:
+            is_unique = await ownership_api.check_name_unique_for_owner(
+                session=session,
+                resource_type=ResourceType.DOCUMENT_TYPE,
+                owner_type=owner_type,
+                owner_id=owner_id,
+                name=doc_type.name,
+                exclude_id=doc_type.id
+            )
 
-    # Validate that at least one ownership field is set after update
-    if doc_type.user_id is None and doc_type.group_id is None:
-        raise InvalidRequest("Document type must have either user_id or group_id set")
+            if not is_unique:
+                raise ValueError(
+                    f"A custom document type '{doc_type.name}' already exists for the target {owner_type.value}"
+                )
+
+        # Update ownership
+        await ownership_api.set_owner(
+            session=session,
+            resource_type=ResourceType.DOCUMENT_TYPE,
+            resource_id=doc_type.id,
+            owner_type=owner_type,
+            owner_id=owner_id
+        )
+
 
     # Update path template and track if notification needed
     notify_path_tmpl_worker = False
@@ -686,9 +701,7 @@ async def update_document_type(
     # Commit changes
     session.add(doc_type)
     await session.commit()
-
-    # Convert to schema
-    result = schema.DocumentType.model_validate(doc_type)
+    await session.refresh(doc_type)
 
     # Send background task if path template changed
     if notify_path_tmpl_worker:
@@ -700,7 +713,7 @@ async def update_document_type(
             route_name="path_tmpl",
         )
 
-    return result
+    return doc_type
 
 
 def _build_document_type_filter_conditions(

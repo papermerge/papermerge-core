@@ -8,13 +8,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.db.exceptions import ResourceAccessDenied, \
     DependenciesExist, InvalidRequest
-from papermerge.core import utils, schema, dbapi
+from papermerge.core import utils, dbapi, orm, schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.features.users import schema as users_schema
 from papermerge.core.features.document_types import schema as dt_schema
 from papermerge.core.db.engine import get_db
+from papermerge.core.features.ownership.db import api as ownership_api
+from papermerge.core.types import ResourceType
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 from .schema import DocumentTypeParams, DocumentTypeEx
 
@@ -28,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 @router.get(
     "/all",
-    response_model=list[schema.DocumentType],
+    response_model=list[schema.DocumentTypeShort],
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": """User does not belong to group""",
@@ -58,11 +60,18 @@ async def get_document_types_without_pagination(
 
     Required scope: `{scope}`
     """
-    result = await dbapi.get_document_types_without_pagination(
-        db_session, user_id=user.id, group_id=group_id
+    owner = schema.Owner.create_from(
+        user_id=user.id,
+        group_id=group_id
     )
 
-    return result
+    result = await dbapi.get_document_types_without_pagination(
+        db_session, owner=owner
+    )
+
+    items = [schema.DocumentTypeShort.model_validate(item) for item in result]
+
+    return items
 
 
 @router.get(
@@ -169,7 +178,7 @@ async def create_document_type(
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_CREATE]),
     ],
     db_session: AsyncSession = Depends(get_db),
-) -> schema.DocumentType:
+) -> schema.DocumentTypeShort:
     """Creates document type
 
     If attribute `group_id` is present, document type will be owned
@@ -177,30 +186,20 @@ async def create_document_type(
 
     Required scope: `{scope}`
     """
-    kwargs = {
-        "name": dtype.name,
-        "path_template": dtype.path_template,
-        "custom_field_ids": dtype.custom_field_ids,
-    }
-    if dtype.group_id:
-        kwargs["group_id"] = dtype.group_id
-    else:
-        kwargs["user_id"] = user.id
-
     try:
         async with AsyncAuditContext(
             db_session,
             user_id=user.id,
             username=user.username
         ):
-            document_type = await dbapi.create_document_type(db_session, **kwargs)
+            document_type = await dbapi.create_document_type(db_session, data=dtype)
     except Exception as e:
         error_msg = str(e)
         if "UNIQUE constraint failed" in error_msg:
             raise HTTPException(status_code=400, detail="Document type already exists")
         raise HTTPException(status_code=400, detail=error_msg)
 
-    return document_type
+    return schema.DocumentTypeShort.model_validate(document_type)
 
 
 @router.delete(
@@ -236,6 +235,19 @@ async def delete_document_type(
 
     Required scope: `{scope}`
     """
+    has_access = await ownership_api.user_can_access_resource(
+        session=db_session,
+        user_id=user.id,
+        resource_type=ResourceType.DOCUMENT_TYPE,
+        resource_id=document_type_id
+    )
+
+    if not has_access:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,  # Use 404 to not leak existence
+            detail=f"{ResourceType.DOCUMENT_TYPE.value.replace('_', ' ').title()} not found"
+        )
+
     try:
         async with AsyncAuditContext(
             db_session,
@@ -267,7 +279,6 @@ async def delete_document_type(
 @router.patch(
     "/{document_type_id}",
     status_code=200,
-    response_model=schema.DocumentType,
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": """User does not belong to group""",
@@ -288,34 +299,31 @@ async def update_document_type(
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_UPDATE]),
     ],
     db_session: AsyncSession = Depends(get_db),
-) -> schema.DocumentType:
+) -> schema.DocumentTypeShort:
     """Updates document type
 
     Required scope: `{scope}`
     """
-    try:
-        if attrs.group_id:
-            group_id = attrs.group_id
-            ok = await dbapi.user_belongs_to(
-                db_session,
-                user_id=cur_user.id,
-                group_id=group_id
-            )
-            if not ok:
-                user_id = cur_user.id
-                detail = f"User {user_id=} does not belong to group {group_id=}"
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN, detail=detail
-                )
-        else:
-            attrs.user_id = cur_user.id
+    has_access = await ownership_api.user_can_access_resource(
+        session=db_session,
+        user_id=cur_user.id,
+        resource_type=ResourceType.DOCUMENT_TYPE,
+        resource_id=document_type_id
+    )
 
+    if not has_access:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,  # Use 404 to not leak existence
+            detail=f"{ResourceType.DOCUMENT_TYPE.value.replace('_', ' ').title()} not found"
+        )
+
+    try:
         async with AsyncAuditContext(
             db_session,
             user_id=cur_user.id,
             username=cur_user.username
         ):
-            dtype: schema.DocumentType = await dbapi.update_document_type(
+            dtype: orm.DocumentType = await dbapi.update_document_type(
                 db_session,
                 document_type_id=document_type_id,
                 attrs=attrs,
@@ -325,4 +333,4 @@ async def update_document_type(
     except InvalidRequest as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    return dtype
+    return schema.DocumentTypeShort.model_validate(dtype)

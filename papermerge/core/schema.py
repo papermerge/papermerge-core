@@ -48,7 +48,7 @@ from .features.custom_fields.schema import (
     UpdateCustomField, CustomFieldType, CustomFieldValue,
 )
 from .features.tags.schema import Tag, TagShort, TagEx, TagDetails, UpdateTag, CreateTag
-from .features.document_types.schema import DocumentType, DocumentTypeEx, DocumentTypeDetails, UpdateDocumentType, CreateDocumentType
+from .features.document_types.schema import DocumentType, DocumentTypeShort, DocumentTypeEx, DocumentTypeDetails, UpdateDocumentType, CreateDocumentType
 from .features.groups.schema import Group, GroupEx, GroupDetails, CreateGroup, UpdateGroup
 from .features.roles.schema import Role, RoleEx, RoleDetails, CreateRole, UpdateRole, Permission
 from .features.audit.schema import AuditLog, AuditLogDetails
@@ -117,6 +117,7 @@ __all__ = [
     'MoveStrategy',
     'PaginatedResponse',
     'DocumentType',
+    'DocumentTypeShort',
     'DocumentTypeEx',
     'DocumentTypeDetails',
     'CreateDocumentType',

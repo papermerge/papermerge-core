@@ -294,8 +294,6 @@ async def get_resources_by_owner(
     owner_type: OwnerType,
     owner_id: UUID,
     resource_type: ResourceType | None = None,
-    limit: int = 100,
-    offset: int = 0
 ) -> list[UUID]:
     """
     Get all resource IDs owned by a specific owner.
@@ -313,8 +311,6 @@ async def get_resources_by_owner(
 
     if resource_type:
         stmt = stmt.where(Ownership.resource_type == resource_type.value)
-
-    stmt = stmt.limit(limit).offset(offset)
 
     result = await session.execute(stmt)
     return [row[0] for row in result]
@@ -492,12 +488,12 @@ async def delete_node_with_ownership(
 
 
 async def get_nodes_for_owner(
-        session: AsyncSession,
-        owner_type: OwnerType,
-        owner_id: UUID,
-        parent_id: UUID | None = None,
-        limit: int = 100,
-        offset: int = 0
+    session: AsyncSession,
+    owner_type: OwnerType,
+    owner_id: UUID,
+    parent_id: UUID | None = None,
+    limit: int = 100,
+    offset: int = 0
 ) -> list[orm.Node]:
     """
     Get all nodes owned by a specific owner.

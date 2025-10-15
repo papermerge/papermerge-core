@@ -11,6 +11,18 @@ class Owner(BaseModel):
     owner_type: OwnerType
     owner_id: UUID
 
+    @staticmethod
+    def create_from(
+        user_id: UUID | None = None,
+        group_id: UUID | None = None
+    ) -> "Owner":
+        if group_id is not None:
+            return Owner(owner_type=OwnerType.GROUP, owner_id=group_id)
+        elif user_id is not None:
+            return Owner(owner_type=OwnerType.USER, owner_id=user_id)
+        else:
+            raise ValueError("Either user_id or group_id must be provided")
+
 
 class OwnerInfo(BaseModel):
     """Basic owner information"""

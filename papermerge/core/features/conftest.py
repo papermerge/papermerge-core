@@ -16,7 +16,8 @@ from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from core.utils.tz import utc_now
+from papermerge.core import schema
+from papermerge.core.utils.tz import utc_now
 from papermerge.core.tests.resource_file import ResourceFile
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core.features.auth.scopes import SCOPES
@@ -550,15 +551,37 @@ async def document_type_groceries(db_session: AsyncSession, user, make_custom_fi
 @pytest.fixture
 def make_document_type_without_cf(db_session: AsyncSession, user, make_custom_field):
     async def _make_document_type(name: str):
+        create_data = schema.CreateDocumentType(
+            name=name,
+            custom_field_ids=[],
+            owner_type=OwnerType.USER,
+            owner_id=user.id
+        )
         return await dbapi.create_document_type(
             db_session,
-            name=name,
-            custom_field_ids=[],  # no custom fields
-            user_id=user.id,
+            data=create_data
         )
 
     return _make_document_type
 
+
+@pytest.fixture
+async def document_type_zdf(db_session: AsyncSession, user, make_custom_field_v2):
+    cf1 = await make_custom_field_v2(name="Start Date", type_handler=CustomFieldType.date)
+    cf2 = await make_custom_field_v2(name="End Date", type_handler=CustomFieldType.date)
+    cf3 = await make_custom_field_v2(name="Total Due", type_handler=CustomFieldType.monetary)
+
+    create_data = schema.CreateDocumentType(
+        name="ZDF",
+        custom_field_ids=[cf1.id, cf2.id, cf3.id],
+        owner_type=OwnerType.USER,
+        owner_id=user.id
+    )
+
+    return await dbapi.create_document_type(
+        db_session,
+        data=create_data
+    )
 
 
 @pytest.fixture
@@ -685,15 +708,15 @@ def make_document_type(db_session, user):
     UPDATED: Create document type with ownership
     """
     async def _maker(
-            name: str,
-            custom_fields: list = None,
-            user: orm.User | None = None,
-            group_id: UUID | None = None
+        name: str,
+        custom_fields: list = None,
+        path_template: str | None = None,
+        user: orm.User | None = None,
+        group_id: UUID | None = None
     ):
         if custom_fields is None:
             custom_fields = []
 
-        # Determine owner
         if group_id:
             owner_type = OwnerType.GROUP
             owner_id = group_id
@@ -701,15 +724,14 @@ def make_document_type(db_session, user):
             owner_type = OwnerType.USER
             owner_id = user.id if user else user.id
 
-        # Create document type WITHOUT user_id/group_id
         dt = orm.DocumentType(
             id=uuid.uuid4(),
+            path_template=path_template,
             name=name
         )
         db_session.add(dt)
         await db_session.flush()
 
-        # Set ownership
         await ownership_api.set_owner(
             session=db_session,
             resource_type=ResourceType.DOCUMENT_TYPE,
@@ -736,24 +758,46 @@ def make_document_type(db_session, user):
 
 @pytest.fixture
 def make_document_receipt(db_session: AsyncSession, document_type_groceries):
-    async def _make_receipt(title: str, user: orm.User, parent=None):
+    async def _make_receipt(
+        title: str,
+        user: orm.User,
+        parent=None,
+        group_id: UUID | None = None
+    ):
         if parent is None:
             parent_id = user.home_folder_id
         else:
             parent_id = parent.id
+
+        # Determine owner
+        if group_id:
+            owner_type = OwnerType.GROUP
+            owner_id = group_id
+        else:
+            owner_type = OwnerType.USER
+            owner_id = user.id if user else user.id
 
         doc_id = uuid.uuid4()
         doc = orm.Document(
             id=doc_id,
             ctype="document",
             title=title,
-            user=user,
             document_type_id=document_type_groceries.id,
             parent_id=parent_id,
             lang="deu",
         )
 
         db_session.add(doc)
+        await db_session.flush()
+
+        # Set ownership
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.NODE,
+            resource_id=doc.id,
+            owner_type=owner_type,
+            owner_id=owner_id
+        )
 
         await db_session.commit()
 
@@ -896,27 +940,6 @@ def random_string():
     def _generator():
         return uuid.uuid4().hex[:12].upper()
     return _generator
-
-
-@pytest.fixture
-def make_document_zdf(db_session: AsyncSession, document_type_zdf):
-    async def _make_receipt(title: str, user: orm.User):
-        doc = orm.Document(
-            id=uuid.uuid4(),
-            ctype="document",
-            title=title,
-            user=user,
-            document_type_id=document_type_zdf.id,
-            parent_id=user.home_folder_id,
-        )
-
-        db_session.add(doc)
-
-        await db_session.commit()
-
-        return doc
-
-    return _make_receipt
 
 
 @pytest.fixture

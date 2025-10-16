@@ -2,14 +2,14 @@ import {useAppSelector} from "@/app/hooks"
 import SinglePanel from "@/components/SinglePanel"
 
 import PanelContext from "@/contexts/PanelContext"
-import {selectPanelComponent} from "@/features/ui/uiSlice"
+import {selectPanelComponent} from "@/features/ui/panelRegistry"
 
 export default function DualPanel() {
-  const secondayPanelComponent = useAppSelector(s =>
+  const secondaryPanelComponent = useAppSelector(s =>
     selectPanelComponent(s, "secondary")
   )
 
-  if (secondayPanelComponent) {
+  if (secondaryPanelComponent) {
     return (
       <>
         <PanelContext.Provider value={"main"}>

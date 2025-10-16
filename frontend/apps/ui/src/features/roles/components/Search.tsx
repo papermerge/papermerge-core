@@ -1,31 +1,26 @@
+// features/roles/components/Search.tsx
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import FilterByScope from "@/components/FilterByScope"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
-  rolesTableFiltersUpdated,
-  selectRoleExcludeScopeFilterValue,
-  selectRoleFreeTextFilterValue,
-  selectRoleIncludeScopeFilterValue
-} from "@/features/roles/storage/role"
-import {usePanelMode} from "@/hooks"
+  selectPanelFilters,
+  updatePanelFilters
+} from "@/features/ui/panelRegistry"
 import {SearchContainer} from "kommon"
 import {useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
 
-const DEBOUNCE_MS = 300 // 300 miliseconds
+const DEBOUNCE_MS = 300 // 300 milliseconds
 
 export default function Search() {
   const {t} = useTranslation()
-  const mode = usePanelMode()
-
+  const {panelId} = usePanel()
   const dispatch = useAppDispatch()
 
-  const searchText = useAppSelector(s => selectRoleFreeTextFilterValue(s, mode))
-  const includeScopes = useAppSelector(s =>
-    selectRoleIncludeScopeFilterValue(s, mode)
-  )
-  const excludeScopes = useAppSelector(s =>
-    selectRoleExcludeScopeFilterValue(s, mode)
-  )
+  const filters = useAppSelector(s => selectPanelFilters(s, panelId))
+  const searchText = filters.freeText
+  const includeScopes = filters.includeScopes
+  const excludeScopes = filters.excludeScopes
 
   const [localIncludeScopes, setLocalIncludeScopes] = useState<string[]>(
     includeScopes || []
@@ -69,11 +64,13 @@ export default function Search() {
 
   const onSearch = () => {
     dispatch(
-      rolesTableFiltersUpdated({
-        mode,
-        freeTextFilterValue: debouncedSearchTextValue,
-        includeScopeFilterValue: localIncludeScopes,
-        excludeScopeFilterValue: localExcludeScopes
+      updatePanelFilters({
+        panelId,
+        filters: {
+          freeText: debouncedSearchTextValue,
+          includeScopes: localIncludeScopes,
+          excludeScopes: localExcludeScopes
+        }
       })
     )
   }
@@ -81,13 +78,16 @@ export default function Search() {
   const onClear = () => {
     setLocalExcludeScopes([])
     setLocalIncludeScopes([])
+    setSearchTextValue("")
 
     dispatch(
-      rolesTableFiltersUpdated({
-        mode,
-        freeTextFilterValue: undefined,
-        includeScopeFilterValue: undefined,
-        excludeScopeFilterValue: undefined
+      updatePanelFilters({
+        panelId,
+        filters: {
+          freeText: undefined,
+          includeScopes: undefined,
+          excludeScopes: undefined
+        }
       })
     )
   }

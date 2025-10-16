@@ -1,17 +1,17 @@
+// features/roles/components/RoleDetailsContainer.tsx
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
 import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import useI18NText from "@/features/roles/hooks/useRoleFormI18NText"
 import {useGetRoleQuery} from "@/features/roles/storage/api"
-import {
-  selectRoleDetailsID,
-  selectRoleFormExpandedNodes,
-  setRoleFormExpandedNodes
-} from "@/features/roles/storage/role"
 import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
 import {server2clientPerms} from "@/features/roles/utils"
-import {usePanelMode} from "@/hooks"
-import type {PanelMode} from "@/types"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {
+  selectPanelCustom,
+  selectPanelDetails,
+  setPanelCustomState
+} from "@/features/ui/panelRegistry"
 import {formatTimestamp} from "@/utils/formatTime"
 import {
   Breadcrumbs,
@@ -35,29 +35,35 @@ import {TFunction} from "i18next"
 import {useTranslation} from "react-i18next"
 
 export default function RoleDetailsContainer() {
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
   const dispatch = useAppDispatch()
   const {t} = useTranslation()
-  const roleID = useAppSelector(s => selectRoleDetailsID(s, mode))
+
+  const details = useAppSelector(s => selectPanelDetails(s, panelId))
+  const roleID = details?.entityId
+
   const {data, isLoading, isFetching, error} = useGetRoleQuery(roleID || "", {
     skip: !roleID
   })
+
   const {timestamp_format, timezone} = useAppSelector(selectMyPreferences)
   const expandedNodes = useAppSelector(s =>
-    selectRoleFormExpandedNodes(s, mode)
-  )
+    selectPanelCustom(s, panelId, "expandedNodes")
+  ) as string[] | undefined
+
   const txt = useI18NText()
 
   const handleExpandedStateChange = useCallback(
     (expandedNodes: string[]) => {
       dispatch(
-        setRoleFormExpandedNodes({
-          mode,
-          expandedNodes
+        setPanelCustomState({
+          panelId,
+          key: "expandedNodes",
+          value: expandedNodes
         })
       )
     },
-    [dispatch, mode]
+    [dispatch, panelId]
   )
 
   if (isLoading) return <LoadingPanel />
@@ -72,7 +78,7 @@ export default function RoleDetailsContainer() {
       <LoadingOverlay visible={isFetching} />
       <Stack style={{height: "100%", overflow: "hidden"}}>
         <Group justify="space-between" style={{flexShrink: 0}}>
-          <Path role={data} mode={mode} />
+          <Path role={data} panelId={panelId} />
           <Group>
             <DeleteRoleButton roleId={data.id} />
             <EditButton roleId={data.id} />
@@ -89,7 +95,7 @@ export default function RoleDetailsContainer() {
             isLoading={false}
             readOnly={true}
             txt={txt?.roleForm}
-            initialExpandedState={expandedNodes}
+            initialExpandedState={expandedNodes || []}
             onExpandedStateChange={handleExpandedStateChange}
           />
           <CopyableTextInput
@@ -108,24 +114,24 @@ export default function RoleDetailsContainer() {
             value={data.created_by.username}
             label={t?.("created_by", {defaultValue: "Created by"})}
           />
-          <UsedBy users={data?.used_by} />
+          <UsedBy users={data?.used_by} t={t} />
         </Stack>
       </Stack>
     </Paper>
   )
 }
 
-function Path({role, mode}: {role: RoleDetails | null; mode: PanelMode}) {
+function Path({role, panelId}: {role: RoleDetails | null; panelId: string}) {
   const navigation = useNavigation()
 
-  if (mode == "main") {
+  if (panelId === "main") {
     return (
       <Group>
         <Breadcrumbs>
           <Link to="/roles/">Roles</Link>
           <Link to={`/roles/${role?.id}`}>{role?.name}</Link>
         </Breadcrumbs>
-        {navigation.state == "loading" && <Loader size="sm" />}
+        {navigation.state === "loading" && <Loader size="sm" />}
       </Group>
     )
   }
@@ -136,7 +142,7 @@ function Path({role, mode}: {role: RoleDetails | null; mode: PanelMode}) {
         <div>Roles</div>
         <div>{role?.name}</div>
       </Breadcrumbs>
-      {navigation.state == "loading" && <Loader size="sm" />}
+      {navigation.state === "loading" && <Loader size="sm" />}
     </Group>
   )
 }
@@ -151,7 +157,7 @@ interface UsedByArgs {
 
 function UsedBy({users, t}: UsedByArgs) {
   const userList = users.map(u => (
-    <List.Item>
+    <List.Item key={u.id}>
       <Link to={`/users/${u.id}`}>{u.username}</Link>
     </List.Item>
   ))

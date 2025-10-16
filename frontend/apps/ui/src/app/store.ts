@@ -19,6 +19,7 @@ import rolesReducer from "@/features/roles/storage/role"
 import searchReducer from "@/features/search/searchSlice"
 import sharedNodesReducer from "@/features/shared_nodes/store/sharedNodesSlice"
 import tagsReducer from "@/features/tags/storage/tag"
+import panelRegistryReducer from "@/features/ui/panelRegistry"
 import uiReducer from "@/features/ui/uiSlice"
 import usersReducer from "@/features/users/storage/user"
 import currentUserReducer from "@/slices/currentUser"
@@ -29,6 +30,7 @@ export const store = configureStore({
   reducer: {
     auth: authSliceReducer,
     currentUser: currentUserReducer,
+    panelRegistry: panelRegistryReducer,
     tags: tagsReducer,
     groups: groupsReducer,
     roles: rolesReducer,

@@ -1,10 +1,9 @@
+// components/SinglePanel/SinglePanel.tsx
 import {useAppSelector} from "@/app/hooks"
-
 import {useContext} from "react"
 
 import PanelContext from "@/contexts/PanelContext"
-
-import type {PanelMode} from "@/types"
+import {selectPanelComponent} from "@/features/ui/panelRegistry"
 
 import Viewer from "@/features/document/components/Viewer"
 
@@ -30,8 +29,6 @@ import SharedViewer from "@/features/shared_nodes/components/SharedViewer"
 import {TagDetails, TagsList} from "@/features/tags/components"
 import {UserDetails, UsersList} from "@/features/users/components"
 import type {PanelComponent} from "@/types.d/ui"
-
-import {selectPanelComponent} from "@/features/ui/uiSlice"
 
 const PANEL_COMPONENTS_SAFE = {
   commander: Commander,
@@ -62,11 +59,11 @@ interface Args {
 }
 
 export default function SinglePanel({className}: Args) {
-  const mode: PanelMode = useContext(PanelContext)
-  const panelComponent = useAppSelector(s => selectPanelComponent(s, mode))
+  const panelId = useContext(PanelContext)
+  const panelComponent = useAppSelector(s => selectPanelComponent(s, panelId))
 
   if (!panelComponent) {
-    return <div>No panel component selected</div>
+    return <div className={className}>No panel component selected</div>
   }
 
   const Component = PANEL_COMPONENTS_SAFE[panelComponent]

@@ -1,30 +1,40 @@
-import type {AppDispatch, RootState} from "@/app/types"
+// features/roles/storage/thunks.ts
+import type {RootState} from "@/app/types"
 import {
-  mainPanelRoleDetailsUpdated,
-  secondaryPanelRoleDetailsUpdated
-} from "@/features/roles/storage/role"
-import {
-  mainPanelComponentUpdated,
-  secondaryPanelComponentUpdated
-} from "@/features/ui/uiSlice"
+  closePanelAction,
+  showDetailsInPanel,
+  showListInPanel
+} from "@/features/ui/panelActions"
 import type {ThunkAction, UnknownAction} from "@reduxjs/toolkit"
 
+// ============================================================================
+// ROLE-SPECIFIC ACTIONS
+// ============================================================================
+
+export const showRoleDetailsInPanel = (
+  panelId: string,
+  roleId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showDetailsInPanel(panelId, "roleDetails", roleId)
+}
+
+export const showRoleListInPanel = (
+  panelId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showListInPanel(panelId, "rolesList")
+}
+
+// Convenience wrappers for backward compatibility
 export const showRoleDetailsInSecondaryPanel = (
   roleId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelRoleDetailsUpdated(roleId))
-    dispatch(secondaryPanelComponentUpdated("roleDetails"))
-  }
+  return showRoleDetailsInPanel("secondary", roleId)
 }
 
 export const showRoleDetailsInMainPanel = (
   roleId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(mainPanelRoleDetailsUpdated(roleId))
-    dispatch(mainPanelComponentUpdated("roleDetails"))
-  }
+  return showRoleDetailsInPanel("main", roleId)
 }
 
 export const closeRoleDetailsSecondaryPanel = (): ThunkAction<
@@ -33,8 +43,5 @@ export const closeRoleDetailsSecondaryPanel = (): ThunkAction<
   undefined,
   UnknownAction
 > => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelRoleDetailsUpdated(undefined))
-    dispatch(secondaryPanelComponentUpdated(undefined))
-  }
+  return closePanelAction("secondary")
 }

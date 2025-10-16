@@ -1,4 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from papermerge.core.tests.types import AuthTestClient
 
 
@@ -169,7 +170,7 @@ async def test_assign_node_tags(login_as, make_user, make_folder):
         json=payload,
     )
 
-    assert response.status_code == 403, response.json()
+    assert response.status_code == 400, response.json()
 
 
 async def test_update_node_tags(login_as, make_user, make_folder):
@@ -192,7 +193,7 @@ async def test_update_node_tags(login_as, make_user, make_folder):
         json=payload,
     )
 
-    assert response.status_code == 403, response.json()
+    assert response.status_code == 400, response.json()
 
 
 async def test_get_node_tags(login_as, make_user, make_folder):
@@ -234,4 +235,4 @@ async def test_remove_node_tags(login_as, make_user, make_folder):
         f"/nodes/{user_a_private_folder.id}/tags", json=["tag1"]
     )
 
-    assert response.status_code == 403, response.json()
+    assert response.status_code == 400, response.json()

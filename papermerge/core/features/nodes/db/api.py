@@ -167,9 +167,8 @@ async def get_paginated_nodes(
 async def update_node(
     db_session: AsyncSession,
     node_id: uuid.UUID,
-    user_id: uuid.UUID,
     attrs: schema.UpdateNode,
-) -> schema.Node:
+) -> schema.NodeShort:
     stmt = select(orm.Node).where(orm.Node.id == node_id)
     node = (await db_session.scalars(stmt)).one()
     if attrs.title is not None:
@@ -179,8 +178,9 @@ async def update_node(
         node.parent_id = attrs.parent_id
 
     await db_session.commit()
-    node = await load_node(db_session, node)
-    return schema.Node.model_validate(node)
+    await db_session.refresh(node)
+
+    return node
 
 
 async def create_folder(
@@ -461,17 +461,78 @@ async def remove_node_tags(
 
 async def get_folder(
     db_session: AsyncSession, folder_id: UUID
-) -> Tuple[orm.Folder | None, schema.Error | None]:
+) -> orm.Folder:
     breadcrumb = await get_ancestors(db_session, folder_id)
-    stmt = select(orm.Folder).where(orm.Folder.id == folder_id)
-    try:
-        db_model = (await db_session.scalars(stmt)).one()
-        db_model.breadcrumb = breadcrumb
-    except Exception as e:
-        error = schema.Error(messages=[str(e)])
-        return None, error
+    owner_user = aliased(orm.User, name='owner_user')
+    owner_group = aliased(orm.Group, name='owner_group')
 
-    return db_model, None
+    stmt = (
+        select(orm.Folder)
+        .select_from(orm.Folder)
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.NODE.value,
+                orm.Ownership.resource_id == orm.Folder.id
+            )
+        )
+        .join(
+            owner_user,
+            and_(
+                orm.Ownership.owner_type == OwnerType.USER,
+                orm.Ownership.owner_id == owner_user.id
+            ),
+            isouter=True
+        )
+        .join(
+            owner_group,
+            and_(
+                orm.Ownership.owner_type == OwnerType.GROUP,
+                orm.Ownership.owner_id == owner_group.id
+            ),
+            isouter=True
+        )
+        .add_columns(
+            orm.Ownership.owner_type,
+            orm.Ownership.owner_id,
+            owner_user.id.label('owner_user_id'),
+            owner_user.username.label('owner_username'),
+            owner_group.id.label('owner_group_id'),
+            owner_group.name.label('owner_group_name')
+        )
+        .where(orm.Folder.id == folder_id)
+    )
+
+    result = await db_session.execute(stmt)
+    row = result.first()
+
+    if row is None:
+        raise ValueError(f"Folder {folder_id} not found")
+
+    # Extract the Folder object from the row
+    folder = row[0]
+
+    # Set the breadcrumb on the ORM object (this is mutable)
+    folder.breadcrumb = breadcrumb
+
+    # Build the owned_by object
+    if row.owner_type == OwnerType.USER:
+        owned_by = schema.OwnedBy(
+            id=row.owner_user_id,
+            name=row.owner_username,
+            type=OwnerType.USER
+        )
+    else:
+        owned_by = schema.OwnedBy(
+            id=row.owner_group_id,
+            name=row.owner_group_name,
+            type=OwnerType.GROUP
+        )
+
+    # Set the owned_by on the ORM object
+    folder.owned_by = owned_by
+
+    return folder
 
 
 async def delete_nodes(

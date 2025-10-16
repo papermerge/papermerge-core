@@ -489,7 +489,11 @@ async def test_home_with_two_tagged_nodes(
     assert {"folder_a", "folder_b"} == set(folder_tag_names)
 
 
-async def test_rename_folder(auth_api_client: AuthTestClient, make_folder, db_session: AsyncSession):
+async def test_rename_folder(
+    auth_api_client: AuthTestClient,
+    make_folder,
+    db_session: AsyncSession
+):
     user = auth_api_client.user
     folder = await make_folder(title="Old Title", user=user, parent=user.home_folder)
 
@@ -497,7 +501,7 @@ async def test_rename_folder(auth_api_client: AuthTestClient, make_folder, db_se
 
     assert response.status_code == 200, response.content
 
-    renamed_folder = await nodes_dbapi.get_folder_by_id(db_session, id=folder.id)
+    renamed_folder = await db_session.get(orm.Folder, folder.id)
 
     assert renamed_folder.title == "New Title"
 
@@ -575,8 +579,7 @@ async def test_delete_tagged_folder(make_folder, db_session: AsyncSession, user,
     await nodes_dbapi.assign_node_tags(
         db_session,
         node_id=folder.id,
-        tags=["tag1", "tag2"],
-        user_id=user.id,
+        tags=["tag1", "tag2"]
     )
 
     # Delete folder via API
@@ -606,7 +609,6 @@ async def test_delete_tagged_document(make_document, db_session: AsyncSession, u
         db_session,
         node_id=doc.id,
         tags=["tag1", "tag2"],
-        user_id=user.id,
     )
 
     # Delete document via API
@@ -636,7 +638,6 @@ async def test_get_node_tags_router_when_node_is_folder(
         db_session,
         node_id=folder.id,
         tags=["tag1", "tag2"],
-        user_id=user.id,
     )
 
     response = await auth_api_client.get(f"/nodes/{folder.id}/tags")
@@ -656,7 +657,6 @@ async def test_get_node_tags_router_when_node_is_document(
         db_session,
         node_id=node.id,
         tags=["tag1", "tag2"],
-        user_id=user.id,
     )
 
     response = await auth_api_client.get(f"/nodes/{node.id}/tags")

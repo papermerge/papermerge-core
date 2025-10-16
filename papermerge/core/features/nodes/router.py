@@ -183,7 +183,7 @@ async def update_node(
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
     db_session: AsyncSession = Depends(get_db),
-) -> schema.Node:
+) -> schema.NodeShort:
     """Updates node
 
     Required scope: `{scope}`
@@ -206,10 +206,8 @@ async def update_node(
         username=user.username
     ):
         updated_node = await nodes_dbapi.update_node(
-            db_session, node_id=node_id, user_id=user.id, attrs=node
+            db_session, node_id=node_id, attrs=node
         )
-
-    send_task(INDEX_ADD_NODE, kwargs={"node_id": str(updated_node.id)}, route_name="i3")
 
     return updated_node
 

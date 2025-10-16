@@ -50,6 +50,7 @@ from .features.document_types.db.api import (
     get_document_type,
     get_document_types_without_pagination,
     get_document_types_by_owner_without_pagination,
+    get_document_types_grouped_by_owner_without_pagination,
     delete_document_type,
     update_document_type,
     document_type_cf_count
@@ -96,6 +97,7 @@ __all__ = [
     "get_document_type",
     "get_document_types_without_pagination",
     "get_document_types_by_owner_without_pagination",
+    "get_document_types_grouped_by_owner_without_pagination",
     "delete_document_type",
     "update_document_type",
     "document_type_cf_count",

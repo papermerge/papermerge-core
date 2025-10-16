@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.types import OwnerType
 from papermerge.core import orm, schema
 from papermerge.core.features.document_types.db import api as dt_dbapi
+from papermerge.core.features.users.db import api as users_api
+from papermerge.core.features.users import schema as users_schema
 
 
 async def test_get_document_types_by_owner_without_pagination(
@@ -34,3 +36,28 @@ async def test_document_type_cf_count(db_session: AsyncSession, make_document_zd
     )
 
     assert cf_count == 3
+
+
+async def test_get_document_types_grouped_by_owner_without_pagination(
+    db_session: AsyncSession,
+    make_document_type,
+    make_group,
+    make_user,
+):
+    user: orm.User = await make_user(username="coco")
+    group: orm.Group = await make_group("team one")
+    await make_document_type(name="My Private", user=user)
+    await make_document_type(name="Anual reports", group_id=group.id)
+    await make_document_type(name="q2 reports", group_id=group.id)
+
+    update_attrs = users_schema.UpdateUser(group_ids=[group.id])
+    await users_api.update_user(db_session, user_id=user.id, attrs=update_attrs)
+
+    result = await dt_dbapi.get_document_types_grouped_by_owner_without_pagination(
+        db_session,
+        user_id=user.id
+    )
+
+    assert len(result) == 2
+    group_names = [item.name for item in result]
+    assert set(group_names) == {"My", "team one"}

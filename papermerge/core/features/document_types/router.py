@@ -91,7 +91,7 @@ async def get_document_types_without_pagination(
         Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW]),
     ],
     db_session: AsyncSession = Depends(get_db),
-):
+) -> list[dt_schema.GroupedDocumentType]:
     """Returns all document types to which user has access to, grouped
     by owner. Results are not paginated.
 

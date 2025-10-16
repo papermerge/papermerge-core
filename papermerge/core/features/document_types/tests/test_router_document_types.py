@@ -4,7 +4,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from papermerge.core.types import OwnerType, ResourceType
 from papermerge.core import schema, orm
 from papermerge.core.tests.types import AuthTestClient
+from papermerge.core.features.users.db import api as users_api
+from papermerge.core.features.users import schema as users_schema
 from papermerge.core.features.ownership.db import api as ownership_dbapi
+from papermerge.core.features.document_types import schema as dt_schema
 
 
 async def test_create_document_type_with_path_template(
@@ -307,7 +310,11 @@ async def test_document_types_all_route(
 
 
 async def test__positive__document_types_all_route_with_group_id_param(
-    db_session: AsyncSession, make_document_type, auth_api_client: AuthTestClient, user, make_group
+    db_session: AsyncSession,
+    make_document_type,
+    auth_api_client: AuthTestClient,
+    user,
+    make_group
 ):
     """In this scenario current user belongs to the
     group provided as parameter and there are two document types
@@ -336,3 +343,31 @@ async def test__positive__document_types_all_route_with_group_id_param(
     assert response.status_code == 200, response.json()
     dtype_names = {schema.DocumentTypeShort(**kw).name for kw in response.json()}
     assert dtype_names == {"Research 1", "Research 2"}
+
+
+async def test_all_grouped_ep(
+    db_session: AsyncSession,
+    login_as,
+    make_document_type,
+    make_group,
+    make_user,
+):
+    user: orm.User = await make_user(username="coco")
+    group: orm.Group = await make_group("team one")
+    await make_document_type(name="My Private", user=user)
+    await make_document_type(name="Anual reports", group_id=group.id)
+    await make_document_type(name="q2 reports", group_id=group.id)
+
+    api_client = await login_as(user)
+    update_attrs = users_schema.UpdateUser(group_ids=[group.id])
+    await users_api.update_user(db_session, user_id=user.id, attrs=update_attrs)
+
+    response = await api_client.get(
+        "/document-types/all-grouped"
+    )
+
+    assert response.status_code == 200, response.json()
+    data = response.json()
+    assert len(data) == 2
+    group_names = [dt_schema.GroupedDocumentType(**item).name for item in data]
+    assert set(group_names) == {"My", "team one"}

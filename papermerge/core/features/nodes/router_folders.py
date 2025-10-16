@@ -2,6 +2,7 @@ import uuid
 from typing import Annotated
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import NoResultFound
 from fastapi import APIRouter, Security, HTTPException, Depends
 
 from papermerge.core import utils
@@ -37,9 +38,10 @@ async def get_node(
     if not ok:
         raise HTTP403Forbidden()
 
-    db_folder, error = await dbapi.get_folder(db_session, folder_id=folder_id)
+    try:
+        folder = await dbapi.get_folder(db_session, folder_id=folder_id)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Resource not found")
 
-    if error:
-        raise HTTPException(status_code=400, detail=error.model_dump())
 
-    return Folder.model_validate(db_folder)
+    return folder

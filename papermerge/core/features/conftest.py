@@ -864,8 +864,6 @@ def make_document_tax(db_session: AsyncSession, document_type_tax):
 async def make_group(db_session: AsyncSession):
     """Create test group, optionally with special folders"""
     async def _maker(name: str, with_special_folders: bool = False):
-        # REMOVED: await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
-
         from papermerge.core.features.special_folders.db import api as special_folders_api
 
         group_id = uuid.uuid4()
@@ -886,16 +884,7 @@ async def make_group(db_session: AsyncSession):
             )
 
         await db_session.commit()
-
-        # Reload with relationships
-        stmt = (
-            select(orm.Group)
-            .options(
-                selectinload(orm.Group.special_folders)
-            ).where(orm.Group.id == group.id)
-        )
-        result = await db_session.execute(stmt)
-        group = result.scalar_one()
+        await db_session.refresh(group)
 
         return group
 

@@ -44,7 +44,7 @@ async def get_node(
     user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
     params: CommonQueryParams = Depends(),
     db_session: AsyncSession = Depends(get_db),
-) -> PaginatedResponse[Union[schema.DocumentNode, schema.Folder]]:
+) -> PaginatedResponse[Union[schema.DocumentShort, schema.FolderShort]]:
     """Returns list of *paginated* direct descendants of `parent_id` node
 
     Required scope: `{scope}`
@@ -62,17 +62,16 @@ async def get_node(
     ):
         raise exc.HTTP403Forbidden()
 
-    nodes = await nodes_dbapi.get_paginated_nodes(
+    result = await nodes_dbapi.get_paginated_nodes(
         db_session=db_session,
         parent_id=parent_id,
-        user_id=user.id,
         page_size=params.page_size,
         page_number=params.page_number,
         order_by=order_by,
         filter=params.filter,
     )
 
-    return nodes
+    return result
 
 
 @router.post(
@@ -94,7 +93,7 @@ async def create_node(
         schema.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
     ],
     db_session: AsyncSession = Depends(get_db),
-) -> schema.Folder | schema.Document | None:
+) -> schema.FolderShort | schema.Document | None:
     """Creates a node
 
     Required scope: `{scope}`
@@ -184,7 +183,7 @@ async def update_node(
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
     db_session: AsyncSession = Depends(get_db),
-) -> schema.Node:
+) -> schema.NodeShort:
     """Updates node
 
     Required scope: `{scope}`
@@ -207,10 +206,8 @@ async def update_node(
         username=user.username
     ):
         updated_node = await nodes_dbapi.update_node(
-            db_session, node_id=node_id, user_id=user.id, attrs=node
+            db_session, node_id=node_id, attrs=node
         )
-
-    send_task(INDEX_ADD_NODE, kwargs={"node_id": str(updated_node.id)}, route_name="i3")
 
     return updated_node
 
@@ -395,7 +392,7 @@ async def assign_node_tags(
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
     db_session: AsyncSession = Depends(get_db),
-) -> schema.Document | schema.Folder:
+) -> schema.DocumentShort | schema.FolderShort:
     """
     Assigns given list of tag names to the node.
 
@@ -422,25 +419,23 @@ async def assign_node_tags(
             user_id=user.id,
             username=user.username
         ):
-            node, error = await nodes_dbapi.assign_node_tags(
-                db_session, node_id=node_id, tags=tags, user_id=user.id
+            node = await nodes_dbapi.assign_node_tags(
+                db_session, node_id=node_id, tags=tags
             )
-            if error:
-                await db_session.rollback()
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Failed to assign tags: {error}"
-                )
-            await db_session.commit()  # Single commit with audit context active
     except EntityNotFound:
+        await db_session.rollback()
         raise HTTP404NotFound
+    except Exception:
+        await db_session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to assign tags"
+        )
 
-    if error:
-        raise HTTPException(status_code=400, detail=error.model_dump())
+    if node.ctype == "folder":
+        return schema.FolderShort.model_validate(node)
 
-    send_task(INDEX_ADD_NODE, kwargs={"node_id": str(node_id)}, route_name="i3")
-
-    return node
+    return schema.DocumentShort.model_validate(node)
 
 
 @router.get(
@@ -482,7 +477,7 @@ async def get_nodes_details(
         ):
             raise exc.HTTP403Forbidden()
 
-    nodes = await nodes_dbapi.get_nodes(db_session, node_ids=node_ids, user_id=user.id)
+    nodes = await nodes_dbapi.get_nodes(db_session, node_ids=node_ids)
 
     return nodes
 
@@ -504,7 +499,7 @@ async def update_node_tags(
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
     db_session: AsyncSession = Depends(get_db),
-) -> schema.Document | schema.Folder:
+) -> schema.DocumentShort | schema.FolderShort:
     """
     Appends given list of tag names to the node.
 
@@ -537,18 +532,28 @@ async def update_node_tags(
         ):
             raise exc.HTTP403Forbidden()
 
-        node, error = await nodes_dbapi.update_node_tags(
-            db_session, node_id=node_id, tags=tags, user_id=user.id
-        )
+        async with AsyncAuditContext(
+            db_session,
+            user_id=user.id,
+            username=user.username
+        ):
+            node = await nodes_dbapi.update_node_tags(
+                db_session, node_id=node_id, tags=tags
+            )
     except EntityNotFound:
+        await db_session.rollback()
         raise HTTP404NotFound
+    except Exception:
+        await db_session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to assign tags"
+        )
 
-    if error:
-        raise HTTPException(status_code=400, detail=error.model_dump())
+    if node.ctype == "folder":
+        return schema.FolderShort.model_validate(node)
 
-    send_task(INDEX_ADD_NODE, kwargs={"node_id": str(node_id)}, route_name="i3")
-
-    return node
+    return schema.DocumentShort.model_validate(node)
 
 
 @router.get(
@@ -609,7 +614,7 @@ async def remove_node_tags(
         schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
     ],
     db_session: AsyncSession = Depends(get_db),
-) -> schema.Document | schema.Folder:
+) -> schema.DocumentShort | schema.FolderShort:
     """
     Dissociate given tags the node.
 
@@ -626,15 +631,25 @@ async def remove_node_tags(
         ):
             raise exc.HTTP403Forbidden()
 
-        node, error = await nodes_dbapi.remove_node_tags(
-            db_session, node_id=node_id, tags=tags, user_id=user.id
-        )
+        async with AsyncAuditContext(
+            db_session,
+            user_id=user.id,
+            username=user.username
+        ):
+            node = await nodes_dbapi.remove_node_tags(
+                db_session, node_id=node_id, tags=tags, user_id=user.id
+            )
     except EntityNotFound:
+        await db_session.rollback()
         raise HTTP404NotFound
+    except Exception:
+        await db_session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to assign tags"
+            )
 
-    if error:
-        raise HTTPException(status_code=400, detail=error.model_dump())
+    if node.ctype == "folder":
+        return schema.FolderShort.model_validate(node)
 
-    send_task(INDEX_ADD_NODE, kwargs={"node_id": str(node_id)}, route_name="i3")
-
-    return node
+    return schema.DocumentShort.model_validate(node)

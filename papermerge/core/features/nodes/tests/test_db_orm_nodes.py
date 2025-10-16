@@ -3,12 +3,13 @@ import uuid
 import pytest
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from papermerge.core import orm, schema
 from papermerge.core.features.nodes.db import api as dbapi
+from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.db import common as common_dbapi
+from papermerge.core.types import ResourceType, OwnerType
 
 
 async def test_get_descendants(make_folder, make_document, db_session: AsyncSession, user):
@@ -255,7 +256,6 @@ async def test_get_node_tags_node_is_a_document(db_session: AsyncSession, make_d
         db_session,
         node_id=doc.id,
         tags=["tag1", "tag2"],
-        user_id=user.id,
     )
     # act
     tags, error = await dbapi.get_node_tags(db_session, node_id=doc.id, user_id=user.id)
@@ -274,7 +274,6 @@ async def test_get_node_tags_node_is_a_folder(db_session: AsyncSession, make_fol
         db_session,
         node_id=folder.id,
         tags=["tag1", "tag2"],
-        user_id=user.id,
     )
     # act
     tags, error = await dbapi.get_node_tags(db_session, node_id=folder.id, user_id=user.id)
@@ -370,13 +369,12 @@ async def test_move_nodes(
     )
     descendants_ids = [item[0] for item in descendants]
 
-    db_session.expire_all()
-
     assert len(descendants_ids) == 3
     for descendant_id in descendants_ids:
-        node = await db_session.get(orm.Node, descendant_id)
-        assert node.user_id is None
-        stmt = select(orm.Node).options(selectinload(orm.Node.group)).where(orm.Node.id == node.id)
-        result = await db_session.execute(stmt)
-        node = result.scalar_one()
-        assert node.group_id == family.id
+        owner_type, owner_id = await ownership_api.get_owner_info(
+            db_session,
+            resource_type=ResourceType.NODE,
+            resource_id=descendant_id
+        )
+        assert owner_id == family.id
+        assert owner_type == OwnerType.GROUP

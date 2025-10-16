@@ -198,33 +198,14 @@ def thumbnail_url(value, info):
 ThumbnailUrl = Annotated[str | None, Field(validate_default=True)]
 
 
-class DocumentNode(BaseModel):
-    """Document without versions
-
-    The point of this class is to be used when listing folders/documents in
-    which case info about document versions (and their pages etc) is not
-    required (generating document version info in context of CDN is very
-    slow as for each page of each doc ver signed URL must be computed)
-    """
-
+class DocumentBase(BaseModel):
     id: UUID
     title: str
     ctype: Literal["document"]
     tags: list[Tag] = Field(default_factory=list)
-    # created_at: datetime
-    # updated_at: datetime
     parent_id: UUID | None
-    document_type_id: UUID | None = None
-    breadcrumb: list[tuple[UUID, str]] = Field(default_factory=list)
-    ocr: bool = True  # will this document be OCRed?
-    ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
-    thumbnail_url: ThumbnailUrl = None
     preview_status: str | None = None
-    user_id: UUID | None = None
-    group_id: UUID | None = None
-    owner_name: str | None = None
-    perms: list[str] = Field(default_factory=list)
-    is_shared: bool = False
+    thumbnail_url: ThumbnailUrl = None
 
     @field_validator("thumbnail_url", mode="before")
     def thumbnail_url_validator(cls, value, info):
@@ -250,8 +231,32 @@ class DocumentNode(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class DocumentNode(DocumentBase):
+    """Document without versions
+
+    The point of this class is to be used when listing folders/documents in
+    which case info about document versions (and their pages etc) is not
+    required (generating document version info in context of CDN is very
+    slow as for each page of each doc ver signed URL must be computed)
+    """
+    document_type_id: UUID | None = None
+    breadcrumb: list[tuple[UUID, str]] = Field(default_factory=list)
+    ocr: bool = True  # will this document be OCRed?
+    ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
+    owner_name: str | None = None
+    perms: list[str] = Field(default_factory=list)
+    is_shared: bool = False
+
+    # Config
+    model_config = ConfigDict(from_attributes=True)
+
+
 class Document(DocumentNode):
     versions: list[DocumentVersion] = Field(default_factory=list)
+
+
+class DocumentShort(DocumentBase):
+    pass
 
 
 class DocumentWithoutVersions(DocumentNode):

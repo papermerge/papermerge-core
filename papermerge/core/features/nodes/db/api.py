@@ -65,7 +65,8 @@ def str2colexpr(keys: list[str]):
 
 
 async def get_nodes(
-    db_session: AsyncSession, user_id: UUID | None = None, node_ids: list[UUID] | None = None
+    db_session: AsyncSession,
+    node_ids: list[UUID] | None = None
 ) -> list[schema.Document | schema.Folder]:
     items = []
     if node_ids is None:
@@ -79,9 +80,6 @@ async def get_nodes(
         )
     else:
         stmt = select(orm.Node).options(selectinload(orm.Node.tags))
-
-    if user_id is not None:
-        stmt = stmt.filter(orm.Node.user_id == user_id)
 
     nodes = (await db_session.scalars(stmt)).all()
 
@@ -106,12 +104,11 @@ async def get_folder_by_id(db_session: AsyncSession, id: uuid.UUID) -> schema.Fo
 async def get_paginated_nodes(
     db_session: AsyncSession,
     parent_id: UUID,
-    user_id: UUID,
     page_size: int,
     page_number: int,
     order_by: list[str],
     filter: str | None = None,
-) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
+) -> PaginatedResponse[Union[schema.DocumentShort, schema.FolderShort]]:
     loader_opt = selectin_polymorphic(orm.Node, [Folder, orm.Document])
     subq = exists().where(orm.SharedNode.node_id == orm.Node.id)
     if filter:
@@ -155,11 +152,11 @@ async def get_paginated_nodes(
         node = row.Node
         node.is_shared = row.is_shared
         if node.ctype == "folder":
-            items.append(schema.Folder.model_validate(node))
+            items.append(schema.FolderShort.model_validate(node))
         else:
-            items.append(schema.DocumentNode.model_validate(node))
+            items.append(schema.DocumentShort.model_validate(node))
 
-    return PaginatedResponse[Union[schema.DocumentNode, schema.Folder]](
+    return PaginatedResponse[Union[schema.DocumentShort, schema.FolderShort]](
         page_size=page_size,
         page_number=page_number,
         num_pages=num_pages,
@@ -188,22 +185,28 @@ async def update_node(
 
 async def create_folder(
     db_session: AsyncSession, attrs: schema.NewFolder
-) -> Tuple[schema.Folder | None, schema.Error | None]:
+) -> Tuple[schema.FolderShort | None, schema.Error | None]:
     error = None
     folder_id = attrs.id or uuid.uuid4()
 
-    stmt = select(orm.Node.user_id, orm.Node.group_id).where(
-        orm.Node.id == attrs.parent_id
+    owner_type, owner_id = await ownership_api.get_owner_info(
+        db_session,
+        resource_id=attrs.parent_id,
+        resource_type=ResourceType.NODE
     )
-    user_id, group_id = (await db_session.execute(stmt)).fetchone()
 
     folder = orm.Folder(
         id=folder_id,
-        user_id=user_id,
-        group_id=group_id,
         title=attrs.title,
         parent_id=attrs.parent_id,
         ctype="folder",
+    )
+    await ownership_api.set_owner(
+        db_session,
+        resource_id=folder_id,
+        resource_type=ResourceType.NODE,
+        owner_id=owner_id,
+        owner_type=owner_type
     )
 
     db_session.add(folder)
@@ -218,7 +221,7 @@ async def create_folder(
 
     if folder:
         folder = await load_folder(db_session, folder)
-        return schema.Folder.model_validate(folder), error
+        return schema.FolderShort.model_validate(folder), error
 
     return None, error
 
@@ -233,7 +236,8 @@ async def assign_node_tags(
     Currently associated node tags not mentioned in the `tags` list will
     be disassociated (but tags won't be deleted).
     """
-    stmt = select(orm.Node).where(orm.Node.id == node_id)
+    loader_opt = selectin_polymorphic(orm.Node, [Folder, orm.Document])
+    stmt = select(orm.Node).options(loader_opt).where(orm.Node.id == node_id)
     node = (await db_session.scalars(stmt)).one_or_none()
 
     if node is None:
@@ -316,35 +320,24 @@ async def assign_node_tags(
 
 
 async def update_node_tags(
-    db_session: AsyncSession, node_id: uuid.UUID, tags: list[str], user_id: uuid.UUID
-) -> Tuple[schema.Document | schema.Folder | None, schema.Error | None]:
-    error = None
-
+    db_session: AsyncSession,
+    node_id: uuid.UUID,
+    tags: list[str],
+) -> orm.Node:
     stmt = select(orm.Node).where(orm.Node.id == node_id)
     node = (await db_session.scalars(stmt)).one_or_none()
 
     if node is None:
         raise EntityNotFound(f"Node {node_id} not found")
 
-    if node.group_id:
-        db_tags = [orm.Tag(name=name, group_id=node.group_id) for name in tags]
-    else:
-        db_tags = [orm.Tag(name=name, user_id=user_id) for name in tags]
-
+    db_tags = [orm.Tag(name=name) for name in tags]
     db_session.add_all(db_tags)
 
-    try:
-        await db_session.commit()
-        node.tags.extend(db_tags)
-        await db_session.commit()
-    except Exception as e:
-        error = schema.Error(messages=[str(e)])
-        return None, error
+    await db_session.commit()
+    node.tags.extend(db_tags)
+    await db_session.commit()
 
-    if node.ctype == "document":
-        return schema.Document.model_validate(node), error
-
-    return schema.Folder.model_validate(node), error
+    return node
 
 
 async def get_node_tags(
@@ -446,11 +439,9 @@ async def get_node_tags(
 
 async def remove_node_tags(
     db_session: AsyncSession, node_id: uuid.UUID, tags: list[str], user_id: uuid.UUID
-) -> Tuple[schema.Document | schema.Folder | None, schema.Error | None]:
+) -> orm.Node:
     """Disassociates node tags"""
-    error = None
-
-    stmt = select(orm.Node).where(orm.Node.id == node_id, orm.Node.user_id == user_id)
+    stmt = select(orm.Node).where(orm.Node.id == node_id)
     node = (await db_session.scalars(stmt)).one_or_none()
 
     if node is None:
@@ -462,17 +453,10 @@ async def remove_node_tags(
         orm.NodeTagsAssociation.node_id == node_id,
     )
 
-    try:
-        await db_session.execute(delete_stmt)
-        await db_session.commit()
-    except Exception as e:
-        error = schema.Error(messages=[str(e)])
-        return None, error
+    await db_session.execute(delete_stmt)
+    await db_session.commit()
 
-    if node.ctype == "document":
-        return schema.Document.model_validate(node), error
-
-    return schema.Folder.model_validate(node), error
+    return node
 
 
 async def get_folder(
@@ -523,11 +507,11 @@ async def delete_nodes(
     return None
 
 
-async def move_nodes(db_session: AsyncSession, source_ids: list[UUID], target_id: UUID) -> int:
-
-    # Sqlite does not raise "Integrity Error" during update
-    # when target does not exist. Thus, we issue here one more
-    # extra sql statement just to check the existence of target_id
+async def move_nodes(
+    db_session: AsyncSession,
+    source_ids: list[UUID],
+    target_id: UUID
+) -> int:
     stmt = select(orm.Node).where(orm.Node.id == target_id)
     target = (await db_session.execute(stmt)).scalar()
     descendants_ids = [
@@ -539,16 +523,19 @@ async def move_nodes(db_session: AsyncSession, source_ids: list[UUID], target_id
     stmt = (
         update(orm.Node).where(orm.Node.id.in_(source_ids)).values(parent_id=target_id)
     )
-    # Moved nodes will be set to have same
-    # parent as the target
-    stmt_update_owner = (
-        update(orm.Node)
-        .where(orm.Node.id.in_(descendants_ids))
-        .values(user_id=target.user_id, group_id=target.group_id)
+    owner_type, owner_id = await ownership_api.get_owner_info(
+        db_session,
+        resource_type=ResourceType.NODE,
+        resource_id=target_id
     )
-
     result = await db_session.execute(stmt)
-    await db_session.execute(stmt_update_owner)
+    await ownership_api.set_owners(
+        db_session,
+        resource_type=ResourceType.NODE,
+        resource_ids=descendants_ids,
+        owner_type=owner_type,
+        owner_id=owner_id
+    )
     await db_session.commit()
 
     return result.rowcount

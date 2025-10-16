@@ -1,7 +1,10 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.types import OwnerType
+from papermerge.core.types import ResourceType
 from papermerge.core import orm, schema
+from papermerge.core.features.ownership.db import api as ownership_api
 
 
 async def test_upload_document_to_group_home(db_session: AsyncSession, make_user, make_group, login_as):
@@ -29,8 +32,14 @@ async def test_upload_document_to_group_home(db_session: AsyncSession, make_user
         select(orm.Document).where(orm.Node.title == "cv.pdf")
     )).one()
 
-    assert doc.group == group  # owned by group
-    assert doc.user is None  # not by user
+    owner_type, owner_id = await ownership_api.get_owner_info(
+        db_session,
+        resource_type=ResourceType.NODE,
+        resource_id=doc.id
+    )
+
+    assert owner_id == group.id  # owned by group
+    assert owner_type == OwnerType.GROUP
 
     response = await client.get(f"/documents/{doc.id}")
     assert response.status_code == 200, response.json()

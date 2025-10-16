@@ -141,6 +141,17 @@ class NewFolder(BaseModel):
     )
 
 
+class FolderShort(BaseModel):
+    id: UUID
+    title: str
+    ctype: Literal["folder"]
+    tags: List[Tag] = []
+    parent_id: UUID | None
+
+    # Configs
+    model_config = ConfigDict(from_attributes=True)
+
+
 class Folder(NewFolder):
     id: UUID
     tags: List[Tag] = []

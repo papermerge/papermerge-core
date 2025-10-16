@@ -1,5 +1,5 @@
 from .features.nodes.schema import (
-    Folder, NewFolder, Node, UpdateNode, MoveNode
+    Folder, NewFolder, Node, UpdateNode, MoveNode, FolderShort
 )
 from .features.shared_nodes.schema import (
     CreateSharedNode,
@@ -10,6 +10,7 @@ from .features.shared_nodes.schema import (
 )
 from .features.document.schema import (
     Document,
+    DocumentShort,
     DocumentNode,
     NewDocument,
     DocumentVersion,
@@ -62,11 +63,13 @@ from .features.ownership.schema import Owner
 
 __all__ = [
     'Folder',
+    'FolderShort',
     'NewFolder',
     'Node',
     'UpdateNode',
     'MoveNode',
     'Document',
+    'DocumentShort',
     'DocumentNode',
     'NewDocument',
     'DocumentVersion',

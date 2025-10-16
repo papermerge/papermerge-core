@@ -1,7 +1,7 @@
 import uuid
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, Index, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from papermerge.core.features.ownership.db.orm import OwnedResourceMixin
@@ -26,6 +26,18 @@ class Node(Base, AuditColumns, OwnedResourceMixin):
         "polymorphic_on": "ctype",
         "confirm_deleted_rows": False,
     }
+
+    __table_args__ = (
+        # Partial unique index: only folders with same title under same parent are prevented
+        # This uses a partial index with a WHERE clause to only apply to folders
+        Index(
+            'idx_nodes_unique_folder_title_parent',
+            'title',
+            'parent_id',
+            unique=True,
+            postgresql_where=text("ctype = 'folder'")
+        ),
+    )
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.title!r})"

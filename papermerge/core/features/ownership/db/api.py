@@ -3,6 +3,7 @@ from typing import Literal, Tuple
 
 from sqlalchemy import select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.dialects.postgresql import insert
 
 from papermerge.core import orm
 from papermerge.core.features.ownership.db.orm import Ownership
@@ -119,10 +120,55 @@ async def set_owner(
     return ownership
 
 
+async def set_owners(
+    session: AsyncSession,
+    resource_type: ResourceType,
+    resource_ids: list[UUID],
+    owner_type: OwnerType,
+    owner_id: UUID
+) -> list[Ownership]:
+    """
+    Set or update the owner of multiple resources using bulk upsert.
+
+    Creates ownership records if they don't exist, updates if they do.
+    Returns a list of ownership records in the same order as resource_ids.
+    """
+    if not resource_ids:
+        return []
+
+    # Prepare data for bulk upsert
+    values = [
+        {
+            "resource_type": resource_type.value,
+            "resource_id": resource_id,
+            "owner_type": owner_type.value,
+            "owner_id": owner_id,
+        }
+        for resource_id in resource_ids
+    ]
+
+    # Perform PostgreSQL upsert (INSERT ... ON CONFLICT DO UPDATE)
+    stmt = insert(Ownership).values(values)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["resource_type", "resource_id"],  # unique constraint columns
+        set_={
+            "owner_type": stmt.excluded.owner_type,
+            "owner_id": stmt.excluded.owner_id,
+        }
+    ).returning(Ownership)
+
+    result = await session.execute(stmt)
+    ownerships = result.scalars().all()
+
+    # Create a map and return in original order
+    ownership_map = {o.resource_id: o for o in ownerships}
+    return [ownership_map[resource_id] for resource_id in resource_ids]
+
+
 async def delete_ownership(
-        session: AsyncSession,
-        resource_type: ResourceType,
-        resource_id: UUID
+    session: AsyncSession,
+    resource_type: ResourceType,
+    resource_id: UUID
 ) -> None:
     """
     Delete the ownership record for a resource.

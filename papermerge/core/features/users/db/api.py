@@ -754,29 +754,6 @@ async def delete_user(
         identifier = f"id {user_id}" if user_id else f"username '{username}'"
         raise NoResultFound(f"User with {identifier} not found or already deleted")
 
-    # Check for owned resources if not forcing delete
-    if not force_delete:
-        # Check for owned nodes (documents/folders)
-        node_count_stmt = select(func.count(orm.Node.id)).where(
-            orm.Node.user_id == user.id
-        )
-        result = await db_session.execute(node_count_stmt)
-        active_nodes = result.scalar()
-
-        # Check for owned document types
-        doc_type_count_stmt = select(func.count(orm.DocumentType.id)).where(
-            orm.DocumentType.user_id == user.id
-        )
-        result = await db_session.execute(doc_type_count_stmt)
-        active_doc_types = result.scalar()
-
-        # Check for owned custom fields
-        custom_field_count_stmt = select(func.count(orm.CustomField.id)).where(
-            orm.CustomField.user_id == user.id
-        )
-        result = await db_session.execute(custom_field_count_stmt)
-        active_custom_fields = result.scalar()
-
     # Soft delete all user-role associations
     user_roles_update_stmt = update(orm.UserRole).where(
         orm.UserRole.user_id == user.id,

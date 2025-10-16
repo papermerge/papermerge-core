@@ -2,6 +2,7 @@ import logging
 import math
 import uuid
 from typing import Optional, Dict, Any
+from itertools import groupby
 
 from sqlalchemy.orm import selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +17,8 @@ from papermerge.core.tasks import send_task
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.utils.tz import utc_now
 from papermerge.core.types import ResourceType, OwnerType
+from papermerge.core.features.ownership.db.orm import Ownership
+from papermerge.core.features.document_types import schema as dt_schema
 from .orm import DocumentType
 
 logger = logging.getLogger(__name__)
@@ -62,6 +65,109 @@ async def get_document_types_by_owner_without_pagination(
     result = (await db_session.execute(stmt)).all()
 
     return result
+
+
+async def get_document_types_grouped_by_owner_without_pagination(
+    db_session: AsyncSession,
+    user_id: uuid.UUID,
+) -> list[dt_schema.GroupedDocumentType]:
+    """
+    Returns all document types to which user has access to, grouped
+    by owner. Results are not paginated.
+
+    Uses the new ownership pattern with the Ownership table instead of
+    user_id/group_id columns.
+    """
+    # Create aliases for owner joins
+    owner_user = aliased(orm.User, name='owner_user')
+    owner_group = aliased(orm.Group, name='owner_group')
+
+    # Subquery to get user's group IDs (for access control)
+    user_groups_subquery = select(orm.UserGroup.group_id).where(
+        orm.UserGroup.user_id == user_id,
+        orm.UserGroup.deleted_at.is_(None)
+    )
+
+    # Build query with ownership joins
+    stmt = (
+        select(
+            DocumentType.id,
+            DocumentType.name,
+            # Ownership info
+            Ownership.owner_type.label("owner_type"),
+            Ownership.owner_id.label("owner_id"),
+            # Owner user info (if owner is user)
+            owner_user.username.label("owner_username"),
+            # Owner group info (if owner is group)
+            owner_group.name.label("owner_group_name"),
+        )
+        .select_from(DocumentType)
+        .join(
+            Ownership,
+            and_(
+                Ownership.resource_type == ResourceType.DOCUMENT_TYPE.value,
+                Ownership.resource_id == DocumentType.id
+            )
+        )
+        # Join to owner_user when owner is a user
+        .join(
+            owner_user,
+            and_(
+                Ownership.owner_type == OwnerType.USER.value,
+                Ownership.owner_id == owner_user.id
+            ),
+            isouter=True
+        )
+        # Join to owner_group when owner is a group
+        .join(
+            owner_group,
+            and_(
+                Ownership.owner_type == OwnerType.GROUP.value,
+                Ownership.owner_id == owner_group.id
+            ),
+            isouter=True
+        )
+        .where(
+            or_(
+                # User owns directly
+                and_(
+                    Ownership.owner_type == OwnerType.USER.value,
+                    Ownership.owner_id == user_id
+                ),
+                # Owned by a group the user belongs to
+                and_(
+                    Ownership.owner_type == OwnerType.GROUP.value,
+                    Ownership.owner_id.in_(user_groups_subquery)
+                )
+            )
+        )
+        .order_by(
+            Ownership.owner_type,
+            Ownership.owner_id,
+            DocumentType.name.asc(),
+        )
+    )
+
+    db_document_types = await db_session.execute(stmt)
+
+    def keyfunc(row):
+        """Group by owner name: 'My' for user-owned, group name for group-owned"""
+        if row.owner_type == OwnerType.USER.value:
+            return "My"
+        return row.owner_group_name
+
+    results = []
+    document_types = list(db_document_types)
+
+    for key, group in groupby(document_types, keyfunc):
+        group_items = []
+        for row in group:
+            group_items.append(
+                dt_schema.GroupedDocumentTypeItem(name=row.name, id=row.id)
+            )
+        results.append(dt_schema.GroupedDocumentType(name=key, items=group_items))
+
+    return results
 
 
 async def get_document_types(

@@ -1,17 +1,19 @@
-import pikepdf
 import io
 import os
 from pathlib import Path
 
+import pikepdf
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.features.conftest import make_document_from_resource
 from papermerge.core import orm, schema
 from papermerge.core.tests.resource_file import ResourceFile
+from papermerge.core.types import ResourceType
 from papermerge.core import constants
 from papermerge.core.features.page_mngm.db import api as page_mngm_dbapi
 from papermerge.core.features.document.db import api as doc_dbapi
+from papermerge.core.features.ownership.db import api as ownership_api
 
 DIR_ABS_PATH = os.path.abspath(Path(__file__).parent.parent)
 RESOURCES = Path(DIR_ABS_PATH) / "document" / "tests" / "resources"
@@ -36,10 +38,14 @@ async def test_apply_pages_op(three_pages_pdf: schema.Document, db_session: Asyn
     doc = (await db_session.execute(
         select(orm.Document).where(orm.Document.id == three_pages_pdf.id)
     )).scalar()
-    user = doc.user
+    _, owner_id = await ownership_api.get_owner_info(
+        db_session,
+        resource_type=ResourceType.NODE,
+        resource_id=doc.id
+    )
 
     orinal_pages = await doc_dbapi.get_last_ver_pages(
-        db_session, document_id=doc.id, user_id=user.id
+        db_session, document_id=doc.id, user_id=owner_id
     )
     orinal_pages[0].text = "cat"
     orinal_pages[1].text = "doc"
@@ -47,7 +53,7 @@ async def test_apply_pages_op(three_pages_pdf: schema.Document, db_session: Asyn
     page = schema.MovePage(id=orinal_pages[0].id, number=orinal_pages[0].number)
     items = [schema.PageAndRotOp(page=page, angle=0)]
 
-    await page_mngm_dbapi.apply_pages_op(db_session, items, user_id=user.id)
+    await page_mngm_dbapi.apply_pages_op(db_session, items, user_id=owner_id)
 
     new_version_count = (await db_session.execute(
         select(func.count(orm.DocumentVersion.id)).where(

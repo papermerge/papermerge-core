@@ -147,6 +147,7 @@ class FolderShort(BaseModel):
     ctype: Literal["folder"]
     tags: List[Tag] = []
     parent_id: UUID | None
+    is_shared: bool = False
 
     # Configs
     model_config = ConfigDict(from_attributes=True)
@@ -155,9 +156,9 @@ class FolderShort(BaseModel):
 class Folder(NewFolder):
     id: UUID
     tags: List[Tag] = []
-    created_at: datetime
-    updated_at: datetime
-    owned_by: OwnedBy
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    owned_by: OwnedBy | None = None
     perms: list[str] = []
     is_shared: bool = False
 

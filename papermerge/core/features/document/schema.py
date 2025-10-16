@@ -206,6 +206,7 @@ class DocumentBase(BaseModel):
     parent_id: UUID | None
     preview_status: str | None = None
     thumbnail_url: ThumbnailUrl = None
+    is_shared: bool = False
 
     @field_validator("thumbnail_url", mode="before")
     def thumbnail_url_validator(cls, value, info):

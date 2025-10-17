@@ -1,10 +1,11 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
 import {useGetCustomFieldQuery} from "@/features/custom-fields/storage/api"
-import {selectCustomFieldDetailsID} from "@/features/custom-fields/storage/custom_field"
+import {selectPanelDetails} from "@/features/ui/panelRegistry"
+
 import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
-import {usePanelMode} from "@/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import type {PanelMode} from "@/types"
 import type {CustomFieldDetails} from "@/types.d/customFields"
 import {formatTimestamp} from "@/utils/formatTime"
@@ -26,12 +27,12 @@ import LoadingPanel from "@/components/LoadingPanel"
 import {useTranslation} from "react-i18next"
 
 export default function CustomFieldDetailsContainer() {
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
   const dispatch = useAppDispatch()
   const {t} = useTranslation()
-  const customFieldID = useAppSelector(s => selectCustomFieldDetailsID(s, mode))
+  const customFieldID = useAppSelector(s => selectPanelDetails(s, panelId))
   const {data, isLoading, isFetching, error} = useGetCustomFieldQuery(
-    customFieldID || "",
+    customFieldID?.entityId || "",
     {
       skip: !customFieldID
     }
@@ -50,7 +51,7 @@ export default function CustomFieldDetailsContainer() {
       <LoadingOverlay visible={isFetching} />
       <Stack style={{height: "100%", overflow: "hidden"}}>
         <Group justify="space-between" style={{flexShrink: 0}}>
-          <Path customField={data} mode={mode} />
+          <Path customField={data} panelId={panelId} />
           <Group>
             <DeleteCustomFieldButton customFieldId={data.id} />
             <EditButton customFieldId={data.id} />
@@ -86,15 +87,15 @@ export default function CustomFieldDetailsContainer() {
 
 function Path({
   customField,
-  mode
+  panelId
 }: {
   customField: CustomFieldDetails | null
-  mode: PanelMode
+  panelId: PanelMode
 }) {
   const navigation = useNavigation()
   const {t} = useTranslation()
 
-  if (mode == "main") {
+  if (panelId == "main") {
     return (
       <Group>
         <Breadcrumbs>

@@ -1,13 +1,10 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import {
-  auditLogTableFiltersUpdated,
-  selectAuditLogFreeTextFilterValue,
-  selectAuditLogOperationFilterValue,
-  selectAuditLogTableNameFilterValue,
-  selectAuditLogUsernameFilterValue
-} from "@/features/audit/storage/audit"
 import type {AuditOperation, TimestampFilterType} from "@/features/audit/types"
-import {usePanelMode} from "@/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {
+  selectPanelFilters,
+  updatePanelFilters
+} from "@/features/ui/panelRegistry"
 import {SearchContainer} from "kommon"
 import {useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
@@ -20,19 +17,14 @@ const DEBOUNCE_MS = 300 // 300 miliseconds
 
 export default function Search() {
   const {t} = useTranslation()
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
 
   const dispatch = useAppDispatch()
-  const tableNames = useAppSelector(s =>
-    selectAuditLogTableNameFilterValue(s, mode)
-  )
-  const operations = useAppSelector(s =>
-    selectAuditLogOperationFilterValue(s, mode)
-  )
-  const users = useAppSelector(s => selectAuditLogUsernameFilterValue(s, mode))
-  const searchText = useAppSelector(s =>
-    selectAuditLogFreeTextFilterValue(s, mode)
-  )
+  const filters = useAppSelector(s => selectPanelFilters(s, panelId))
+  const tableNames = filters.tableNames
+  const operations = filters.operations
+  const users = filters.users
+  const searchText = filters.freeText
   const [localTableNames, setLocalTableNames] = useState<string[]>(
     tableNames || []
   )
@@ -91,13 +83,15 @@ export default function Search() {
 
   const onSearch = () => {
     dispatch(
-      auditLogTableFiltersUpdated({
-        mode,
-        tableNameFilterValue: localTableNames,
-        operationFilterValue: localOperations,
-        timestampFilterValue: localRange,
-        usernameFilterValue: localUsers,
-        freeTextFilterValue: debouncedSearchTextValue
+      updatePanelFilters({
+        panelId,
+        filters: {
+          tableName: localTableNames,
+          operation: localOperations,
+          timestamp: localRange,
+          username: localUsers,
+          freeText: debouncedSearchTextValue
+        }
       })
     )
   }
@@ -109,13 +103,15 @@ export default function Search() {
     setLocalUsers([])
 
     dispatch(
-      auditLogTableFiltersUpdated({
-        mode,
-        tableNameFilterValue: undefined,
-        operationFilterValue: undefined,
-        timestampFilterValue: undefined,
-        usernameFilterValue: undefined,
-        freeTextFilterValue: undefined
+      updatePanelFilters({
+        panelId,
+        filters: {
+          tableName: undefined,
+          operation: undefined,
+          timestamp: undefined,
+          username: undefined,
+          freeText: undefined
+        }
       })
     )
   }

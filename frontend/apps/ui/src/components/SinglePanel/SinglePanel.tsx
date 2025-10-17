@@ -1,4 +1,3 @@
-// components/SinglePanel/SinglePanel.tsx
 import {useAppSelector} from "@/app/hooks"
 import {useContext} from "react"
 

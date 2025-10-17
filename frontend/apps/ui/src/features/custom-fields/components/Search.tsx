@@ -1,11 +1,11 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import FilterByDataType from "@/components/FilterByCustomFieldDataType"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
-  customFieldsTableFiltersUpdated,
-  selectCustomFieldFreeTextFilterValue,
-  selectCustomFieldTypesFilterValue
-} from "@/features/custom-fields/storage/custom_field"
-import {usePanelMode} from "@/hooks"
+  selectPanelFilters,
+  updatePanelFilters
+} from "@/features/ui/panelRegistry"
+
 import {SearchContainer} from "kommon"
 import {useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
@@ -14,16 +14,13 @@ const DEBOUNCE_MS = 300 // 300 miliseconds
 
 export default function Search() {
   const {t} = useTranslation()
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
 
   const dispatch = useAppDispatch()
 
-  const searchText = useAppSelector(s =>
-    selectCustomFieldFreeTextFilterValue(s, mode)
-  )
-  const cfTypes = useAppSelector(s =>
-    selectCustomFieldTypesFilterValue(s, mode)
-  )
+  const filters = useAppSelector(s => selectPanelFilters(s, panelId))
+  const searchText = filters.freeText
+  const cfTypes = filters.cfTypes
 
   const [localTypes, setLocalTypes] = useState<string[]>(cfTypes || [])
   const [localSearchTextValue, setSearchTextValue] = useState(searchText || "")
@@ -58,10 +55,12 @@ export default function Search() {
 
   const onSearch = () => {
     dispatch(
-      customFieldsTableFiltersUpdated({
-        mode,
-        freeTextFilterValue: debouncedSearchTextValue,
-        typesFilterValue: localTypes
+      updatePanelFilters({
+        panelId,
+        filters: {
+          freeText: debouncedSearchTextValue,
+          cfTypes: localTypes
+        }
       })
     )
   }
@@ -70,10 +69,12 @@ export default function Search() {
     setLocalTypes([])
 
     dispatch(
-      customFieldsTableFiltersUpdated({
-        mode,
-        freeTextFilterValue: undefined,
-        typesFilterValue: undefined
+      updatePanelFilters({
+        panelId,
+        filters: {
+          freeText: undefined,
+          cfTypes: undefined
+        }
       })
     )
   }

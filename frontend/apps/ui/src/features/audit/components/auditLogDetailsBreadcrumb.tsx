@@ -5,12 +5,16 @@ import {Link} from "react-router-dom"
 
 interface Args {
   auditLogID: string
-  mode: PanelMode
+  panelId: PanelMode
   t?: TFunction
 }
 
-export default function AuditLogDetailsBreadcrumb({auditLogID, mode, t}: Args) {
-  if (mode == "main") {
+export default function AuditLogDetailsBreadcrumb({
+  auditLogID,
+  panelId,
+  t
+}: Args) {
+  if (panelId == "main") {
     return (
       <Breadcrumbs separatorMargin="md" mt="xs">
         <Link to="/audit-logs/">{t?.("") || "Audit Logs"}</Link>

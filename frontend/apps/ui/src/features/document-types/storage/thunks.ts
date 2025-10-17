@@ -1,30 +1,39 @@
-import type {AppDispatch, RootState} from "@/app/types"
+import type {RootState} from "@/app/types"
 import {
-  mainPanelDocumentTypeDetailsUpdated,
-  secondaryPanelDocumentTypeDetailsUpdated
-} from "@/features/document-types/storage/documentType"
-import {
-  mainPanelComponentUpdated,
-  secondaryPanelComponentUpdated
-} from "@/features/ui/uiSlice"
+  closePanelAction,
+  showDetailsInPanel,
+  showListInPanel
+} from "@/features/ui/panelActions"
 import type {ThunkAction, UnknownAction} from "@reduxjs/toolkit"
 
+// ============================================================================
+// ROLE-SPECIFIC ACTIONS
+// ============================================================================
+
+export const showDocumentTypeDetailsInPanel = (
+  panelId: string,
+  documentTypeId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showDetailsInPanel(panelId, "documentTypeDetails", documentTypeId)
+}
+
+export const showDocumentTypeListInPanel = (
+  panelId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showListInPanel(panelId, "documentTypesList")
+}
+
+// Convenience wrappers for backward compatibility
 export const showDocumentTypeDetailsInSecondaryPanel = (
   documentTypeId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelDocumentTypeDetailsUpdated(documentTypeId))
-    dispatch(secondaryPanelComponentUpdated("documentTypeDetails"))
-  }
+  return showDocumentTypeDetailsInPanel("secondary", documentTypeId)
 }
 
 export const showDocumentTypeDetailsInMainPanel = (
   documentTypeId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(mainPanelDocumentTypeDetailsUpdated(documentTypeId))
-    dispatch(mainPanelComponentUpdated("documentTypeDetails"))
-  }
+  return showDocumentTypeDetailsInPanel("main", documentTypeId)
 }
 
 export const closeDocumentTypeDetailsSecondaryPanel = (): ThunkAction<
@@ -33,8 +42,5 @@ export const closeDocumentTypeDetailsSecondaryPanel = (): ThunkAction<
   undefined,
   UnknownAction
 > => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelDocumentTypeDetailsUpdated(undefined))
-    dispatch(secondaryPanelComponentUpdated(undefined))
-  }
+  return closePanelAction("secondary")
 }

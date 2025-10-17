@@ -1,4 +1,3 @@
-// features/roles/storage/role.ts
 import {AppStartListening} from "@/app/listenerMiddleware"
 import {RootState} from "@/app/types"
 import type {ServerErrorType} from "@/types"

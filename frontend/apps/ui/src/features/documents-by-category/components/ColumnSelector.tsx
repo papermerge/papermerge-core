@@ -1,9 +1,9 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
-  documentsByCategoryListVisibleColumnsUpdated,
-  selectDocumentsByCategoryVisibleColumns
-} from "@/features/documents-by-category/storage/documentsByCategory"
-import {usePanelMode} from "@/hooks"
+  selectPanelVisibleColumns,
+  setPanelList
+} from "@/features/ui/panelRegistry"
 import {ActionIcon, Checkbox, Popover, ScrollArea, Stack} from "@mantine/core"
 import {IconColumns} from "@tabler/icons-react"
 import {TFunction} from "i18next"
@@ -18,11 +18,11 @@ interface Args {
 }
 
 export default function ColumnSelectorContainer({items}: Args) {
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
   const {t} = useTranslation()
   const dispatch = useAppDispatch()
   const visibleColumns = useAppSelector(s =>
-    selectDocumentsByCategoryVisibleColumns(s, mode)
+    selectPanelVisibleColumns(s, panelId)
   )
   const allColumns = docByCatColumns({items, t}).map(c => {
     if (!visibleColumns) {
@@ -45,9 +45,9 @@ export default function ColumnSelectorContainer({items}: Args) {
       .map(c => c.key)
 
     dispatch(
-      documentsByCategoryListVisibleColumnsUpdated({
-        mode,
-        value: newVisibleColumns
+      setPanelList({
+        panelId,
+        list: {visibleColumns: newVisibleColumns}
       })
     )
   }
@@ -79,7 +79,7 @@ interface ColumnSelectorArgs {
 function ColumnSelector({columns, onColumnsChange, t}: ColumnSelectorArgs) {
   const [opened, setOpened] = useState(false)
 
-  const handleToggle = (columnKey: keyof T) => {
+  const handleToggle = (columnKey: any) => {
     const newColumns = columns.map(col =>
       col.key === columnKey ? {...col, visible: !col.visible} : col
     )

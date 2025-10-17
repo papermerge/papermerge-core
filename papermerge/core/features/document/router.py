@@ -370,7 +370,7 @@ async def update_document_type(
     )
 
 
-@router.get("/type/{document_type_id}", response_model=schema.PaginatedResponse[schema.DocumentCFV])
+@router.get("/type/{document_type_id}/", response_model=schema.PaginatedResponse[schema.DocumentCFV])
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def get_documents_by_type(
     document_type_id: uuid.UUID,

@@ -1,31 +1,28 @@
 import {useAppSelector} from "@/app/hooks"
 import {useGetPaginatedCustomFieldsQuery} from "@/features/custom-fields/storage/api"
-import {
-  selectCustomFieldFreeTextFilterValue,
-  selectCustomFieldPageNumber,
-  selectCustomFieldPageSize,
-  selectCustomFieldSorting,
-  selectCustomFieldTypesFilterValue
-} from "@/features/custom-fields/storage/custom_field"
 import type {
   CustomFieldQueryParams,
   SortBy
 } from "@/features/custom-fields/types"
-import {usePanelMode} from "@/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {
+  selectPanelFilters,
+  selectPanelPageNumber,
+  selectPanelPageSize,
+  selectPanelSorting
+} from "@/features/ui/panelRegistry"
 
 function useQueryParams(): CustomFieldQueryParams {
-  const mode = usePanelMode()
-  const pageSize = useAppSelector(s => selectCustomFieldPageSize(s, mode)) || 10
-  const pageNumber =
-    useAppSelector(s => selectCustomFieldPageNumber(s, mode)) || 1
-  const sorting = useAppSelector(s => selectCustomFieldSorting(s, mode))
+  const {panelId} = usePanel()
+
+  const pageSize = useAppSelector(s => selectPanelPageSize(s, panelId)) || 10
+  const pageNumber = useAppSelector(s => selectPanelPageNumber(s, panelId)) || 1
+  const sorting = useAppSelector(s => selectPanelSorting(s, panelId))
+  const filters = useAppSelector(s => selectPanelFilters(s, panelId))
+
   const column = sorting?.column as SortBy | undefined
-  const free_text = useAppSelector(s =>
-    selectCustomFieldFreeTextFilterValue(s, mode)
-  )
-  const cf_types = useAppSelector(s =>
-    selectCustomFieldTypesFilterValue(s, mode)
-  )
+  const free_text = filters.freeText
+  const cf_types = filters.cfTypes
 
   const queryParams: CustomFieldQueryParams = {
     page_size: pageSize,

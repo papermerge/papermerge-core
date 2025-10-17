@@ -14,8 +14,8 @@ class AuditLog(BaseModel):
     record_id: uuid.UUID
     operation: AuditOperation
     timestamp: datetime
-    user_id: uuid.UUID
-    username: str
+    user_id: uuid.UUID | None = None
+    username: str | None = None
 
     # Config
     model_config = ConfigDict(from_attributes=True)

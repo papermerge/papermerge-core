@@ -1,21 +1,22 @@
 import {useAppSelector} from "@/app/hooks"
 import {useGetPaginatedTagsQuery} from "@/features/tags/storage/api"
-import {
-  selectTagFreeTextFilterValue,
-  selectTagPageNumber,
-  selectTagPageSize,
-  selectTagSorting
-} from "@/features/tags/storage/tag"
 import type {SortBy, TagQueryParams} from "@/features/tags/types"
-import {usePanelMode} from "@/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {
+  selectPanelFilters,
+  selectPanelPageNumber,
+  selectPanelPageSize,
+  selectPanelSorting
+} from "@/features/ui/panelRegistry"
 
 function useQueryParams(): TagQueryParams {
-  const mode = usePanelMode()
-  const pageSize = useAppSelector(s => selectTagPageSize(s, mode)) || 10
-  const pageNumber = useAppSelector(s => selectTagPageNumber(s, mode)) || 1
-  const sorting = useAppSelector(s => selectTagSorting(s, mode))
+  const {panelId} = usePanel()
+  const pageSize = useAppSelector(s => selectPanelPageSize(s, panelId)) || 10
+  const pageNumber = useAppSelector(s => selectPanelPageNumber(s, panelId)) || 1
+  const sorting = useAppSelector(s => selectPanelSorting(s, panelId))
+  const filters = useAppSelector(s => selectPanelFilters(s, panelId))
   const column = sorting?.column as SortBy | undefined
-  const free_text = useAppSelector(s => selectTagFreeTextFilterValue(s, mode))
+  const free_text = filters.freeText
 
   const queryParams: TagQueryParams = {
     page_size: pageSize,

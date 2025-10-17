@@ -1,5 +1,4 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import PanelContext from "@/contexts/PanelContext"
 import {useGetDocumentTypesGroupedQuery} from "@/features/document-types/storage/api"
 import {DocTypeGrouped} from "@/features/document-types/types"
 import {
@@ -7,19 +6,16 @@ import {
   selectDocumentCategoryID
 } from "@/features/documents-by-category/storage/documentsByCategory"
 import {Select} from "@mantine/core"
-import {useContext, useEffect, useState} from "react"
+import {useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
 import {useNavigate} from "react-router-dom"
-
-import type {PanelMode} from "@/types"
 
 export default function SelectDocumentCategory() {
   const {t} = useTranslation()
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
 
-  const mode: PanelMode = useContext(PanelContext)
-  const categoryID = useAppSelector(s => selectDocumentCategoryID(s, mode))
+  const categoryID = useAppSelector(selectDocumentCategoryID)
   const {data: allDocumentTypes = []} = useGetDocumentTypesGroupedQuery()
   const [currentDocumentTypeName, setCurrentDocumentTypeName] = useState<
     string | undefined
@@ -43,12 +39,7 @@ export default function SelectDocumentCategory() {
     }
 
     setCurrentDocumentTypeName(newValue)
-    dispatch(
-      documentCategoryIDUpdated({
-        mode,
-        id: document_type_id
-      })
-    )
+    dispatch(documentCategoryIDUpdated(document_type_id))
     navigate(`/documents/by/category/${document_type_id}`)
   }
 

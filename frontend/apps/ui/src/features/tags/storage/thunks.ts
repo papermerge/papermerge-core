@@ -1,30 +1,35 @@
-import type {AppDispatch, RootState} from "@/app/types"
+import type {RootState} from "@/app/types"
 import {
-  mainPanelTagDetailsUpdated,
-  secondaryPanelTagDetailsUpdated
-} from "@/features/tags/storage/tag"
-import {
-  mainPanelComponentUpdated,
-  secondaryPanelComponentUpdated
-} from "@/features/ui/uiSlice"
+  closePanelAction,
+  showDetailsInPanel,
+  showListInPanel
+} from "@/features/ui/panelActions"
 import type {ThunkAction, UnknownAction} from "@reduxjs/toolkit"
 
+export const showTagDetailsInPanel = (
+  panelId: string,
+  tagId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showDetailsInPanel(panelId, "tagDetails", tagId)
+}
+
+export const showTagListInPanel = (
+  panelId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showListInPanel(panelId, "tagsList")
+}
+
+// Convenience wrappers for backward compatibility
 export const showTagDetailsInSecondaryPanel = (
   tagId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelTagDetailsUpdated(tagId))
-    dispatch(secondaryPanelComponentUpdated("tagDetails"))
-  }
+  return showTagDetailsInPanel("secondary", tagId)
 }
 
 export const showTagDetailsInMainPanel = (
   tagId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(mainPanelTagDetailsUpdated(tagId))
-    dispatch(mainPanelComponentUpdated("tagDetails"))
-  }
+  return showTagDetailsInPanel("main", tagId)
 }
 
 export const closeTagDetailsSecondaryPanel = (): ThunkAction<
@@ -33,8 +38,5 @@ export const closeTagDetailsSecondaryPanel = (): ThunkAction<
   undefined,
   UnknownAction
 > => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelTagDetailsUpdated(undefined))
-    dispatch(secondaryPanelComponentUpdated(undefined))
-  }
+  return closePanelAction("secondary")
 }

@@ -1,7 +1,7 @@
 import {store} from "@/app/store"
 import DualPanel from "@/components/DualPanel"
-import {showDocumentTypeDetailsInMainPanel} from "@/features/document-types/storage/thunks"
 import {LoaderFunctionArgs} from "react-router"
+import {showDocumentTypeDetailsInMainPanel} from "../storage/thunks"
 
 export default function DocumentTypeDetailsPage() {
   return <DualPanel />
@@ -9,15 +9,10 @@ export default function DocumentTypeDetailsPage() {
 
 export async function loader({params, request}: LoaderFunctionArgs) {
   const url = new URL(request.url)
-  let entryID = "whatever"
 
   if (params.id) {
-    entryID = params.id
+    store.dispatch(showDocumentTypeDetailsInMainPanel(params.id))
   }
 
-  if (entryID) {
-    store.dispatch(showDocumentTypeDetailsInMainPanel(entryID))
-  }
-
-  return {entryID, urlParams: url.searchParams}
+  return {entryID: params.id, urlParams: url.searchParams}
 }

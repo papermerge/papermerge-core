@@ -2,9 +2,10 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
 import LoadingPanel from "@/components/LoadingPanel"
 import {useGetAuditLogQuery} from "@/features/audit/storage/api"
-import {selectAuditLogDetailsID} from "@/features/audit/storage/audit"
 import {closeAuditLogDetailsSecondaryPanel} from "@/features/audit/storage/thunks"
-import {usePanelMode} from "@/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectPanelDetails} from "@/features/ui/panelRegistry"
+
 import {Group, LoadingOverlay, Paper, Stack} from "@mantine/core"
 import {useTranslation} from "react-i18next"
 import AuditLogDetailsBreadcrumb from "./auditLogDetailsBreadcrumb"
@@ -12,11 +13,11 @@ import AuditLogDetails from "./Details"
 
 export default function AuditLogDetailsContainer() {
   const {t} = useTranslation()
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
   const dispatch = useAppDispatch()
-  const auditLogID = useAppSelector(s => selectAuditLogDetailsID(s, mode))
+  const auditLogID = useAppSelector(s => selectPanelDetails(s, panelId))
   const {data, isLoading, isFetching, error} = useGetAuditLogQuery(
-    auditLogID || "",
+    auditLogID?.entityId || "",
     {
       skip: !auditLogID
     }
@@ -35,7 +36,11 @@ export default function AuditLogDetailsContainer() {
       <LoadingOverlay visible={isFetching} />
       <Stack style={{height: "100%"}}>
         <Group justify="space-between">
-          <AuditLogDetailsBreadcrumb t={t} auditLogID={data.id} mode={mode} />
+          <AuditLogDetailsBreadcrumb
+            t={t}
+            auditLogID={data.id}
+            panelId={panelId}
+          />
           <CloseSecondaryPanel
             onClick={() => dispatch(closeAuditLogDetailsSecondaryPanel())}
           />

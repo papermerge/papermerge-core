@@ -1,30 +1,39 @@
-import type {AppDispatch, RootState} from "@/app/types"
+import type {RootState} from "@/app/types"
 import {
-  mainPanelCustomFieldDetailsUpdated,
-  secondaryPanelCustomFieldDetailsUpdated
-} from "@/features/custom-fields/storage/custom_field"
-import {
-  mainPanelComponentUpdated,
-  secondaryPanelComponentUpdated
-} from "@/features/ui/uiSlice"
+  closePanelAction,
+  showDetailsInPanel,
+  showListInPanel
+} from "@/features/ui/panelActions"
 import type {ThunkAction, UnknownAction} from "@reduxjs/toolkit"
 
+// ============================================================================
+// ROLE-SPECIFIC ACTIONS
+// ============================================================================
+
+export const showCustomFieldDetailsInPanel = (
+  panelId: string,
+  customFieldId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showDetailsInPanel(panelId, "customFieldDetails", customFieldId)
+}
+
+export const showCustomFieldListInPanel = (
+  panelId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showListInPanel(panelId, "customFieldsList")
+}
+
+// Convenience wrappers for backward compatibility
 export const showCustomFieldDetailsInSecondaryPanel = (
   customFieldId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelCustomFieldDetailsUpdated(customFieldId))
-    dispatch(secondaryPanelComponentUpdated("customFieldDetails"))
-  }
+  return showCustomFieldDetailsInPanel("secondary", customFieldId)
 }
 
 export const showCustomFieldDetailsInMainPanel = (
   customFieldId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(mainPanelCustomFieldDetailsUpdated(customFieldId))
-    dispatch(mainPanelComponentUpdated("customFieldDetails"))
-  }
+  return showCustomFieldDetailsInPanel("main", customFieldId)
 }
 
 export const closeCustomFieldDetailsSecondaryPanel = (): ThunkAction<
@@ -33,8 +42,5 @@ export const closeCustomFieldDetailsSecondaryPanel = (): ThunkAction<
   undefined,
   UnknownAction
 > => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelCustomFieldDetailsUpdated(undefined))
-    dispatch(secondaryPanelComponentUpdated(undefined))
-  }
+  return closePanelAction("secondary")
 }

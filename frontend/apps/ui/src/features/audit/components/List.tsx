@@ -7,13 +7,10 @@ import Search from "./Search"
 
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import useVisibleColumns from "@/features/audit/hooks/useVisibleColumns"
-import {
-  auditLogPaginationUpdated,
-  auditLogSortingUpdated,
-  selectAuditLogDetailsID
-} from "@/features/audit/storage/audit"
 import {showAuditLogDetailsInSecondaryPanel} from "@/features/audit/storage/thunks"
-import {usePanelMode} from "@/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectPanelDetailsEntityId} from "@/features/ui/panelRegistry"
+
 import {DataTable, TablePagination} from "kommon"
 import {useNavigate} from "react-router"
 import auditLogColumns from "./auditLogColumns"
@@ -22,35 +19,32 @@ import ColumnSelector from "./ColumnSelectorContainer"
 export default function AuditLogsList() {
   const {t} = useTranslation()
   const dispatch = useAppDispatch()
-  const mode = usePanelMode()
+  const {panelId, actions} = usePanel()
   const navigate = useNavigate()
   const {isError, data, queryParams, error, isLoading, isFetching} =
     useAuditLogTable()
 
   const auditLogDetailsID = useAppSelector(s =>
-    selectAuditLogDetailsID(s, "secondary")
+    selectPanelDetailsEntityId(s, "secondary")
   )
 
   const visibleColumns = useVisibleColumns(auditLogColumns(t))
 
   const handleSortChange = (value: SortState) => {
-    dispatch(auditLogSortingUpdated({mode, value}))
+    actions.updateSorting(value)
+  }
+
+  const handleSelectionChange = (newSelection: Set<string>) => {
+    const arr = Array.from(newSelection)
+    actions.setSelection(arr)
   }
 
   const handlePageSizeChange = (newValue: number) => {
-    dispatch(
-      auditLogPaginationUpdated({
-        mode,
-        value: {
-          pageSize: newValue,
-          pageNumber: 1
-        }
-      })
-    )
+    actions.updatePagination({pageSize: newValue})
   }
 
   const handlePageNumberChange = (pageNumber: number) => {
-    dispatch(auditLogPaginationUpdated({mode, value: {pageNumber}}))
+    actions.updatePagination({pageNumber})
   }
 
   const onTableRowClick = (

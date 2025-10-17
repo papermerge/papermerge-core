@@ -1,40 +1,53 @@
-import type {AppDispatch, RootState} from "@/app/types"
+import type {RootState} from "@/app/types"
 import {
-  mainPanelDocumentsByCategoryDetailsUpdated,
-  secondaryPanelDocumentsByCategoryDetailsUpdated
-} from "@/features/documents-by-category/storage/documentsByCategory"
-import {
-  mainPanelComponentUpdated,
-  secondaryPanelComponentUpdated
-} from "@/features/ui/uiSlice"
+  closePanelAction,
+  showDetailsInPanel,
+  showListInPanel
+} from "@/features/ui/panelActions"
 import type {ThunkAction, UnknownAction} from "@reduxjs/toolkit"
 
+// ============================================================================
+// ROLE-SPECIFIC ACTIONS
+// ============================================================================
+
+export const showDocumentsByCategoryDetailsInPanel = (
+  panelId: string,
+  documentsByCategoryId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showDetailsInPanel(
+    panelId,
+    "documentsByCategoryDetails",
+    documentsByCategoryId
+  )
+}
+
+export const showDocumentsByCategoryListInPanel = (
+  panelId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showListInPanel(panelId, "documentsListByCategory")
+}
+
+// Convenience wrappers for backward compatibility
 export const showDocumentDetailsInSecondaryPanel = (
-  documentId: string
+  documentsByCategoryId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelDocumentsByCategoryDetailsUpdated(documentId))
-    dispatch(secondaryPanelComponentUpdated("documentsByCategoryDetails"))
-  }
+  return showDocumentsByCategoryDetailsInPanel(
+    "secondary",
+    documentsByCategoryId
+  )
 }
 
-export const showDocumentDetailsInMainPanel = (
-  documentId: string
+export const showDocumentsByCategoryDetailsInMainPanel = (
+  documentsByCategoryId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(mainPanelDocumentsByCategoryDetailsUpdated(documentId))
-    dispatch(mainPanelComponentUpdated("documentsByCategoryDetails"))
-  }
+  return showDocumentsByCategoryDetailsInPanel("main", documentsByCategoryId)
 }
 
-export const closeDocumentDetailsSecondaryPanel = (): ThunkAction<
+export const closeDocumentsByCategoryDetailsSecondaryPanel = (): ThunkAction<
   void,
   RootState,
   undefined,
   UnknownAction
 > => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelDocumentsByCategoryDetailsUpdated(undefined))
-    dispatch(secondaryPanelComponentUpdated(undefined))
-  }
+  return closePanelAction("secondary")
 }

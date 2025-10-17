@@ -1,7 +1,12 @@
 // features/ui/panelRegistry.ts
+import type {RootState} from "@/app/types"
 import type {PanelComponent} from "@/types.d/ui"
 import {createSlice, PayloadAction} from "@reduxjs/toolkit"
 import type {SortState} from "kommon"
+
+// ============================================================================
+// TYPES
+// ============================================================================
 
 export interface PanelListState {
   pageNumber?: number
@@ -16,17 +21,22 @@ export interface PanelDetailsState {
   entityId: string
 }
 
+export interface ComponentState {
+  list?: PanelListState
+  details?: PanelDetailsState
+  custom?: Record<string, any>
+}
+
 export interface PanelState {
   // What component should be rendered in this panel
   component?: PanelComponent
   // What type of view (list, details, etc.)
   type: "list" | "details" | "viewer" | "commander" | "search"
-  // List-specific state
-  list?: PanelListState
-  // Details-specific state
-  details?: PanelDetailsState
-  // Custom state for special cases
-  custom?: Record<string, any>
+  // State organized by component name
+  // e.g., { rolesList: { list: {...} }, usersList: { list: {...} } }
+  componentStates: {
+    [componentName: string]: ComponentState
+  }
 }
 
 export interface PanelRegistryState {
@@ -35,12 +45,28 @@ export interface PanelRegistryState {
   }
 }
 
+// ============================================================================
+// INITIAL STATE
+// ============================================================================
+
 const initialState: PanelRegistryState = {
   panels: {
-    main: {type: "list", component: undefined},
-    secondary: {type: "list", component: undefined}
+    main: {
+      type: "list",
+      component: undefined,
+      componentStates: {}
+    },
+    secondary: {
+      type: "list",
+      component: undefined,
+      componentStates: {}
+    }
   }
 }
+
+// ============================================================================
+// SLICE
+// ============================================================================
 
 const panelRegistrySlice = createSlice({
   name: "panelRegistry",
@@ -56,11 +82,20 @@ const panelRegistrySlice = createSlice({
     ) => {
       const {panelId, component} = action.payload
       if (!state.panels[panelId]) {
-        state.panels[panelId] = {type: "list"}
+        state.panels[panelId] = {
+          type: "list",
+          componentStates: {}
+        }
       }
       state.panels[panelId].component = component
+
+      // Initialize component state if it doesn't exist
+      if (component && !state.panels[panelId].componentStates[component]) {
+        state.panels[panelId].componentStates[component] = {}
+      }
     },
 
+    // Update list state for current component
     setPanelList: (
       state,
       action: PayloadAction<{
@@ -69,16 +104,26 @@ const panelRegistrySlice = createSlice({
       }>
     ) => {
       const {panelId, list} = action.payload
-      if (!state.panels[panelId]) {
-        state.panels[panelId] = {type: "list"}
+      const panel = state.panels[panelId]
+      const component = panel?.component
+
+      if (!component) {
+        console.warn(`setPanelList: No component set for panel ${panelId}`)
+        return
       }
-      state.panels[panelId].type = "list"
-      state.panels[panelId].list = {
-        ...state.panels[panelId].list,
+
+      if (!panel.componentStates[component]) {
+        panel.componentStates[component] = {}
+      }
+
+      panel.type = "list"
+      panel.componentStates[component].list = {
+        ...panel.componentStates[component].list,
         ...list
       }
     },
 
+    // Update filters for current component
     updatePanelFilters: (
       state,
       action: PayloadAction<{
@@ -87,15 +132,31 @@ const panelRegistrySlice = createSlice({
       }>
     ) => {
       const {panelId, filters} = action.payload
-      if (!state.panels[panelId]?.list) {
-        state.panels[panelId] = {type: "list", list: {}}
+      const panel = state.panels[panelId]
+      const component = panel?.component
+
+      if (!component) {
+        console.warn(
+          `updatePanelFilters: No component set for panel ${panelId}`
+        )
+        return
       }
-      state.panels[panelId].list!.filters = {
-        ...state.panels[panelId].list!.filters,
+
+      if (!panel.componentStates[component]) {
+        panel.componentStates[component] = {}
+      }
+
+      if (!panel.componentStates[component].list) {
+        panel.componentStates[component].list = {}
+      }
+
+      panel.componentStates[component].list!.filters = {
+        ...panel.componentStates[component].list!.filters,
         ...filters
       }
     },
 
+    // Set details state for current component
     setPanelDetails: (
       state,
       action: PayloadAction<{
@@ -104,13 +165,23 @@ const panelRegistrySlice = createSlice({
       }>
     ) => {
       const {panelId, entityId} = action.payload
-      state.panels[panelId] = {
-        ...state.panels[panelId],
-        type: "details",
-        details: {entityId}
+      const panel = state.panels[panelId]
+      const component = panel?.component
+
+      if (!component) {
+        console.warn(`setPanelDetails: No component set for panel ${panelId}`)
+        return
       }
+
+      if (!panel.componentStates[component]) {
+        panel.componentStates[component] = {}
+      }
+
+      panel.type = "details"
+      panel.componentStates[component].details = {entityId}
     },
 
+    // Set panel type
     setPanelType: (
       state,
       action: PayloadAction<{
@@ -120,11 +191,12 @@ const panelRegistrySlice = createSlice({
     ) => {
       const {panelId, type} = action.payload
       if (!state.panels[panelId]) {
-        state.panels[panelId] = {type}
+        state.panels[panelId] = {type, componentStates: {}}
       }
       state.panels[panelId].type = type
     },
 
+    // Set custom state for current component
     setPanelCustomState: (
       state,
       action: PayloadAction<{
@@ -134,25 +206,62 @@ const panelRegistrySlice = createSlice({
       }>
     ) => {
       const {panelId, key, value} = action.payload
-      if (!state.panels[panelId]) {
-        state.panels[panelId] = {type: "list"}
+      const panel = state.panels[panelId]
+      const component = panel?.component
+
+      if (!component) {
+        console.warn(
+          `setPanelCustomState: No component set for panel ${panelId}`
+        )
+        return
       }
-      if (!state.panels[panelId].custom) {
-        state.panels[panelId].custom = {}
+
+      if (!panel.componentStates[component]) {
+        panel.componentStates[component] = {}
       }
-      state.panels[panelId].custom![key] = value
+
+      if (!panel.componentStates[component].custom) {
+        panel.componentStates[component].custom = {}
+      }
+
+      panel.componentStates[component].custom![key] = value
     },
 
+    // Clear selection for current component
     clearPanelSelection: (state, action: PayloadAction<{panelId: string}>) => {
       const {panelId} = action.payload
-      if (state.panels[panelId]?.list) {
-        state.panels[panelId].list!.selectedIDs = []
+      const panel = state.panels[panelId]
+      const component = panel?.component
+
+      if (!component) return
+
+      if (panel.componentStates[component]?.list) {
+        panel.componentStates[component].list!.selectedIDs = []
       }
     },
 
+    // Reset current component's state
+    resetPanelComponentState: (
+      state,
+      action: PayloadAction<{panelId: string}>
+    ) => {
+      const {panelId} = action.payload
+      const panel = state.panels[panelId]
+      const component = panel?.component
+
+      if (!component) return
+
+      panel.componentStates[component] = {}
+    },
+
+    // Reset entire panel (all components)
     resetPanel: (state, action: PayloadAction<{panelId: string}>) => {
       const {panelId} = action.payload
-      state.panels[panelId] = {type: "list", list: {}}
+      state.panels[panelId] = {
+        type: "list",
+        component: undefined,
+        componentStates: {}
+      }
     },
 
     // Close a panel (typically secondary)
@@ -161,7 +270,7 @@ const panelRegistrySlice = createSlice({
       state.panels[panelId] = {
         type: "list",
         component: undefined,
-        list: {}
+        componentStates: {}
       }
     }
   }
@@ -175,6 +284,7 @@ export const {
   setPanelType,
   setPanelCustomState,
   clearPanelSelection,
+  resetPanelComponentState,
   resetPanel,
   closePanel
 } = panelRegistrySlice.actions
@@ -185,22 +295,38 @@ export default panelRegistrySlice.reducer
 // SELECTORS
 // ============================================================================
 
-import type {RootState} from "@/app/types"
-
 export const selectPanel = (state: RootState, panelId: string) =>
   state.panelRegistry.panels[panelId]
 
 export const selectPanelComponent = (state: RootState, panelId: string) =>
   selectPanel(state, panelId)?.component
 
-export const selectPanelList = (state: RootState, panelId: string) =>
-  selectPanel(state, panelId)?.list
-
-export const selectPanelDetails = (state: RootState, panelId: string) =>
-  selectPanel(state, panelId)?.details
-
 export const selectPanelType = (state: RootState, panelId: string) =>
   selectPanel(state, panelId)?.type
+
+// Get the state for the currently active component in the panel
+export const selectCurrentComponentState = (
+  state: RootState,
+  panelId: string
+): ComponentState | undefined => {
+  const panel = selectPanel(state, panelId)
+  const component = panel?.component
+  return component ? panel?.componentStates[component] : undefined
+}
+
+// Get state for a specific component (whether it's active or not)
+export const selectComponentState = (
+  state: RootState,
+  panelId: string,
+  componentName: string
+): ComponentState | undefined => {
+  const panel = selectPanel(state, panelId)
+  return panel?.componentStates[componentName]
+}
+
+// List state selectors (for current component)
+export const selectPanelList = (state: RootState, panelId: string) =>
+  selectCurrentComponentState(state, panelId)?.list
 
 export const selectPanelSelectedIDs = (state: RootState, panelId: string) =>
   selectPanelList(state, panelId)?.selectedIDs || []
@@ -222,8 +348,19 @@ export const selectPanelFilters = (state: RootState, panelId: string) =>
 export const selectPanelVisibleColumns = (state: RootState, panelId: string) =>
   selectPanelList(state, panelId)?.visibleColumns
 
+// Details state selectors (for current component)
+export const selectPanelDetails = (state: RootState, panelId: string) =>
+  selectCurrentComponentState(state, panelId)?.details
+
+export const selectPanelDetailsEntityId = (state: RootState, panelId: string) =>
+  selectPanelDetails(state, panelId)?.entityId
+
+// Custom state selectors (for current component)
 export const selectPanelCustom = (
   state: RootState,
   panelId: string,
   key: string
-) => selectPanel(state, panelId)?.custom?.[key]
+) => selectCurrentComponentState(state, panelId)?.custom?.[key]
+
+export const selectPanelAllCustom = (state: RootState, panelId: string) =>
+  selectCurrentComponentState(state, panelId)?.custom || {}

@@ -4,17 +4,23 @@ import PanelContext from "@/contexts/PanelContext"
 import {useContext, useMemo} from "react"
 import {
   clearPanelSelection,
+  resetPanel,
+  resetPanelComponentState,
+  selectCurrentComponentState,
+  selectPanel,
   setPanelCustomState,
   setPanelDetails,
   setPanelList,
+  updatePanelFilters,
   type PanelListState
 } from "../panelRegistry"
 
 export function usePanel() {
   const panelId = useContext(PanelContext)
   const dispatch = useAppDispatch()
-  const panelState = useAppSelector(
-    state => state.panelRegistry.panels[panelId]
+  const panelState = useAppSelector(state => selectPanel(state, panelId))
+  const componentState = useAppSelector(state =>
+    selectCurrentComponentState(state, panelId)
   )
 
   const actions = useMemo(
@@ -36,17 +42,7 @@ export function usePanel() {
       },
 
       updateFilters: (filters: Record<string, any>) => {
-        dispatch(
-          setPanelList({
-            panelId,
-            list: {
-              filters: {
-                ...panelState?.list?.filters,
-                ...filters
-              }
-            }
-          })
-        )
+        dispatch(updatePanelFilters({panelId, filters}))
       },
 
       updatePagination: (pagination: {
@@ -62,14 +58,23 @@ export function usePanel() {
 
       setSelection: (ids: string[]) => {
         dispatch(setPanelList({panelId, list: {selectedIDs: ids}}))
+      },
+
+      resetComponentState: () => {
+        dispatch(resetPanelComponentState({panelId}))
+      },
+
+      reset: () => {
+        dispatch(resetPanel({panelId}))
       }
     }),
-    [panelId, dispatch, panelState]
+    [panelId, dispatch]
   )
 
   return {
     panelId,
     panelState,
+    componentState,
     actions
   }
 }

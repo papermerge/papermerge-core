@@ -1,30 +1,35 @@
-import type {AppDispatch, RootState} from "@/app/types"
+import type {RootState} from "@/app/types"
 import {
-  mainPanelComponentUpdated,
-  secondaryPanelComponentUpdated
-} from "@/features/ui/uiSlice"
-import {
-  mainPanelUserDetailsUpdated,
-  secondaryPanelUserDetailsUpdated
-} from "@/features/users/storage/user"
+  closePanelAction,
+  showDetailsInPanel,
+  showListInPanel
+} from "@/features/ui/panelActions"
 import type {ThunkAction, UnknownAction} from "@reduxjs/toolkit"
 
+export const showUserDetailsInPanel = (
+  panelId: string,
+  userId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showDetailsInPanel(panelId, "userDetails", userId)
+}
+
+export const showUserListInPanel = (
+  panelId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showListInPanel(panelId, "usersList")
+}
+
+// Convenience wrappers for backward compatibility
 export const showUserDetailsInSecondaryPanel = (
   userId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelUserDetailsUpdated(userId))
-    dispatch(secondaryPanelComponentUpdated("userDetails"))
-  }
+  return showUserDetailsInPanel("secondary", userId)
 }
 
 export const showUserDetailsInMainPanel = (
   userId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(mainPanelUserDetailsUpdated(userId))
-    dispatch(mainPanelComponentUpdated("userDetails"))
-  }
+  return showUserDetailsInPanel("main", userId)
 }
 
 export const closeUserDetailsSecondaryPanel = (): ThunkAction<
@@ -33,8 +38,5 @@ export const closeUserDetailsSecondaryPanel = (): ThunkAction<
   undefined,
   UnknownAction
 > => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelUserDetailsUpdated(undefined))
-    dispatch(secondaryPanelComponentUpdated(undefined))
-  }
+  return closePanelAction("secondary")
 }

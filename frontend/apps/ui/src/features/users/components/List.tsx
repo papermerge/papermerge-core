@@ -1,20 +1,17 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {
+  selectPanelDetailsEntityId,
+  selectPanelSelectedIDs
+} from "@/features/ui/panelRegistry"
 import useUserTable from "@/features/users/hooks/useUserTable"
 import useVisibleColumns from "@/features/users/hooks/useVisibleColumns"
-import {
-  selectionSet,
-  selectSelectedIDs,
-  selectUserDetailsID,
-  userListSortingUpdated,
-  userPaginationUpdated
-} from "@/features/users/storage/user"
 import type {SortState} from "kommon"
 import {DataTable, TablePagination} from "kommon"
 import {useTranslation} from "react-i18next"
 
 import {showUserDetailsInSecondaryPanel} from "@/features/users/storage/thunks"
-import {usePanelMode} from "@/hooks"
 import {isHTTP403Forbidden} from "@/services/helpers"
 import {Group, Stack} from "@mantine/core"
 import {useNavigate} from "react-router-dom"
@@ -24,41 +21,35 @@ import userColumns from "./columns"
 
 export default function UsersList() {
   const {t} = useTranslation()
-  const mode = usePanelMode()
-  const selectedRowIDs = useAppSelector(s => selectSelectedIDs(s, mode))
+  const {panelId, actions} = usePanel()
+
+  const selectedRowIDs = useAppSelector(s => selectPanelSelectedIDs(s, panelId))
   const selectedRowsSet = new Set(selectedRowIDs || [])
 
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const visibleColumns = useVisibleColumns(userColumns(t))
-  const roleDetailsID = useAppSelector(s => selectUserDetailsID(s, "secondary"))
-
+  const entityDetailsID = useAppSelector(state =>
+    selectPanelDetailsEntityId(state, panelId)
+  )
   const {isError, data, queryParams, error, isLoading, isFetching} =
     useUserTable()
 
   const handleSortChange = (value: SortState) => {
-    dispatch(userListSortingUpdated({mode, value}))
+    actions.updateSorting(value)
   }
 
   const handleSelectionChange = (newSelection: Set<string>) => {
-    const newIds = Array.from(newSelection)
-    dispatch(selectionSet({ids: newIds, mode}))
+    const arr = Array.from(newSelection)
+    actions.setSelection(arr)
   }
 
   const handlePageSizeChange = (newValue: number) => {
-    dispatch(
-      userPaginationUpdated({
-        mode,
-        value: {
-          pageSize: newValue,
-          pageNumber: 1
-        }
-      })
-    )
+    actions.updatePagination({pageSize: newValue})
   }
 
   const handlePageNumberChange = (pageNumber: number) => {
-    dispatch(userPaginationUpdated({mode, value: {pageNumber}}))
+    actions.updatePagination({pageNumber})
   }
 
   const getRowId = (row: UserItem) => row.id
@@ -98,7 +89,7 @@ export default function UsersList() {
         onSelectionChange={handleSelectionChange}
         onRowClick={onTableRowClick}
         getRowId={getRowId}
-        highlightRowID={roleDetailsID}
+        highlightRowID={entityDetailsID}
       />
 
       <TablePagination

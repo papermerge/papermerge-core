@@ -1,45 +1,30 @@
 import {useAppSelector} from "@/app/hooks"
-import {useGetPaginatedUsersQuery} from "@/features/users/storage/api"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
-  selectUserFreeTextFilterValue,
-  selectUserPageNumber,
-  selectUserPageSize,
-  selectUserSorting,
-  selectUserWithGroupsFilterValue,
-  selectUserWithRolesFilterValue,
-  selectUserWithScopesFilterValue,
-  selectUserWithoutGroupsFilterValue,
-  selectUserWithoutRolesFilterValue,
-  selectUserWithoutScopesFilterValue
-} from "@/features/users/storage/user"
+  selectPanelFilters,
+  selectPanelPageNumber,
+  selectPanelPageSize,
+  selectPanelSorting
+} from "@/features/ui/panelRegistry"
+import {useGetPaginatedUsersQuery} from "@/features/users/storage/api"
 import type {SortBy, UserQueryParams} from "@/features/users/types"
-import {usePanelMode} from "@/hooks"
 
 function useQueryParams(): UserQueryParams {
-  const mode = usePanelMode()
-  const pageSize = useAppSelector(s => selectUserPageSize(s, mode)) || 10
-  const pageNumber = useAppSelector(s => selectUserPageNumber(s, mode)) || 1
-  const sorting = useAppSelector(s => selectUserSorting(s, mode))
+  const {panelId} = usePanel()
+
+  const pageSize = useAppSelector(s => selectPanelPageSize(s, panelId)) || 10
+  const pageNumber = useAppSelector(s => selectPanelPageNumber(s, panelId)) || 1
+  const sorting = useAppSelector(s => selectPanelSorting(s, panelId))
+  const filters = useAppSelector(s => selectPanelFilters(s, panelId))
+
   const column = sorting?.column as SortBy | undefined
-  const free_text = useAppSelector(s => selectUserFreeTextFilterValue(s, mode))
-  const with_roles = useAppSelector(s =>
-    selectUserWithRolesFilterValue(s, mode)
-  )
-  const without_roles = useAppSelector(s =>
-    selectUserWithoutRolesFilterValue(s, mode)
-  )
-  const with_groups = useAppSelector(s =>
-    selectUserWithGroupsFilterValue(s, mode)
-  )
-  const without_groups = useAppSelector(s =>
-    selectUserWithoutGroupsFilterValue(s, mode)
-  )
-  const with_scopes = useAppSelector(s =>
-    selectUserWithScopesFilterValue(s, mode)
-  )
-  const without_scopes = useAppSelector(s =>
-    selectUserWithoutScopesFilterValue(s, mode)
-  )
+  const free_text = filters.freeText
+  const with_roles = filters.withRoles
+  const without_roles = filters.withoutRoles
+  const with_groups = filters.withGroups
+  const without_groups = filters.withoutGroups
+  const with_scopes = filters.withScopes
+  const without_scopes = filters.withoutScopes
 
   const queryParams: UserQueryParams = {
     page_size: pageSize,

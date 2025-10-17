@@ -1,23 +1,18 @@
 import {store} from "@/app/store"
 import DualPanel from "@/components/DualPanel"
-import {showUserDetailsInMainPanel} from "@/features/users/storage/thunks"
 import {LoaderFunctionArgs} from "react-router"
+import {showUserDetailsInMainPanel} from "../storage/thunks"
 
-export default function UserDetailsPage() {
+export default function RoleDetailsPage() {
   return <DualPanel />
 }
 
 export async function loader({params, request}: LoaderFunctionArgs) {
   const url = new URL(request.url)
-  let entryID = "whatever"
 
   if (params.id) {
-    entryID = params.id
+    store.dispatch(showUserDetailsInMainPanel(params.id))
   }
 
-  if (entryID) {
-    store.dispatch(showUserDetailsInMainPanel(entryID))
-  }
-
-  return {entryID, urlParams: url.searchParams}
+  return {entryID: params.id, urlParams: url.searchParams}
 }

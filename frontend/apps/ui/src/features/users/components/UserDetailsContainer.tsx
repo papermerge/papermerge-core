@@ -2,9 +2,9 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
 import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectPanelDetailsEntityId} from "@/features/ui/panelRegistry"
 import {useGetUserQuery} from "@/features/users/storage/api"
-import {selectUserDetailsID} from "@/features/users/storage/user"
-import {usePanelMode} from "@/hooks"
 import type {PanelMode} from "@/types"
 import {formatTimestamp} from "@/utils/formatTime"
 import {
@@ -27,10 +27,10 @@ import type {UserDetails} from "@/types"
 import {useTranslation} from "react-i18next"
 
 export default function UserDetailsContainer() {
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
   const dispatch = useAppDispatch()
   const {t} = useTranslation()
-  const userID = useAppSelector(s => selectUserDetailsID(s, mode))
+  const userID = useAppSelector(s => selectPanelDetailsEntityId(s, panelId))
   const {data, isLoading, isFetching, error} = useGetUserQuery(userID || "", {
     skip: !userID
   })
@@ -48,7 +48,7 @@ export default function UserDetailsContainer() {
       <LoadingOverlay visible={isFetching} />
       <Stack style={{height: "100%", overflow: "hidden"}}>
         <Group justify="space-between" style={{flexShrink: 0}}>
-          <Path user={data} mode={mode} />
+          <Path user={data} panelId={panelId} />
           <Group>
             <DeleteUserButton userId={data.id} />
             <ChangePasswordButton userId={data.id} />
@@ -92,10 +92,10 @@ export default function UserDetailsContainer() {
   )
 }
 
-function Path({user, mode}: {user: UserDetails | null; mode: PanelMode}) {
+function Path({user, panelId}: {user: UserDetails | null; panelId: PanelMode}) {
   const navigation = useNavigation()
 
-  if (mode == "main") {
+  if (panelId == "main") {
     return (
       <Group>
         <Breadcrumbs>

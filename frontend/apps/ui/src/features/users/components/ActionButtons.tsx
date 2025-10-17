@@ -1,8 +1,8 @@
 import {useAppSelector} from "@/app/hooks"
-import {selectSelectedIDs} from "@/features/users/storage/user"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectPanelSelectedIDs} from "@/features/ui/panelRegistry"
 import {Group} from "@mantine/core"
 
-import {usePanelMode} from "@/hooks"
 import ChangePasswordButton from "./ChangePasswordButton"
 import ColumnSelector from "./ColumnSelector"
 import {DeleteUsersButton} from "./DeleteButton"
@@ -11,8 +11,9 @@ import NewButton from "./NewButton"
 import Search from "./Search"
 
 export default function ActionButtons() {
-  const mode = usePanelMode()
-  const selectedIds = useAppSelector(s => selectSelectedIDs(s, mode)) || []
+  const {panelId} = usePanel()
+  const selectedIds =
+    useAppSelector(s => selectPanelSelectedIDs(s, panelId)) || []
   const hasOneSelected = selectedIds.length === 1
   const hasAnySelected = selectedIds.length >= 1
 

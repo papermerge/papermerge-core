@@ -6,8 +6,6 @@ import {showRoleDetailsInSecondaryPanel} from "@/features/roles/storage/thunks"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
   selectPanelDetailsEntityId,
-  selectPanelFilters,
-  selectPanelPageSize,
   selectPanelSelectedIDs
 } from "@/features/ui/panelRegistry"
 import {isHTTP403Forbidden} from "@/services/helpers"
@@ -24,11 +22,6 @@ import ActionButtons from "./ActionButtons"
 export default function RolesList() {
   const {t} = useTranslation()
   const {panelId, actions} = usePanel()
-  const selectedIDs = useAppSelector(state =>
-    selectPanelSelectedIDs(state, panelId)
-  )
-  const pageSize = useAppSelector(state => selectPanelPageSize(state, panelId))
-  const filters = useAppSelector(state => selectPanelFilters(state, panelId))
 
   const selectedRowIDs = useAppSelector(s => selectPanelSelectedIDs(s, panelId))
   const selectedRowsSet = new Set(selectedRowIDs || [])

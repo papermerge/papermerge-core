@@ -1,16 +1,10 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import FilterByScope from "@/components/FilterByScope"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
-  selectUserFreeTextFilterValue,
-  selectUserWithGroupsFilterValue,
-  selectUserWithRolesFilterValue,
-  selectUserWithScopesFilterValue,
-  selectUserWithoutGroupsFilterValue,
-  selectUserWithoutRolesFilterValue,
-  selectUserWithoutScopesFilterValue,
-  usersTableFiltersUpdated
-} from "@/features/users/storage/user"
-import {usePanelMode} from "@/hooks"
+  selectPanelFilters,
+  updatePanelFilters
+} from "@/features/ui/panelRegistry"
 import {SearchContainer} from "kommon"
 import {useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
@@ -21,27 +15,18 @@ const DEBOUNCE_MS = 300 // 300 miliseconds
 
 export default function Search() {
   const {t} = useTranslation()
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
 
   const dispatch = useAppDispatch()
 
-  const searchText = useAppSelector(s => selectUserFreeTextFilterValue(s, mode))
-  const withRoles = useAppSelector(s => selectUserWithRolesFilterValue(s, mode))
-  const withoutRoles = useAppSelector(s =>
-    selectUserWithoutRolesFilterValue(s, mode)
-  )
-  const withGroups = useAppSelector(s =>
-    selectUserWithGroupsFilterValue(s, mode)
-  )
-  const withoutGroups = useAppSelector(s =>
-    selectUserWithoutGroupsFilterValue(s, mode)
-  )
-  const withScopes = useAppSelector(s =>
-    selectUserWithScopesFilterValue(s, mode)
-  )
-  const withoutScopes = useAppSelector(s =>
-    selectUserWithoutScopesFilterValue(s, mode)
-  )
+  const filters = useAppSelector(s => selectPanelFilters(s, panelId))
+  const searchText = filters.freeText
+  const withRoles = filters.withRoles
+  const withoutRoles = filters.withoutRoles
+  const withGroups = filters.withGroups
+  const withoutGroups = filters.withoutGroups
+  const withScopes = filters.withScopes
+  const withoutScopes = filters.withoutScopes
 
   const [localWithRoles, setLocalWithRoles] = useState<string[]>(
     withRoles || []
@@ -113,15 +98,17 @@ export default function Search() {
 
   const onSearch = () => {
     dispatch(
-      usersTableFiltersUpdated({
-        mode,
-        freeTextFilterValue: debouncedSearchTextValue,
-        withRolesFilterValue: localWithRoles,
-        withoutRolesFilterValue: localWithoutRoles,
-        withGroupsFilterValue: localWithGroups,
-        withoutGroupsFilterValue: localWithoutGroups,
-        withScopesFilterValue: localWithScopes,
-        withoutScopesFilterValue: localWithoutScopes
+      updatePanelFilters({
+        panelId,
+        filters: {
+          freeText: debouncedSearchTextValue,
+          withRoles: localWithRoles,
+          withoutRoles: localWithoutRoles,
+          withGroups: localWithGroups,
+          withoutGroups: localWithoutGroups,
+          withScopes: localWithScopes,
+          withoutScopes: localWithoutScopes
+        }
       })
     )
   }
@@ -133,17 +120,18 @@ export default function Search() {
     setLocalWithoutGroups([])
     setLocalWithScopes([])
     setLocalWithoutScopes([])
-
     dispatch(
-      usersTableFiltersUpdated({
-        mode,
-        freeTextFilterValue: undefined,
-        withRolesFilterValue: undefined,
-        withoutRolesFilterValue: undefined,
-        withGroupsFilterValue: undefined,
-        withoutGroupsFilterValue: undefined,
-        withScopesFilterValue: undefined,
-        withoutScopesFilterValue: undefined
+      updatePanelFilters({
+        panelId,
+        filters: {
+          freeText: undefined,
+          withRoles: undefined,
+          withoutRoles: undefined,
+          withGroups: undefined,
+          withoutGroups: undefined,
+          withScopes: undefined,
+          withoutScopes: undefined
+        }
       })
     )
   }

@@ -1,7 +1,7 @@
 // features/roles/storage/role.ts
 import {AppStartListening} from "@/app/listenerMiddleware"
 import {RootState} from "@/app/types"
-import type {PanelMode, ServerErrorType} from "@/types"
+import type {ServerErrorType} from "@/types"
 import {notifications} from "@mantine/notifications"
 import {createSelector, createSlice} from "@reduxjs/toolkit"
 import {t} from "i18next"
@@ -48,67 +48,6 @@ export const selectRoleById = createSelector(
     return rolesData.data?.find(g => roleId == g.id)
   }
 )
-
-// ============================================================================
-// PANEL-AWARE SELECTORS - Read from panelRegistry
-// ============================================================================
-
-const selectPanel = (state: RootState, panelId: string) =>
-  state.panelRegistry.panels[panelId]
-
-export const selectPanelList = (state: RootState, panelId: string) =>
-  selectPanel(state, panelId)?.list
-
-export const selectSelectedIDs = (state: RootState, panelId: string) =>
-  selectPanelList(state, panelId)?.selectedIDs || []
-
-export const selectPageSize = (state: RootState, panelId: string): number =>
-  selectPanelList(state, panelId)?.pageSize || 25
-
-export const selectPageNumber = (state: RootState, panelId: string) =>
-  selectPanelList(state, panelId)?.pageNumber
-
-export const selectSorting = (state: RootState, panelId: string) =>
-  selectPanelList(state, panelId)?.sorting
-
-export const selectVisibleColumns = (state: RootState, panelId: string) =>
-  selectPanelList(state, panelId)?.visibleColumns
-
-// Filter selectors
-export const selectFilters = (state: RootState, panelId: string) =>
-  selectPanelList(state, panelId)?.filters || {}
-
-export const selectFreeTextFilter = (state: RootState, panelId: string) =>
-  selectFilters(state, panelId).freeText
-
-export const selectIncludeScopeFilter = (state: RootState, panelId: string) =>
-  selectFilters(state, panelId).includeScopes || []
-
-export const selectExcludeScopeFilter = (state: RootState, panelId: string) =>
-  selectFilters(state, panelId).excludeScopes || []
-
-// Details selector
-export const selectDetailsEntityId = (state: RootState, panelId: string) =>
-  selectPanel(state, panelId)?.details?.entityId
-
-// Custom state (for expanded nodes, etc.)
-export const selectFormExpandedNodes = (
-  state: RootState,
-  panelId: string
-): string[] => selectPanel(state, panelId)?.custom?.expandedNodes || []
-
-// ============================================================================
-// BACKWARDS COMPATIBILITY - Convert PanelMode to panelId
-// These can be removed once all components use panelId directly
-// ============================================================================
-
-export const selectSelectedIDsByMode = (state: RootState, mode: PanelMode) =>
-  selectSelectedIDs(state, mode)
-
-export const selectPageSizeByMode = (state: RootState, mode: PanelMode) =>
-  selectPageSize(state, mode)
-
-// ... add similar wrappers for other selectors during migration
 
 // ============================================================================
 // CRUD LISTENERS

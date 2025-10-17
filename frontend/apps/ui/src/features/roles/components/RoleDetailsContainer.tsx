@@ -1,4 +1,3 @@
-// features/roles/components/RoleDetailsContainer.tsx
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
 import {selectMyPreferences} from "@/features/preferences/storage/preference"

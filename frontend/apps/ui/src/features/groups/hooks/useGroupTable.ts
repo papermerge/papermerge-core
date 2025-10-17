@@ -1,29 +1,26 @@
 import {useAppSelector} from "@/app/hooks"
 import {useGetPaginatedGroupsQuery} from "@/features/groups/storage/api"
-import {
-  selectGroupFreeTextFilterValue,
-  selectGroupPageNumber,
-  selectGroupPageSize,
-  selectGroupSorting,
-  selectGroupWithoutUsersFilterValue,
-  selectGroupWithUsersFilterValue
-} from "@/features/groups/storage/group"
 import type {GroupQueryParams, SortBy} from "@/features/groups/types"
-import {usePanelMode} from "@/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {
+  selectPanelFilters,
+  selectPanelPageNumber,
+  selectPanelPageSize,
+  selectPanelSorting
+} from "@/features/ui/panelRegistry"
 
 function useQueryParams(): GroupQueryParams {
-  const mode = usePanelMode()
-  const pageSize = useAppSelector(s => selectGroupPageSize(s, mode)) || 10
-  const pageNumber = useAppSelector(s => selectGroupPageNumber(s, mode)) || 1
-  const sorting = useAppSelector(s => selectGroupSorting(s, mode))
+  const {panelId} = usePanel()
+
+  const pageSize = useAppSelector(s => selectPanelPageSize(s, panelId)) || 10
+  const pageNumber = useAppSelector(s => selectPanelPageNumber(s, panelId)) || 1
+  const sorting = useAppSelector(s => selectPanelSorting(s, panelId))
+  const filters = useAppSelector(s => selectPanelFilters(s, panelId))
+
   const column = sorting?.column as SortBy | undefined
-  const free_text = useAppSelector(s => selectGroupFreeTextFilterValue(s, mode))
-  const with_users = useAppSelector(s =>
-    selectGroupWithUsersFilterValue(s, mode)
-  )
-  const without_users = useAppSelector(s =>
-    selectGroupWithoutUsersFilterValue(s, mode)
-  )
+  const free_text = filters.free_text || []
+  const with_users = filters.with_users || []
+  const without_users = filters.without_users || []
 
   const queryParams: GroupQueryParams = {
     page_size: pageSize,

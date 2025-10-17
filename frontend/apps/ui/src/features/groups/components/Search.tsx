@@ -1,12 +1,10 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import FilterByUser from "@/components/FilterByUser"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
-  groupsTableFiltersUpdated,
-  selectGroupFreeTextFilterValue,
-  selectGroupWithoutUsersFilterValue,
-  selectGroupWithUsersFilterValue
-} from "@/features/groups/storage/group"
-import {usePanelMode} from "@/hooks"
+  selectPanelFilters,
+  updatePanelFilters
+} from "@/features/ui/panelRegistry"
 import {SearchContainer} from "kommon"
 import {useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
@@ -15,19 +13,14 @@ const DEBOUNCE_MS = 300 // 300 miliseconds
 
 export default function Search() {
   const {t} = useTranslation()
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
 
   const dispatch = useAppDispatch()
 
-  const searchText = useAppSelector(s =>
-    selectGroupFreeTextFilterValue(s, mode)
-  )
-  const withUsers = useAppSelector(s =>
-    selectGroupWithUsersFilterValue(s, mode)
-  )
-  const withoutUsers = useAppSelector(s =>
-    selectGroupWithoutUsersFilterValue(s, mode)
-  )
+  const filters = useAppSelector(s => selectPanelFilters(s, panelId))
+  const searchText = filters.freeText
+  const withUsers = filters.withUsers
+  const withoutUsers = filters.withoutUsers
 
   const [localWithUsers, setLocalWithUsers] = useState<string[]>(
     withUsers || []
@@ -71,11 +64,13 @@ export default function Search() {
 
   const onSearch = () => {
     dispatch(
-      groupsTableFiltersUpdated({
-        mode,
-        freeTextFilterValue: debouncedSearchTextValue,
-        withUsersFilterValue: localWithUsers,
-        withoutUsersFilterValue: localWithoutUsers
+      updatePanelFilters({
+        panelId,
+        filters: {
+          freeText: debouncedSearchTextValue,
+          withUsers: localWithUsers,
+          withoutUsers: localWithoutUsers
+        }
       })
     )
   }
@@ -85,11 +80,13 @@ export default function Search() {
     setLocalWithoutUsers([])
 
     dispatch(
-      groupsTableFiltersUpdated({
-        mode,
-        freeTextFilterValue: undefined,
-        withUsersFilterValue: undefined,
-        withoutUsersFilterValue: undefined
+      updatePanelFilters({
+        panelId,
+        filters: {
+          freeText: undefined,
+          withUsers: undefined,
+          withoutUsers: undefined
+        }
       })
     )
   }

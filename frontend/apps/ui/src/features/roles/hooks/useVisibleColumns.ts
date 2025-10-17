@@ -1,4 +1,3 @@
-// features/roles/hooks/useVisibleColumns.ts
 import {useAppSelector} from "@/app/hooks"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {selectPanelVisibleColumns} from "@/features/ui/panelRegistry"

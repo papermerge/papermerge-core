@@ -1,4 +1,3 @@
-// features/roles/pages/List.tsx
 import {store} from "@/app/store"
 import DualPanel from "@/components/DualPanel"
 import {setPanelComponent} from "@/features/ui/panelRegistry"

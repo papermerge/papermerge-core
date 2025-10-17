@@ -1,15 +1,14 @@
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {useDisclosure} from "@mantine/hooks"
-import {useDispatch} from "react-redux"
 import {useNavigate} from "react-router-dom"
 
 import {
-  clearSelection,
-  selectSelectedIDs
-} from "@/features/groups/storage/group"
+  clearPanelSelection,
+  selectPanelSelectedIDs
+} from "@/features/ui/panelRegistry"
 
-import {useAppSelector} from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import DeleteButton from "@/components/buttons/DeleteButton"
-import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
 import {RemoveGroupModal, RemoveGroupsModal} from "./DeleteModal"
 
@@ -37,19 +36,19 @@ export function DeleteGroupButton({groupId}: {groupId: string}) {
 }
 
 export function DeleteGroupsButton() {
-  const mode = usePanelMode()
   const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
-  const dispatch = useDispatch()
-  const selectedIds = useAppSelector(s => selectSelectedIDs(s, mode)) || []
+  const {panelId} = usePanel()
+  const dispatch = useAppDispatch()
+  const selectedRowIDs = useAppSelector(s => selectPanelSelectedIDs(s, panelId))
 
   const onSubmit = () => {
-    dispatch(clearSelection({mode}))
+    dispatch(clearPanelSelection({panelId}))
     close()
   }
 
   const onCancel = () => {
-    dispatch(clearSelection({mode}))
+    dispatch(clearPanelSelection({panelId}))
     close()
   }
 
@@ -60,7 +59,7 @@ export function DeleteGroupsButton() {
         opened={opened}
         onSubmit={onSubmit}
         onCancel={onCancel}
-        groupIds={selectedIds}
+        groupIds={selectedRowIDs}
       />
     </>
   )

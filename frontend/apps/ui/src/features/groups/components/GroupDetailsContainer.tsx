@@ -1,11 +1,10 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
 import {useGetGroupQuery} from "@/features/groups/storage/api"
-import {selectGroupDetailsID} from "@/features/groups/storage/group"
 import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
-import {usePanelMode} from "@/hooks"
-import type {PanelMode} from "@/types"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectPanelDetailsEntityId} from "@/features/ui/panelRegistry"
 import type {GroupDetails} from "@/types.d/groups"
 import {formatTimestamp} from "@/utils/formatTime"
 import {
@@ -23,13 +22,14 @@ import EditButton from "./EditButton"
 import GroupForm from "./GroupForm"
 
 import LoadingPanel from "@/components/LoadingPanel"
+import {PanelMode} from "@/types"
 import {useTranslation} from "react-i18next"
 
 export default function GroupDetailsContainer() {
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
   const dispatch = useAppDispatch()
   const {t} = useTranslation()
-  const groupID = useAppSelector(s => selectGroupDetailsID(s, mode))
+  const groupID = useAppSelector(s => selectPanelDetailsEntityId(s, panelId))
   const {data, isLoading, isFetching, error} = useGetGroupQuery(groupID || "", {
     skip: !groupID
   })
@@ -47,7 +47,7 @@ export default function GroupDetailsContainer() {
       <LoadingOverlay visible={isFetching} />
       <Stack style={{height: "100%", overflow: "hidden"}}>
         <Group justify="space-between" style={{flexShrink: 0}}>
-          <Path group={data} mode={mode} />
+          <Path group={data} panelId={panelId} />
           <Group>
             <DeleteGroupButton groupId={data.id} />
             <EditButton groupId={data.id} />
@@ -81,10 +81,16 @@ export default function GroupDetailsContainer() {
   )
 }
 
-function Path({group, mode}: {group: GroupDetails | null; mode: PanelMode}) {
+function Path({
+  group,
+  panelId
+}: {
+  group: GroupDetails | null
+  panelId: PanelMode
+}) {
   const navigation = useNavigation()
 
-  if (mode == "main") {
+  if (panelId == "main") {
     return (
       <Group>
         <Breadcrumbs>

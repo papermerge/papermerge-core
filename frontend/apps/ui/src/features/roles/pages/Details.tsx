@@ -1,4 +1,3 @@
-// features/roles/pages/Details.tsx
 import {store} from "@/app/store"
 import DualPanel from "@/components/DualPanel"
 import {LoaderFunctionArgs} from "react-router"

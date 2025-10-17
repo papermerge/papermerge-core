@@ -1,4 +1,3 @@
-// features/roles/components/Search.tsx
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import FilterByScope from "@/components/FilterByScope"
 import {usePanel} from "@/features/ui/hooks/usePanel"

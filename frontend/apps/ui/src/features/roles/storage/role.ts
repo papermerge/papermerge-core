@@ -1,257 +1,37 @@
+// features/roles/storage/role.ts
 import {AppStartListening} from "@/app/listenerMiddleware"
 import {RootState} from "@/app/types"
-import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 import type {PanelMode, ServerErrorType} from "@/types"
-import type {PanelListBase} from "@/types.d/panel"
 import {notifications} from "@mantine/notifications"
-import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit"
+import {createSelector, createSlice} from "@reduxjs/toolkit"
 import {t} from "i18next"
-import type {Pagination, SortState} from "kommon"
 import {apiSliceWithRoles} from "./api"
 
-interface RolePanelList extends PanelListBase {
-  selectedIDs?: Array<string>
-  freeTextFilterValue?: string
-  includeScopeFilterValue?: Array<string>
-  excludeScopeFilterValue?: Array<string>
+// DOMAIN STATE ONLY - No UI concerns
+export interface RoleSlice {
+  // Nothing here! All data comes from RTK Query cache
+  // This slice is now just for derived selectors
 }
 
-interface RolePanelDetails {
-  id: string
-}
-
-export type RoleSlice = {
-  mainRoleList?: RolePanelList
-  secondaryRoleList?: RolePanelList
-  mainRoleDetails?: RolePanelDetails
-  secondaryRoleDetails?: RolePanelDetails
-  mainRoleFormExpandedNodes?: string[]
-  secondaryRoleFormExpandedNodes?: string[]
-}
-
-export const initialState: RoleSlice = {
-  mainRoleFormExpandedNodes: [],
-  secondaryRoleFormExpandedNodes: []
-}
+export const initialState: RoleSlice = {}
 
 const rolesSlice = createSlice({
   name: "roles",
   initialState,
   reducers: {
-    mainPanelRoleDetailsUpdated(state, action: PayloadAction<string>) {
-      const roleID = action.payload
-      state.mainRoleDetails = {id: roleID}
-    },
-    secondaryPanelRoleDetailsUpdated(
-      state,
-      action: PayloadAction<string | undefined>
-    ) {
-      const roleID = action.payload
-
-      if (roleID) {
-        state.secondaryRoleDetails = {id: roleID}
-      } else {
-        state.secondaryRoleDetails = undefined
-      }
-    },
-    selectionSet: (
-      state,
-      action: PayloadAction<{ids: string[]; mode: PanelMode}>
-    ) => {
-      const {mode, ids} = action.payload
-      const listKey = mode === "main" ? "mainRoleList" : "secondaryRoleList"
-
-      const existingList = state[listKey]
-
-      state[listKey] = {
-        ...existingList,
-        selectedIDs: ids
-      }
-    },
-    clearSelection: (state, action: PayloadAction<{mode: PanelMode}>) => {
-      const {mode} = action.payload
-      const listKey = mode === "main" ? "mainRoleList" : "secondaryRoleList"
-
-      const existingList = state[listKey]
-
-      state[listKey] = {
-        ...existingList,
-        selectedIDs: []
-      }
-    },
-    rolesTableFiltersUpdated(
-      state,
-      action: PayloadAction<{
-        mode: PanelMode
-        freeTextFilterValue?: string
-        includeScopeFilterValue?: string[]
-        excludeScopeFilterValue?: string[]
-      }>
-    ) {
-      const {
-        mode,
-        freeTextFilterValue,
-        includeScopeFilterValue,
-        excludeScopeFilterValue
-      } = action.payload
-      if (mode == "main") {
-        state.mainRoleList = {
-          ...state.mainRoleList,
-          freeTextFilterValue,
-          includeScopeFilterValue,
-          excludeScopeFilterValue
-        }
-        return
-      }
-
-      state.secondaryRoleList = {
-        ...state.secondaryRoleList,
-        freeTextFilterValue,
-        includeScopeFilterValue,
-        excludeScopeFilterValue
-      }
-    },
-    rolePaginationUpdated(
-      state,
-      action: PayloadAction<{mode: PanelMode; value: Pagination}>
-    ) {
-      const {mode, value} = action.payload
-      // initialize `newValue` with whatever is in current state
-      // i.e. depending on the `mode`, use value from `mainAuditLog` or from
-      // `secondaryAuditLog`
-      let newValue: Pagination = {
-        pageSize:
-          mode == "main"
-            ? state.mainRoleList?.pageSize
-            : state.secondaryRoleList?.pageSize,
-        pageNumber:
-          mode == "main"
-            ? state.mainRoleList?.pageSize
-            : state.secondaryRoleList?.pageSize
-      }
-      // if non empty value received as parameter - use it
-      // to update the state
-      if (value.pageNumber) {
-        newValue.pageNumber = value.pageNumber
-      }
-
-      if (value.pageSize) {
-        newValue.pageSize = value.pageSize
-      }
-
-      if (mode == "main") {
-        state.mainRoleList = {
-          ...state.mainRoleList,
-          ...newValue
-        }
-        return
-      }
-
-      state.secondaryRoleList = {
-        ...state.secondaryRoleList,
-        ...newValue
-      }
-    },
-    rolePageNumberValueUpdated(
-      state,
-      action: PayloadAction<{mode: PanelMode; value: number}>
-    ) {
-      const {mode, value} = action.payload
-      if (mode == "main") {
-        state.mainRoleList = {
-          ...state.mainRoleList,
-          pageNumber: value
-        }
-        return
-      }
-
-      state.secondaryRoleList = {
-        ...state.secondaryRoleList,
-        pageNumber: value
-      }
-    },
-    roleListSortingUpdated(
-      state,
-      action: PayloadAction<{mode: PanelMode; value: SortState}>
-    ) {
-      const {mode, value} = action.payload
-      if (mode == "main") {
-        state.mainRoleList = {
-          ...state.mainRoleList,
-          sorting: value
-        }
-        return
-      }
-
-      state.secondaryRoleList = {
-        ...state.secondaryRoleList,
-        sorting: value
-      }
-    },
-    roleListVisibleColumnsUpdated(
-      state,
-      action: PayloadAction<{mode: PanelMode; value: Array<string>}>
-    ) {
-      const {mode, value} = action.payload
-      if (mode == "main") {
-        state.mainRoleList = {
-          ...state.mainRoleList,
-          visibleColumns: value
-        }
-        return
-      }
-
-      state.secondaryRoleList = {
-        ...state.secondaryRoleList,
-        visibleColumns: value
-      }
-    },
-    setRoleFormExpandedNodes: (
-      state,
-      action: PayloadAction<{
-        mode: PanelMode
-        expandedNodes: string[]
-      }>
-    ) => {
-      const {mode, expandedNodes} = action.payload
-
-      if (mode === "main") {
-        state.mainRoleFormExpandedNodes = expandedNodes
-      } else {
-        state.secondaryRoleFormExpandedNodes = expandedNodes
-      }
-    },
-    clearRoleFormExpandedNodes: (
-      state,
-      action: PayloadAction<{mode: PanelMode}>
-    ) => {
-      const {mode} = action.payload
-
-      if (mode === "main") {
-        state.mainRoleFormExpandedNodes = []
-      } else {
-        state.secondaryRoleFormExpandedNodes = []
-      }
-    }
+    // No reducers needed - all mutations via RTK Query
   }
 })
 
-export const {
-  mainPanelRoleDetailsUpdated,
-  secondaryPanelRoleDetailsUpdated,
-  rolePageNumberValueUpdated,
-  rolePaginationUpdated,
-  selectionSet,
-  clearSelection,
-  roleListSortingUpdated,
-  roleListVisibleColumnsUpdated,
-  rolesTableFiltersUpdated,
-  setRoleFormExpandedNodes,
-  clearRoleFormExpandedNodes
-} = rolesSlice.actions
 export default rolesSlice.reducer
 
+// ============================================================================
+// SELECTORS - Use RTK Query cache + Panel Registry
+// ============================================================================
+
 export const selectRolesResult = apiSliceWithRoles.endpoints.getRoles.select()
+
+// Helper selectors for filtering
 export const selectItemIds = (_: RootState, itemIds: string[]) => itemIds
 export const selectItemId = (_: RootState, itemId: string) => itemId
 
@@ -269,112 +49,73 @@ export const selectRoleById = createSelector(
   }
 )
 
-export const selectSelectedIDs = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.roles.mainRoleList?.selectedIDs
-  }
+// ============================================================================
+// PANEL-AWARE SELECTORS - Read from panelRegistry
+// ============================================================================
 
-  return state.roles.secondaryRoleList?.selectedIDs
-}
+const selectPanel = (state: RootState, panelId: string) =>
+  state.panelRegistry.panels[panelId]
 
-export const selectPageSize = (state: RootState, mode: PanelMode): number => {
-  if (mode == "main") {
-    return (
-      state.roles.mainRoleList?.pageSize || PAGINATION_DEFAULT_ITEMS_PER_PAGES
-    )
-  }
+export const selectPanelList = (state: RootState, panelId: string) =>
+  selectPanel(state, panelId)?.list
 
-  return (
-    state.roles.secondaryRoleList?.pageSize ||
-    PAGINATION_DEFAULT_ITEMS_PER_PAGES
-  )
-}
+export const selectSelectedIDs = (state: RootState, panelId: string) =>
+  selectPanelList(state, panelId)?.selectedIDs || []
 
-export const selectRolePageSize = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.roles.mainRoleList?.pageSize
-  }
+export const selectPageSize = (state: RootState, panelId: string): number =>
+  selectPanelList(state, panelId)?.pageSize || 25
 
-  return state.roles.secondaryRoleList?.pageSize
-}
+export const selectPageNumber = (state: RootState, panelId: string) =>
+  selectPanelList(state, panelId)?.pageNumber
 
-export const selectRolePageNumber = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.roles.mainRoleList?.pageNumber
-  }
+export const selectSorting = (state: RootState, panelId: string) =>
+  selectPanelList(state, panelId)?.sorting
 
-  return state.roles.secondaryRoleList?.pageNumber
-}
-export const selectRoleSorting = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.roles.mainRoleList?.sorting
-  }
+export const selectVisibleColumns = (state: RootState, panelId: string) =>
+  selectPanelList(state, panelId)?.visibleColumns
 
-  return state.roles.secondaryRoleList?.sorting
-}
+// Filter selectors
+export const selectFilters = (state: RootState, panelId: string) =>
+  selectPanelList(state, panelId)?.filters || {}
 
-export const selectRoleDetailsID = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.roles.mainRoleDetails?.id
-  }
+export const selectFreeTextFilter = (state: RootState, panelId: string) =>
+  selectFilters(state, panelId).freeText
 
-  return state.roles.secondaryRoleDetails?.id
-}
+export const selectIncludeScopeFilter = (state: RootState, panelId: string) =>
+  selectFilters(state, panelId).includeScopes || []
 
-export const selectRoleVisibleColumns = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.roles.mainRoleList?.visibleColumns
-  }
+export const selectExcludeScopeFilter = (state: RootState, panelId: string) =>
+  selectFilters(state, panelId).excludeScopes || []
 
-  return state.roles.secondaryRoleList?.visibleColumns
-}
+// Details selector
+export const selectDetailsEntityId = (state: RootState, panelId: string) =>
+  selectPanel(state, panelId)?.details?.entityId
 
-export const selectRoleFreeTextFilterValue = (
+// Custom state (for expanded nodes, etc.)
+export const selectFormExpandedNodes = (
   state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.roles.mainRoleList?.freeTextFilterValue
-  }
+  panelId: string
+): string[] => selectPanel(state, panelId)?.custom?.expandedNodes || []
 
-  return state.roles.secondaryRoleList?.freeTextFilterValue
-}
+// ============================================================================
+// BACKWARDS COMPATIBILITY - Convert PanelMode to panelId
+// These can be removed once all components use panelId directly
+// ============================================================================
 
-export const selectRoleIncludeScopeFilterValue = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.roles.mainRoleList?.includeScopeFilterValue
-  }
+export const selectSelectedIDsByMode = (state: RootState, mode: PanelMode) =>
+  selectSelectedIDs(state, mode)
 
-  return state.roles.secondaryRoleList?.includeScopeFilterValue
-}
+export const selectPageSizeByMode = (state: RootState, mode: PanelMode) =>
+  selectPageSize(state, mode)
 
-export const selectRoleExcludeScopeFilterValue = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return state.roles.mainRoleList?.excludeScopeFilterValue
-  }
+// ... add similar wrappers for other selectors during migration
 
-  return state.roles.secondaryRoleList?.excludeScopeFilterValue
-}
-
-export const selectRoleFormExpandedNodes = (
-  state: RootState,
-  mode: PanelMode
-): string[] => {
-  if (mode === "main") {
-    return state.roles.mainRoleFormExpandedNodes || []
-  }
-
-  return state.roles.secondaryRoleFormExpandedNodes || []
-}
+// ============================================================================
+// CRUD LISTENERS
+// ============================================================================
 
 export const roleCRUDListeners = (startAppListening: AppStartListening) => {
-  //create positive
+  // Create positive
   startAppListening({
     matcher: apiSliceWithRoles.endpoints.addNewRole.matchFulfilled,
     effect: async () => {
@@ -395,6 +136,7 @@ export const roleCRUDListeners = (startAppListening: AppStartListening) => {
       })
     }
   })
+
   // Update negative
   startAppListening({
     matcher: apiSliceWithRoles.endpoints.editRole.matchRejected,
@@ -409,6 +151,7 @@ export const roleCRUDListeners = (startAppListening: AppStartListening) => {
       })
     }
   })
+
   // Delete positive
   startAppListening({
     matcher: apiSliceWithRoles.endpoints.deleteRole.matchFulfilled,
@@ -419,6 +162,7 @@ export const roleCRUDListeners = (startAppListening: AppStartListening) => {
       })
     }
   })
+
   // Delete negative
   startAppListening({
     matcher: apiSliceWithRoles.endpoints.deleteRole.matchRejected,

@@ -3,13 +3,13 @@ import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
 import useRoleTable from "@/features/roles/hooks/useRoleTable"
 import useVisibleColumns from "@/features/roles/hooks/useVisibleColumns"
 import {
-  roleListSortingUpdated,
-  rolePaginationUpdated,
-  selectionSet,
-  selectRoleDetailsID,
+  selectDetailsEntityId,
+  selectFilters,
+  selectPageSize,
   selectSelectedIDs
 } from "@/features/roles/storage/role"
 import {showRoleDetailsInSecondaryPanel} from "@/features/roles/storage/thunks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {isHTTP403Forbidden} from "@/services/helpers"
 import {Group, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
@@ -24,40 +24,39 @@ import ActionButtons from "./ActionButtons"
 
 export default function RolesList() {
   const {t} = useTranslation()
+  const {panelId, actions} = usePanel()
+  const selectedIDs = useAppSelector(state => selectSelectedIDs(state, panelId))
+  const pageSize = useAppSelector(state => selectPageSize(state, panelId))
+  const filters = useAppSelector(state => selectFilters(state, panelId))
+
   const mode = usePanelMode()
   const selectedRowIDs = useAppSelector(s => selectSelectedIDs(s, mode))
   const selectedRowsSet = new Set(selectedRowIDs || [])
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const visibleColumns = useVisibleColumns(roleColumns(t))
-  const roleDetailsID = useAppSelector(s => selectRoleDetailsID(s, "secondary"))
+  const roleDetailsID = useAppSelector(state =>
+    selectDetailsEntityId(state, panelId)
+  )
 
   const {isError, data, queryParams, error, isLoading, isFetching} =
     useRoleTable()
 
   const handleSortChange = (value: SortState) => {
-    dispatch(roleListSortingUpdated({mode, value}))
+    actions.updateSorting(value)
   }
 
   const handleSelectionChange = (newSelection: Set<string>) => {
-    const newIds = Array.from(newSelection)
-    dispatch(selectionSet({ids: newIds, mode}))
+    const arr = Array.from(newSelection)
+    actions.setSelection(arr)
   }
 
   const handlePageSizeChange = (newValue: number) => {
-    dispatch(
-      rolePaginationUpdated({
-        mode,
-        value: {
-          pageSize: newValue,
-          pageNumber: 1
-        }
-      })
-    )
+    actions.updatePagination({pageSize: newValue})
   }
 
   const handlePageNumberChange = (pageNumber: number) => {
-    dispatch(rolePaginationUpdated({mode, value: {pageNumber}}))
+    actions.updatePagination({pageNumber})
   }
 
   const getRowId = (row: RoleItem) => row.id

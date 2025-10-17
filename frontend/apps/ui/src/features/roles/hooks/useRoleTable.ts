@@ -1,29 +1,27 @@
+// features/roles/hooks/useRoleTable.ts
 import {useAppSelector} from "@/app/hooks"
-import {
-  selectRoleExcludeScopeFilterValue,
-  selectRoleFreeTextFilterValue,
-  selectRoleIncludeScopeFilterValue,
-  selectRolePageNumber,
-  selectRolePageSize,
-  selectRoleSorting
-} from "@/features/roles/storage/role"
 import type {RoleQueryParams, SortBy} from "@/features/roles/types"
-import {usePanelMode} from "@/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {
+  selectPanelFilters,
+  selectPanelPageNumber,
+  selectPanelPageSize,
+  selectPanelSorting
+} from "@/features/ui/panelRegistry"
 import {useGetPaginatedRolesQuery} from "../storage/api"
 
 function useQueryParams(): RoleQueryParams {
-  const mode = usePanelMode()
-  const pageSize = useAppSelector(s => selectRolePageSize(s, mode)) || 10
-  const pageNumber = useAppSelector(s => selectRolePageNumber(s, mode)) || 1
-  const sorting = useAppSelector(s => selectRoleSorting(s, mode))
+  const {panelId} = usePanel()
+
+  const pageSize = useAppSelector(s => selectPanelPageSize(s, panelId)) || 10
+  const pageNumber = useAppSelector(s => selectPanelPageNumber(s, panelId)) || 1
+  const sorting = useAppSelector(s => selectPanelSorting(s, panelId))
+  const filters = useAppSelector(s => selectPanelFilters(s, panelId))
+
   const column = sorting?.column as SortBy | undefined
-  const free_text = useAppSelector(s => selectRoleFreeTextFilterValue(s, mode))
-  const include_scopes = useAppSelector(s =>
-    selectRoleIncludeScopeFilterValue(s, mode)
-  )
-  const exclude_scopes = useAppSelector(s =>
-    selectRoleExcludeScopeFilterValue(s, mode)
-  )
+  const free_text = filters.freeText
+  const include_scopes = filters.includeScopes
+  const exclude_scopes = filters.excludeScopes
 
   const queryParams: RoleQueryParams = {
     page_size: pageSize,

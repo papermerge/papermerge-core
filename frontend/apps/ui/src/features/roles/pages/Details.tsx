@@ -1,3 +1,4 @@
+// features/roles/pages/Details.tsx
 import {store} from "@/app/store"
 import DualPanel from "@/components/DualPanel"
 import {LoaderFunctionArgs} from "react-router"
@@ -9,15 +10,10 @@ export default function RoleDetailsPage() {
 
 export async function loader({params, request}: LoaderFunctionArgs) {
   const url = new URL(request.url)
-  let entryID = "whatever"
 
   if (params.id) {
-    entryID = params.id
+    store.dispatch(showRoleDetailsInMainPanel(params.id))
   }
 
-  if (entryID) {
-    store.dispatch(showRoleDetailsInMainPanel(entryID))
-  }
-
-  return {entryID, urlParams: url.searchParams}
+  return {entryID: params.id, urlParams: url.searchParams}
 }

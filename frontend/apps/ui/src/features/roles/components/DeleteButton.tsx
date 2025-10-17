@@ -1,12 +1,15 @@
+// features/roles/components/DeleteButton.tsx
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {Button} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconTrash} from "@tabler/icons-react"
 import {useNavigate} from "react-router-dom"
 
-import {clearSelection, selectSelectedIDs} from "@/features/roles/storage/role"
-
-import {usePanelMode} from "@/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {
+  clearPanelSelection,
+  selectPanelSelectedIDs
+} from "@/features/ui/panelRegistry"
 import {useTranslation} from "react-i18next"
 import {RemoveRoleModal, RemoveRolesModal} from "./DeleteModal"
 
@@ -44,16 +47,16 @@ export function DeleteRolesButton() {
   const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
   const dispatch = useAppDispatch()
-  const mode = usePanelMode()
-  const selectedRowIDs = useAppSelector(s => selectSelectedIDs(s, mode))
+  const {panelId} = usePanel()
+  const selectedRowIDs = useAppSelector(s => selectPanelSelectedIDs(s, panelId))
 
   const onSubmit = () => {
-    dispatch(clearSelection({mode}))
+    dispatch(clearPanelSelection({panelId}))
     close()
   }
 
   const onCancel = () => {
-    dispatch(clearSelection({mode}))
+    dispatch(clearPanelSelection({panelId}))
     close()
   }
 
@@ -67,7 +70,7 @@ export function DeleteRolesButton() {
       >
         {t("common.delete")}
       </Button>
-      {selectedRowIDs && (
+      {selectedRowIDs && selectedRowIDs.length > 0 && (
         <RemoveRolesModal
           opened={opened}
           onSubmit={onSubmit}

@@ -1,6 +1,7 @@
+// features/roles/pages/List.tsx
 import {store} from "@/app/store"
 import DualPanel from "@/components/DualPanel"
-import {mainPanelComponentUpdated} from "@/features/ui/uiSlice"
+import {setPanelComponent} from "@/features/ui/panelRegistry"
 import {LoaderFunctionArgs} from "react-router"
 
 export default function RolesListPage() {
@@ -10,7 +11,12 @@ export default function RolesListPage() {
 export async function loader({request}: LoaderFunctionArgs) {
   const url = new URL(request.url)
 
-  store.dispatch(mainPanelComponentUpdated("rolesList"))
+  store.dispatch(
+    setPanelComponent({
+      panelId: "main",
+      component: "rolesList"
+    })
+  )
 
   return {urlParams: url.searchParams}
 }

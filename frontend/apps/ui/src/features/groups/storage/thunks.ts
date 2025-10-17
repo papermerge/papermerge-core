@@ -1,30 +1,39 @@
-import type {AppDispatch, RootState} from "@/app/types"
+import type {RootState} from "@/app/types"
 import {
-  mainPanelGroupDetailsUpdated,
-  secondaryPanelGroupDetailsUpdated
-} from "@/features/groups/storage/group"
-import {
-  mainPanelComponentUpdated,
-  secondaryPanelComponentUpdated
-} from "@/features/ui/uiSlice"
+  closePanelAction,
+  showDetailsInPanel,
+  showListInPanel
+} from "@/features/ui/panelActions"
 import type {ThunkAction, UnknownAction} from "@reduxjs/toolkit"
 
+// ============================================================================
+// GROUP-SPECIFIC ACTIONS
+// ============================================================================
+
+export const showGroupDetailsInPanel = (
+  panelId: string,
+  groupId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showDetailsInPanel(panelId, "groupDetails", groupId)
+}
+
+export const showGroupListInPanel = (
+  panelId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showListInPanel(panelId, "groupsList")
+}
+
+// Convenience wrappers for backward compatibility
 export const showGroupDetailsInSecondaryPanel = (
   groupId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelGroupDetailsUpdated(groupId))
-    dispatch(secondaryPanelComponentUpdated("groupDetails"))
-  }
+  return showGroupDetailsInPanel("secondary", groupId)
 }
 
 export const showGroupDetailsInMainPanel = (
   groupId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(mainPanelGroupDetailsUpdated(groupId))
-    dispatch(mainPanelComponentUpdated("groupDetails"))
-  }
+  return showGroupDetailsInPanel("main", groupId)
 }
 
 export const closeGroupDetailsSecondaryPanel = (): ThunkAction<
@@ -33,8 +42,5 @@ export const closeGroupDetailsSecondaryPanel = (): ThunkAction<
   undefined,
   UnknownAction
 > => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelGroupDetailsUpdated(undefined))
-    dispatch(secondaryPanelComponentUpdated(undefined))
-  }
+  return closePanelAction("secondary")
 }

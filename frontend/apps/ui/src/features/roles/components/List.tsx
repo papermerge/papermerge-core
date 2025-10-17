@@ -2,14 +2,14 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
 import useRoleTable from "@/features/roles/hooks/useRoleTable"
 import useVisibleColumns from "@/features/roles/hooks/useVisibleColumns"
-import {
-  selectDetailsEntityId,
-  selectFilters,
-  selectPageSize,
-  selectSelectedIDs
-} from "@/features/roles/storage/role"
 import {showRoleDetailsInSecondaryPanel} from "@/features/roles/storage/thunks"
 import {usePanel} from "@/features/ui/hooks/usePanel"
+import {
+  selectPanelDetailsEntityId,
+  selectPanelFilters,
+  selectPanelPageSize,
+  selectPanelSelectedIDs
+} from "@/features/ui/panelRegistry"
 import {isHTTP403Forbidden} from "@/services/helpers"
 import {Group, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
@@ -18,25 +18,25 @@ import {useNavigate} from "react-router-dom"
 import type {RoleItem} from "../types"
 import roleColumns from "./columns"
 
-import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
 import ActionButtons from "./ActionButtons"
 
 export default function RolesList() {
   const {t} = useTranslation()
   const {panelId, actions} = usePanel()
-  const selectedIDs = useAppSelector(state => selectSelectedIDs(state, panelId))
-  const pageSize = useAppSelector(state => selectPageSize(state, panelId))
-  const filters = useAppSelector(state => selectFilters(state, panelId))
+  const selectedIDs = useAppSelector(state =>
+    selectPanelSelectedIDs(state, panelId)
+  )
+  const pageSize = useAppSelector(state => selectPanelPageSize(state, panelId))
+  const filters = useAppSelector(state => selectPanelFilters(state, panelId))
 
-  const mode = usePanelMode()
-  const selectedRowIDs = useAppSelector(s => selectSelectedIDs(s, mode))
+  const selectedRowIDs = useAppSelector(s => selectPanelSelectedIDs(s, panelId))
   const selectedRowsSet = new Set(selectedRowIDs || [])
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const visibleColumns = useVisibleColumns(roleColumns(t))
   const roleDetailsID = useAppSelector(state =>
-    selectDetailsEntityId(state, panelId)
+    selectPanelDetailsEntityId(state, panelId)
   )
 
   const {isError, data, queryParams, error, isLoading, isFetching} =

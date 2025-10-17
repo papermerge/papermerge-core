@@ -1,4 +1,3 @@
-// features/roles/storage/thunks.ts
 import type {RootState} from "@/app/types"
 import {
   closePanelAction,

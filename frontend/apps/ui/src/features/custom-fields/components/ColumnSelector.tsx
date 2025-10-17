@@ -1,20 +1,21 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
-  customFieldListVisibleColumnsUpdated,
-  selectCustomFieldVisibleColumns
-} from "@/features/custom-fields/storage/custom_field"
-import {usePanelMode} from "@/hooks"
+  selectPanelVisibleColumns,
+  setPanelList
+} from "@/features/ui/panelRegistry"
+
 import {ColumnConfig, ColumnSelector} from "kommon"
 import {useTranslation} from "react-i18next"
 import {CustomFieldItem} from "../types"
 import customFieldColumns from "./columns"
 
 export default function ColumnSelectorContainer() {
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
   const {t} = useTranslation()
   const dispatch = useAppDispatch()
   const visibleColumns = useAppSelector(s =>
-    selectCustomFieldVisibleColumns(s, mode)
+    selectPanelVisibleColumns(s, panelId)
   )
   const allColumns = customFieldColumns(t).map(c => {
     if (!visibleColumns) {
@@ -37,7 +38,10 @@ export default function ColumnSelectorContainer() {
       .map(c => c.key)
 
     dispatch(
-      customFieldListVisibleColumnsUpdated({mode, value: newVisibleColumns})
+      setPanelList({
+        panelId,
+        list: {visibleColumns: newVisibleColumns}
+      })
     )
   }
 

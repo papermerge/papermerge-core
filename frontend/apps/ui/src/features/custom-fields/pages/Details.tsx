@@ -1,23 +1,18 @@
 import {store} from "@/app/store"
 import DualPanel from "@/components/DualPanel"
-import {showCustomFieldDetailsInMainPanel} from "@/features/custom-fields/storage/thunks"
 import {LoaderFunctionArgs} from "react-router"
+import {showCustomFieldDetailsInMainPanel} from "../storage/thunks"
 
-export default function CustomFieldDetailsPage() {
+export default function CustomFieldsDetailsPage() {
   return <DualPanel />
 }
 
 export async function loader({params, request}: LoaderFunctionArgs) {
   const url = new URL(request.url)
-  let entryID = "whatever"
 
   if (params.id) {
-    entryID = params.id
+    store.dispatch(showCustomFieldDetailsInMainPanel(params.id))
   }
 
-  if (entryID) {
-    store.dispatch(showCustomFieldDetailsInMainPanel(entryID))
-  }
-
-  return {entryID, urlParams: url.searchParams}
+  return {entryID: params.id, urlParams: url.searchParams}
 }

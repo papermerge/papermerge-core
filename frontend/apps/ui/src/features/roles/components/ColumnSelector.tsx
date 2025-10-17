@@ -1,4 +1,3 @@
-// features/roles/components/ColumnSelectorContainer.tsx
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {

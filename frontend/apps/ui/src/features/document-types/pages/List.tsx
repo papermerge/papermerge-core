@@ -1,16 +1,21 @@
 import {store} from "@/app/store"
 import DualPanel from "@/components/DualPanel"
-import {mainPanelComponentUpdated} from "@/features/ui/uiSlice"
+import {setPanelComponent} from "@/features/ui/panelRegistry"
 import {LoaderFunctionArgs} from "react-router"
 
-export default function DocumentTypesListPage() {
+export default function DocumentTypeListPage() {
   return <DualPanel />
 }
 
 export async function loader({request}: LoaderFunctionArgs) {
   const url = new URL(request.url)
 
-  store.dispatch(mainPanelComponentUpdated("documentTypesList"))
+  store.dispatch(
+    setPanelComponent({
+      panelId: "main",
+      component: "documentTypesList"
+    })
+  )
 
   return {urlParams: url.searchParams}
 }

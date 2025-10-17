@@ -1,23 +1,18 @@
 import {store} from "@/app/store"
 import DualPanel from "@/components/DualPanel"
-import {showTagDetailsInMainPanel} from "@/features/tags/storage/thunks"
 import {LoaderFunctionArgs} from "react-router"
+import {showTagDetailsInMainPanel} from "../storage/thunks"
 
-export default function TagDetailsPage() {
+export default function RoleDetailsPage() {
   return <DualPanel />
 }
 
 export async function loader({params, request}: LoaderFunctionArgs) {
   const url = new URL(request.url)
-  let entryID = "whatever"
 
   if (params.id) {
-    entryID = params.id
+    store.dispatch(showTagDetailsInMainPanel(params.id))
   }
 
-  if (entryID) {
-    store.dispatch(showTagDetailsInMainPanel(entryID))
-  }
-
-  return {entryID, urlParams: url.searchParams}
+  return {entryID: params.id, urlParams: url.searchParams}
 }

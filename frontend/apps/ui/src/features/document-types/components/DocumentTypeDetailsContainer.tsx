@@ -1,10 +1,10 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
 import {useGetDocumentTypeQuery} from "@/features/document-types/storage/api"
-import {selectDocumentTypeDetailsID} from "@/features/document-types/storage/documentType"
 import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
-import {usePanelMode} from "@/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectPanelDetails} from "@/features/ui/panelRegistry"
 import type {PanelMode} from "@/types"
 import {formatTimestamp} from "@/utils/formatTime"
 import {
@@ -26,14 +26,12 @@ import {useTranslation} from "react-i18next"
 import {DocumentTypeDetails} from "../types"
 
 export default function DocumentTypeDetailsContainer() {
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
   const dispatch = useAppDispatch()
   const {t} = useTranslation()
-  const documentTypeID = useAppSelector(s =>
-    selectDocumentTypeDetailsID(s, mode)
-  )
+  const documentTypeID = useAppSelector(s => selectPanelDetails(s, panelId))
   const {data, isLoading, isFetching, error} = useGetDocumentTypeQuery(
-    documentTypeID || "",
+    documentTypeID?.entityId || "",
     {
       skip: !documentTypeID
     }
@@ -52,7 +50,7 @@ export default function DocumentTypeDetailsContainer() {
       <LoadingOverlay visible={isFetching} />
       <Stack style={{height: "100%", overflow: "hidden"}}>
         <Group justify="space-between" style={{flexShrink: 0}}>
-          <Path documentType={data} mode={mode} />
+          <Path documentType={data} panelId={panelId} />
           <Group>
             <DeleteDocumentTypeButton documentTypeId={data.id} />
             <EditButton documentTypeId={data.id} />
@@ -88,14 +86,14 @@ export default function DocumentTypeDetailsContainer() {
 
 function Path({
   documentType,
-  mode
+  panelId
 }: {
   documentType: DocumentTypeDetails | null
-  mode: PanelMode
+  panelId: PanelMode
 }) {
   const navigation = useNavigation()
 
-  if (mode == "main") {
+  if (panelId == "main") {
     return (
       <Group>
         <Breadcrumbs>

@@ -1,20 +1,21 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
-  documentTypeListVisibleColumnsUpdated,
-  selectDocumentTypeVisibleColumns
-} from "@/features/document-types/storage/documentType"
-import {usePanelMode} from "@/hooks"
+  selectPanelVisibleColumns,
+  setPanelList
+} from "@/features/ui/panelRegistry"
+
 import {ColumnConfig, ColumnSelector} from "kommon"
 import {useTranslation} from "react-i18next"
 import {DocumentTypeItem} from "../types"
 import documentTypeColumns from "./columns"
 
 export default function ColumnSelectorContainer() {
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
   const {t} = useTranslation()
   const dispatch = useAppDispatch()
   const visibleColumns = useAppSelector(s =>
-    selectDocumentTypeVisibleColumns(s, mode)
+    selectPanelVisibleColumns(s, panelId)
   )
   const allColumns = documentTypeColumns(t).map(c => {
     if (!visibleColumns) {
@@ -37,7 +38,10 @@ export default function ColumnSelectorContainer() {
       .map(c => c.key)
 
     dispatch(
-      documentTypeListVisibleColumnsUpdated({mode, value: newVisibleColumns})
+      setPanelList({
+        panelId,
+        list: {visibleColumns: newVisibleColumns}
+      })
     )
   }
 

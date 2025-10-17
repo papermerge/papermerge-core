@@ -1,16 +1,12 @@
 import {useAppSelector} from "@/app/hooks"
 import {useGetPaginatedAuditLogsQuery} from "@/features/audit/storage/api"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
-  selectAuditLogFreeTextFilterValue,
-  selectAuditLogOperationFilterValue,
-  selectAuditLogPageNumber,
-  selectAuditLogPageSize,
-  selectAuditLogSorting,
-  selectAuditLogTableNameFilterValue,
-  selectAuditLogTimestampFilterValue,
-  selectAuditLogUsernameFilterValue
-} from "@/features/audit/storage/audit"
-import {usePanelMode} from "@/hooks"
+  selectPanelFilters,
+  selectPanelPageNumber,
+  selectPanelPageSize,
+  selectPanelSorting
+} from "@/features/ui/panelRegistry"
 import type {AuditLogQueryParams} from "../types"
 
 type SortBy =
@@ -23,26 +19,19 @@ type SortBy =
   | "id"
 
 function useQueryParams(): AuditLogQueryParams {
-  const mode = usePanelMode()
-  const tableNames = useAppSelector(s =>
-    selectAuditLogTableNameFilterValue(s, mode)
-  )
-  const operations = useAppSelector(s =>
-    selectAuditLogOperationFilterValue(s, mode)
-  )
-  const timestamp = useAppSelector(s =>
-    selectAuditLogTimestampFilterValue(s, mode)
-  )
-  const usernames = useAppSelector(s =>
-    selectAuditLogUsernameFilterValue(s, mode)
-  )
-  const free_text = useAppSelector(s =>
-    selectAuditLogFreeTextFilterValue(s, mode)
-  )
-  const pageSize = useAppSelector(s => selectAuditLogPageSize(s, mode)) || 10
-  const pageNumber = useAppSelector(s => selectAuditLogPageNumber(s, mode)) || 1
-  const sorting = useAppSelector(s => selectAuditLogSorting(s, mode))
+  const {panelId} = usePanel()
+
+  const pageSize = useAppSelector(s => selectPanelPageSize(s, panelId)) || 10
+  const pageNumber = useAppSelector(s => selectPanelPageNumber(s, panelId)) || 1
+  const sorting = useAppSelector(s => selectPanelSorting(s, panelId))
+  const filters = useAppSelector(s => selectPanelFilters(s, panelId))
   const column = sorting?.column as SortBy | undefined
+
+  const tableNames = filters.tableNames
+  const operations = filters.operations
+  const timestamp = filters.timestamp
+  const usernames = filters.usernames
+  const free_text = filters.freeText
 
   const queryParams: AuditLogQueryParams = {
     page_size: pageSize,

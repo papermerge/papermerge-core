@@ -9,15 +9,10 @@ export default function AuditLogDetailsPage() {
 
 export async function loader({params, request}: LoaderFunctionArgs) {
   const url = new URL(request.url)
-  let entryID = "whatever"
 
   if (params.id) {
-    entryID = params.id
+    store.dispatch(showAuditLogDetailsInMainPanel(params.id))
   }
 
-  if (entryID) {
-    store.dispatch(showAuditLogDetailsInMainPanel(entryID))
-  }
-
-  return {entryID, urlParams: url.searchParams}
+  return {entryID: params.id, urlParams: url.searchParams}
 }

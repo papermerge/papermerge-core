@@ -3,8 +3,8 @@ import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
 import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import {closeRoleDetailsSecondaryPanel} from "@/features/roles/storage/thunks"
 import {useGetTagQuery} from "@/features/tags/storage/api"
-import {selectTagDetailsID} from "@/features/tags/storage/tag"
-import {usePanelMode} from "@/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectPanelDetails} from "@/features/ui/panelRegistry"
 import type {PanelMode} from "@/types"
 import type {TagDetails} from "@/types.d/tags"
 import {formatTimestamp} from "@/utils/formatTime"
@@ -26,14 +26,17 @@ import LoadingPanel from "@/components/LoadingPanel"
 import {useTranslation} from "react-i18next"
 
 export default function TagDetailsContainer() {
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
   const dispatch = useAppDispatch()
   const {t} = useTranslation()
-  const tagID = useAppSelector(s => selectTagDetailsID(s, mode))
+  const tagID = useAppSelector(s => selectPanelDetails(s, panelId))
   const {timestamp_format, timezone} = useAppSelector(selectMyPreferences)
-  const {data, isLoading, isFetching, error} = useGetTagQuery(tagID || "", {
-    skip: !tagID
-  })
+  const {data, isLoading, isFetching, error} = useGetTagQuery(
+    tagID?.entityId || "",
+    {
+      skip: !tagID
+    }
+  )
 
   if (isLoading) return <LoadingPanel />
   if (error) return <div>Error loading tag details</div>
@@ -47,7 +50,7 @@ export default function TagDetailsContainer() {
       <LoadingOverlay visible={isFetching} />
       <Stack style={{height: "100%", overflow: "hidden"}}>
         <Group justify="space-between" style={{flexShrink: 0}}>
-          <Path tag={data} mode={mode} />
+          <Path tag={data} panelId={panelId} />
           <Group>
             <DeleteTagButton tagId={data.id} />
             <EditButton tagId={data.id} />
@@ -81,10 +84,10 @@ export default function TagDetailsContainer() {
   )
 }
 
-function Path({tag, mode}: {tag: TagDetails | null; mode: PanelMode}) {
+function Path({tag, panelId}: {tag: TagDetails | null; panelId: PanelMode}) {
   const navigation = useNavigation()
 
-  if (mode == "main") {
+  if (panelId == "main") {
     return (
       <Group>
         <Breadcrumbs>

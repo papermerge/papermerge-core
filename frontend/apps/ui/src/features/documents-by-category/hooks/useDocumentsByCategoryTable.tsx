@@ -1,25 +1,42 @@
 import {useAppSelector} from "@/app/hooks"
-import PanelContext from "@/contexts/PanelContext"
 
 import {useGetPaginatedDocumentsByCategoryQuery} from "@/features/documents-by-category/storage/api"
-import {
-  selectDocumentCategoryID,
-  selectDocumentsByCategoryPageNumber,
-  selectDocumentsByCategoryPageSize,
-  selectDocumentsByCategorySorting
-} from "@/features/documents-by-category/storage/documentsByCategory"
 import type {
   DocumentsByCategoryQueryParams,
   SortBy
 } from "@/features/documents-by-category/types"
-import {usePanelMode} from "@/hooks"
-import type {PanelMode} from "@/types"
-import {useContext} from "react"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {
+  selectPanelFilters,
+  selectPanelPageNumber,
+  selectPanelPageSize,
+  selectPanelSorting
+} from "@/features/ui/panelRegistry"
+import {selectDocumentCategoryID} from "../storage/documentsByCategory"
+
+function useQueryParams(): DocumentsByCategoryQueryParams {
+  const {panelId} = usePanel()
+
+  const pageSize = useAppSelector(s => selectPanelPageSize(s, panelId)) || 10
+  const pageNumber = useAppSelector(s => selectPanelPageNumber(s, panelId)) || 1
+  const sorting = useAppSelector(s => selectPanelSorting(s, panelId))
+  const filters = useAppSelector(s => selectPanelFilters(s, panelId))
+
+  const column = sorting?.column as SortBy | undefined
+
+  const queryParams: DocumentsByCategoryQueryParams = {
+    page_size: pageSize,
+    page_number: pageNumber,
+    sort_by: column,
+    sort_direction: sorting?.direction || undefined
+  }
+
+  return queryParams
+}
 
 export default function useDocumentsByCategoryTable() {
   const queryParams = useQueryParams()
-  const mode: PanelMode = useContext(PanelContext)
-  const categoryID = useAppSelector(s => selectDocumentCategoryID(s, mode))
+  const categoryID = useAppSelector(selectDocumentCategoryID)
 
   const {data, isLoading, isFetching, isError, error} =
     useGetPaginatedDocumentsByCategoryQuery(
@@ -40,23 +57,4 @@ export default function useDocumentsByCategoryTable() {
     error,
     queryParams
   }
-}
-
-function useQueryParams(): DocumentsByCategoryQueryParams {
-  const mode = usePanelMode()
-  const pageSize =
-    useAppSelector(s => selectDocumentsByCategoryPageSize(s, mode)) || 10
-  const pageNumber =
-    useAppSelector(s => selectDocumentsByCategoryPageNumber(s, mode)) || 1
-  const sorting = useAppSelector(s => selectDocumentsByCategorySorting(s, mode))
-  const column = sorting?.column as SortBy | undefined
-
-  const queryParams: DocumentsByCategoryQueryParams = {
-    page_size: pageSize,
-    page_number: pageNumber,
-    sort_by: column,
-    sort_direction: sorting?.direction || undefined
-  }
-
-  return queryParams
 }

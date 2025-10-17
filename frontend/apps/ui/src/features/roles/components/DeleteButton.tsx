@@ -1,4 +1,3 @@
-// features/roles/components/DeleteButton.tsx
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {Button} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"

@@ -1,24 +1,18 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
-import PanelContext from "@/contexts/PanelContext"
 import documentByCategoryColumns from "@/features/documents-by-category/components/columns"
 import useDocumentsByCategoryTable from "@/features/documents-by-category/hooks/useDocumentsByCategoryTable"
 import useVisibleColumns from "@/features/documents-by-category/hooks/useVisibleColumns"
-import {
-  documentsByCategoryListSortingUpdated,
-  documentsByCategoryPaginationUpdated,
-  selectCurrentDocumentID,
-  selectDocumentCategoryID
-} from "@/features/documents-by-category/storage/documentsByCategory"
 import {showDocumentDetailsInSecondaryPanel} from "@/features/documents-by-category/storage/thunks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectPanelDetailsEntityId} from "@/features/ui/panelRegistry"
 import {isHTTP403Forbidden} from "@/services/helpers"
-import type {PanelMode} from "@/types"
 import {Group, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
 import {DataTable, TablePagination} from "kommon"
-import {useContext} from "react"
 import {useTranslation} from "react-i18next"
 import {useNavigate} from "react-router-dom"
+import {selectDocumentCategoryID} from "../storage/documentsByCategory"
 import {DocumentByCategoryItem} from "../types"
 import ActionButtons from "./ActionButtons"
 import PickupDocumentCategory from "./PickupDocumentCategory"
@@ -27,35 +21,32 @@ export default function DocumentsListByCagegory() {
   const {t} = useTranslation()
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const mode: PanelMode = useContext(PanelContext)
-  const categoryID = useAppSelector(s => selectDocumentCategoryID(s, mode))
+  const {actions} = usePanel()
+  const categoryID = useAppSelector(selectDocumentCategoryID)
   const {isError, data, queryParams, error, isLoading, isFetching} =
     useDocumentsByCategoryTable()
   const visibleColumns = useVisibleColumns(
     documentByCategoryColumns({items: data?.items, t})
   )
   const currentDetailsPanelDocID = useAppSelector(s =>
-    selectCurrentDocumentID(s, "secondary")
+    selectPanelDetailsEntityId(s, "secondary")
   )
 
   const handleSortChange = (value: SortState) => {
-    dispatch(documentsByCategoryListSortingUpdated({mode, value}))
+    actions.updateSorting(value)
+  }
+
+  const handleSelectionChange = (newSelection: Set<string>) => {
+    const arr = Array.from(newSelection)
+    actions.setSelection(arr)
   }
 
   const handlePageSizeChange = (newValue: number) => {
-    dispatch(
-      documentsByCategoryPaginationUpdated({
-        mode,
-        value: {
-          pageSize: newValue,
-          pageNumber: 1
-        }
-      })
-    )
+    actions.updatePagination({pageSize: newValue})
   }
 
   const handlePageNumberChange = (pageNumber: number) => {
-    dispatch(documentsByCategoryPaginationUpdated({mode, value: {pageNumber}}))
+    actions.updatePagination({pageNumber})
   }
 
   const getRowId = (row: DocumentByCategoryItem) => row.id

@@ -1,30 +1,39 @@
-import type {AppDispatch, RootState} from "@/app/types"
+import type {RootState} from "@/app/types"
 import {
-  mainPanelAuditLogDetailsUpdated,
-  secondaryPanelAuditLogDetailsUpdated
-} from "@/features/audit/storage/audit"
-import {
-  mainPanelComponentUpdated,
-  secondaryPanelComponentUpdated
-} from "@/features/ui/uiSlice"
+  closePanelAction,
+  showDetailsInPanel,
+  showListInPanel
+} from "@/features/ui/panelActions"
 import type {ThunkAction, UnknownAction} from "@reduxjs/toolkit"
 
+// ============================================================================
+// ROLE-SPECIFIC ACTIONS
+// ============================================================================
+
+export const showAuditLogDetailsInPanel = (
+  panelId: string,
+  auditLogId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showDetailsInPanel(panelId, "auditLogDetails", auditLogId)
+}
+
+export const showAuditLogListInPanel = (
+  panelId: string
+): ThunkAction<void, RootState, undefined, UnknownAction> => {
+  return showListInPanel(panelId, "auditLogList")
+}
+
+// Convenience wrappers for backward compatibility
 export const showAuditLogDetailsInSecondaryPanel = (
   auditLogId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelAuditLogDetailsUpdated(auditLogId))
-    dispatch(secondaryPanelComponentUpdated("auditLogDetails"))
-  }
+  return showAuditLogDetailsInPanel("secondary", auditLogId)
 }
 
 export const showAuditLogDetailsInMainPanel = (
   auditLogId: string
 ): ThunkAction<void, RootState, undefined, UnknownAction> => {
-  return (dispatch: AppDispatch) => {
-    dispatch(mainPanelAuditLogDetailsUpdated(auditLogId))
-    dispatch(mainPanelComponentUpdated("auditLogDetails"))
-  }
+  return showAuditLogDetailsInPanel("main", auditLogId)
 }
 
 export const closeAuditLogDetailsSecondaryPanel = (): ThunkAction<
@@ -33,8 +42,5 @@ export const closeAuditLogDetailsSecondaryPanel = (): ThunkAction<
   undefined,
   UnknownAction
 > => {
-  return (dispatch: AppDispatch) => {
-    dispatch(secondaryPanelAuditLogDetailsUpdated(undefined))
-    dispatch(secondaryPanelComponentUpdated(undefined))
-  }
+  return closePanelAction("secondary")
 }

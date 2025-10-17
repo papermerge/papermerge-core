@@ -2,14 +2,12 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
 import useCustomFieldTable from "@/features/custom-fields/hooks/useCustomFieldTable"
 import useVisibleColumns from "@/features/custom-fields/hooks/useVisibleColumns"
-import {
-  customFieldListSortingUpdated,
-  customFieldPaginationUpdated,
-  selectCustomFieldDetailsID,
-  selectionSet,
-  selectSelectedIDs
-} from "@/features/custom-fields/storage/custom_field"
 import {showCustomFieldDetailsInSecondaryPanel} from "@/features/custom-fields/storage/thunks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {
+  selectPanelDetailsEntityId,
+  selectPanelSelectedIDs
+} from "@/features/ui/panelRegistry"
 import {isHTTP403Forbidden} from "@/services/helpers"
 import {Group, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
@@ -18,48 +16,40 @@ import {useNavigate} from "react-router-dom"
 import type {CustomFieldItem} from "../types"
 import customFieldColumns from "./columns"
 
-import {usePanelMode} from "@/hooks"
 import {useTranslation} from "react-i18next"
 import ActionButtons from "./ActionButtons"
 
 export default function CustomFieldsList() {
   const {t} = useTranslation()
-  const mode = usePanelMode()
-  const selectedRowIDs = useAppSelector(s => selectSelectedIDs(s, mode))
+  const {panelId, actions} = usePanel()
+
+  const selectedRowIDs = useAppSelector(s => selectPanelSelectedIDs(s, panelId))
   const selectedRowsSet = new Set(selectedRowIDs || [])
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const visibleColumns = useVisibleColumns(customFieldColumns(t))
   const customFieldDetailsID = useAppSelector(s =>
-    selectCustomFieldDetailsID(s, "secondary")
+    selectPanelDetailsEntityId(s, panelId)
   )
 
   const {isError, data, queryParams, error, isLoading, isFetching} =
     useCustomFieldTable()
 
   const handleSortChange = (value: SortState) => {
-    dispatch(customFieldListSortingUpdated({mode, value}))
+    actions.updateSorting(value)
   }
 
   const handleSelectionChange = (newSelection: Set<string>) => {
-    const newIds = Array.from(newSelection)
-    dispatch(selectionSet({ids: newIds, mode}))
+    const arr = Array.from(newSelection)
+    actions.setSelection(arr)
   }
 
   const handlePageSizeChange = (newValue: number) => {
-    dispatch(
-      customFieldPaginationUpdated({
-        mode,
-        value: {
-          pageSize: newValue,
-          pageNumber: 1
-        }
-      })
-    )
+    actions.updatePagination({pageSize: newValue})
   }
 
   const handlePageNumberChange = (pageNumber: number) => {
-    dispatch(customFieldPaginationUpdated({mode, value: {pageNumber}}))
+    actions.updatePagination({pageNumber})
   }
 
   const getRowId = (row: CustomFieldItem) => row.id

@@ -1,11 +1,11 @@
 import {useGetDocumentQuery} from "@/features/document/store/apiSlice"
-import {selectCurrentDocumentID} from "@/features/documents-by-category/storage/documentsByCategory"
+import {selectPanelDetailsEntityId} from "@/features/ui/panelRegistry"
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query"
 import {skipToken} from "@reduxjs/toolkit/query"
 
 import {useAppSelector} from "@/app/hooks"
 import {DocumentType} from "@/features/document/types"
-import {usePanelMode} from "@/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 
 interface SerializedError {
   name?: string
@@ -21,10 +21,10 @@ export interface ReturnState {
 }
 
 export default function useCurrentDoc(): ReturnState {
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
 
   const currentDocumentID = useAppSelector(s =>
-    selectCurrentDocumentID(s, mode)
+    selectPanelDetailsEntityId(s, panelId)
   )
   const {
     // should be `currentData` here not `data`, otherwise there will

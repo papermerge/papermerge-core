@@ -25,6 +25,7 @@ import usersReducer from "@/features/users/storage/user"
 import currentUserReducer from "@/slices/currentUser"
 import {configureStore} from "@reduxjs/toolkit"
 import {listenerMiddleware} from "./listenerMiddleware"
+import {rtkQueryErrorLogger} from "./globalErrorMiddleware"
 
 export const store = configureStore({
   reducer: {
@@ -58,4 +59,5 @@ export const store = configureStore({
       .prepend(listenerMiddleware.middleware)
       .prepend(docsListenerMiddleware.middleware)
       .concat(apiSlice.middleware)
+      .concat(rtkQueryErrorLogger)
 })

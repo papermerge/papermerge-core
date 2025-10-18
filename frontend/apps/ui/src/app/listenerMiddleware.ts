@@ -2,6 +2,7 @@ import {customFieldCRUDListeners} from "@/features/custom-fields/storage/custom_
 import {documentTypeCRUDListeners} from "@/features/document-types/storage/documentType"
 import {moveNodesListeners} from "@/features/nodes/nodesSlice"
 import {roleCRUDListeners} from "@/features/roles/storage/role"
+import {userCRUDListeners} from "@/features/users/storage/user"
 
 import {addListener, createListenerMiddleware} from "@reduxjs/toolkit"
 import type {AppDispatch, RootState} from "./types"
@@ -21,3 +22,4 @@ moveNodesListeners(startAppListening)
 roleCRUDListeners(startAppListening)
 documentTypeCRUDListeners(startAppListening)
 customFieldCRUDListeners(startAppListening)
+userCRUDListeners(startAppListening)

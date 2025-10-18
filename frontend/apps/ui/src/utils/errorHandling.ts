@@ -9,9 +9,20 @@ import {TFunction} from "i18next"
 /**
  * Standard error structure from the backend
  */
+
+export interface AttrError {
+  name: string
+  message: string
+}
+
+export interface StructuredError {
+  attrs?: AttrError[] | null
+  messages?: string[] | null
+}
+
 export interface ServerErrorType {
   data: {
-    detail: string
+    detail: string | StructuredError
     [key: string]: any
   }
   status: number
@@ -72,9 +83,11 @@ export function getErrorMessage(
     if (typeof error.status === "number") {
       const serverError = error as ServerErrorType
 
+      const errorMessage = extractDetailMessage(serverError.data?.detail)
+
       // If backend provides specific error detail, use it
-      if (serverError.data?.detail) {
-        return serverError.data.detail
+      if (errorMessage) {
+        return errorMessage
       }
 
       // Generic status code messages with context
@@ -193,4 +206,61 @@ export function getErrorTitle(
   }
 
   return t("errors.title.error", {defaultValue: "Error"})
+}
+
+/**
+ * Extract message from backend's detail field
+ * Handles both string and structured error formats:
+
+    ✅ {"detail": "Simple string"} → Shows the string
+    ✅ {"detail": {"messages": [...], "attrs": [...]}} → Shows combined messages
+    ✅ {"detail": {"attrs": null, "messages": null}} → Shows generic "Invalid request" message
+ */
+function extractDetailMessage(
+  detail: string | StructuredError | undefined
+): string | null {
+  if (!detail) return null
+
+  // If detail is a simple string, return it
+  if (typeof detail === "string") {
+    return detail
+  }
+
+  // Handle structured error format: { attrs: [...], messages: [...] }
+  if (typeof detail === "object") {
+    const messages: string[] = []
+
+    // Extract messages from the messages array
+    if (
+      detail.messages &&
+      Array.isArray(detail.messages) &&
+      detail.messages.length > 0
+    ) {
+      messages.push(...detail.messages.filter(msg => msg)) // Filter out empty strings
+    }
+
+    // Extract messages from attrs array
+    if (
+      detail.attrs &&
+      Array.isArray(detail.attrs) &&
+      detail.attrs.length > 0
+    ) {
+      for (const attr of detail.attrs) {
+        if (attr.message) {
+          // Format: "Field name: error message"
+          messages.push(`${attr.name}: ${attr.message}`)
+        }
+      }
+    }
+
+    // Join all messages with line breaks
+    if (messages.length > 0) {
+      return messages.join("\n")
+    }
+
+    // If we got a structured error object but no actual messages,
+    // return null so we fall back to generic messages
+  }
+
+  return null
 }

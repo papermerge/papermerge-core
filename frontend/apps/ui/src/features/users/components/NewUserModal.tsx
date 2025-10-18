@@ -90,10 +90,9 @@ export default function NewUserModal({
     }
     try {
       await addNewUser(newUserData).unwrap()
+      onSubmit()
+      reset()
     } catch (err) {}
-
-    onSubmit()
-    reset()
   }
 
   const reset = () => {

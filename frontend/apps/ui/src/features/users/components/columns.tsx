@@ -71,7 +71,9 @@ export default function userColumns(t?: TFunction) {
       visible: true,
       width: 200,
       minWidth: 100,
-      render: value => <Text size="sm">{(value as ByUser).username}</Text>
+      render: value => (
+        <Text size="sm">{value && (value as ByUser).username}</Text>
+      )
     },
     {
       key: "updated_at",
@@ -91,7 +93,9 @@ export default function userColumns(t?: TFunction) {
       visible: false,
       width: 200,
       minWidth: 100,
-      render: value => <Text size="sm">{(value as ByUser).username}</Text>
+      render: value => (
+        <Text size="sm">{value && (value as ByUser).username}</Text>
+      )
     }
   ]
   return columns

@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from papermerge.core import schema, dbapi, orm
 from papermerge.core import utils
@@ -132,7 +133,16 @@ async def get_users_without_pagination(
     return result
 
 
-@router.post("/", status_code=201)
+@router.post(
+    "/",
+    status_code=201,
+    responses={
+        400: {"description": "Invalid parameters or validation error"},
+        404: {"description": "Specified roles or groups not found"},
+        409: {"description": "User with username or email already exists"},
+        500: {"description": "Internal server error"}
+    }
+)
 @utils.docstring_parameter(scope=scopes.USER_CREATE)
 async def create_user(
     pyuser: schema.CreateUser,
@@ -176,6 +186,22 @@ async def create_user(
                 is_superuser=pyuser.is_superuser,
                 group_ids=pyuser.group_ids,
             )
+    except IntegrityError as e:
+        await db_session.rollback()
+        error_msg = str(e).lower()
+        if "username" in error_msg:
+            raise HTTPException(
+                status_code=409,
+                detail="A user with this username already exists"
+            )
+        elif "email" in error_msg:
+            raise HTTPException(
+                status_code=409,
+                detail="A user with this email already exists"
+            )
+        else:
+            logger.error(f"IntegrityError creating user by {cur_user.username}: {e}", exc_info=True)
+            raise HTTPException(status_code=409, detail="User already exists")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid parameters: {str(e)}")
     except Exception as e:

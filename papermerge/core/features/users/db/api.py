@@ -473,7 +473,7 @@ async def create_user(
     is_superuser: bool = False,
     is_active: bool = False,
     user_id: uuid.UUID | None = None,
-) -> Tuple[schema.User | None, err_schema.Error | None]:
+) ->  orm.User:
     """
     Create a new user with special folders.
 
@@ -484,80 +484,61 @@ async def create_user(
     role_ids = role_ids or []
     _user_id = user_id or uuid.uuid4()
 
-    # REMOVED: await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
+    user = orm.User(
+        id=_user_id,
+        username=username,
+        email=email,
+        password=password,
+        is_superuser=is_superuser,
+        is_active=is_active,
+    )
+    db_session.add(user)
+    await db_session.flush()
 
-    try:
-        # Step 1: Create user first (no FK to folders anymore!)
-        user = orm.User(
-            id=_user_id,
-            username=username,
-            email=email,
-            password=password,
-            is_superuser=is_superuser,
-            is_active=is_active,
-        )
-        db_session.add(user)
-        await db_session.flush()
+    await special_folders_api.create_special_folders_for_user(
+        db_session,
+        _user_id
+    )
 
-        # Step 2: Create special folders (no circular dependency!)
-        await special_folders_api.create_special_folders_for_user(
-            db_session,
-            _user_id
-        )
-
-        # Step 3: Associate groups if provided
-        if group_ids:
-            groups_result = await db_session.execute(
-                select(orm.Group).where(
-                    orm.Group.id.in_(group_ids),
-                    orm.Group.deleted_at.is_(None)
-                )
+    if group_ids:
+        groups_result = await db_session.execute(
+            select(orm.Group).where(
+                orm.Group.id.in_(group_ids),
+                orm.Group.deleted_at.is_(None)
             )
-            groups = list(groups_result.scalars().all())
-            found_group_ids = {group.id for group in groups}
-            missing_group_ids = set(group_ids) - found_group_ids
-            if missing_group_ids:
-                raise ValueError(f"Groups not found or inactive: {missing_group_ids}")
+        )
+        groups = list(groups_result.scalars().all())
+        found_group_ids = {group.id for group in groups}
+        missing_group_ids = set(group_ids) - found_group_ids
+        if missing_group_ids:
+            raise ValueError(f"Groups not found or inactive: {missing_group_ids}")
 
-            for group in groups:
-                user_group = orm.UserGroup(user_id=user.id, group_id=group.id)
-                db_session.add(user_group)
+        for group in groups:
+            user_group = orm.UserGroup(user_id=user.id, group_id=group.id)
+            db_session.add(user_group)
 
-        # Step 4: Associate roles if provided
-        if role_ids:
-            roles_result = await db_session.execute(
-                select(orm.Role).where(
-                    orm.Role.id.in_(role_ids),
-                    orm.Role.deleted_at.is_(None)
-                )
+    if role_ids:
+        roles_result = await db_session.execute(
+            select(orm.Role).where(
+                orm.Role.id.in_(role_ids),
+                orm.Role.deleted_at.is_(None)
             )
-            roles = list(roles_result.scalars().all())
-            found_role_ids = {role.id for role in roles}
-            missing_role_ids = set(role_ids) - found_role_ids
-            if missing_role_ids:
-                raise ValueError(f"Roles not found or inactive: {missing_role_ids}")
+        )
+        roles = list(roles_result.scalars().all())
+        found_role_ids = {role.id for role in roles}
+        missing_role_ids = set(role_ids) - found_role_ids
+        if missing_role_ids:
+            raise ValueError(f"Roles not found or inactive: {missing_role_ids}")
 
-            for role in roles:
-                user_role = orm.UserRole(user_id=user.id, role_id=role.id)
-                db_session.add(user_role)
+        for role in roles:
+            user_role = orm.UserRole(user_id=user.id, role_id=role.id)
+            db_session.add(user_role)
 
-        await db_session.commit()
-        await db_session.refresh(user)
+    await db_session.commit()
+    await db_session.refresh(user)
 
-        return schema.User.model_validate(user), None
+    return user
 
-    except IntegrityError as e:
-        await db_session.rollback()
-        error_msg = str(e)
-        if "unique constraint" in error_msg.lower():
-            if "username" in error_msg.lower():
-                return None, err_schema.Error(msg=f"User with username '{username}' already exists")
-            elif "email" in error_msg.lower():
-                return None, err_schema.Error(msg=f"User with email '{email}' already exists")
-        return None, err_schema.Error(msg=f"Database error: {error_msg}")
-    except Exception as e:
-        await db_session.rollback()
-        return None, err_schema.Error(msg=str(e))
 
 async def update_user(
     db_session: AsyncSession,

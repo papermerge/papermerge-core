@@ -160,27 +160,32 @@ async def create_user(
                 status_code=400,
                 detail=f"Invalid or inactive role IDs: {missing_roles}"
             )
-
-    async with AsyncAuditContext(
-        db_session,
-        user_id=cur_user.id,
-        username=cur_user.username
-    ):
-        user, error = await dbapi.create_user(
+    try:
+        async with AsyncAuditContext(
             db_session,
-            username=pyuser.username,
-            email=pyuser.email,
-            password=pyuser.password,
-            role_ids=pyuser.role_ids,
-            is_active=pyuser.is_active,
-            is_superuser=pyuser.is_superuser,
-            group_ids=pyuser.group_ids,
+            user_id=cur_user.id,
+            username=cur_user.username
+        ):
+            db_user = await dbapi.create_user(
+                db_session,
+                username=pyuser.username,
+                email=pyuser.email,
+                password=pyuser.password,
+                role_ids=pyuser.role_ids,
+                is_active=pyuser.is_active,
+                is_superuser=pyuser.is_superuser,
+                group_ids=pyuser.group_ids,
+            )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid parameters: {str(e)}")
+    except Exception as e:
+        logger.error(
+            f"Error creating user {cur_user.id}: {e}",
+            exc_info=True
         )
+        raise HTTPException(status_code=500, detail="Internal server error")
 
-    if error:
-        raise HTTPException(status_code=400, detail=error.model_dump())
-
-    return user
+    return db_user
 
 
 @router.get(

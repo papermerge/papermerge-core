@@ -53,14 +53,13 @@ async def test_get_user_group_homes_with_two_groups(db_session: AsyncSession, ma
 
 async def test_create_user(db_session: AsyncSession):
     """Created user must have associated his/her special folders: home, inbox"""
-    user, error = await dbapi.create_user(
+    db_user = await dbapi.create_user(
         db_session, username="momo", password="momo", email="momo@x.com"
     )
 
-    assert error is None
-    assert user.username == "momo"
-    assert user.home_folder_id is not None
-    assert user.inbox_folder_id is not None
+    assert db_user.username == "momo"
+    assert db_user.home_folder_id is not None
+    assert db_user.inbox_folder_id is not None
 
 
 async def test_user_delete(db_session: AsyncSession, make_user):

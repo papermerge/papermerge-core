@@ -25,6 +25,24 @@ async def test_list_users_without_pagination(make_user, auth_api_client: AuthTes
     assert response.status_code == 200, response.json()
 
 
+
+async def test_create_user_without_roles(
+    db_session: AsyncSession,
+    auth_api_client: AuthTestClient
+):
+    data = {
+        "username": "friedrich",
+        "email": "friedrich@example.com",
+        "group_ids": [],
+        "role_ids": [],
+        "is_active": True,
+        "is_superuser": False,
+        "password": "blah",
+    }
+    response = await auth_api_client.post("/users/", json=data)
+    assert response.status_code == 201
+
+
 async def test_create_user(
     db_session: AsyncSession,
     make_group,

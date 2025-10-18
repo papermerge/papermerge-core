@@ -11,6 +11,7 @@ from papermerge.core.version import __version__
 from papermerge.core.config import get_settings
 from papermerge.core.routers.version import router as version_router
 from papermerge.core.routers.scopes import router as scopes_router
+from papermerge.core.openapi import create_custom_openapi_generator
 
 config = get_settings()
 prefix = config.papermerge__main__api_prefix
@@ -52,3 +53,6 @@ if logging_config_path.exists() and logging_config_path.is_file():
         config = yaml.load(stream, Loader=yaml.FullLoader)
 
     dictConfig(config)
+
+
+app.openapi = create_custom_openapi_generator(app)

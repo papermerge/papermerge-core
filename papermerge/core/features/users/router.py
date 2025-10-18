@@ -1,6 +1,5 @@
 import os
 import logging
-from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
@@ -8,9 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
+from papermerge.core.features.auth.dependencies import require_scopes
 from papermerge.core import schema, dbapi, orm
-from papermerge.core import utils
-from papermerge.core.features import auth
 from papermerge.core.features.auth import scopes
 from papermerge.core.tasks import delete_user_data
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
@@ -27,17 +25,11 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/group-homes")
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def get_user_group_homes(
-    user: Annotated[
-        schema.User, Security(auth.get_current_user, scopes=[scopes.NODE_VIEW])
-    ],
+    user: require_scopes(scopes.NODE_VIEW),
     db_session: AsyncSession=Depends(get_db),
 ) -> list[schema.UserHome]:
-    """Get all user group homes
-
-    Required scope: `{scope}`
-    """
+    """Get all user group homes"""
     result, error = await dbapi.get_user_group_homes(db_session, user_id=user.id)
 
     if error:
@@ -47,17 +39,11 @@ async def get_user_group_homes(
 
 
 @router.get("/group-inboxes")
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def get_user_group_homes(
-    user: Annotated[
-        schema.User, Security(auth.get_current_user, scopes=[scopes.NODE_VIEW])
-    ],
+    user: require_scopes(scopes.NODE_VIEW),
     db_session: AsyncSession = Depends(get_db),
 ) -> list[schema.UserInbox]:
-    """Get all user group inboxes
-
-    Required scope: `{scope}`
-    """
+    """Get all user group inboxes"""
     result, error = await dbapi.get_user_group_inboxes(db_session, user_id=user.id)
 
     if error:
@@ -67,31 +53,21 @@ async def get_user_group_homes(
 
 
 @router.get("/me")
-@utils.docstring_parameter(scope=scopes.USER_ME)
 async def get_current_user(
-    user: Annotated[
-        schema.User, Security(auth.get_current_user, scopes=[scopes.USER_ME])
-    ],
+    user: require_scopes(scopes.USER_ME),
 ) -> schema.User:
-    """Returns current user
-
-    Required scope: `{scope}`
-    """
+    """Returns current user"""
     logger.debug(f"User {user} found")
     return schema.User.model_validate(user)
 
 
 @router.get("/")
-@utils.docstring_parameter(scope=scopes.USER_VIEW)
 async def get_users(
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.USER_VIEW])],
+    user: require_scopes(scopes.USER_VIEW),
     params: UserParams = Depends(),
     db_session: AsyncSession=Depends(get_db),
 ) -> schema.PaginatedResponse[schema.UserEx]:
-    """Get all users
-
-    Required scope: `{scope}`
-    """
+    """Get all users"""
 
     try:
         filters = params.to_filters()
@@ -117,17 +93,11 @@ async def get_users(
 
 
 @router.get("/all", response_model=list[schema.User])
-@utils.docstring_parameter(scope=scopes.USER_SELECT)
 async def get_users_without_pagination(
-    user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.USER_SELECT])
-    ],
+    user: require_scopes(scopes.USER_SELECT),
     db_session: AsyncSession=Depends(get_db),
 ):
-    """Get all users without pagination/filtering/sorting
-
-    Required scope: `{scope}`
-    """
+    """Get all users without pagination/filtering/sorting"""
     result = await dbapi.get_users_without_pagination(db_session)
 
     return result
@@ -143,18 +113,13 @@ async def get_users_without_pagination(
         500: {"description": "Internal server error"}
     }
 )
-@utils.docstring_parameter(scope=scopes.USER_CREATE)
 async def create_user(
     pyuser: schema.CreateUser,
-    cur_user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.USER_CREATE])
-    ],
+    cur_user: require_scopes(scopes.USER_CREATE),
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.User:
-    """Creates user
+    """Creates user"""
 
-    Required scope: `{scope}`
-    """
     if pyuser.role_ids:
         # Validate roles exist and are active
         roles_result = await db_session.execute(
@@ -225,16 +190,12 @@ async def create_user(
     },
     response_model=schema.UserDetails,
 )
-@utils.docstring_parameter(scope=scopes.USER_VIEW)
 async def get_user_details(
     user_id: UUID,
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.USER_VIEW])],
+    user: require_scopes(scopes.USER_VIEW),
     db_session: AsyncSession  =Depends(get_db),
 ):
-    """Get user details
-
-    Required scope: `{scope}`
-    """
+    """Get user details"""
     user, error = await dbapi.get_user_details(
         db_session,
         user_id=user_id,
@@ -261,18 +222,13 @@ async def get_user_details(
         },
     },
 )
-@utils.docstring_parameter(scope=scopes.USER_DELETE)
 async def delete_user(
     user_id: UUID,
-    cur_user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.USER_DELETE])
-    ],
+    cur_user: require_scopes(scopes.USER_DELETE),
     db_session: AsyncSession=Depends(get_db),
 ) -> None:
-    """Deletes user
+    """Deletes user"""
 
-    Required scope: `{scope}`
-    """
     if await dbapi.get_users_count(db_session) == 1:
         raise HTTPException(
             status_code=432, detail="Deletion not possible. Only one user left."
@@ -298,19 +254,14 @@ async def delete_user(
 
 
 @router.patch("/{user_id}", status_code=200, response_model=schema.UserDetails)
-@utils.docstring_parameter(scope=scopes.USER_UPDATE)
 async def update_user(
     user_id: UUID,
     attrs: schema.UpdateUser,
-    cur_user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.USER_UPDATE])
-    ],
+    cur_user: require_scopes(scopes.USER_UPDATE),
     db_session: AsyncSession=Depends(get_db),
 ) -> schema.UserDetails:
-    """Updates user
+    """Updates user"""
 
-    Required scope: `{scope}`
-    """
     async with AsyncAuditContext(
         db_session,
         user_id=cur_user.id,
@@ -329,18 +280,12 @@ async def update_user(
     status_code=status.HTTP_200_OK,
     response_model=schema.UserDetails
 )
-@utils.docstring_parameter(scope=scopes.USER_UPDATE)
 async def change_user_password(
     attrs: schema.ChangeUserPassword,
-    cur_user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.USER_UPDATE])
-    ],
+    cur_user: require_scopes(scopes.USER_UPDATE),
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.UserDetails:
-    """Change user password
-
-    Required scope: `{scope}`
-    """
+    """Change user password"""
     async with AsyncAuditContext(
         db_session,
         user_id=cur_user.id,

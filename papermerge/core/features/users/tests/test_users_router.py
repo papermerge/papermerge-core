@@ -35,7 +35,8 @@ async def test_create_user_without_roles(
         "email": "friedrich@example.com",
         "group_ids": [],
         "role_ids": [],
-        "is_active": True,
+        "scopes": [],
+        "is_active": False,
         "is_superuser": False,
         "password": "blah",
     }

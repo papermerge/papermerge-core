@@ -52,6 +52,7 @@ export type NewUser = {
   home_folder_id: string
   inbox_folder_id: string
   scopes: Array<string>
+  is_superuser: boolean
 }
 
 export type User = NewUser & {

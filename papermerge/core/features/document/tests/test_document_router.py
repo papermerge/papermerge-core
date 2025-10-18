@@ -45,14 +45,16 @@ async def test_get_documents_by_type(
     make_document_type,
     db_session: AsyncSession
 ):
-    doc = await make_document(title="document.pdf", user=user, parent=user.home_folder)
+    await make_document(
+        title="document.pdf",
+        user=user,
+        parent=user.home_folder
+    )
     type: orm.DocumentType = await make_document_type(name="dt1", user=user)
 
+    response = await auth_api_client.get(f"/documents/type/{type.id}/")
 
-    response = await auth_api_client.get(f"/documents/type/{type.id}")
-
-    assert response.status_code == 200, response.json()
-
+    assert response.status_code == 200, response.text
 
 
 async def test_get_document_custom_fields_values(

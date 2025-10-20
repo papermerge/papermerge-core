@@ -12,6 +12,7 @@ from .features.users.db.api import (
     user_belongs_to,
     get_user_group_homes,
     get_user_group_inboxes,
+    get_user_group_users
 )
 from .features.document.db.api import (
     get_last_doc_ver,
@@ -121,6 +122,7 @@ __all__ = [
     "user_belongs_to",
     "get_user_group_homes",
     "get_user_group_inboxes",
+    "get_user_group_users",
     # groups
     "get_group",
     "delete_group",

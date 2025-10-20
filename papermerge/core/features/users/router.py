@@ -61,6 +61,40 @@ async def get_current_user(
     return user
 
 
+@router.get("/group-users")
+async def get_user_group_users(
+        user: Annotated[schema.User, Depends(get_current_user)],
+        db_session: AsyncSession = Depends(get_db),
+) -> list[schema.UserSimple]:
+    """Get all users from groups that current user belongs to
+
+    No special scope required - any authenticated user can see
+    users they share group membership with.
+
+    Returns:
+        List of users (excluding current user) who are members of
+        the same groups as the current user
+
+    Raises:
+        HTTPException: 500 if database error occurs
+    """
+    try:
+        result = await dbapi.get_user_group_users(
+            db_session,
+            user_id=user.id
+        )
+        return result
+    except Exception as e:
+        logger.error(
+            f"Error fetching group users for user {user.id}: {e}",
+            exc_info=True
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to fetch group users"
+        )
+
+
 @router.get("/")
 async def get_users(
     user: require_scopes(scopes.USER_VIEW),

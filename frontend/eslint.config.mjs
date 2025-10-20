@@ -14,7 +14,7 @@ export default [
         ecmaFeatures: {
           jsx: true
         },
-        project: "./tsconfig.4eslint.json" // adjust if your tsconfig is elsewhere
+        project: ["./tsconfig.json", "./*/tsconfig.json", "./*/*/tsconfig.json"]
       }
     },
     plugins: {

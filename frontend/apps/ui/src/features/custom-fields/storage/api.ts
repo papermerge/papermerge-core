@@ -4,6 +4,7 @@ import type {
   CustomFieldQueryParams
 } from "@/features/custom-fields/types"
 import type {
+  Owner,
   CustomField,
   CustomFieldUpdate,
   NewCustomField,
@@ -37,10 +38,10 @@ export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
         ...result.items.map(({id}) => ({type: "CustomField", id}) as const)
       ]
     }),
-    getCustomFields: builder.query<CustomField[], string | undefined>({
-      query: (group_id?: string) => {
-        if (group_id && group_id.length > 0) {
-          return `/custom-fields/all?group_id=${group_id}`
+    getCustomFields: builder.query<CustomField[], Owner | undefined>({
+      query: (owner?: Owner) => {
+        if (owner && owner.type == "group") {
+          return `/custom-fields/all?group_id=${owner.id}`
         }
         return "/custom-fields/all"
       },

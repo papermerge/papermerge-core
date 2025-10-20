@@ -1,4 +1,4 @@
-import OwnerSelector from "@/components/OwnerSelect/OwnerSelect"
+import OwnerSelector from "@/components/OwnerSelect/SelectOwnerView"
 import type {CurrencyType, CustomFieldDataType} from "@/types"
 import {
   Button,

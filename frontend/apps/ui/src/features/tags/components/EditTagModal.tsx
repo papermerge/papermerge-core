@@ -15,7 +15,7 @@ import {
 } from "@mantine/core"
 
 import {OWNER_ME} from "@/cconstants"
-import OwnerSelector from "@/components/OwnerSelect/OwnerSelect"
+import OwnerSelector from "@/components/OwnerSelect/SelectOwnerView"
 import {useEditTagMutation, useGetTagQuery} from "@/features/tags/storage/api"
 import {useTranslation} from "react-i18next"
 

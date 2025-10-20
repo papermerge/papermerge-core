@@ -13,7 +13,7 @@ import {
 } from "@mantine/core"
 import {useEffect, useState} from "react"
 
-import OwnerSelector from "@/components/OwnerSelect/OwnerSelect"
+import OwnerSelector from "@/components/OwnerSelect/SelectOwnerView"
 import {
   useEditDocumentTypeMutation,
   useGetDocumentTypeQuery

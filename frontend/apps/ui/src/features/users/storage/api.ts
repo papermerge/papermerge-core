@@ -86,6 +86,13 @@ export const apiSliceWithUsers = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, id) => [{type: "User", id: id}]
     }),
+    getUserGroupUsers: builder.query<User[], void>({
+      query: () => "/users/group-users",
+      providesTags: (result = []) => [
+        "User",
+        ...result.map(({id}) => ({type: "User", id}) as const)
+      ]
+    }),
     changePassword: builder.mutation<void, ChangePassword>({
       query: chPwd => ({
         url: `/users/change-password`,
@@ -105,7 +112,8 @@ export const {
   useAddNewUserMutation,
   useEditUserMutation,
   useDeleteUserMutation,
-  useChangePasswordMutation
+  useChangePasswordMutation,
+  useGetUserGroupUsersQuery
 } = apiSliceWithUsers
 
 function buildQueryString(params: UserQueryParams = {}): string {

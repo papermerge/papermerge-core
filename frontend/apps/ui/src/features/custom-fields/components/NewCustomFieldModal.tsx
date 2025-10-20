@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react"
 
 import {CURRENCIES} from "@/cconstants"
-import OwnerSelector from "@/components/OwnerSelect/OwnerSelect"
+import OwnerSelector from "@/components/OwnerSelect/SelectOwnerView"
 import {useAddNewCustomFieldMutation} from "@/features/custom-fields/storage/api"
 import {CurrencyType, CustomFieldDataType} from "@/types"
 import {
@@ -17,6 +17,7 @@ import {
 } from "@mantine/core"
 import {useTranslation} from "react-i18next"
 import {getCustomFieldTypes} from "../utils"
+import type {Owner} from "@/types"
 
 interface Args {
   opened: boolean
@@ -51,7 +52,7 @@ export default function NewCustomFieldModal({
     setName(value)
   }
 
-  const onOwnerChange = (option: ComboboxItem) => {
+  const onOwnerChange = (newOwner: Owner) => {
     setOwner(option)
     console.log(option)
   }

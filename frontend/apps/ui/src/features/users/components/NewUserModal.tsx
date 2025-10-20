@@ -59,7 +59,7 @@ export default function NewUserModal({
       return {value: r.id, label: r.name}
     }) || []
 
-  const [addNewUser, {isLoading, isSuccess}] = useAddNewUserMutation()
+  const [addNewUser, {isLoading}] = useAddNewUserMutation()
 
   const [groups, setGroups] = useState<string[]>([])
   const [roles, setRoles] = useState<string[]>([])
@@ -166,7 +166,7 @@ export default function NewUserModal({
           </Button>
           <Group>
             {isLoading && <Loader size="sm" />}
-            <Button disabled={isLoading || isSuccess} type="submit">
+            <Button disabled={isLoading} type="submit">
               {t("common.submit")}
             </Button>
           </Group>

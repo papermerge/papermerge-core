@@ -19,20 +19,17 @@ export default function NewRoleModalContainer({
   opened
 }: Args) {
   const {t} = useTranslation()
-  const [addNewRole, {isLoading, isError, isSuccess}] = useAddNewRoleMutation()
+  const [addNewRole, {isLoading}] = useAddNewRoleMutation()
   const [name, setName] = useState<string>("")
-  const [error, setError] = useState<string>("")
   const [scopes, setScopes] = useState<string[]>([])
   const txt = useI18NText()
 
   const reset = () => {
     setName("")
-    setError("")
     setScopes([])
   }
 
   const onLocalSubmit = async () => {
-    setError("")
     const updatedData = {
       scopes: scopes,
       name: name!
@@ -40,14 +37,7 @@ export default function NewRoleModalContainer({
     try {
       await addNewRole(updatedData).unwrap()
       onSubmit()
-    } catch (err: unknown) {
-      if (err && typeof err === "object" && "data" in err) {
-        const apiError = err as {data: {detail: string}}
-        setError(apiError.data.detail)
-      } else {
-        setError("An unexpected error occurred")
-      }
-    }
+    } catch (err) {}
   }
 
   const onLocalCancel = () => {
@@ -71,7 +61,6 @@ export default function NewRoleModalContainer({
       title={t("roles.new.title")}
       inProgress={isLoading}
       opened={opened}
-      error={error}
       name={name}
       txt={txt}
       initialCheckedState={[]}

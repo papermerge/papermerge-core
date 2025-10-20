@@ -1,15 +1,16 @@
 import os
 import logging
 from uuid import UUID
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
+from papermerge.core.features.auth import get_current_user, scopes
 from papermerge.core.features.auth.dependencies import require_scopes
 from papermerge.core import schema, dbapi, orm
-from papermerge.core.features.auth import scopes
 from papermerge.core.tasks import delete_user_data
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.db.engine import get_db
@@ -54,11 +55,10 @@ async def get_user_group_homes(
 
 @router.get("/me")
 async def get_current_user(
-    user: require_scopes(scopes.USER_ME),
+    user: Annotated[schema.User, Depends(get_current_user)],
 ) -> schema.User:
     """Returns current user"""
-    logger.debug(f"User {user} found")
-    return schema.User.model_validate(user)
+    return user
 
 
 @router.get("/")

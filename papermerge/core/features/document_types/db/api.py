@@ -450,13 +450,25 @@ async def create_document_type(
     return dtype
 
 
+import uuid
+from sqlalchemy import select, and_, or_
+from sqlalchemy.orm import selectinload, aliased
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import NoResultFound
+
+from papermerge.core import orm, schema
+from papermerge.core.features.ownership.db.orm import Ownership
+from papermerge.core.types import OwnerType, ResourceType
+from papermerge.core.db.exceptions import ResourceAccessDenied
+
+
 async def get_document_type(
-        session: AsyncSession,
-        user_id: uuid.UUID,
-        document_type_id: uuid.UUID
+    session: AsyncSession,
+    user_id: uuid.UUID,
+    document_type_id: uuid.UUID
 ) -> schema.DocumentTypeDetails:
     """
-    Get a single document type with full audit trail.
+    Get a single document type with full audit trail using the new ownership model.
 
     Args:
         session: Database session
@@ -472,10 +484,14 @@ async def get_document_type(
     """
 
     # First check if the document type exists at all
-    exists_stmt = select(orm.DocumentType.id).where(orm.DocumentType.id == document_type_id)
+    exists_stmt = select(orm.DocumentType.id).where(
+        orm.DocumentType.id == document_type_id
+    )
     exists_result = await session.execute(exists_stmt)
     if not exists_result.scalar():
-        raise NoResultFound(f"Document type with id {document_type_id} not found")
+        raise NoResultFound(
+            f"Document type with id {document_type_id} not found"
+        )
 
     # Create user aliases for all audit trail joins
     created_user = aliased(orm.User, name='created_user')
@@ -483,31 +499,77 @@ async def get_document_type(
     deleted_user = aliased(orm.User, name='deleted_user')
     archived_user = aliased(orm.User, name='archived_user')
     owner_user = aliased(orm.User, name='owner_user')
+    owner_group = aliased(orm.Group, name='owner_group')
 
     # Subquery to get user's group IDs (for access control)
     user_groups_subquery = select(orm.UserGroup.group_id).where(
-        orm.UserGroup.user_id == user_id
+        orm.UserGroup.user_id == user_id,
+        orm.UserGroup.deleted_at.is_(None)
     )
 
-    # Build query with all audit user joins and group info
+    # Build query with all audit user joins and ownership info
     stmt = (
         select(orm.DocumentType)
         .options(
             selectinload(orm.DocumentType.custom_fields)
         )
-        .join(created_user, orm.DocumentType.created_by == created_user.id, isouter=True)
-        .join(updated_user, orm.DocumentType.updated_by == updated_user.id, isouter=True)
-        .join(deleted_user, orm.DocumentType.deleted_by == deleted_user.id, isouter=True)
-        .join(archived_user, orm.DocumentType.archived_by == archived_user.id, isouter=True)
-        .join(orm.Group, orm.Group.id == orm.DocumentType.group_id, isouter=True)
-        .join(owner_user, orm.DocumentType.user_id == owner_user.id, isouter=True)
+        # Join ownership table
+        .join(
+            Ownership,
+            and_(
+                Ownership.resource_type == ResourceType.DOCUMENT_TYPE.value,
+                Ownership.resource_id == orm.DocumentType.id
+            )
+        )
+        # Join audit trail users
+        .join(
+            created_user,
+            orm.DocumentType.created_by == created_user.id,
+            isouter=True
+        )
+        .join(
+            updated_user,
+            orm.DocumentType.updated_by == updated_user.id,
+            isouter=True
+        )
+        .join(
+            deleted_user,
+            orm.DocumentType.deleted_by == deleted_user.id,
+            isouter=True
+        )
+        .join(
+            archived_user,
+            orm.DocumentType.archived_by == archived_user.id,
+            isouter=True
+        )
+        # Join owner_user when owner is a user
+        .join(
+            owner_user,
+            and_(
+                Ownership.owner_type == OwnerType.USER.value,
+                Ownership.owner_id == owner_user.id
+            ),
+            isouter=True
+        )
+        # Join owner_group when owner is a group
+        .join(
+            owner_group,
+            and_(
+                Ownership.owner_type == OwnerType.GROUP.value,
+                Ownership.owner_id == owner_group.id
+            ),
+            isouter=True
+        )
         .add_columns(
-            # Group info
-            orm.Group.id.label('group_id'),
-            orm.Group.name.label('group_name'),
+            # Ownership info
+            Ownership.owner_type.label('owner_type'),
+            Ownership.owner_id.label('owner_id'),
             # Owner user info
             owner_user.id.label('owner_user_id'),
             owner_user.username.label('owner_username'),
+            # Owner group info
+            owner_group.id.label('owner_group_id'),
+            owner_group.name.label('owner_group_name'),
             # Created by user
             created_user.id.label('created_by_id'),
             created_user.username.label('created_by_username'),
@@ -526,8 +588,16 @@ async def get_document_type(
                 orm.DocumentType.id == document_type_id,
                 # Access control: user can access if they own it directly or through group
                 or_(
-                    orm.DocumentType.user_id == user_id,
-                    orm.DocumentType.group_id.in_(user_groups_subquery)
+                    # User owns it directly
+                    and_(
+                        Ownership.owner_type == OwnerType.USER.value,
+                        Ownership.owner_id == user_id
+                    ),
+                    # User's group owns it
+                    and_(
+                        Ownership.owner_type == OwnerType.GROUP.value,
+                        Ownership.owner_id.in_(user_groups_subquery)
+                    )
                 )
             )
         )
@@ -539,7 +609,10 @@ async def get_document_type(
 
     # If no row returned, user doesn't have access (we know the document type exists)
     if not row:
-        raise ResourceAccessDenied(f"User {user_id} does not have permission to access document type {document_type_id}")
+        raise ResourceAccessDenied(
+            f"User {user_id} does not have permission to access "
+            f"document type {document_type_id}"
+        )
 
     document_type = row[0]  # The DocumentType object
 
@@ -572,17 +645,17 @@ async def get_document_type(
             username=row.archived_by_username
         )
 
-    # Determine owner based on which ID exists
-    if document_type.user_id:
+    # Build owned_by from ownership data
+    if row.owner_type == OwnerType.USER.value:
         owned_by = schema.OwnedBy(
-            id=document_type.user_id,
+            id=row.owner_id,
             name=row.owner_username,
             type="user"
         )
-    else:  # group_id is not null (enforced by check constraint)
+    else:  # OwnerType.GROUP
         owned_by = schema.OwnedBy(
-            id=row.group_id,
-            name=row.group_name,
+            id=row.owner_id,
+            name=row.owner_group_name,
             type="group"
         )
 
@@ -604,7 +677,6 @@ async def get_document_type(
     }
 
     return schema.DocumentTypeDetails(**document_type_data)
-
 
 async def delete_document_type(
     session: AsyncSession,

@@ -269,3 +269,18 @@ class UserParams(BaseModel):
 
 
         return filters if filters else None
+
+
+class UserSimple(BaseModel):
+    """
+    Simplified user model for dropdowns and owner selection.
+
+    Used by the /group-users endpoint to return users from the same groups
+    as the current user. Contains only essential fields needed for
+    selecting an owner.
+    """
+    id: UUID
+    username: str
+    email: str
+
+    model_config = ConfigDict(from_attributes=True)

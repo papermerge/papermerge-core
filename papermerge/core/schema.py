@@ -36,7 +36,7 @@ from .features.document.schema import (
     DownloadURL,
     DocumentsByTypeParams
 )
-from .features.users.schema import User, UserEx, CreateUser, UserDetails, UpdateUser, ChangeUserPassword, UserHomes, UserInboxes, UserHome, UserInbox
+from .features.users.schema import User, UserSimple, UserEx, CreateUser, UserDetails, UpdateUser, ChangeUserPassword, UserHomes, UserInboxes, UserHome, UserInbox
 from .features.custom_fields.schema import (
     CustomFieldShort,
     CustomField,
@@ -82,6 +82,7 @@ __all__ = [
     'MovePage',
     'User',
     'UserEx',
+    'UserSimple',
     'CreateUser',
     'UpdateUser',
     'UserDetails',

@@ -1,22 +1,6 @@
-import {
-  Badge,
-  Checkbox,
-  Container,
-  Group,
-  Stack,
-  Text,
-  Title
-} from "@mantine/core"
+import {Badge, Group, Text} from "@mantine/core"
 import {IconClock, IconDatabase, IconUser} from "@tabler/icons-react"
 import type {ColumnConfig, PaginatedResponse} from "kommon"
-import {
-  ColumnSelector,
-  DataTable,
-  TableFilters,
-  TablePagination,
-  useTableData
-} from "kommon"
-import {useState} from "react"
 
 interface AuditLogItem {
   id: string
@@ -29,76 +13,7 @@ interface AuditLogItem {
 }
 
 export default function DataTablePage() {
-  const [inProgress, setInProgress] = useState<boolean>(false)
-  const {state, actions, updateData, visibleColumns, totalItems} =
-    useTableData<AuditLogItem>({
-      initialData: sampleData,
-      initialColumns: auditLogColumns
-    })
-
-  const toggleIsLoading = () => {
-    setInProgress(!inProgress)
-  }
-
-  return (
-    <Stack>
-      <Group>
-        <Checkbox label="Is Loading" onClick={toggleIsLoading} />
-      </Group>
-      <Container size="xl" py="md">
-        <Stack gap="lg">
-          {/* Page Header */}
-          <div>
-            <Title order={2}>Audit Log</Title>
-            <Text c="dimmed" size="sm">
-              Track all database operations and changes
-            </Text>
-          </div>
-
-          {/* Filters and Column Selector */}
-          <Group justify="space-between" align="flex-start">
-            <div style={{flex: 1}}>
-              <TableFilters
-                columns={state.columns}
-                filters={state.filters}
-                onFiltersChange={actions.setFilters}
-              />
-            </div>
-
-            <ColumnSelector
-              columns={state.columns}
-              onColumnsChange={actions.setColumns}
-              onToggleColumn={actions.toggleColumnVisibility}
-            />
-          </Group>
-
-          {/* Data Table */}
-          <DataTable
-            data={sampleData.items}
-            columns={visibleColumns}
-            sorting={state.sorting}
-            onSortChange={actions.setSorting}
-            columnWidths={state.columnWidths}
-            onColumnResize={actions.setColumnWidth}
-            loading={false}
-            emptyMessage="No audit logs found"
-          />
-
-          {/* Pagination */}
-          <TablePagination
-            currentPage={1}
-            totalPages={5}
-            pageSize={10}
-            onPageChange={actions.setPage}
-            onPageSizeChange={actions.setPageSize}
-            totalItems={100}
-            showPageSizeSelector
-          />
-        </Stack>
-      </Container>
-      );
-    </Stack>
-  )
+  return <></>
 }
 
 const sampleData: PaginatedResponse<AuditLogItem> = {

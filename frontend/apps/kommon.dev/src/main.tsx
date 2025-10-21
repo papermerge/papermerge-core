@@ -9,6 +9,7 @@ import EditNodeTitleModal from "./pages/EditNodeTitle"
 import RoleForm from "./pages/RoleForm"
 import RoleFormModal from "./pages/RoleFormModal"
 import SubmitButton from "./pages/SubmitButton"
+import SelectOwnerPage from "./pages/SelectOwner"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -21,6 +22,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="role-form" element={<RoleForm />} />
             <Route path="role-form-modal" element={<RoleFormModal />} />
             <Route path="data-table" element={<DataTablePage />} />
+            <Route path="select-owner" element={<SelectOwnerPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

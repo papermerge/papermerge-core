@@ -12,8 +12,8 @@ export type DocType = {
   name: string
   path_template?: string
   custom_fields: Array<CustomField>
-  group_name?: string
-  group_id?: string
+  owner_type?: string
+  owner_id?: string
 }
 
 export type DocTypeGroupedItem = {

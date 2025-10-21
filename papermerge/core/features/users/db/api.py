@@ -1028,3 +1028,78 @@ async def delete_user_safe(
         await session.commit()
 
     return (True, None)
+
+
+async def get_user_group_users(
+    db_session: AsyncSession,
+    user_id: uuid.UUID
+) -> list[schema.UserSimple]:
+    """
+    Gets all users who are members of the same groups as the current user.
+    Excludes the current user from results.
+
+    SQL equivalent:
+    SELECT DISTINCT u.id, u.username, u.email
+    FROM users u
+    JOIN users_groups ug ON ug.user_id = u.id
+    WHERE ug.group_id IN (
+        SELECT group_id
+        FROM users_groups
+        WHERE user_id = <user_id>
+        AND deleted_at IS NULL
+    )
+    AND ug.deleted_at IS NULL
+    AND u.deleted_at IS NULL
+    AND u.id != <user_id>  -- Exclude current user
+    ORDER BY u.username
+
+    Args:
+        db_session: Database session
+        user_id: Current user's UUID
+
+    Returns:
+        List of UserSimple objects (users from same groups, excluding current user)
+
+    Raises:
+        SQLAlchemy exceptions on database errors
+    """
+    try:
+        # First, get all group IDs the user belongs to
+        user_groups_stmt = (
+            select(orm.UserGroup.group_id)
+            .where(
+                orm.UserGroup.user_id == user_id,
+                orm.UserGroup.deleted_at.is_(None)
+            )
+        )
+
+        # Then get all users in those groups
+        stmt = (
+            select(orm.User.id, orm.User.username, orm.User.email)
+            .join(orm.UserGroup, orm.UserGroup.user_id == orm.User.id)
+            .where(
+                orm.UserGroup.group_id.in_(user_groups_stmt),
+                orm.UserGroup.deleted_at.is_(None),
+                orm.User.deleted_at.is_(None),
+                orm.User.id != user_id  # Exclude current user
+            )
+            .distinct()
+            .order_by(orm.User.username)
+        )
+
+        results = (await db_session.execute(stmt)).all()
+
+        models = []
+        for user_id_val, username, email in results:
+            user = schema.UserSimple(
+                id=user_id_val,
+                username=username,
+                email=email
+            )
+            models.append(user)
+
+        return models
+
+    except Exception as e:
+        logger.error(f"Error in get_user_group_users for user {user_id}: {e}")
+        raise

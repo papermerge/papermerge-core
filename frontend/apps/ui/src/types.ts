@@ -15,6 +15,12 @@ export type OwnedBy = {
   type: OwnerType
 }
 
+export interface Owner {
+  type: OwnerType
+  id: string
+  label: string
+}
+
 export type State<T> = {
   is_loading: boolean
   error: string | null

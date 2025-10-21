@@ -1,4 +1,5 @@
-import OwnerSelector from "@/components/OwnerSelect/OwnerSelect"
+import OwnerSelect from "@/components/OwnerSelect"
+import {useAppSelector} from "@/app/hooks"
 import type {CurrencyType, CustomFieldDataType} from "@/types"
 import {
   Button,
@@ -12,6 +13,7 @@ import {
   TextInput
 } from "@mantine/core"
 import {useEffect, useState} from "react"
+import type {Owner} from "@/types"
 
 import {
   useEditCustomFieldMutation,
@@ -22,6 +24,7 @@ import {
   getCustomFieldTypes
 } from "@/features/custom-fields/utils"
 import {useTranslation} from "react-i18next"
+import {selectCurrentUser} from "@/slices/currentUser"
 
 interface Args {
   opened: boolean
@@ -45,8 +48,13 @@ export default function EditCustomFieldModal({
   const [dataType, setDataType] = useState<CustomFieldDataType>(
     data?.type_handler || "text"
   )
-  const [owner, setOwner] = useState<ComboboxItem>({value: "", label: "Me"})
+  const currentUser = useAppSelector(selectCurrentUser)
 
+  const [owner, setOwner] = useState<Owner>({
+    id: currentUser?.id || "",
+    type: "user",
+    label: "Me"
+  })
   useEffect(() => {
     formReset()
   }, [isLoading, data, opened])
@@ -130,7 +138,7 @@ export default function EditCustomFieldModal({
           setDataType(e.currentTarget.value as CustomFieldDataType)
         }
       />
-      <OwnerSelector value={owner} onChange={onOwnerChange} />
+      <OwnerSelect value={owner} onChange={onOwnerChange} />
       {dataType == "monetary" && (
         <Select
           mt="sm"

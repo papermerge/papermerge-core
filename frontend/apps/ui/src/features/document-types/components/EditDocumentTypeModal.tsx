@@ -12,8 +12,11 @@ import {
   TextInput
 } from "@mantine/core"
 import {useEffect, useState} from "react"
+import {useAppSelector} from "@/app/hooks"
+import {selectCurrentUser} from "@/slices/currentUser"
+import type {Owner} from "@/types"
 
-import OwnerSelector from "@/components/OwnerSelect/OwnerSelect"
+import OwnerSelect from "@/components/OwnerSelect"
 import {
   useEditDocumentTypeMutation,
   useGetDocumentTypeQuery
@@ -36,7 +39,13 @@ export default function EditDocumentTypeModal({
   const {t} = useTranslation()
   const [name, setName] = useState<string>("")
   const [pathTemplate, setPathTemplate] = useState<string>("")
-  const [owner, setOwner] = useState<ComboboxItem>({label: OWNER_ME, value: ""})
+  const currentUser = useAppSelector(selectCurrentUser)
+
+  const [owner, setOwner] = useState<Owner>({
+    id: currentUser?.id || "",
+    type: "user",
+    label: "Me"
+  })
 
   const {data: allCustomFields = []} = useGetCustomFieldsQuery(owner.value)
   const {data, isLoading} = useGetDocumentTypeQuery(documentTypeId)
@@ -134,7 +143,7 @@ export default function EditDocumentTypeModal({
         value={pathTemplate}
         onChange={event => setPathTemplate(event.currentTarget.value)}
       />
-      <OwnerSelector value={owner} onChange={onOwnerChange} />
+      <OwnerSelect value={owner} onChange={onOwnerChange} />
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>
           {t("common.cancel")}

@@ -14,10 +14,13 @@ import {
   TextInput
 } from "@mantine/core"
 
+import {useAppSelector} from "@/app/hooks"
 import {OWNER_ME} from "@/cconstants"
-import OwnerSelector from "@/components/OwnerSelect/SelectOwnerView"
+import OwnerSelect from "@/components/OwnerSelect"
+import {selectCurrentUser} from "@/slices/currentUser"
 import {useEditTagMutation, useGetTagQuery} from "@/features/tags/storage/api"
 import {useTranslation} from "react-i18next"
+import type {Owner} from "@/types"
 
 interface Args {
   tagId: string
@@ -36,12 +39,17 @@ export default function EditTagModal({
   const {data} = useGetTagQuery(tagId)
   const [updateTag, {isLoading: isLoadingTagUpdate}] = useEditTagMutation()
   const [name, setName] = useState<string>("")
+  const currentUser = useAppSelector(selectCurrentUser)
 
   const [description, setDescription] = useState<string>("")
   const [pinned, setPinned] = useState<boolean>(false)
   const [bgColor, setBgColor] = useState<string>("")
   const [fgColor, setFgColor] = useState<string>("")
-  const [owner, setOwner] = useState<ComboboxItem>({label: OWNER_ME, value: ""})
+  const [owner, setOwner] = useState<Owner>({
+    id: currentUser?.id || "",
+    type: "user",
+    label: "Me"
+  })
 
   useEffect(() => {
     if (data) {
@@ -151,7 +159,7 @@ export default function EditTagModal({
             {name || "preview"}
           </Pill>
         </Box>
-        <OwnerSelector value={owner} onChange={onOwnerChange} />
+        <OwnerSelect value={owner} onChange={onOwnerChange} />
         <Group justify="space-between" mt="md">
           <Button variant="default" onClick={onLocalCancel}>
             {t("common.cancel")}

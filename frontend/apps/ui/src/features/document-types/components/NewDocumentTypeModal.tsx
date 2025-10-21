@@ -1,4 +1,4 @@
-import SelectOwner from "@/components/OwnerSelect/SelectOwnerView"
+import OwnerSelect from "@/components/OwnerSelect"
 import {useGetCustomFieldsQuery} from "@/features/custom-fields/storage/api"
 import {useAddDocumentTypeMutation} from "@/features/document-types/storage/api"
 import {
@@ -172,7 +172,7 @@ export default function NewDocumentTypeModal({
         })}
       />
 
-      <SelectOwner
+      <OwnerSelect
         value={owner}
         onChange={onOwnerChange}
         label={t("document_types.form.owner", {

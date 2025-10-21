@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react"
 
-import {OWNER_ME} from "@/cconstants"
-import OwnerSelector from "@/components/OwnerSelect/SelectOwnerView"
+import OwnerSelect from "@/components/OwnerSelect"
+
 import {useAddNewTagMutation} from "@/features/tags/storage/api"
 import {
   Box,
@@ -17,6 +17,9 @@ import {
   TextInput
 } from "@mantine/core"
 import {useTranslation} from "react-i18next"
+import {useAppSelector} from "@/app/hooks"
+import {selectCurrentUser} from "@/slices/currentUser"
+import type {Owner} from "@/types"
 
 interface Args {
   opened: boolean
@@ -33,8 +36,13 @@ export default function NewTagModal({onSubmit, onCancel, opened}: Args) {
   const [bgColor, setBgColor] = useState<string>("")
   const [error, setError] = useState<string>("")
   const [fgColor, setFgColor] = useState<string>("")
-  const [owner, setOwner] = useState<ComboboxItem>({label: OWNER_ME, value: ""})
+  const currentUser = useAppSelector(selectCurrentUser)
 
+  const [owner, setOwner] = useState<Owner>({
+    id: currentUser?.id || "",
+    type: "user",
+    label: "Me"
+  })
   useEffect(() => {
     // close dialog as soon as we have
     // "success" status from the mutation
@@ -133,7 +141,7 @@ export default function NewTagModal({onSubmit, onCancel, opened}: Args) {
           {name || ""}
         </Pill>
       </Box>
-      <OwnerSelector value={owner} onChange={onOwnerChange} />
+      <OwnerSelect value={owner} onChange={onOwnerChange} />
       {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>

@@ -1,12 +1,10 @@
 import {useEffect, useState} from "react"
 
 import {CURRENCIES} from "@/cconstants"
-import OwnerSelector from "@/components/OwnerSelect/SelectOwnerView"
 import {useAddNewCustomFieldMutation} from "@/features/custom-fields/storage/api"
 import {CurrencyType, CustomFieldDataType} from "@/types"
 import {
   Button,
-  ComboboxItem,
   Group,
   Loader,
   Modal,
@@ -18,6 +16,8 @@ import {
 import {useTranslation} from "react-i18next"
 import {getCustomFieldTypes} from "../utils"
 import type {Owner} from "@/types"
+import {useAppSelector} from "@/app/hooks"
+import {selectCurrentUser} from "@/slices/currentUser"
 
 interface Args {
   opened: boolean
@@ -31,13 +31,20 @@ export default function NewCustomFieldModal({
   opened
 }: Args) {
   const {t} = useTranslation()
+  const currentUser = useAppSelector(selectCurrentUser)
+
   const [currency, setCurrency] = useState<CurrencyType>("EUR")
   const [addNewCustomField, {isLoading, isError, isSuccess}] =
     useAddNewCustomFieldMutation()
   const [name, setName] = useState<string>("")
-  const [owner, setOwner] = useState<ComboboxItem>({label: "Me", value: ""})
   const [dataType, setDataType] = useState<CustomFieldDataType>("text")
   const [error, setError] = useState<string>("")
+  // Initialize owner with current user
+  const [owner, setOwner] = useState<Owner>({
+    id: currentUser?.id || "",
+    type: "user",
+    label: "Me"
+  })
 
   useEffect(() => {
     // close dialog as soon as we have

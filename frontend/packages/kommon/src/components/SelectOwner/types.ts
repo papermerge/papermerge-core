@@ -1,5 +1,5 @@
 import type {useCombobox} from "@mantine/core"
-import {TFunction} from "i18next"
+import type {TFunction} from "i18next"
 
 export type OwnerType = "user" | "group"
 

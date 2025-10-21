@@ -1,10 +1,15 @@
 import {useState} from "react"
-import {useCombobox} from "@mantine/core"
-import type {Owner, OwnerOption} from "kommon/src/components/SelectOwner/types"
+import {useCombobox, Stack, Checkbox} from "@mantine/core"
+import type {
+  Owner,
+  OwnerOption,
+  OwnerType
+} from "kommon/src/components/SelectOwner/types"
 
 import SelectOwner from "kommon/src/components/SelectOwner/SelectOwner"
 
 export default function SelectOwnerPage() {
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [selectedOwner, setSelectedOwner] = useState<Owner | null>(null)
   const [activeTab, setActiveTab] = useState<string>("users")
 
@@ -55,7 +60,7 @@ export default function SelectOwnerPage() {
   const currentOptions = activeTab === "users" ? userOptions : groupOptions
 
   // Handle selection
-  const handleSelect = (val: string, type: "user" | "group") => {
+  const handleSelect = (val: string, type: OwnerType) => {
     const option = currentOptions.find(o => o.value === val)
     if (option) {
       setSelectedOwner({
@@ -76,17 +81,20 @@ export default function SelectOwnerPage() {
   }
 
   return (
-    <SelectOwner
-      value={selectedOwner}
-      isLoading={false}
-      activeTab={activeTab}
-      userOptions={userOptions}
-      groupOptions={groupOptions}
-      currentOptions={currentOptions}
-      combobox={combobox}
-      onTabChange={setActiveTab}
-      onSelect={handleSelect}
-      onOptionSubmit={handleOptionSubmit}
-    />
+    <Stack>
+      <SelectOwner
+        value={selectedOwner}
+        isLoading={isLoading}
+        activeTab={activeTab}
+        userOptions={userOptions}
+        groupOptions={groupOptions}
+        currentOptions={currentOptions}
+        combobox={combobox}
+        onTabChange={setActiveTab}
+        onSelect={handleSelect}
+        onOptionSubmit={handleOptionSubmit}
+      />
+      <Checkbox label="Loading" onClick={() => setIsLoading(!isLoading)} />
+    </Stack>
   )
 }

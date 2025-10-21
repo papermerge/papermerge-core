@@ -12,18 +12,17 @@ import type {OwnerSelectorViewProps} from "./types"
 
 export default function OwnerSelectorView({
   value,
-  label,
   isLoading,
   activeTab,
   userOptions,
   groupOptions,
   currentOptions,
-  emptyMessage,
-  footerText,
+  label,
   combobox,
   onTabChange,
   onSelect,
-  onOptionSubmit
+  onOptionSubmit,
+  t
 }: OwnerSelectorViewProps) {
   if (isLoading) {
     return (
@@ -33,12 +32,17 @@ export default function OwnerSelectorView({
     )
   }
 
+  const emptyMessage =
+    activeTab === "users"
+      ? t?.("selectOwner.noUsersFound", {defaultValue: "No users found"})
+      : t?.("selectOwner.noGroupsFound", {defaultValue: "No groups found"})
+
   return (
     <div style={{marginTop: "1rem"}}>
       <Combobox store={combobox} onOptionSubmit={onOptionSubmit}>
         <Combobox.Target>
           <InputBase
-            label={label}
+            label={label || t?.("selectOwner.label", {defaultValue: "Owner"})}
             component="button"
             type="button"
             pointer
@@ -110,16 +114,6 @@ export default function OwnerSelectorView({
               <Combobox.Empty>{emptyMessage}</Combobox.Empty>
             )}
           </Combobox.Options>
-
-          <Text
-            size="xs"
-            c="dimmed"
-            p="xs"
-            pt="sm"
-            style={{borderTop: "1px solid var(--mantine-color-gray-3)"}}
-          >
-            {footerText}
-          </Text>
         </Combobox.Dropdown>
       </Combobox>
     </div>

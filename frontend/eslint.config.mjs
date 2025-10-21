@@ -14,7 +14,14 @@ export default [
         ecmaFeatures: {
           jsx: true
         },
-        project: ["./tsconfig.json", "./*/tsconfig.json", "./*/*/tsconfig.json"]
+        project: [
+          "./tsconfig.json",
+          "./apps/*/tsconfig.json",
+          "./packages/*/tsconfig.json",
+          "./*/tsconfig.json",
+          "./*/*/tsconfig.json"
+        ],
+        tsconfigRootDir: import.meta.dirname
       }
     },
     plugins: {

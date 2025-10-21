@@ -20,6 +20,9 @@ export default function Navbar() {
         <NavLink to="/data-table" end>
           &lt;DataTable /&gt;
         </NavLink>
+        <NavLink to="/select-owner" end>
+          &lt;SelectOwner /&gt;
+        </NavLink>
       </Stack>
     </nav>
   )

@@ -1,4 +1,5 @@
 import type {useCombobox} from "@mantine/core"
+import {TFunction} from "i18next"
 
 export type OwnerType = "user" | "group"
 
@@ -30,18 +31,17 @@ export interface UseOwnerSelectorReturn {
 
 export interface OwnerSelectorViewProps {
   value: Owner | null
-  label: string
+  label?: string
   isLoading: boolean
   activeTab: string
   userOptions: OwnerOption[]
   groupOptions: OwnerOption[]
   currentOptions: OwnerOption[]
-  emptyMessage: string
-  footerText: string
   combobox: ReturnType<typeof useCombobox>
   onTabChange?: (tab: string) => void
   onSelect?: (val: string, type: "user" | "group") => void
   onOptionSubmit?: (val: string) => void
+  t?: TFunction
 }
 
 export interface OwnerSelectorContainerProps {

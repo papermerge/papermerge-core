@@ -20,15 +20,18 @@ import {Link, useNavigation} from "react-router-dom"
 import {DeleteDocumentTypeButton} from "./DeleteButton"
 import DocumentTypeForm from "./DocumentTypeForm"
 import EditButton from "./EditButton"
+import {useAuth} from "@/app/hooks/useAuth"
 
 import LoadingPanel from "@/components/LoadingPanel"
 import {useTranslation} from "react-i18next"
 import {DocumentTypeDetails} from "../types"
+import {DOCUMENT_TYPE_DELETE, DOCUMENT_TYPE_UPDATE} from "@/scopes"
 
 export default function DocumentTypeDetailsContainer() {
   const {panelId} = usePanel()
   const dispatch = useAppDispatch()
   const {t} = useTranslation()
+  const {hasPermission} = useAuth()
   const documentTypeID = useAppSelector(s => selectPanelDetails(s, panelId))
   const {data, isLoading, isFetching, error} = useGetDocumentTypeQuery(
     documentTypeID?.entityId || "",
@@ -52,8 +55,12 @@ export default function DocumentTypeDetailsContainer() {
         <Group justify="space-between" style={{flexShrink: 0}}>
           <Path documentType={data} panelId={panelId} />
           <Group>
-            <DeleteDocumentTypeButton documentTypeId={data.id} />
-            <EditButton documentTypeId={data.id} />
+            {hasPermission(DOCUMENT_TYPE_DELETE) && (
+              <DeleteDocumentTypeButton documentTypeId={data.id} />
+            )}
+            {hasPermission(DOCUMENT_TYPE_UPDATE) && (
+              <EditButton documentTypeId={data.id} />
+            )}
             <CloseSecondaryPanel
               onClick={() => dispatch(closeRoleDetailsSecondaryPanel())}
             />

@@ -4,7 +4,7 @@ import uuid
 from typing import Optional, Dict, Any
 
 from pydantic import ValidationError
-from sqlalchemy import select, or_, and_, asc, desc, delete, func
+from sqlalchemy import select, case, or_, and_, asc, desc, delete, func
 from sqlalchemy.orm import aliased
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -347,7 +347,9 @@ async def get_custom_fields(
             created_user=created_user,
             updated_user=updated_user,
             deleted_user=deleted_user,
-            archived_user=archived_user
+            archived_user=archived_user,
+            owner_user=owner_user,
+            owner_group=owner_group
         )
     else:
         # Default sorting by created_at desc
@@ -1391,6 +1393,8 @@ def _apply_custom_field_sorting(
     sort_direction: str,
     created_user,
     updated_user,
+    owner_user,
+    owner_group,
     deleted_user,
     archived_user,
 ):
@@ -1414,6 +1418,12 @@ def _apply_custom_field_sorting(
     elif sort_by == "updated_by":
         # Sort by username of updater
         sort_column = updated_user.username
+    elif sort_by == "owned_by":
+        sort_column = case(
+            (orm.Ownership.owner_type == OwnerType.USER, owner_user.username),
+            (orm.Ownership.owner_type == OwnerType.GROUP, owner_group.name),
+            else_=None
+        )
 
     if sort_column is not None:
         if sort_direction.lower() == "desc":

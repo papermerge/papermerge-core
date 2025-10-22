@@ -1,6 +1,11 @@
 import type {ByUser, OwnedBy, PaginatedArgs} from "@/types"
 
-export type SortBy = "name" | "created_at" | "created_by" | "type_handler"
+export type SortBy =
+  | "name"
+  | "created_at"
+  | "created_by"
+  | "type_handler"
+  | "owned_by"
 
 export type CustomFieldType =
   | "date"

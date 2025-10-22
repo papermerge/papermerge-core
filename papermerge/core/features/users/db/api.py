@@ -59,7 +59,7 @@ async def get_user_groups(
     db_session: AsyncSession, user_id: uuid.UUID
 ) -> list[orm.Group]:
     """
-    Gets user groups
+    Gets user groups (i.e. groups user belongs to)
     """
     stmt = (
         select(orm.Group)

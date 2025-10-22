@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
 
+from papermerge.core.features.auth.dependencies import require_scopes
 from papermerge.core import utils, schema
 from papermerge.core.features.users import schema as usr_schema
 from papermerge.core.features.auth import get_current_user
@@ -39,11 +40,8 @@ logger = logging.getLogger(__name__)
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.TAG_SELECT)
 async def retrieve_tags_without_pagination(
-    user: Annotated[
-        usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_SELECT])
-    ],
+    user: require_scopes(scopes.TAG_SELECT),
     group_id: UUID | None = None,
     db_session: AsyncSession = Depends(get_db),
 ):
@@ -57,9 +55,6 @@ async def retrieve_tags_without_pagination(
     be raised.
     If `group_id` parameter is not provided (empty) then
     will return all tags of the current user.
-
-
-    Required scope: `{scope}`
     """
     owner_id = group_id or user.id
     if group_id:
@@ -78,18 +73,12 @@ async def retrieve_tags_without_pagination(
 
 
 @router.get("/", response_model=schema.PaginatedResponse[schema.TagEx])
-@utils.docstring_parameter(scope=scopes.TAG_VIEW)
 async def get_tags(
-    user: Annotated[
-        usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_VIEW])
-    ],
+    user: require_scopes(scopes.TAG_VIEW),
     params: TagParams = Depends(),
     db_session=Depends(get_db),
 ) -> schema.PaginatedResponse[schema.TagEx]:
-    """Retrieves (paginated) list of tags
-
-    Required scope: `{scope}`
-    """
+    """Retrieves (paginated) list of tags"""
     try:
         filters = params.to_filters()
         tags = await tags_dbapi.get_tags(
@@ -114,18 +103,12 @@ async def get_tags(
 
 
 @router.get("/{tag_id}", response_model=tags_schema.TagDetails)
-@utils.docstring_parameter(scope=scopes.TAG_VIEW)
 async def get_tag_details(
     tag_id: UUID,
-    user: Annotated[
-        usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_VIEW])
-    ],
+    user: require_scopes(scopes.TAG_VIEW),
     db_session: AsyncSession=Depends(get_db),
 ):
-    """Get tag details
-
-    Required scope: `{scope}`
-    """
+    """Get tag details"""
     has_access = await ownership_api.user_can_access_resource(
         session=db_session,
         user_id=user.id,
@@ -159,12 +142,9 @@ async def get_tag_details(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.TAG_CREATE)
 async def create_tag(
     attrs: tags_schema.CreateTag,
-    user: Annotated[
-        usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_CREATE])
-    ],
+    user: require_scopes(scopes.TAG_CREATE),
     db_session: AsyncSession = Depends(get_db),
 ) -> tags_schema.Tag:
     """Creates tag
@@ -174,12 +154,7 @@ async def create_tag(
     If attribute `group_id` is present then current user should
     belong to that group, otherwise http status 403 (Forbidden) will
     be raised.
-
-    Required scope: `{scope}`
     """
-    if not attrs.owner_type == "user":
-        attrs.user_id = user.id
-
     if attrs.owner_type == "group":
         group_id = attrs.owner_id
         ok = await users_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
@@ -201,12 +176,9 @@ async def create_tag(
 
 
 @router.delete("/{tag_id}", status_code=204)
-@utils.docstring_parameter(scope=scopes.TAG_DELETE)
 async def delete_tag(
     tag_id: UUID,
-    user: Annotated[
-        usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_DELETE])
-    ],
+    user: require_scopes(scopes.TAG_DELETE),
     db_session: AsyncSession=Depends(get_db),
 ) -> None:
     """Deletes user tag
@@ -247,19 +219,13 @@ async def delete_tag(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.TAG_UPDATE)
 async def update_tag(
     tag_id: UUID,
     attrs: tags_schema.UpdateTag,
-    user: Annotated[
-        usr_schema.User, Security(get_current_user, scopes=[scopes.TAG_UPDATE])
-    ],
+    user: require_scopes(scopes.TAG_UPDATE),
     db_session: AsyncSession=Depends(get_db),
 ) -> tags_schema.Tag:
-    """Updates user tag
-
-    Required scope: `{scope}`
-    """
+    """Updates user tag"""
     has_access = await ownership_api.user_can_access_resource(
         session=db_session,
         user_id=user.id,

@@ -53,7 +53,7 @@ from .features.custom_fields.schema import (
 )
 from .features.tags.schema import Tag, TagShort, TagEx, TagDetails, UpdateTag, CreateTag
 from .features.document_types.schema import DocumentType, DocumentTypeShort, DocumentTypeEx, DocumentTypeDetails, UpdateDocumentType, CreateDocumentType
-from .features.groups.schema import Group, GroupEx, GroupDetails, CreateGroup, UpdateGroup
+from .features.groups.schema import Group, GroupShort, GroupEx, GroupDetails, CreateGroup, UpdateGroup
 from .features.roles.schema import Role, RoleEx, RoleDetails, CreateRole, UpdateRole, Permission
 from .features.audit.schema import AuditLog, AuditLogDetails
 from .schemas.error import Error, AttrError
@@ -133,6 +133,7 @@ __all__ = [
     'UpdateDocumentType',
     'Group',
     'GroupEx',
+    'GroupShort',
     'CreateGroup',
     'GroupDetails',
     'UpdateGroup',

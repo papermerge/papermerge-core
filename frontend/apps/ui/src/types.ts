@@ -278,7 +278,8 @@ export type NewCustomField = {
   name: string
   type_handler: CustomFieldDataType
   config?: string
-  group_id?: string
+  owner_type?: string
+  owner_id: string
 }
 
 export type CustomField = NewCustomField & {

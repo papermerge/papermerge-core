@@ -1,4 +1,4 @@
-import {Checkbox, Group, Loader, Modal, Text, TextInput} from "@mantine/core"
+import {Group, Loader, Modal, Text, TextInput} from "@mantine/core"
 import {useEffect, useState} from "react"
 
 import {CancelButton, SaveButton} from "@/components/buttons"
@@ -73,13 +73,6 @@ export default function NewGroupModal({onCancel, onSubmit, opened}: Args) {
         onChange={onNameChangeHandler}
         label={t("name", {defaultValue: "Name"})}
         placeholder={t("name", {defaultValue: "Name"})}
-      />
-      <Checkbox
-        my="md"
-        onChange={onCheckboxClicked}
-        label={t("groups.newGroupModal.forThisGroupCreateSpecialFolders", {
-          defaultValue: "For this group create special folders: inbox and home"
-        })}
       />
       {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">

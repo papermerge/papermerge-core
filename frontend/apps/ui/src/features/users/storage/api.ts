@@ -2,6 +2,7 @@ import {apiSlice} from "@/features/api/slice"
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
+import type {GroupShort} from "@/features/groups/types"
 import {UserItem, UserQueryParams} from "@/features/users/types"
 import type {
   ChangePassword,
@@ -93,6 +94,13 @@ export const apiSliceWithUsers = apiSlice.injectEndpoints({
         ...result.map(({id}) => ({type: "User", id}) as const)
       ]
     }),
+    getUserGroups: builder.query<GroupShort[], void>({
+      query: () => "/users/user-groups",
+      providesTags: (result = []) => [
+        "UserGroups",
+        ...result.map(({id}) => ({type: "UserGroups", id}) as const)
+      ]
+    }),
     changePassword: builder.mutation<void, ChangePassword>({
       query: chPwd => ({
         url: `/users/change-password`,
@@ -113,7 +121,8 @@ export const {
   useEditUserMutation,
   useDeleteUserMutation,
   useChangePasswordMutation,
-  useGetUserGroupUsersQuery
+  useGetUserGroupUsersQuery,
+  useGetUserGroupsQuery
 } = apiSliceWithUsers
 
 function buildQueryString(params: UserQueryParams = {}): string {

@@ -8,6 +8,13 @@ from pydantic import BaseModel, ConfigDict, Field
 from papermerge.core.schemas.common import ByUser
 
 
+class GroupShort(BaseModel):
+    id: uuid.UUID
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class Group(BaseModel):
     id: uuid.UUID
     name: str

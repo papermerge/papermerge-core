@@ -215,3 +215,32 @@ async def test_users_paginated_result__9_items_first_page(
     assert paginated_items.page_number == 1
     assert paginated_items.num_pages == 2
     assert len(paginated_items.items) == 5
+
+
+async def test_get_user_groups(
+    login_as,
+    db_session: AsyncSession,
+    make_group,
+    make_user
+):
+    user: orm.User = await make_user("david")
+    group_dev: orm.Group = await make_group("development")
+    group_leads: orm.Group = await make_group("leads")
+    await make_group("hr")
+
+    db_session.add_all(
+        [
+            orm.UserGroup(user=user, group=group_dev),
+            orm.UserGroup(user=user, group=group_leads)
+        ]
+    )
+    await db_session.commit()
+
+    client = await login_as(user)
+    response = await client.get("/users/user-groups")
+
+    assert response.status_code == 200
+    results = response.json()
+    groups = [schema.GroupShort(**item) for item in results]
+    actual_group_names = {group.name for group in groups}
+    assert actual_group_names == {"development", "leads"}

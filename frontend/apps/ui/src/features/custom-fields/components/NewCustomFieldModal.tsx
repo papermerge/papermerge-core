@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react"
-
+import OwnerSelect from "@/components/OwnerSelect"
 import {CURRENCIES} from "@/cconstants"
 import {useAddNewCustomFieldMutation} from "@/features/custom-fields/storage/api"
 import {CurrencyType, CustomFieldDataType} from "@/types"
@@ -60,8 +60,7 @@ export default function NewCustomFieldModal({
   }
 
   const onOwnerChange = (newOwner: Owner) => {
-    setOwner(option)
-    console.log(option)
+    setOwner(newOwner)
   }
 
   const onLocalSubmit = async () => {
@@ -74,18 +73,14 @@ export default function NewCustomFieldModal({
     const newCustomFieldData = {
       name,
       extra_data,
-      type: dataType
-    }
-
-    let cfData
-    if (owner.value && owner.value != "") {
-      cfData = {...newCustomFieldData, group_id: owner.value}
-    } else {
-      cfData = newCustomFieldData
+      type: dataType,
+      owner_type: owner.type,
+      owner_id: owner.id,
+      type_handler: dataType
     }
 
     try {
-      await addNewCustomField(cfData).unwrap()
+      await addNewCustomField(newCustomFieldData).unwrap()
     } catch (err: unknown) {
       // @ts-ignore
       setError(err.data.detail)
@@ -101,7 +96,7 @@ export default function NewCustomFieldModal({
     setName("")
     setDataType("text")
     setError("")
-    setOwner({label: "Me", value: ""})
+    setOwner({label: "Me", id: currentUser.id, type: "user"})
   }
 
   const onCurrencyChange = (value: string | null) => {
@@ -138,7 +133,7 @@ export default function NewCustomFieldModal({
           onChange={onCurrencyChange}
         />
       )}
-      <OwnerSelector value={owner} onChange={onOwnerChange} />
+      <OwnerSelect value={owner} onChange={onOwnerChange} />
       {isError && <Text c="red">{`${error}`}</Text>}
       <Group justify="space-between" mt="md">
         <Button variant="default" onClick={onLocalCancel}>

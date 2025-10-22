@@ -184,3 +184,25 @@ async def test__negative__user_belongs_to(db_session: AsyncSession, make_user, m
     # user momo does not belong to group "research"
     belongs_to = await dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group.id)
     assert not belongs_to
+
+async def test_get_user_groups(
+    db_session: AsyncSession,
+    make_user,
+    make_group
+):
+    user: orm.User = await make_user("david")
+    group_dev: orm.Group = await make_group("development")
+    group_leads: orm.Group = await make_group("leads")
+    await make_group("hr")
+
+    db_session.add_all(
+        [
+            orm.UserGroup(user=user, group=group_dev),
+            orm.UserGroup(user=user, group=group_leads)
+        ]
+    )
+    await db_session.commit()
+
+    groups_david_is_part_of = await dbapi.get_user_groups(db_session, user_id=user.id)
+    actual_group_names = {item.name for item in groups_david_is_part_of}
+    assert actual_group_names == {"development", "leads"}

@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.db.exceptions import ResourceAccessDenied, \
     DependenciesExist, InvalidRequest
+from papermerge.core.features.auth.dependencies import require_scopes
 from papermerge.core import utils, dbapi, orm, schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
@@ -38,12 +39,8 @@ logger = logging.getLogger(__name__)
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
 async def get_document_types_without_pagination(
-    user: Annotated[
-        users_schema.User,
-        Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW]),
-    ],
+    user: require_scopes(scopes.DOCUMENT_TYPE_VIEW),
     group_id: uuid.UUID | None = None,
     db_session: AsyncSession = Depends(get_db),
 ):
@@ -57,8 +54,6 @@ async def get_document_types_without_pagination(
     be raised.
     If `group_id` parameter is not provided (empty) then
     will return all document types of the current user.
-
-    Required scope: `{scope}`
     """
     owner = schema.Owner.create_from(
         user_id=user.id,
@@ -84,18 +79,12 @@ async def get_document_types_without_pagination(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
 async def get_document_types_without_pagination(
-    user: Annotated[
-        users_schema.User,
-        Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW]),
-    ],
+    user: require_scopes(scopes.DOCUMENT_TYPE_VIEW),
     db_session: AsyncSession = Depends(get_db),
 ) -> list[dt_schema.GroupedDocumentType]:
     """Returns all document types to which user has access to, grouped
     by owner. Results are not paginated.
-
-    Required scope: `{scope}`
     """
     result = await dbapi.get_document_types_grouped_by_owner_without_pagination(
         db_session, user_id=user.id
@@ -105,18 +94,12 @@ async def get_document_types_without_pagination(
 
 
 @router.get("/", response_model=schema.PaginatedResponse[DocumentTypeEx])
-@utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
 async def get_document_types(
-    user: Annotated[
-        users_schema.User, Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW])
-    ],
+    user: require_scopes(scopes.DOCUMENT_TYPE_VIEW),
     params: DocumentTypeParams = Depends(),
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.PaginatedResponse[DocumentTypeEx]:
-    """Get all (paginated) document types
-
-    Required scope: `{scope}`
-    """
+    """Get all (paginated) document types"""
     try:
         filters = params.to_filters()
         paginated_response = await dbapi.get_document_types(
@@ -142,19 +125,12 @@ async def get_document_types(
 
 
 @router.get("/{document_type_id}", response_model=schema.DocumentTypeDetails)
-@utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_VIEW)
 async def get_document_type(
     document_type_id: uuid.UUID,
-    user: Annotated[
-        users_schema.User,
-        Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_VIEW]),
-    ],
+    user: require_scopes(scopes.DOCUMENT_TYPE_VIEW),
     db_session: AsyncSession = Depends(get_db),
 ):
-    """Get document type
-
-    Required scope: `{scope}`
-    """
+    """Get document type"""
     try:
         result = await dbapi.get_document_type(
             db_session,
@@ -170,21 +146,15 @@ async def get_document_type(
 
 
 @router.post("/", status_code=201)
-@utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_CREATE)
 async def create_document_type(
     dtype: schema.CreateDocumentType,
-    user: Annotated[
-        users_schema.User,
-        Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_CREATE]),
-    ],
+    user: require_scopes(scopes.DOCUMENT_TYPE_CREATE),
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.DocumentTypeShort:
     """Creates document type
 
     If attribute `group_id` is present, document type will be owned
     by respective group, otherwise ownership is set to current user.
-
-    Required scope: `{scope}`
     """
     try:
         async with AsyncAuditContext(
@@ -222,19 +192,12 @@ async def create_document_type(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_DELETE)
 async def delete_document_type(
     document_type_id: uuid.UUID,
-    user: Annotated[
-        users_schema.User,
-        Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_DELETE]),
-    ],
+    user: require_scopes(scopes.DOCUMENT_TYPE_DELETE),
     db_session: AsyncSession = Depends(get_db),
 ) -> None:
-    """Deletes document type
-
-    Required scope: `{scope}`
-    """
+    """Deletes document type"""
     has_access = await ownership_api.user_can_access_resource(
         session=db_session,
         user_id=user.id,
@@ -290,20 +253,13 @@ async def delete_document_type(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.DOCUMENT_TYPE_UPDATE)
 async def update_document_type(
     document_type_id: uuid.UUID,
     attrs: schema.UpdateDocumentType,
-    cur_user: Annotated[
-        users_schema.User,
-        Security(get_current_user, scopes=[scopes.DOCUMENT_TYPE_UPDATE]),
-    ],
+    cur_user: require_scopes(scopes.DOCUMENT_TYPE_UPDATE),
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.DocumentTypeShort:
-    """Updates document type
-
-    Required scope: `{scope}`
-    """
+    """Updates document type"""
     has_access = await ownership_api.user_can_access_resource(
         session=db_session,
         user_id=cur_user.id,

@@ -923,11 +923,11 @@ def _build_document_type_filter_conditions(
 
 
 def _apply_document_type_sorting(
-        query,
-        sort_by: str,
-        sort_direction: str,
-        created_user,
-        updated_user,
+    query,
+    sort_by: str,
+    sort_direction: str,
+    created_user,
+    updated_user,
 ):
     """Apply sorting to the document types query."""
     sort_column = None

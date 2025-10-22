@@ -2,7 +2,7 @@ import {useState, useMemo} from "react"
 import {useCombobox} from "@mantine/core"
 import type {Owner} from "@/types"
 import {
-  useGetUserGroupHomesQuery,
+  useGetUserGroupsQuery,
   useGetUserGroupUsersQuery
 } from "@/features/users/storage/api"
 import {useAppSelector} from "@/app/hooks"
@@ -32,7 +32,7 @@ export function useOwnerSelector(
 ): UseOwnerSelectorReturn {
   const currentUser = useAppSelector(selectCurrentUser)
   const {data: groups = [], isLoading: isLoadingGroups} =
-    useGetUserGroupHomesQuery()
+    useGetUserGroupsQuery()
   const {data: users = [], isLoading: isLoadingUsers} =
     useGetUserGroupUsersQuery()
 
@@ -64,8 +64,8 @@ export function useOwnerSelector(
   const groupOptions = useMemo<OwnerOption[]>(
     () =>
       groups.map(group => ({
-        value: group.group_id,
-        label: group.group_name,
+        value: group.id,
+        label: group.name,
         type: "group"
       })),
     [groups]

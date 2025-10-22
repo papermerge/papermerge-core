@@ -54,6 +54,28 @@ async def get_user(db_session: AsyncSession, user_id_or_username: str) -> schema
 
     return model_user
 
+
+async def get_user_groups(
+    db_session: AsyncSession, user_id: uuid.UUID
+) -> list[orm.Group]:
+    """
+    Gets user groups
+    """
+    stmt = (
+        select(orm.Group)
+        .join(orm.UserGroup, orm.UserGroup.group_id == orm.Group.id)
+        .where(
+            orm.UserGroup.user_id == user_id,
+            orm.UserGroup.deleted_at.is_(None),
+            orm.Group.deleted_at.is_(None)
+        )
+    )
+
+    results = await db_session.execute(stmt)
+
+    return results.scalars().all()
+
+
 async def get_user_group_homes(
     db_session: AsyncSession, user_id: uuid.UUID
 ) -> Tuple[list[schema.UserHome] | None, str | None]:
@@ -249,15 +271,15 @@ async def get_user_details(
 
 
 async def get_users(
-        db_session: AsyncSession,
-        *,
-        page_size: int,
-        page_number: int,
-        sort_by: Optional[str] = None,
-        sort_direction: Optional[str] = None,
-        filters: Optional[Dict[str, Dict[str, Any]]] = None,
-        include_deleted: bool = False,
-        include_archived: bool = True
+    db_session: AsyncSession,
+    *,
+    page_size: int,
+    page_number: int,
+    sort_by: Optional[str] = None,
+    sort_direction: Optional[str] = None,
+    filters: Optional[Dict[str, Dict[str, Any]]] = None,
+    include_deleted: bool = False,
+    include_archived: bool = True
 ) -> schema.PaginatedResponse[schema.UserEx]:
     # Create user aliases for all audit trail joins
     created_user = aliased(orm.User, name='created_user')

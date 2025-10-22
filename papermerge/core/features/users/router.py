@@ -63,8 +63,8 @@ async def get_current_user(
 
 @router.get("/group-users")
 async def get_user_group_users(
-        user: Annotated[schema.User, Depends(get_current_user)],
-        db_session: AsyncSession = Depends(get_db),
+    user: Annotated[schema.User, Depends(get_current_user)],
+    db_session: AsyncSession = Depends(get_db),
 ) -> list[schema.UserSimple]:
     """Get all users from groups that current user belongs to
 
@@ -93,6 +93,40 @@ async def get_user_group_users(
             status_code=500,
             detail="Failed to fetch group users"
         )
+
+
+@router.get("/user-groups")
+async def get_user_group_users(
+    user: Annotated[schema.User, Depends(get_current_user)],
+    db_session: AsyncSession = Depends(get_db),
+) -> list[schema.GroupShort]:
+    """Get all groups to which current user belongs
+
+    No special scope required - any authenticated user can see
+    groups they are member of
+
+    Returns:
+        List of groups which current user is part of
+
+    Raises:
+        HTTPException: 500 if database error occurs
+    """
+    try:
+        groups = await dbapi.get_user_groups(
+            db_session,
+            user_id=user.id
+        )
+    except Exception as e:
+        logger.error(
+            f"Error fetching groups user {user.id}: {e}",
+            exc_info=True
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to fetch groups for user"
+        )
+
+    return groups
 
 
 @router.get("/")

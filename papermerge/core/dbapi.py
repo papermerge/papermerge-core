@@ -12,7 +12,8 @@ from .features.users.db.api import (
     user_belongs_to,
     get_user_group_homes,
     get_user_group_inboxes,
-    get_user_group_users
+    get_user_group_users,
+    get_user_groups
 )
 from .features.document.db.api import (
     get_last_doc_ver,
@@ -114,6 +115,7 @@ __all__ = [
     "update_user",
     "get_user",
     "get_users",
+    "get_user_groups",
     "get_user_details",
     "delete_user",
     "get_users_without_pagination",

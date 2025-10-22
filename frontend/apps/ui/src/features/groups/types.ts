@@ -32,3 +32,8 @@ export interface GroupItem {
   created_by: ByUser
   updated_by: ByUser
 }
+
+export type GroupShort = {
+  id: string
+  name: string
+}

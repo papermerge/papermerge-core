@@ -1,11 +1,4 @@
-import {
-  Checkbox,
-  Group,
-  Loader,
-  LoadingOverlay,
-  Modal,
-  TextInput
-} from "@mantine/core"
+import {Group, Loader, LoadingOverlay, Modal, TextInput} from "@mantine/core"
 import {useEffect, useState} from "react"
 
 import {CancelButton, SaveButton} from "@/components/buttons"
@@ -86,12 +79,6 @@ export default function EditGroupModal({
         onChange={e => setName(e.currentTarget.value)}
         label={t("groups.form.name")}
         placeholder={t("groups.form.name.placeholder")}
-      />
-      <Checkbox
-        checked={withSpecialFolders}
-        onChange={e => setWithSpecialFolders(e.currentTarget.checked)}
-        my="md"
-        label="Group with special folders: inbox and home"
       />
       <Group justify="space-between" mt="md">
         <CancelButton onClick={onLocalCancel} t={t} />

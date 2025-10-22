@@ -42,7 +42,7 @@ export type DocumentTypeSortByInput =
 
 import type {PaginatedArgs} from "@/types"
 
-export type SortBy = "name" | "created_at" | "created_by"
+export type SortBy = "name" | "created_at" | "created_by" | "owned_by"
 
 export interface DocumentTypeQueryParams extends Partial<PaginatedArgs> {
   page_number?: number

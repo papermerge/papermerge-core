@@ -8,7 +8,6 @@ import {
   Button,
   Checkbox,
   ColorInput,
-  ComboboxItem,
   Group,
   Loader,
   Modal,
@@ -64,9 +63,8 @@ export default function NewTagModal({onSubmit, onCancel, opened}: Args) {
     setFgColor(value)
   }
 
-  const onOwnerChange = (option: ComboboxItem) => {
+  const onOwnerChange = (option: Owner) => {
     setOwner(option)
-    console.log(option)
   }
 
   const onLocalSubmit = async () => {
@@ -75,18 +73,13 @@ export default function NewTagModal({onSubmit, onCancel, opened}: Args) {
       pinned,
       description,
       bg_color: bgColor,
-      fg_color: fgColor
-    }
-    let tagData
-
-    if (owner.value && owner.value != "") {
-      tagData = {...newTagData, group_id: owner.value}
-    } else {
-      tagData = newTagData
+      fg_color: fgColor,
+      owner_type: owner.type,
+      owner_id: owner.id
     }
 
     try {
-      await addNewTag(tagData).unwrap()
+      await addNewTag(newTagData).unwrap()
     } catch (err: unknown) {
       // @ts-ignore
       setError(err.data.detail)

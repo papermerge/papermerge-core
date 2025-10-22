@@ -115,8 +115,8 @@ class TagParams(BaseModel):
     # Sorting parameters
     sort_by: Optional[str] = Query(
         None,
-        pattern="^(id|name|created_at|updated_at|created_by|updated_by)$",
-        description="Column to sort by: id, name, created_at, updated_at, created_by, updated_by"
+        pattern="^(id|name|created_at|updated_at|created_by|updated_by|owned_by)$",
+        description="Column to sort by: id, name, created_at, updated_at, created_by, updated_by, owned_by"
     )
     sort_direction: Optional[Literal["asc", "desc"]] = Query(
         None,

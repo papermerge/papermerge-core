@@ -2,7 +2,7 @@ import uuid
 import math
 from typing import Optional, Dict, Any, Tuple
 
-from sqlalchemy import select, func, or_, and_
+from sqlalchemy import select, func, or_, and_, case
 from sqlalchemy.orm import aliased
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -173,7 +173,9 @@ async def get_tags(
         base_query = _apply_tag_sorting(
             base_query, sort_by, sort_direction,
             created_user=created_user,
-            updated_user=updated_user
+            updated_user=updated_user,
+            owner_user=owner_user,
+            owner_group=owner_group
         )
     else:
         # Default sorting by name asc
@@ -648,6 +650,8 @@ def _apply_tag_sorting(
         sort_direction: str,
         created_user,
         updated_user,
+        owner_user,
+        owner_group
 ):
     """Apply sorting to the tags query."""
     sort_column = None
@@ -667,6 +671,11 @@ def _apply_tag_sorting(
     elif sort_by == "updated_by":
         # Sort by username of updater
         sort_column = updated_user.username
+    sort_column = case(
+        (orm.Ownership.owner_type == OwnerType.USER, owner_user.username),
+        (orm.Ownership.owner_type == OwnerType.GROUP, owner_group.name),
+        else_=None
+    )
 
     if sort_column is not None:
         if sort_direction.lower() == "desc":

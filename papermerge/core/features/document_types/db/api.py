@@ -4,20 +4,16 @@ import uuid
 from typing import Optional, Dict, Any
 from itertools import groupby
 
-from sqlalchemy.orm import selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import NoResultFound, IntegrityError
-from sqlalchemy import select, func, and_, or_, Sequence
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func, Sequence, case
 
-from papermerge.core.db.exceptions import ResourceAccessDenied, \
-    DependenciesExist
+from papermerge.core.db.exceptions import DependenciesExist
 from papermerge.core import schema, orm
 from papermerge.core import constants as const
 from papermerge.core.tasks import send_task
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.utils.tz import utc_now
-from papermerge.core.types import ResourceType, OwnerType
-from papermerge.core.features.ownership.db.orm import Ownership
 from papermerge.core.features.document_types import schema as dt_schema
 from .orm import DocumentType
 
@@ -296,7 +292,9 @@ async def get_document_types(
         base_query = _apply_document_type_sorting(
             base_query, sort_by, sort_direction,
             created_user=created_user,
-            updated_user=updated_user
+            updated_user=updated_user,
+            owner_user=owner_user,
+            owner_group=owner_group
         )
     else:
         # Default sorting by name asc
@@ -928,6 +926,8 @@ def _apply_document_type_sorting(
     sort_direction: str,
     created_user,
     updated_user,
+    owner_user,
+    owner_group
 ):
     """Apply sorting to the document types query."""
     sort_column = None
@@ -947,6 +947,12 @@ def _apply_document_type_sorting(
     elif sort_by == "updated_by":
         # Sort by username of updater
         sort_column = updated_user.username
+    elif sort_by == "owned_by":
+        sort_column = case(
+            (orm.Ownership.owner_type == OwnerType.USER, owner_user.username),
+            (orm.Ownership.owner_type == OwnerType.GROUP, owner_group.name),
+            else_=None
+        )
 
     if sort_column is not None:
         if sort_direction.lower() == "desc":

@@ -3,10 +3,14 @@ import type {RootState} from "@/app/types"
 import type {PanelComponent} from "@/types.d/ui"
 import {createSlice, PayloadAction} from "@reduxjs/toolkit"
 import type {SortState} from "kommon"
+import {createSelector} from "@reduxjs/toolkit"
 
 // ============================================================================
 // TYPES
 // ============================================================================
+
+const EMPTY_ARRAY: string[] = []
+const EMPTY_OBJECT: Record<string, any> = {}
 
 export interface PanelListState {
   pageNumber?: number
@@ -328,8 +332,13 @@ export const selectComponentState = (
 export const selectPanelList = (state: RootState, panelId: string) =>
   selectCurrentComponentState(state, panelId)?.list
 
-export const selectPanelSelectedIDs = (state: RootState, panelId: string) =>
-  selectPanelList(state, panelId)?.selectedIDs || []
+export const selectPanelSelectedIDs = createSelector(
+  [
+    (state: RootState, panelId: string) =>
+      selectPanelList(state, panelId)?.selectedIDs
+  ],
+  selectedIDs => selectedIDs ?? EMPTY_ARRAY
+)
 
 export const selectPanelPageSize = (
   state: RootState,
@@ -342,8 +351,13 @@ export const selectPanelPageNumber = (state: RootState, panelId: string) =>
 export const selectPanelSorting = (state: RootState, panelId: string) =>
   selectPanelList(state, panelId)?.sorting
 
-export const selectPanelFilters = (state: RootState, panelId: string) =>
-  selectPanelList(state, panelId)?.filters || {}
+export const selectPanelFilters = createSelector(
+  [
+    (state: RootState, panelId: string) =>
+      selectPanelList(state, panelId)?.filters
+  ],
+  filters => filters ?? EMPTY_OBJECT
+)
 
 export const selectPanelVisibleColumns = (state: RootState, panelId: string) =>
   selectPanelList(state, panelId)?.visibleColumns
@@ -362,5 +376,10 @@ export const selectPanelCustom = (
   key: string
 ) => selectCurrentComponentState(state, panelId)?.custom?.[key]
 
-export const selectPanelAllCustom = (state: RootState, panelId: string) =>
-  selectCurrentComponentState(state, panelId)?.custom || {}
+export const selectPanelAllCustom = createSelector(
+  [
+    (state: RootState, panelId: string) =>
+      selectCurrentComponentState(state, panelId)?.custom
+  ],
+  custom => custom ?? EMPTY_OBJECT
+)

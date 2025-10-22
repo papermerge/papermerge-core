@@ -8,9 +8,12 @@ import {DeleteTagsButton} from "./DeleteButton"
 import EditButton from "./EditButton"
 import NewButton from "./NewButton"
 import Search from "./Search"
+import {useAuth} from "@/app/hooks/useAuth"
+import {TAG_CREATE, TAG_DELETE, TAG_UPDATE} from "@/scopes"
 
 export default function ActionButtons() {
   const {panelId} = usePanel()
+  const {hasPermission} = useAuth()
   const selectedIds =
     useAppSelector(s => selectPanelSelectedIDs(s, panelId)) || []
   const hasOneSelected = selectedIds.length === 1
@@ -19,9 +22,11 @@ export default function ActionButtons() {
   return (
     <Group justify="space-between" w={"100%"}>
       <Group>
-        <NewButton />
-        {hasOneSelected && <EditButton tagId={selectedIds[0]} />}
-        {hasAnySelected && <DeleteTagsButton />}
+        {hasPermission(TAG_CREATE) && <NewButton />}
+        {hasPermission(TAG_UPDATE) && hasOneSelected && (
+          <EditButton tagId={selectedIds[0]} />
+        )}
+        {hasPermission(TAG_DELETE) && hasAnySelected && <DeleteTagsButton />}
       </Group>
       <Group>
         <Search />

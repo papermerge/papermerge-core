@@ -1,19 +1,16 @@
 import logging
 import uuid
-from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Security, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.db.exceptions import ResourceAccessDenied, \
     DependenciesExist, InvalidRequest
 from papermerge.core.features.auth.dependencies import require_scopes
-from papermerge.core import utils, dbapi, orm, schema
-from papermerge.core.features.auth import get_current_user
+from papermerge.core import dbapi, orm, schema
 from papermerge.core.features.auth import scopes
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
-from papermerge.core.features.users import schema as users_schema
 from papermerge.core.features.document_types import schema as dt_schema
 from papermerge.core.db.engine import get_db
 from papermerge.core.features.ownership.db import api as ownership_api

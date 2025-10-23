@@ -40,12 +40,15 @@ export default function SelectDocumentCategory() {
 
     setCurrentDocumentTypeName(newValue)
     dispatch(documentCategoryIDUpdated(document_type_id))
-    navigate(`/documents/by/category/${document_type_id}`)
+    if (newValue) {
+      navigate(`/documents/by/category/${document_type_id}`)
+    }
   }
 
   return (
     <Select
       searchable
+      clearable
       placeholder={t("common.pick_value")}
       onChange={onDocumentTypeChanged}
       data={allDocumentTypes.map(g => {

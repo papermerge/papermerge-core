@@ -1,12 +1,11 @@
 import io
 import logging
 import uuid
-from typing import Annotated, Any
+from typing import Any
 
 from fastapi import (
     APIRouter,
     HTTPException,
-    Security,
     UploadFile,
     status,
     Query,
@@ -15,6 +14,7 @@ from fastapi import (
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from papermerge.core.features.auth.dependencies import require_scopes
 from papermerge.core import exceptions as exc
 from papermerge.core import constants as const
 from papermerge.core import utils, dbapi
@@ -48,19 +48,13 @@ config = get_settings()
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 async def bulk_set_document_custom_field_values(
     document_id: uuid.UUID,
     values: dict[uuid.UUID, Any],
-    user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
-    ],
+    user: require_scopes(scopes.NODE_UPDATE),
     db_session: AsyncSession = Depends(get_db),
 ) -> list[schema.CustomFieldValue]:
-    """
-    Update document's custom fields
-    Required scope: `{scope}`
-    """
+    """Update document's custom fields"""
     if not await dbapi_common.has_node_perm(
         db_session,
         node_id=document_id,
@@ -105,14 +99,10 @@ async def bulk_set_document_custom_field_values(
 @utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def get_document_custom_field_values(
     document_id: uuid.UUID,
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    user: require_scopes(scopes.NODE_VIEW),
     db_session: AsyncSession = Depends(get_db),
 ) -> list[schema.CustomFieldWithValue]:
-    """
-    Get document custom field values
-
-    Required scope: `{scope}`
-    """
+    """Get document custom field values"""
     if not await dbapi_common.has_node_perm(
         db_session,
         node_id=document_id,
@@ -141,19 +131,14 @@ async def get_document_custom_field_values(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.DOCUMENT_UPLOAD)
 async def upload_file(
     document_id: uuid.UUID,
     file: UploadFile,
-    user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.DOCUMENT_UPLOAD])
-    ],
+    user: require_scopes(scopes.DOCUMENT_UPLOAD),
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.Document:
     """
     Uploads document's file.
-
-    Required scope: `{scope}`
 
     Document model must be created beforehand via `POST /nodes` endpoint
     provided with `ctype` = `document`.
@@ -214,17 +199,12 @@ async def upload_file(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def get_document_last_version(
     doc_id: uuid.UUID,
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    user: require_scopes(scopes.NODE_VIEW),
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.DocumentVersion:
-    """
-    Returns document's last version
-
-    Required scope: `{scope}`
-    """
+    """Returns document's last version"""
     try:
         if not await dbapi_common.has_node_perm(
             db_session,
@@ -253,18 +233,15 @@ async def get_document_last_version(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def get_doc_versions_list(
     doc_id: uuid.UUID,
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    user: require_scopes(scopes.NODE_VIEW),
     db_session: AsyncSession = Depends(get_db),
 ) -> list[schema.DocVerListItem]:
     """
     Returns versions list for given document ID
 
     Returned versions are sorted descending by version number.
-
-    Required scope: `{scope}`
     """
     try:
         if not await dbapi_common.has_node_perm(
@@ -294,17 +271,12 @@ async def get_doc_versions_list(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def get_document_details(
     document_id: uuid.UUID,
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    user: require_scopes(scopes.NODE_VIEW),
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.DocumentWithoutVersions:
-    """
-    Get document details
-
-    Required scope: `{scope}`
-    """
+    """Get document details"""
     try:
         if not await dbapi_common.has_node_perm(
             db_session,
@@ -329,18 +301,13 @@ async def get_document_details(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 async def update_document_type(
     document_id: uuid.UUID,
     document_type: DocumentTypeArg,
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    user: require_scopes(scopes.NODE_VIEW),
     db_session: AsyncSession = Depends(get_db),
 ):
-    """
-    Updates document type
-
-    Required scope: `{scope}`
-    """
+    """Updates document type"""
     try:
         if not await dbapi_common.has_node_perm(
             db_session,
@@ -370,18 +337,18 @@ async def update_document_type(
     )
 
 
-@router.get("/type/{document_type_id}/", response_model=schema.PaginatedResponse[schema.DocumentCFV])
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
+@router.get(
+    "/type/{document_type_id}/",
+    response_model=schema.PaginatedResponse[schema.DocumentCFV]
+)
 async def get_documents_by_type(
     document_type_id: uuid.UUID,
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    user: require_scopes(scopes.NODE_VIEW),
     params: schema.DocumentsByTypeParams = Depends(),
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.PaginatedResponse[schema.DocumentCFV]:
     """
     Get all documents of specific type with all custom field values
-
-    Required scope: `{scope}`
     """
     try:
         result = await dbapi.get_documents_by_type_paginated(
@@ -417,9 +384,8 @@ async def get_documents_by_type(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def get_document_doc_thumbnail_status(
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    user: require_scopes(scopes.NODE_VIEW),
     doc_ids: list[uuid.UUID] = Query(),
     db_session: AsyncSession = Depends(get_db),
 ) -> list[schema.DocumentPreviewImageStatus]:
@@ -431,8 +397,6 @@ async def get_document_doc_thumbnail_status(
     In case of CDN setup, for each document with NULL value in `preview_status`
     field - one `S3worker` task will be scheduled for generating respective
     document thumbnail.
-
-    Required scope: `{scope}`
     """
 
     for doc_id in doc_ids:

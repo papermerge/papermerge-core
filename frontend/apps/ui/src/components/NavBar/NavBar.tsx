@@ -28,7 +28,6 @@ import {useAuth} from "@/app/hooks/useAuth"
 import {
   IconAlignJustified,
   IconFile,
-  IconHome,
   IconInbox,
   IconLogs,
   IconMasksTheater,
@@ -36,7 +35,8 @@ import {
   IconTriangleSquareCircle,
   IconUsers,
   IconUsersGroup,
-  IconUserShare
+  IconUserShare,
+  IconFolder
 } from "@tabler/icons-react"
 import {useContext} from "react"
 import {useSelector} from "react-redux"
@@ -110,11 +110,8 @@ function NavBarContent({renderLink, withVersion}: Args) {
     <>
       <div className="navbar">
         {hasPermission(NODE_VIEW) && (
-          <NavLink
-            to={`/home/${lastHome?.home_id || user.home_folder_id}`}
-            onClick={onClick}
-          >
-            {renderLink(t("home.name"), <IconHome />)}
+          <NavLink to={categoryURL} onClick={onClick}>
+            {renderLink(t("documents"), <IconFile />)}
           </NavLink>
         )}
         {hasPermission(NODE_VIEW) && (
@@ -126,8 +123,11 @@ function NavBarContent({renderLink, withVersion}: Args) {
           </NavLink>
         )}
         {hasPermission(NODE_VIEW) && (
-          <NavLink to={categoryURL} onClick={onClick}>
-            {renderLink(t("documents"), <IconFile />)}
+          <NavLink
+            to={`/home/${lastHome?.home_id || user.home_folder_id}`}
+            onClick={onClick}
+          >
+            {renderLink(t("files"), <IconFolder />)}
           </NavLink>
         )}
         {hasPermission(SHARED_NODE_VIEW) && (

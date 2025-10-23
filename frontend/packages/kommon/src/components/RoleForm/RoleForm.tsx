@@ -347,6 +347,19 @@ function getPermissionTree(txt?: I18NPermissionTree) {
         {value: "group.update", label: txt?.update || "Update"},
         {value: "group.delete", label: txt?.delete || "Delete"}
       ]
+    },
+    {
+      value: "audit_log",
+      label: "Audit Logs",
+      children: [{value: "audit_log.view", label: "View"}]
+    },
+    {
+      value: "system_preference",
+      label: "System Preference",
+      children: [
+        {value: "system_preference.view", label: "View"},
+        {value: "system_preference.update", label: "Update"}
+      ]
     }
   ]
   return PERMISSIONS_TREE

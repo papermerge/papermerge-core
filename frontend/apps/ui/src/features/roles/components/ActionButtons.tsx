@@ -8,21 +8,28 @@ import EditButton from "./EditButton"
 import NewButton from "./NewButton"
 
 import Search from "./Search"
+import {useAuth} from "@/app/hooks/useAuth"
+import {ROLE_CREATE, ROLE_DELETE, ROLE_UPDATE} from "@/scopes"
 
 export default function ActionButtons() {
   const {panelId} = usePanel()
   const selectedRowIDs = useAppSelector(s => selectPanelSelectedIDs(s, panelId))
+  const {hasPermission} = useAuth()
 
   return (
     <Group justify="space-between" w={"100%"}>
       <Group>
-        <NewButton />
-        {selectedRowIDs && selectedRowIDs.length == 1 ? (
+        {hasPermission(ROLE_CREATE) && <NewButton />}
+        {hasPermission(ROLE_UPDATE) &&
+        selectedRowIDs &&
+        selectedRowIDs.length == 1 ? (
           <EditButton roleId={selectedRowIDs[0]} />
         ) : (
           ""
         )}
-        {selectedRowIDs && selectedRowIDs.length >= 1 ? (
+        {hasPermission(ROLE_DELETE) &&
+        selectedRowIDs &&
+        selectedRowIDs.length >= 1 ? (
           <DeleteRolesButton />
         ) : (
           ""

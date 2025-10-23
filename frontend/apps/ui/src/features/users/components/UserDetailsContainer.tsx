@@ -25,11 +25,14 @@ import LoadingPanel from "@/components/LoadingPanel"
 import ChangePasswordButton from "@/features/users/components/ChangePasswordButton"
 import type {UserDetails} from "@/types"
 import {useTranslation} from "react-i18next"
+import {useAuth} from "@/app/hooks/useAuth"
+import {USER_DELETE, USER_UPDATE} from "@/scopes"
 
 export default function UserDetailsContainer() {
   const {panelId} = usePanel()
   const dispatch = useAppDispatch()
   const {t} = useTranslation()
+  const {hasPermission} = useAuth()
   const userID = useAppSelector(s => selectPanelDetailsEntityId(s, panelId))
   const {data, isLoading, isFetching, error} = useGetUserQuery(userID || "", {
     skip: !userID
@@ -50,9 +53,13 @@ export default function UserDetailsContainer() {
         <Group justify="space-between" style={{flexShrink: 0}}>
           <Path user={data} panelId={panelId} />
           <Group>
-            <DeleteUserButton userId={data.id} />
-            <ChangePasswordButton userId={data.id} />
-            <EditButton userId={data.id} />
+            {hasPermission(USER_DELETE) && (
+              <DeleteUserButton userId={data.id} />
+            )}
+            {hasPermission(USER_UPDATE) && (
+              <ChangePasswordButton userId={data.id} />
+            )}
+            {hasPermission(USER_UPDATE) && <EditButton userId={data.id} />}
             <CloseSecondaryPanel
               onClick={() => dispatch(closeRoleDetailsSecondaryPanel())}
             />
@@ -83,7 +90,7 @@ export default function UserDetailsContainer() {
             label={t?.("created_at", {defaultValue: "Created at"})}
           />
           <CopyableTextInput
-            value={data.created_by.username}
+            value={data.created_by && data.created_by.username}
             label={t?.("created_by", {defaultValue: "Created by"})}
           />
         </Stack>

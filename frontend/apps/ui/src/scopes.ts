@@ -46,6 +46,8 @@ export const DOCUMENT_TYPE_VIEW = "document_type.view"
 export const DOCUMENT_TYPE_UPDATE = "document_type.update"
 export const DOCUMENT_TYPE_DELETE = "document_type.delete"
 export const AUDIT_LOG_VIEW = "audit_log.view"
+export const SYSTEM_PREFERENCE_VIEW = "system_preference.view"
+export const SYSTEM_PREFERENCE_UPDATE = "system_preference.update"
 
 export const ALL_PERMS = [
   DOCUMENT_DOWNLOAD,

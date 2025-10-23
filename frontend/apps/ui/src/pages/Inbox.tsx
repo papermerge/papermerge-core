@@ -2,6 +2,7 @@ import {LoaderFunctionArgs} from "react-router"
 
 import DualPanel from "@/components/DualPanel"
 import {currentNodeChanged} from "@/features/ui/uiSlice"
+import {setPanelComponent} from "@/features/ui/panelRegistry"
 
 import {getCurrentUser} from "@/utils"
 import {store} from "@/app/store"
@@ -22,6 +23,13 @@ export async function loader({params, request}: LoaderFunctionArgs) {
   } else {
     folderId = user.inbox_folder_id
   }
+
+  store.dispatch(
+    setPanelComponent({
+      panelId: "main",
+      component: "commander"
+    })
+  )
 
   store.dispatch(
     currentNodeChanged({

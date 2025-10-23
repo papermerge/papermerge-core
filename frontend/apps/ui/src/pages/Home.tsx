@@ -5,6 +5,7 @@ import DualPanel from "@/components/DualPanel"
 import {store} from "@/app/store"
 import {getCurrentUser} from "@/utils"
 
+import {setPanelComponent} from "@/features/ui/panelRegistry"
 import {currentNodeChanged} from "@/features/ui/uiSlice"
 import type {User} from "@/types"
 
@@ -22,6 +23,13 @@ export async function loader({params, request}: LoaderFunctionArgs) {
   } else {
     folderId = user.home_folder_id
   }
+
+  store.dispatch(
+    setPanelComponent({
+      panelId: "main",
+      component: "commander"
+    })
+  )
 
   store.dispatch(
     currentNodeChanged({

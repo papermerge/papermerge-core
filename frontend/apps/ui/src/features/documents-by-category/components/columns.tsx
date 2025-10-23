@@ -6,6 +6,7 @@ import {Box, Text} from "@mantine/core"
 import {TFunction} from "i18next"
 import type {ColumnConfig} from "kommon"
 import type {ByUser, DocumentByCategoryItem} from "../types"
+import ErrorBoundary from "@/app/ErrorBoundary"
 
 interface Args {
   items?: DocumentByCategoryItem[]
@@ -110,7 +111,11 @@ export default function documentByCategoryColumns({items, t}: Args) {
 
         if (rowCFValue) {
           if (customFieldColumn.custom_field.type_handler == "date") {
-            return <DateFMT value={rowCFValue} />
+            return (
+              <ErrorBoundary fallback={<Text c="red">{rowCFValue}</Text>}>
+                <DateFMT value={rowCFValue} />
+              </ErrorBoundary>
+            )
           }
           if (customFieldColumn.custom_field.type_handler == "monetary") {
             return <MonetaryFMT value={rowCFValue} />
@@ -120,7 +125,11 @@ export default function documentByCategoryColumns({items, t}: Args) {
               customFieldColumn.custom_field.type_handler
             )
           ) {
-            return <NumberFMT value={rowCFValue} />
+            return (
+              <ErrorBoundary fallback={<Text c="red">{rowCFValue}</Text>}>
+                <NumberFMT value={rowCFValue} />
+              </ErrorBoundary>
+            )
           }
 
           return <Text size="sm">{rowCFValue}</Text>

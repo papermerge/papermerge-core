@@ -22,12 +22,15 @@ import {Link, useNavigation} from "react-router-dom"
 import CustomFieldForm from "./CustomFieldForm"
 import {DeleteCustomFieldButton} from "./DeleteButton"
 import EditButton from "./EditButton"
+import {useAuth} from "@/app/hooks/useAuth"
 
 import LoadingPanel from "@/components/LoadingPanel"
 import {useTranslation} from "react-i18next"
+import {CUSTOM_FIELD_DELETE, CUSTOM_FIELD_UPDATE} from "@/scopes"
 
 export default function CustomFieldDetailsContainer() {
   const {panelId} = usePanel()
+  const {hasPermission} = useAuth()
   const dispatch = useAppDispatch()
   const {t} = useTranslation()
   const customFieldID = useAppSelector(s => selectPanelDetails(s, panelId))
@@ -53,8 +56,12 @@ export default function CustomFieldDetailsContainer() {
         <Group justify="space-between" style={{flexShrink: 0}}>
           <Path customField={data} panelId={panelId} />
           <Group>
-            <DeleteCustomFieldButton customFieldId={data.id} />
-            <EditButton customFieldId={data.id} />
+            {hasPermission(CUSTOM_FIELD_DELETE) && (
+              <DeleteCustomFieldButton customFieldId={data.id} />
+            )}
+            {hasPermission(CUSTOM_FIELD_UPDATE) && (
+              <EditButton customFieldId={data.id} />
+            )}
             <CloseSecondaryPanel
               onClick={() => dispatch(closeRoleDetailsSecondaryPanel())}
             />
@@ -76,7 +83,7 @@ export default function CustomFieldDetailsContainer() {
             label={t?.("created_at", {defaultValue: "Created at"})}
           />
           <CopyableTextInput
-            value={data.created_by.username}
+            value={data.created_by && data.created_by.username}
             label={t?.("created_by", {defaultValue: "Created by"})}
           />
         </Stack>

@@ -24,11 +24,14 @@ import TagForm from "./TagForm"
 
 import LoadingPanel from "@/components/LoadingPanel"
 import {useTranslation} from "react-i18next"
+import {useAuth} from "@/app/hooks/useAuth"
+import {TAG_DELETE, TAG_UPDATE} from "@/scopes"
 
 export default function TagDetailsContainer() {
   const {panelId} = usePanel()
   const dispatch = useAppDispatch()
   const {t} = useTranslation()
+  const {hasPermission} = useAuth()
   const tagID = useAppSelector(s => selectPanelDetails(s, panelId))
   const {timestamp_format, timezone} = useAppSelector(selectMyPreferences)
   const {data, isLoading, isFetching, error} = useGetTagQuery(
@@ -52,8 +55,8 @@ export default function TagDetailsContainer() {
         <Group justify="space-between" style={{flexShrink: 0}}>
           <Path tag={data} panelId={panelId} />
           <Group>
-            <DeleteTagButton tagId={data.id} />
-            <EditButton tagId={data.id} />
+            {hasPermission(TAG_DELETE) && <DeleteTagButton tagId={data.id} />}
+            {hasPermission(TAG_UPDATE) && <EditButton tagId={data.id} />}
             <CloseSecondaryPanel
               onClick={() => dispatch(closeRoleDetailsSecondaryPanel())}
             />

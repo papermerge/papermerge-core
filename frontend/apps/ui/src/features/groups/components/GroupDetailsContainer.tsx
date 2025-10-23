@@ -24,11 +24,14 @@ import GroupForm from "./GroupForm"
 import LoadingPanel from "@/components/LoadingPanel"
 import {PanelMode} from "@/types"
 import {useTranslation} from "react-i18next"
+import {useAuth} from "@/app/hooks/useAuth"
+import {GROUP_DELETE, GROUP_UPDATE} from "@/scopes"
 
 export default function GroupDetailsContainer() {
   const {panelId} = usePanel()
   const dispatch = useAppDispatch()
   const {t} = useTranslation()
+  const {hasPermission} = useAuth()
   const groupID = useAppSelector(s => selectPanelDetailsEntityId(s, panelId))
   const {data, isLoading, isFetching, error} = useGetGroupQuery(groupID || "", {
     skip: !groupID
@@ -49,8 +52,10 @@ export default function GroupDetailsContainer() {
         <Group justify="space-between" style={{flexShrink: 0}}>
           <Path group={data} panelId={panelId} />
           <Group>
-            <DeleteGroupButton groupId={data.id} />
-            <EditButton groupId={data.id} />
+            {hasPermission(GROUP_DELETE) && (
+              <DeleteGroupButton groupId={data.id} />
+            )}
+            {hasPermission(GROUP_UPDATE) && <EditButton groupId={data.id} />}
             <CloseSecondaryPanel
               onClick={() => dispatch(closeRoleDetailsSecondaryPanel())}
             />

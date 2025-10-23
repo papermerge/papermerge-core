@@ -32,11 +32,14 @@ import LoadingPanel from "@/components/LoadingPanel"
 import type {RoleDetails} from "@/types"
 import {TFunction} from "i18next"
 import {useTranslation} from "react-i18next"
+import {useAuth} from "@/app/hooks/useAuth"
+import {ROLE_DELETE, ROLE_UPDATE} from "@/scopes"
 
 export default function RoleDetailsContainer() {
   const {panelId} = usePanel()
   const dispatch = useAppDispatch()
   const {t} = useTranslation()
+  const {hasPermission} = useAuth()
 
   const details = useAppSelector(s => selectPanelDetails(s, panelId))
   const roleID = details?.entityId
@@ -79,8 +82,10 @@ export default function RoleDetailsContainer() {
         <Group justify="space-between" style={{flexShrink: 0}}>
           <Path role={data} panelId={panelId} />
           <Group>
-            <DeleteRoleButton roleId={data.id} />
-            <EditButton roleId={data.id} />
+            {hasPermission(ROLE_DELETE) && (
+              <DeleteRoleButton roleId={data.id} />
+            )}
+            {hasPermission(ROLE_UPDATE) && <EditButton roleId={data.id} />}
             <CloseSecondaryPanel
               onClick={() => dispatch(closeRoleDetailsSecondaryPanel())}
             />

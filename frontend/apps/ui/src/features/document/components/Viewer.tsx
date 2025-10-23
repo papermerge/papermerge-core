@@ -4,6 +4,7 @@ import {Flex, Group, Loader} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {useContext} from "react"
 import {useNavigate} from "react-router-dom"
+import {setPanelComponent} from "@/features/ui/panelRegistry"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
@@ -97,6 +98,12 @@ export function Viewer({doc, docVer}: Args) {
     if (mode == "secondary" && node.ctype == "folder") {
       dispatch(
         currentNodeChanged({id: node.id, ctype: "folder", panel: "secondary"})
+      )
+      dispatch(
+        setPanelComponent({
+          panelId: "secondary",
+          component: node.ctype == "folder" ? "commander" : "viewer"
+        })
       )
     } else if (mode == "main" && node.ctype == "folder") {
       dispatch(currentDocVerUpdated({mode: mode, docVerID: undefined}))

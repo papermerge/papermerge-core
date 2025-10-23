@@ -1,6 +1,11 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {ActionIcon} from "@mantine/core"
 import {IconColumns2, IconX} from "@tabler/icons-react"
+import {closePanelAction} from "@/features/ui/panelActions"
+import {
+  setPanelComponent,
+  selectCurrentComponentState
+} from "@/features/ui/panelRegistry"
 import {useContext} from "react"
 
 import type {CType, PanelMode} from "@/types"
@@ -8,11 +13,8 @@ import type {CType, PanelMode} from "@/types"
 import PanelContext from "@/contexts/PanelContext"
 import {
   currentNodeChanged,
-  secondaryPanelClosed,
-  secondaryPanelOpened,
   selectCurrentNodeCType,
-  selectCurrentNodeID,
-  selectPanelComponent
+  selectCurrentNodeID
 } from "@/features/ui/uiSlice"
 import {selectCurrentUser} from "@/slices/currentUser"
 
@@ -23,7 +25,7 @@ export default function ToggleSecondaryPanel() {
   const nodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const ctype = useAppSelector(s => selectCurrentNodeCType(s, mode))
   const secondaryPanel = useAppSelector(s =>
-    selectPanelComponent(s, "secondary")
+    selectCurrentComponentState(s, "secondary")
   )
 
   const onClick = () => {
@@ -33,7 +35,12 @@ export default function ToggleSecondaryPanel() {
       currentNodeID = user.home_folder_id
       currentCType = "folder"
     }
-    dispatch(secondaryPanelOpened(ctype == "folder" ? "commander" : "viewer"))
+    dispatch(
+      setPanelComponent({
+        panelId: "secondary",
+        component: ctype == "folder" ? "commander" : "viewer"
+      })
+    )
     dispatch(
       currentNodeChanged({
         id: currentNodeID!,
@@ -59,7 +66,7 @@ export default function ToggleSecondaryPanel() {
 
   return (
     <ActionIcon
-      onClick={() => dispatch(secondaryPanelClosed())}
+      onClick={() => dispatch(closePanelAction("secondary"))}
       size="lg"
       variant="default"
     >

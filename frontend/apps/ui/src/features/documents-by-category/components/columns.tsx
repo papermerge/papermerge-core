@@ -68,7 +68,9 @@ export default function documentByCategoryColumns({items, t}: Args) {
       visible: true,
       width: 200,
       minWidth: 100,
-      render: value => <Text size="sm">{(value as ByUser).username}</Text>
+      render: value => (
+        <Text size="sm">{value && (value as ByUser).username}</Text>
+      )
     },
     {
       key: "updated_at",

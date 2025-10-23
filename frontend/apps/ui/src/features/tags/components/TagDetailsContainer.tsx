@@ -78,7 +78,7 @@ export default function TagDetailsContainer() {
             label={t?.("created_at", {defaultValue: "Created at"})}
           />
           <CopyableTextInput
-            value={data.created_by.username}
+            value={data.created_by?.username}
             label={t?.("created_by", {defaultValue: "Created by"})}
           />
         </Stack>

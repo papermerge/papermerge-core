@@ -1,10 +1,9 @@
-import {createBrowserRouter} from "react-router-dom"
+import {createBrowserRouter, Navigate} from "react-router-dom"
 
 import App from "@/app/App.tsx"
 import Folder, {loader as folderLoader} from "@/pages/Folder"
 import Home, {loader as homeLoader} from "@/pages/Home"
 import Inbox, {loader as inboxLoader} from "@/pages/Inbox"
-
 import {
   CustomFieldDetails,
   CustomFieldsList
@@ -60,14 +59,14 @@ import {
 
 const router = createBrowserRouter([
   {
-    path: "/home",
-    element: <App />
-  },
-  {
     path: "/",
     element: <App />,
     errorElement: <ErrorPage />,
     children: [
+      {
+        index: true,
+        element: <Navigate to="/documents/by/category" replace />
+      },
       {
         path: "/home/:folderId",
         element: <Home />,

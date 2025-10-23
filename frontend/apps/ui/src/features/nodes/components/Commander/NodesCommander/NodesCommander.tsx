@@ -2,6 +2,7 @@ import {Box, Group, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {useContext, useState} from "react"
 import {createRoot} from "react-dom/client"
+import {setPanelComponent} from "@/features/ui/panelRegistry"
 
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
@@ -142,6 +143,12 @@ export default function Commander() {
 
   const onClick = (node: NType) => {
     if (mode == "secondary") {
+      dispatch(
+        setPanelComponent({
+          panelId: "secondary",
+          component: node.ctype == "folder" ? "commander" : "viewer"
+        })
+      )
       return dispatch(
         currentNodeChanged({id: node.id, ctype: node.ctype, panel: "secondary"})
       )

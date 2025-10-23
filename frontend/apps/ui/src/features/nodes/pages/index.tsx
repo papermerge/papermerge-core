@@ -1,3 +1,3 @@
-import CategoryListView from "./CategoryListView"
+import DocumentsAndFoldersView from "./List"
 
-export {CategoryListView}
+export default DocumentsAndFoldersView

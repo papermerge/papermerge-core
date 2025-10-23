@@ -27,7 +27,7 @@ import type {
 } from "@/types"
 
 import type {AuditOperation, TimestampFilterType} from "@/features/audit/types"
-import type {CategoryColumn} from "@/features/nodes/components/Commander/DocumentsByTypeCommander/types"
+import type {CategoryColumn} from "@/features/nodes/components/Commander/____DocumentsByTypeCommander/types"
 import {DialogVisiblity} from "@/types.d/common"
 import {SortState} from "kommon"
 

@@ -28,7 +28,6 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     console.error("Error caught by boundary:", error, errorInfo)
-    // You can log to error reporting service here
   }
 
   handleReset = (): void => {

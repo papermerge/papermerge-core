@@ -1325,14 +1325,14 @@ def _build_document_filter_conditions(
         if not value:
             continue
 
-        confitions = None
+        condition = None
 
         if filter_name == "free_text":
             search_term = f"%{value}%"
-            conditions = orm.Document.title.ilike(search_term)
+            condition = orm.Document.title.ilike(search_term)
 
-        if confitions is not None:
-            conditions.append(conditions)
+        if condition is not None:
+            conditions.append(condition)
 
     return conditions
 

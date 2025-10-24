@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, \
     field_validator
 
 from papermerge.core.features.nodes.schema import NodeShort
-from papermerge.core.schemas.common import ByUser
+from papermerge.core.schemas.common import ByUser, OwnedBy, Category, Tag
 from papermerge.core.features.custom_fields.schema import (
     CustomFieldType,
     CustomFieldValueData
@@ -26,6 +26,56 @@ from papermerge.core import config
 from papermerge.core.features.document import s3
 
 settings = config.get_settings()
+
+
+class FlatDocument(BaseModel):
+    id: UUID
+    title: str
+    category: Category | None = None
+    tags: list[Tag]
+    created_at: datetime | None = None
+    created_by: ByUser | None = None
+    updated_at: datetime | None = None
+    updated_by: ByUser | None = None
+    owned_by: OwnedBy | None = None
+
+
+class DocumentParams(BaseModel):
+    page_size: int = Query(
+        15,
+        ge=1,
+        le=100,
+        description="Number of items per page"
+    )
+    page_number: int = Query(
+        1,
+        ge=1,
+        description="Page number (1-based)"
+    )
+    # Sorting parameters
+    sort_by: Optional[str] = Query(
+        None,
+        pattern="^(id|title|category|created_at|updated_at|created_by|updated_by)$",
+        description="Column to sort by: id, title, created_at, updated_at, created_by, updated_by"
+    )
+    sort_direction: Optional[Literal["asc", "desc"]] = Query(
+        None,
+        description="Sort direction: asc or desc"
+    )
+
+    filter_free_text: Optional[str] = Query(
+        None,
+        description="Filter by free text"
+    )
+
+    def to_filters(self):
+        filters = {}
+
+        if self.filter_free_text:
+            filters["free_text"] = {
+                "value": self.filter_free_text,
+                "operator": "free_text"
+            }
 
 
 class CFV(BaseModel):
@@ -131,6 +181,7 @@ class DocumentCustomFieldsUpdate(BaseModel):
 
 class Tag(BaseModel):
     name: str
+    id: UUID
     bg_color: str = "#c41fff"
     fg_color: str = "#FFFFF"
 

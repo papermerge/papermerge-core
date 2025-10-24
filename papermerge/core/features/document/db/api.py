@@ -6,7 +6,7 @@ from os.path import getsize
 import uuid
 import tempfile
 from pathlib import Path
-from typing import Tuple, Sequence, Any, Optional
+from typing import Tuple, Sequence, Any, Optional, Dict
 
 import img2pdf
 from pikepdf import Pdf
@@ -18,10 +18,11 @@ from sqlalchemy import (
     distinct,
     Select,
     and_,
-    or_
+    or_,
+    case
 )
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import joinedload, selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.features.ownership.db import api as ownership_api
@@ -30,6 +31,7 @@ from papermerge.core.features.document import s3
 from papermerge.core.utils.misc import copy_file
 from papermerge.core import schema, orm, constants, tasks
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
+from papermerge.core.features.document.schema import Category, Tag
 from papermerge.core.features.custom_fields import schema as cf_schema
 from papermerge.core.features.custom_fields.cf_types.registry import \
     TypeRegistry
@@ -38,6 +40,7 @@ from papermerge.core.pathlib import (
     abs_docver_path,
 )
 from papermerge.core import config
+
 
 settings = config.get_settings()
 logger = logging.getLogger(__name__)
@@ -59,6 +62,263 @@ async def count_docs(session: AsyncSession) -> int:
     result = await session.scalars(stmt)
 
     return result.one()
+
+
+async def get_documents(
+    db_session: AsyncSession,
+    *,
+    user_id: uuid.UUID,
+    page_size: int,
+    page_number: int,
+    sort_by: Optional[str] = None,
+    sort_direction: Optional[str] = None,
+    filters: Optional[Dict[str, Dict[str, Any]]] = None,
+) -> schema.PaginatedResponse[schema.FlatDocument]:
+    """
+    Get paginated list of documents with tags, category, ownership, and audit info.
+
+    Args:
+        db_session: Database session
+        user_id: ID of the user requesting documents
+        page_size: Number of items per page
+        page_number: Page number (1-based)
+        sort_by: Column to sort by
+        sort_direction: Sort direction ('asc' or 'desc')
+        filters: Dictionary of filters to apply
+
+    Returns:
+        PaginatedResponse containing FlatDocument items
+    """
+
+    # Create aliases for user and group tables
+    owner_user = aliased(orm.User, name='owner_user')
+    owner_group = aliased(orm.Group, name='owner_group')
+    created_user = aliased(orm.User, name='created_user')
+    updated_user = aliased(orm.User, name='updated_user')
+    category = aliased(orm.DocumentType, name="category")
+
+    # Subquery to get user's group memberships
+    user_groups_subquery = select(orm.UserGroup.group_id).where(
+        orm.UserGroup.user_id == user_id,
+        orm.UserGroup.deleted_at.is_(None)
+    )
+
+    # Build base query with all necessary joins
+    base_query = (
+        select(orm.Document)
+        .join(created_user, orm.Document.created_by == created_user.id, isouter=True)
+        .join(updated_user, orm.Document.updated_by == updated_user.id, isouter=True)
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.NODE.value,
+                orm.Ownership.resource_id == orm.Document.id
+            )
+        )
+        .join(
+            owner_user,
+            and_(
+                orm.Ownership.owner_type == OwnerType.USER,
+                orm.Ownership.owner_id == owner_user.id
+            ),
+            isouter=True
+        )
+        .join(
+            owner_group,
+            and_(
+                orm.Ownership.owner_type == OwnerType.GROUP,
+                orm.Ownership.owner_id == owner_group.id
+            ),
+            isouter=True
+        )
+        .join(
+            category,
+            orm.Document.document_type_id == category.id,
+            isouter=True
+        )
+        .options(selectinload(orm.Document.tags))
+    )
+
+    # Build access control condition
+    access_control_condition = or_(
+        and_(
+            orm.Ownership.owner_type == OwnerType.USER,
+            orm.Ownership.owner_id == user_id
+        ),
+        and_(
+            orm.Ownership.owner_type == OwnerType.GROUP,
+            orm.Ownership.owner_id.in_(user_groups_subquery)
+        )
+    )
+
+    # Build where conditions
+    where_conditions = [access_control_condition]
+    where_conditions.append(orm.Document.deleted_at.is_(None))
+
+    # Apply custom filters if provided
+    if filters:
+        filter_conditions = _build_document_filter_conditions(
+            filters, created_user, updated_user
+        )
+        where_conditions.extend(filter_conditions)
+
+    base_query = base_query.where(and_(*where_conditions))
+
+    # Build optimized count query (without unnecessary joins)
+    count_query = (
+        select(func.count(orm.Document.id))
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.NODE.value,
+                orm.Ownership.resource_id == orm.Document.id
+            )
+        )
+        .where(and_(*where_conditions))
+    )
+
+    try:
+        total_documents = (await db_session.execute(count_query)).scalar()
+    except Exception as e:
+        logger.error(f"Error counting documents for user {user_id}: {e}", exc_info=True)
+        raise
+
+    # Apply sorting
+    if sort_by and sort_direction:
+        base_query = _apply_document_sorting(
+            base_query,
+            sort_by,
+            sort_direction,
+            created_user=created_user,
+            updated_user=updated_user,
+            owner_user=owner_user,
+            owner_group=owner_group,
+            category=category
+        )
+    else:
+        # Default sorting by title ascending
+        base_query = base_query.order_by(orm.Document.title.asc())
+
+    # Apply pagination
+    offset = page_size * (page_number - 1)
+    paginated_query = (
+        base_query
+        .add_columns(
+            # Ownership info
+            orm.Ownership.owner_type.label('owner_type'),
+            orm.Ownership.owner_id.label('owner_id'),
+            # Owner group info
+            owner_group.id.label('owner_group_id'),
+            owner_group.name.label('owner_group_name'),
+            # Owner user info
+            owner_user.id.label('owner_user_id'),
+            owner_user.username.label('owner_username'),
+            # Created by user
+            created_user.id.label('created_by_id'),
+            created_user.username.label('created_by_username'),
+            # Updated by user
+            updated_user.id.label('updated_by_id'),
+            updated_user.username.label('updated_by_username'),
+            # Category
+            category.id.label("category_id"),
+            category.name.label("category_name"),
+            orm.Document.created_at.label("created_at"),
+            orm.Document.updated_at.label("updated_at")
+        )
+        .limit(page_size)
+        .offset(offset)
+    )
+
+    try:
+        results = (await db_session.execute(paginated_query)).all()
+    except Exception as e:
+        logger.error(f"Error fetching documents for user {user_id}: {e}", exc_info=True)
+        raise
+
+    # Build FlatDocument items from results
+    items = []
+
+    for row in results:
+        document = row[0]
+
+        # Build owned_by
+        if row.owner_type == OwnerType.USER:
+            owned_by = schema.OwnedBy(
+                id=row.owner_user_id,
+                name=row.owner_username,
+                type=OwnerType.USER
+            )
+        elif row.owner_type == OwnerType.GROUP:
+            owned_by = schema.OwnedBy(
+                id=row.owner_group_id,
+                name=row.owner_group_name,
+                type=OwnerType.GROUP
+            )
+        else:
+            # Shouldn't happen, but handle gracefully
+            logger.warning(f"Document {document.id} has unknown owner_type: {row.owner_type}")
+            continue
+
+        # Build created_by
+        created_by = None
+        if row.created_by_id:
+            created_by = schema.ByUser(
+                id=row.created_by_id,
+                username=row.created_by_username
+            )
+
+        # Build updated_by
+        updated_by = None
+        if row.updated_by_id:
+            updated_by = schema.ByUser(
+                id=row.updated_by_id,
+                username=row.updated_by_username
+            )
+
+        # Build category
+        category_obj = None
+        if row.category_id:
+            category_obj = Category(
+                id=row.category_id,
+                name=row.category_name
+            )
+
+        # Build tags list from the document's tags relationship
+        # Tags are already loaded via selectinload, so no additional query
+        tags = []
+        for tag in document.tags:
+            tags.append(Tag(
+                id=tag.id,
+                name=tag.name,
+                fg_color=tag.fg_color or "#FFFFFF",  # Default foreground color
+                bg_color=tag.bg_color or "#c41fff"  # Default background color
+            ))
+
+        # Create FlatDocument instance
+        document_data = {
+            "id": document.id,
+            "title": document.title,
+            "owned_by": owned_by,
+            "created_by": created_by,
+            "created_at": row.created_at,
+            "updated_by": updated_by,
+            "updated_at": row.updated_at,
+            "category": category_obj,
+            "tags": tags
+        }
+
+        items.append(schema.FlatDocument(**document_data))
+
+    # Calculate total pages
+    total_pages = math.ceil(total_documents / page_size) if total_documents > 0 else 0
+
+    return schema.PaginatedResponse[schema.FlatDocument](
+        items=items,
+        page_size=page_size,
+        page_number=page_number,
+        num_pages=total_pages,
+        total_items=total_documents
+    )
 
 
 async def update_doc_type(
@@ -998,8 +1258,6 @@ async def get_docs_thumbnail_img_status(
     return items, doc_ids_not_yet_considered_for_preview
 
 
-
-
 async def query_documents_by_custom_field(
     session: AsyncSession,
     field_id: uuid.UUID,
@@ -1054,3 +1312,72 @@ async def query_documents_by_custom_field(
     # Execute
     result = await session.execute(stmt)
     return [row[0] for row in result.all()]
+
+
+def _build_document_filter_conditions(
+    filters: Dict[str, Dict[str, Any]]
+):
+    conditions = []
+    for filter_name, filter_config in filters.items():
+        value = filter_config.get("value")
+        operator = filter_config.get("operator", "eq")
+
+        if not value:
+            continue
+
+        confitions = None
+
+        if filter_name == "free_text":
+            search_term = f"%{value}%"
+            conditions = orm.Document.title.ilike(search_term)
+
+        if confitions is not None:
+            conditions.append(conditions)
+
+    return conditions
+
+
+def _apply_document_sorting(
+    query,
+    sort_by: str,
+    sort_direction: str,
+    created_user,
+    updated_user,
+    owner_user,
+    owner_group,
+    category
+):
+    """Apply sorting to the document types query."""
+    sort_column = None
+
+    # Map sort_by to actual columns
+    if sort_by == "id":
+        sort_column = orm.Document.id
+    elif sort_by == "title":
+        sort_column = orm.Document.title
+    elif sort_by == "created_at":
+        sort_column = orm.Document.created_at
+    elif sort_by == "updated_at":
+        sort_column = orm.Document.updated_at
+    elif sort_by == "created_by":
+        # Sort by username of creator
+        sort_column = created_user.username
+    elif sort_by == "updated_by":
+        # Sort by username of updater
+        sort_column = updated_user.username
+    elif sort_by == "owned_by":
+        sort_column = case(
+            (orm.Ownership.owner_type == OwnerType.USER, owner_user.username),
+            (orm.Ownership.owner_type == OwnerType.GROUP, owner_group.name),
+            else_=None
+        )
+    elif sort_by == "category":
+        sort_column = category.name
+
+    if sort_column is not None:
+        if sort_direction.lower() == "desc":
+            query = query.order_by(sort_column.desc())
+        else:
+            query = query.order_by(sort_column.asc())
+
+    return query

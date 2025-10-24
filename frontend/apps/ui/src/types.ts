@@ -7,6 +7,13 @@ export type ByUser = {
   id: string
 }
 
+export type TagType = {
+  id: string
+  name: string
+  fg_color: string
+  bg_color: string
+}
+
 export type OwnerType = "user" | "group"
 
 export type OwnedBy = {

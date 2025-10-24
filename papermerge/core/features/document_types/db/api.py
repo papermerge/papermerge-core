@@ -893,9 +893,9 @@ async def update_document_type(
 
 
 def _build_document_type_filter_conditions(
-        filters: Dict[str, Dict[str, Any]],
-        created_user,
-        updated_user
+    filters: Dict[str, Dict[str, Any]],
+    created_user,
+    updated_user
 ) -> list:
     """Build SQLAlchemy WHERE conditions from filters dictionary for document types."""
     conditions = []

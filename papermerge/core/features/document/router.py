@@ -29,6 +29,7 @@ from papermerge.core.db import common as dbapi_common
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.db.engine import get_db
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
+from .schema import DocumentParams
 
 router = APIRouter(
     prefix="/documents",
@@ -37,6 +38,33 @@ router = APIRouter(
 
 logger = logging.getLogger(__name__)
 config = get_settings()
+
+
+@router.get("/")
+async def get_documents(
+    user: require_scopes(scopes.NODE_VIEW),
+    params: DocumentParams = Depends(),
+    db_session: AsyncSession = Depends(get_db)
+) -> schema.PaginatedResponse[schema.FlatDocument]:
+    """Gets paginated list of documents"""
+    try:
+        filters = params.to_filters()
+        result = await dbapi.get_documents(
+            db_session,
+            page_size=params.page_size,
+            page_number=params.page_number,
+            sort_by=params.sort_by,
+            sort_direction=params.sort_direction,
+            filters=filters
+        )
+    except Exception as e:
+        logger.error(
+            f"Error fetching documents by the user {user.id}: {e}",
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+    return result
 
 
 @router.patch(
@@ -96,7 +124,6 @@ async def bulk_set_document_custom_field_values(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def get_document_custom_field_values(
     document_id: uuid.UUID,
     user: require_scopes(scopes.NODE_VIEW),

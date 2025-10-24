@@ -9,6 +9,7 @@ from .features.shared_nodes.schema import (
     SharedNodeAccessUpdateResponse,
 )
 from .features.document.schema import (
+    FlatDocument,
     Document,
     DocumentShort,
     DocumentNode,
@@ -70,6 +71,7 @@ __all__ = [
     'UpdateNode',
     'MoveNode',
     'Document',
+    'FlatDocument',
     'DocumentShort',
     'DocumentNode',
     'NewDocument',

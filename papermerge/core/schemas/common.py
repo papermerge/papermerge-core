@@ -23,12 +23,16 @@ class Category(BaseModel):
     id: uuid.UUID
     name: str
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class Tag(BaseModel):
     id: uuid.UUID
     name: str
     fg_color: str
     bg_color: str
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ByUser(BaseModel):

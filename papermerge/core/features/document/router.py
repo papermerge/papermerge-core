@@ -51,6 +51,7 @@ async def get_documents(
         filters = params.to_filters()
         result = await dbapi.get_documents(
             db_session,
+            user_id=user.id,
             page_size=params.page_size,
             page_number=params.page_number,
             sort_by=params.sort_by,

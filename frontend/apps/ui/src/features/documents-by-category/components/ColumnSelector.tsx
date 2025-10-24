@@ -11,20 +11,19 @@ import {ColumnConfig} from "kommon"
 import {useState} from "react"
 import {useTranslation} from "react-i18next"
 import {DocumentByCategoryItem} from "../types"
-import docByCatColumns from "./columns"
+import useColumns from "@/features/documents-by-category/hooks/useColumns"
 
-interface Args {
-  items: DocumentByCategoryItem[]
-}
-
-export default function ColumnSelectorContainer({items}: Args) {
+export default function ColumnSelectorContainer() {
   const {panelId} = usePanel()
   const {t} = useTranslation()
   const dispatch = useAppDispatch()
+
   const visibleColumns = useAppSelector(s =>
     selectPanelVisibleColumns(s, panelId)
   )
-  const allColumns = docByCatColumns({items, t}).map(c => {
+  const columns = useColumns()
+
+  const allColumns = columns.map(c => {
     if (!visibleColumns) {
       return {...c, visible: c.visible !== false}
     }

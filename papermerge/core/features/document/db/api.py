@@ -31,7 +31,7 @@ from papermerge.core.features.document import s3
 from papermerge.core.utils.misc import copy_file
 from papermerge.core import schema, orm, constants, tasks
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
-from papermerge.core.features.document.schema import Category
+from papermerge.core.features.document.schema import Category, Tag
 from papermerge.core.features.custom_fields import schema as cf_schema
 from papermerge.core.features.custom_fields.cf_types.registry import \
     TypeRegistry
@@ -220,7 +220,9 @@ async def get_documents(
             updated_user.username.label('updated_by_username'),
             # Category
             category.id.label("category_id"),
-            category.name.label("category_name")
+            category.name.label("category_name"),
+            orm.Document.created_at.label("created_at"),
+            orm.Document.updated_at.label("updated_at")
         )
         .limit(page_size)
         .offset(offset)
@@ -275,7 +277,7 @@ async def get_documents(
         # Build category
         category_obj = None
         if row.category_id:
-            category_obj = schema.Category(
+            category_obj = Category(
                 id=row.category_id,
                 name=row.category_name
             )
@@ -284,7 +286,7 @@ async def get_documents(
         # Tags are already loaded via selectinload, so no additional query
         tags = []
         for tag in document.tags:
-            tags.append(schema.Tag(
+            tags.append(Tag(
                 id=tag.id,
                 name=tag.name,
                 fg_color=tag.fg_color or "#FFFFFF",  # Default foreground color

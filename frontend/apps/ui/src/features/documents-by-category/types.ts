@@ -1,4 +1,4 @@
-import type {PaginatedArgs} from "@/types"
+import type {PaginatedArgs, ByUser, OwnedBy, TagType} from "@/types"
 
 export type SortBy = "name" | "created_at" | "created_by"
 
@@ -19,9 +19,19 @@ export interface DocumentsByCategoryQueryParams extends Partial<PaginatedArgs> {
   filter_exclude_scopes?: string
 }
 
-export interface ByUser {
+export interface Category {
   id: string
-  username: string
+  name: string
+}
+
+export type FlatDocument = {
+  id: string
+  title: string
+  category: Category | null
+  tags: TagType[]
+  created_by: ByUser | null
+  updated_by: ByUser | null
+  owned_by: OwnedBy
 }
 
 type CustomFieldValueData = {
@@ -53,6 +63,8 @@ export type CustomFieldRow = {
 export interface DocumentByCategoryItem {
   id: string
   title: string
+  category: Category
+  tags: Tag[]
   custom_fields: CustomFieldRow[]
   created_at: string
   updated_at: string

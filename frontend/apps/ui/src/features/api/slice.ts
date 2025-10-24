@@ -75,6 +75,7 @@ export const apiSlice = createApi({
     "DocumentCustomField", // custom fields associated to specific document (via document type)
     "DocumentCFV",
     "DocVersList",
+    "FlatDocument",
     "DocumentVersion",
     "AuditLog",
     "PreferenceOptionTimezones",

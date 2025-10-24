@@ -1,8 +1,8 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
-import documentByCategoryColumns from "@/features/documents-by-category/components/columns"
-import useDocumentsByCategoryTable from "@/features/documents-by-category/hooks/useDocumentsByCategoryTable"
 import useVisibleColumns from "@/features/documents-by-category/hooks/useVisibleColumns"
+import useDocumentsByCategoryTable from "@/features/documents-by-category/hooks/useDocumentsByCategoryTable"
+import useFlatDocumentsTable from "@/features/documents-by-category/hooks/useFlatDocumentsTable"
 import {showDocumentDetailsInSecondaryPanel} from "@/features/documents-by-category/storage/thunks"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {selectPanelDetailsEntityId} from "@/features/ui/panelRegistry"
@@ -15,19 +15,21 @@ import {useNavigate} from "react-router-dom"
 import {selectDocumentCategoryID} from "../storage/documentsByCategory"
 import {DocumentByCategoryItem} from "../types"
 import ActionButtons from "./ActionButtons"
-import PickupDocumentCategory from "./PickupDocumentCategory"
 
-export default function DocumentsListByCagegory() {
+export default function DocumentsListByCategory() {
   const {t} = useTranslation()
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const {actions} = usePanel()
   const categoryID = useAppSelector(selectDocumentCategoryID)
-  const {isError, data, queryParams, error, isLoading, isFetching} =
-    useDocumentsByCategoryTable()
-  const visibleColumns = useVisibleColumns(
-    documentByCategoryColumns({items: data?.items, t})
-  )
+  const byCategoryResult = useDocumentsByCategoryTable()
+  const flatResult = useFlatDocumentsTable()
+
+  const {isError, data, queryParams, error, isLoading, isFetching} = categoryID
+    ? byCategoryResult
+    : flatResult
+
+  const visibleColumns = useVisibleColumns()
   const currentDetailsPanelDocID = useAppSelector(s =>
     selectPanelDetailsEntityId(s, "secondary")
   )
@@ -62,10 +64,6 @@ export default function DocumentsListByCagegory() {
     }
   }
 
-  if (!categoryID) {
-    return <PickupDocumentCategory />
-  }
-
   if (isError && isHTTP403Forbidden(error)) {
     navigate(ERRORS_403_ACCESS_FORBIDDEN)
   }
@@ -73,9 +71,13 @@ export default function DocumentsListByCagegory() {
   return (
     <Stack style={{height: "100%"}}>
       <Group w={"100%"}>
-        <ActionButtons items={data?.items || []} />
+        <ActionButtons
+          //@ts-ignore
+          items={data?.items || []}
+        />
       </Group>
       <DataTable
+        //@ts-ignore
         data={data?.items || []}
         columns={visibleColumns}
         sorting={{

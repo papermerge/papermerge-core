@@ -37,7 +37,7 @@ class FlatDocument(BaseModel):
     created_by: ByUser | None = None
     updated_at: datetime | None = None
     updated_by: ByUser | None = None
-    owned_by: OwnedBy
+    owned_by: OwnedBy | None = None
 
 
 class DocumentParams(BaseModel):
@@ -181,6 +181,7 @@ class DocumentCustomFieldsUpdate(BaseModel):
 
 class Tag(BaseModel):
     name: str
+    id: UUID
     bg_color: str = "#c41fff"
     fg_color: str = "#FFFFF"
 

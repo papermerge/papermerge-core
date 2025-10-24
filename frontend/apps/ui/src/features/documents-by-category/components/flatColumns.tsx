@@ -50,12 +50,14 @@ export default function flatColumns(t?: TFunction) {
       filterable: true,
       width: 200,
       minWidth: 150,
-      render: value => <Text size="sm">{(value as Category).name}</Text>
+      render: value => (
+        <Text size="sm">{value && (value as Category).name}</Text>
+      )
     },
     {
       key: "tags",
       label: t?.("documentsByCategory.tags", {defaultValue: "Tags"}) || "Tags",
-      sortable: true,
+      sortable: false,
       filterable: true,
       width: 200,
       minWidth: 150,

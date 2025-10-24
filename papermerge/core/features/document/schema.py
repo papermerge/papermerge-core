@@ -31,7 +31,7 @@ settings = config.get_settings()
 class FlatDocument(BaseModel):
     id: UUID
     title: str
-    category: Category
+    category: Category | None = None
     tags: list[Tag]
     created_at: datetime | None = None
     created_by: ByUser | None = None
@@ -55,7 +55,7 @@ class DocumentParams(BaseModel):
     # Sorting parameters
     sort_by: Optional[str] = Query(
         None,
-        pattern="^(id|title|created_at|updated_at|created_by|updated_by)$",
+        pattern="^(id|title|category|created_at|updated_at|created_by|updated_by)$",
         description="Column to sort by: id, title, created_at, updated_at, created_by, updated_by"
     )
     sort_direction: Optional[Literal["asc", "desc"]] = Query(

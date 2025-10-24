@@ -192,7 +192,8 @@ async def get_documents(
             created_user=created_user,
             updated_user=updated_user,
             owner_user=owner_user,
-            owner_group=owner_group
+            owner_group=owner_group,
+            category=category
         )
     else:
         # Default sorting by title ascending
@@ -1343,7 +1344,8 @@ def _apply_document_sorting(
     created_user,
     updated_user,
     owner_user,
-    owner_group
+    owner_group,
+    category
 ):
     """Apply sorting to the document types query."""
     sort_column = None
@@ -1369,6 +1371,8 @@ def _apply_document_sorting(
             (orm.Ownership.owner_type == OwnerType.GROUP, owner_group.name),
             else_=None
         )
+    elif sort_by == "category":
+        sort_column = category.name
 
     if sort_column is not None:
         if sort_direction.lower() == "desc":

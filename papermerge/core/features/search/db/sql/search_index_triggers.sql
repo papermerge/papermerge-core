@@ -51,9 +51,14 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_documents_search_update
-AFTER INSERT OR UPDATE OF document_type_id, lang ON documents
+AFTER INSERT OR UPDATE OF document_type_id ON documents
 FOR EACH ROW
 EXECUTE FUNCTION trigger_update_search_on_document();
+
+CREATE TRIGGER trg_nodes_lang_search_update
+AFTER UPDATE OF lang ON nodes
+FOR EACH ROW
+EXECUTE FUNCTION trigger_update_search_on_node();
 
 
 -- ============================================================================

@@ -1,7 +1,9 @@
+from decimal import Decimal
 from typing import List, Optional, Any, Union
 from uuid import UUID
 from enum import Enum
-from datetime import date
+from datetime import date, datetime
+
 from pydantic import (
     BaseModel,
     Field,
@@ -9,7 +11,6 @@ from pydantic import (
     model_validator,
     ConfigDict
 )
-
 
 # ============================================================================
 # ENUMS
@@ -438,3 +439,127 @@ class SearchQueryParams(BaseModel):
             ]
         }
     )
+
+# ============================================================================
+# Custom Field Related Schemas (for document type search)
+# ============================================================================
+
+class CustomFieldValueData(BaseModel):
+    """Custom field value data structure"""
+    raw: Any | None = None
+    sortable: Any | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CustomFieldShort(BaseModel):
+    """Custom field definition (short version)"""
+    id: UUID
+    name: str
+    type_handler: str
+    config: dict[str, Any] = Field(default_factory=dict)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CustomFieldValueShort(BaseModel):
+    """Custom field value for a document"""
+    value: CustomFieldValueData | None = None
+    value_text: str | None = None
+    value_numeric: Decimal | None = None
+    value_date: date | None = None
+    value_datetime: datetime | None = None
+    value_boolean: bool | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CustomFieldRow(BaseModel):
+    """Single custom field with its value"""
+    custom_field: CustomFieldShort
+    custom_field_value: CustomFieldValueShort | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CustomFieldInfo(BaseModel):
+    """Custom field metadata (for document type)"""
+    id: UUID
+    name: str
+    type_handler: str
+    config: dict[str, Any]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# Document Search Results
+# ============================================================================
+
+class FlatDocument(BaseModel):
+    """
+    Flat document result (without custom fields).
+    Used in general search across all document types.
+    """
+    document_id: UUID = Field(..., description="Document UUID")
+    title: str = Field(..., description="Document title")
+    document_type_id: UUID | None = Field(None, description="Document type UUID")
+    document_type_name: str | None = Field(None, description="Document type name")
+    tags: List[str] = Field(default_factory=list, description="Document tags")
+    lang: str = Field(..., description="Document language")
+    last_updated: datetime = Field(..., description="Last update timestamp")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DocumentCFV(BaseModel):
+    """
+    Document with custom field values.
+    Used in document type-specific search.
+    """
+    document_id: UUID
+    title: str
+    document_type_id: UUID | None = None
+    document_type_name: str | None = None
+    tags: List[str] = Field(default_factory=list)
+    custom_fields: List[CustomFieldRow] = Field(default_factory=list)
+    lang: str
+    last_updated: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# Search Responses
+# ============================================================================
+
+class SearchDocumentsResponse(BaseModel):
+    """
+    Response for general search (across all document types).
+    Similar to /documents/ endpoint.
+    Does NOT include custom field values since documents may have different types.
+    """
+    items: List[FlatDocument] = Field(..., description="Search results")
+    page_number: int = Field(..., ge=1, description="Current page number")
+    page_size: int = Field(..., ge=1, description="Items per page")
+    num_pages: int = Field(..., ge=0, description="Total number of pages")
+    total_items: int = Field(..., ge=0, description="Total number of results")
+
+
+class SearchDocumentsByTypeResponse(BaseModel):
+    """
+    Response for document type-specific search.
+    Similar to /documents/type/{document_type_id}/ endpoint.
+    Includes custom field values and metadata.
+    """
+    items: List[DocumentCFV] = Field(..., description="Search results with custom fields")
+    page_number: int = Field(..., ge=1, description="Current page number")
+    page_size: int = Field(..., ge=1, description="Items per page")
+    num_pages: int = Field(..., ge=0, description="Total number of pages")
+    total_items: int = Field(..., ge=0, description="Total number of results")
+    custom_fields: List[CustomFieldInfo] = Field(
+        ...,
+        description="Custom fields metadata for this document type"
+    )
+

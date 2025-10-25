@@ -17,8 +17,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from papermerge.core.features.auth.dependencies import require_scopes
 from papermerge.core import exceptions as exc
 from papermerge.core import constants as const
-from papermerge.core import utils, dbapi
-from papermerge.core.features.auth import get_current_user, scopes
+from papermerge.core import dbapi
+from papermerge.core.features.auth import scopes
 from papermerge.core.features.document.schema import (
     DocumentTypeArg,
 )

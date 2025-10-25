@@ -7,7 +7,7 @@ from typing import Optional, Literal, Annotated, Any
 
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, \
-    field_validator
+    field_validator, model_validator
 
 from papermerge.core.features.nodes.schema import NodeShort
 from papermerge.core.schemas.common import ByUser, OwnedBy, Category, Tag
@@ -40,6 +40,24 @@ class FlatDocument(BaseModel):
     owned_by: OwnedBy | None = None
 
 
+class SortDirection(str, Enum):
+    """Sort direction"""
+    ASC = "asc"
+    DESC = "desc"
+
+
+class SortBy(str, Enum):
+    """Sorting options"""
+    ID = "id"
+    TITLE = "title"
+    CATEGORY = "category"
+    CREATED_AT = "created_at"
+    UPDATED_AT = "updated_at"
+    CREATED_BY = "created_by"
+    UPDATED_BY = "updated_by"
+    OWNED_BY = "owned_by"
+
+
 class DocumentParams(BaseModel):
     page_size: int = Query(
         15,
@@ -53,13 +71,12 @@ class DocumentParams(BaseModel):
         description="Page number (1-based)"
     )
     # Sorting parameters
-    sort_by: Optional[str] = Query(
-        None,
-        pattern="^(id|title|category|created_at|updated_at|created_by|updated_by)$",
-        description="Column to sort by: id, title, created_at, updated_at, created_by, updated_by"
+    sort_by: Optional[SortBy] = Field(
+        default=SortBy.UPDATED_AT,
+        description="Sort results by field"
     )
-    sort_direction: Optional[Literal["asc", "desc"]] = Query(
-        None,
+    sort_direction: Optional[SortDirection] = Query(
+        default=SortDirection.DESC,
         description="Sort direction: asc or desc"
     )
 

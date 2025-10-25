@@ -401,44 +401,6 @@ class SearchQueryParams(BaseModel):
             raise ValueError('At least one filter must be specified')
         return v
 
-    @model_validator(mode='after')
-    def validate_sort_relevance_requires_fts(self):
-        """Validate that relevance sorting requires FTS filter"""
-        if self.sort_by == SortBy.RELEVANCE and self.filters.fts is None:
-            raise ValueError('sort_by="relevance" requires FTS filter to be specified')
-        return self
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "examples": [
-                {
-                    "filters": {
-                        "fts": {"terms": ["meeting notes"]},
-                        "category": {"values": ["Invoice"]},
-                        "custom_fields": [
-                            {"field_name": "total", "operator": "gt", "value": 100}
-                        ]
-                    },
-                    "lang": "eng",
-                    "page_size": 20,
-                    "page_number": 1,
-                    "sort_by": "relevance",
-                    "sort_direction": "desc"
-                },
-                {
-                    "filters": {
-                        "fts": {"terms": ["urgent | important"]},
-                        "tags": [
-                            {"tags": ["2024"]},
-                            {"tags_not": ["archived"]}
-                        ]
-                    },
-                    "page_size": 50,
-                    "page_number": 1
-                }
-            ]
-        }
-    )
 
 # ============================================================================
 # Custom Field Related Schemas (for document type search)

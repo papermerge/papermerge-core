@@ -394,8 +394,6 @@ def _build_fts_query(fts_filter: schema.FullTextSearchFilter, lang: str):
     }
 
     lang_config = lang_config_map.get(lang, 'simple')
-
-    # Combine all terms into a single tsquery string
     query_str = ' & '.join(fts_filter.terms)
 
     # Use plainto_tsquery or to_tsquery depending on complexity
@@ -404,7 +402,8 @@ def _build_fts_query(fts_filter: schema.FullTextSearchFilter, lang: str):
     else:
         ts_query = func.plainto_tsquery(lang_config, query_str)
 
-    return DocumentSearchIndex.search_vector.match(ts_query)
+    # Use @@ operator directly instead of .match() to avoid double wrapping
+    return DocumentSearchIndex.search_vector.op('@@')(ts_query)
 
 
 def _build_category_filter(category_filter: schema.CategoryFilter):

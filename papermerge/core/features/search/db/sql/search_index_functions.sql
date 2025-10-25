@@ -1,5 +1,3 @@
--- papermerge/core/alembic/sql/search_index_functions.sql
-
 -- Helper function: Get document tags as array
 CREATE OR REPLACE FUNCTION get_document_tags(p_document_id UUID)
 RETURNS TEXT[] AS $$
@@ -75,6 +73,7 @@ CREATE OR REPLACE FUNCTION upsert_document_search_index(p_document_id UUID)
 RETURNS VOID AS $$
 DECLARE
     v_title TEXT;
+    v_title_clean TEXT;
     v_lang VARCHAR(10);
     v_document_type_id UUID;
     v_document_type_name TEXT;
@@ -126,9 +125,11 @@ BEGIN
     -- Get custom fields text
     v_custom_fields := get_document_custom_fields_text(p_document_id, v_document_type_id);
 
+    v_title_clean := replace(v_title, '.', ' ');
+
     -- Concatenate all searchable content
     v_searchable_text := CONCAT_WS(' ',
-        v_title,
+        v_title_clean,
         v_document_type_name,
         array_to_string(v_tags, ' '),
         v_custom_fields

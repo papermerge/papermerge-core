@@ -39,7 +39,6 @@ RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'UPDATE' AND (
         OLD.document_type_id IS DISTINCT FROM NEW.document_type_id
-        OR OLD.lang IS DISTINCT FROM NEW.lang
     ) THEN
         PERFORM upsert_document_search_index(NEW.node_id);
     ELSIF TG_OP = 'INSERT' THEN

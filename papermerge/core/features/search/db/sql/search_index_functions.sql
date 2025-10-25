@@ -1,5 +1,3 @@
--- papermerge/core/alembic/sql/search_index_functions.sql
-
 -- Helper function: Get document tags as array
 CREATE OR REPLACE FUNCTION get_document_tags(p_document_id UUID)
 RETURNS TEXT[] AS $$

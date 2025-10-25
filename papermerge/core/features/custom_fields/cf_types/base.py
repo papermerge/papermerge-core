@@ -104,11 +104,11 @@ class CustomFieldTypeHandler(ABC, Generic[ConfigT]):
         return self.config_model(**config_dict)
 
     def get_filter_expression(
-            self,
-            column: ColumnElement,
-            operator: str,
-            value: Any,
-            config: ConfigT
+        self,
+        column: ColumnElement,
+        operator: str,
+        value: Any,
+        config: ConfigT
     ) -> ColumnElement:
         """
         Build SQLAlchemy filter expression

@@ -20,18 +20,18 @@ classifiers = [
 ]
 keywords = [
     "PDF",
-    "OCR",
-    "optical character recognition",
+    "metadata",
+    "custom fields",
     "PDF/A",
     "scanning",
     "dms",
     "document-management",
     "paperless",
-    "archives"
+    "archives",
+    "records"
 ]
 packages = [
     { include = "papermerge/core" },
-    { include = "papermerge/search" },
 ]
 requires-python = ">=3.13,<4"
 dependencies = [
@@ -43,7 +43,6 @@ dependencies = [
     "pdf2image (>=1.16.0)",
     "uvicorn (>=0.32)",
     "python-jose (>=3.3.0)",
-    "salinic (>=0.6.0)",
     "img2pdf >=0.5.1",
     "passlib >=1.7.4",
     "sqlalchemy >=2.0",
@@ -55,7 +54,8 @@ dependencies = [
     "fastapi[standard] >=0.115",
     "taskipy >=1.14",
     "asyncpg (>=0.30.0,<0.31.0)",
-    "aiofiles (>=24.1.0,<25.0.0)"
+    "aiofiles (>=24.1.0,<25.0.0)",
+    "psycopg2-binary (>=2.9.2)"
 ]
 
 [project.urls]
@@ -64,9 +64,6 @@ Source = "https://github.com/papermerge/papermerge-core"
 
 
 [project.optional-dependencies]
-mysql = ["mysqlclient (>=2.2)"]
-pg = ["psycopg2-binary (>=2.9.2)"]
-databases = ["mysqlclient", "psycopg2"]
 cloud = ["botocore (>=1.35)", "boto3 (>=1.35)", "cryptography (>=43)"]
 
 [tool.poetry.group.test]

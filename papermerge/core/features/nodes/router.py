@@ -8,11 +8,8 @@ from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.exceptions import HTTP404NotFound, EntityNotFound
-from papermerge.core.constants import INDEX_REMOVE_NODE
-from papermerge.core.tasks import send_task
 from papermerge.core import utils, schema, config
 from papermerge.core.features.auth import scopes, get_current_user
-from papermerge.core.constants import INDEX_ADD_NODE
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
@@ -162,7 +159,6 @@ async def create_node(
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
 
-    send_task(INDEX_ADD_NODE, kwargs={"node_id": str(created_node.id)}, route_name="i3")
     return created_node
 
 
@@ -258,12 +254,6 @@ async def delete_nodes(
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
-
-    send_task(
-        INDEX_REMOVE_NODE,
-        kwargs={"item_ids": [str(i) for i in list_of_uuids]},
-        route_name="i3",
-    )
 
 
 @router.post(

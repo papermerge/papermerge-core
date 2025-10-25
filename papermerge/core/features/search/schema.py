@@ -1,9 +1,7 @@
-# papermerge/core/features/search/schema.py
-
-from typing import List, Optional, Literal, Any, Union
+from typing import List, Optional, Any, Union
 from uuid import UUID
 from enum import Enum
-from datetime import date, datetime
+from datetime import date
 from pydantic import (
     BaseModel,
     Field,

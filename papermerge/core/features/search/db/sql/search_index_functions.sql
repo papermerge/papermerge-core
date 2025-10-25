@@ -88,7 +88,7 @@ BEGIN
     -- Get document basic info
     SELECT
         n.title,
-        COALESCE(d.lang, 'eng'),
+        COALESCE(n.lang, 'eng'),
         d.document_type_id
     INTO v_title, v_lang, v_document_type_id
     FROM documents d

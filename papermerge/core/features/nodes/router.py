@@ -8,8 +8,6 @@ from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.exceptions import HTTP404NotFound, EntityNotFound
-from papermerge.core.constants import INDEX_REMOVE_NODE
-from papermerge.core.tasks import send_task
 from papermerge.core import utils, schema, config
 from papermerge.core.features.auth import scopes, get_current_user
 from papermerge.core.features.document.db import api as doc_dbapi

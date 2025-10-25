@@ -722,13 +722,6 @@ async def get_docver_ids(db_session: AsyncSession, document_ids: list[uuid.UUID]
 
 @if_redis_present
 def notify_version_update(add_ver_id: str, remove_ver_id: str):
-    # Send tasks to the index to remove/add pages
-    tasks.send_task(
-        const.INDEX_UPDATE,
-        kwargs={"add_ver_id": add_ver_id, "remove_ver_id": str(remove_ver_id)},
-        route_name="i3",
-    )
-
     tasks.send_task(
         const.S3_WORKER_ADD_DOC_VER,
         kwargs={"doc_ver_ids": [add_ver_id]},
@@ -743,16 +736,6 @@ def notify_version_update(add_ver_id: str, remove_ver_id: str):
 
 @if_redis_present
 def notify_add_docs(db_session, add_doc_ids: List[uuid.UUID]):
-    # send task to index
-    logger.debug(f"Sending task {const.INDEX_ADD_DOCS} with {add_doc_ids}")
-    tasks.send_task(
-        const.INDEX_ADD_DOCS,
-        kwargs={
-            "doc_ids": [str(i) for i in add_doc_ids],
-        },
-        route_name="i3",
-    )
-
     ids = [
         str(doc_id) for doc_id in get_docver_ids(db_session, document_ids=add_doc_ids)
     ]

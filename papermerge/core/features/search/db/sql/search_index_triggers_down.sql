@@ -8,7 +8,6 @@ DROP TRIGGER IF EXISTS trg_cfv_search_update ON custom_field_values;
 DROP TRIGGER IF EXISTS trg_documents_search_update ON documents;
 DROP TRIGGER IF EXISTS trg_nodes_search_update ON nodes;
 
-
 DROP FUNCTION IF EXISTS trigger_update_search_on_cf_name();
 DROP FUNCTION IF EXISTS trigger_update_search_on_ownership();
 DROP FUNCTION IF EXISTS trigger_update_search_on_doctype_cf();

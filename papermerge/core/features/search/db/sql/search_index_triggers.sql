@@ -1,5 +1,3 @@
--- papermerge/core/alembic/sql/search_index_triggers.sql
-
 -- ============================================================================
 -- TRIGGER: Update search index when document title changes
 -- ============================================================================

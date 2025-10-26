@@ -524,4 +524,3 @@ class SearchDocumentsByTypeResponse(BaseModel):
         ...,
         description="Custom fields metadata for this document type"
     )
-

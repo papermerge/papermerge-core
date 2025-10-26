@@ -40,7 +40,6 @@ from papermerge.core.features.ownership.db import api as ownership_api
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "document" / "tests" / "resources"
 
-
 @pytest.fixture(scope="session")
 def event_loop():
     """Create an instance of the default event loop for the test session."""

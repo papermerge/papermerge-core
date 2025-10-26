@@ -383,7 +383,7 @@ class SearchQueryParams(BaseModel):
     )
 
     # Sorting
-    sort_by: SortBy = Field(
+    sort_by: str = Field(
         default=SortBy.UPDATED_AT,
         description="Sort results by field"
     )

@@ -1,4 +1,3 @@
-from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.features.search import schema as search_schema

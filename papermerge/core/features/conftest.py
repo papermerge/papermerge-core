@@ -12,7 +12,7 @@ import pytest
 from httpx import AsyncClient
 from httpx import ASGITransport
 from fastapi import FastAPI
-from sqlalchemy import select, text
+from sqlalchemy import select, text, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -36,6 +36,8 @@ from papermerge.core import config
 from papermerge.core.constants import ContentType
 from papermerge.core.types import OwnerType, ResourceType
 from papermerge.core.features.ownership.db import api as ownership_api
+from papermerge.core.features.document_types.db import api as dt_dbapi
+
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "document" / "tests" / "resources"
@@ -1091,3 +1093,136 @@ async def make_node_with_owner(db_session: AsyncSession):
         return node
 
     return _maker
+
+
+@pytest.fixture
+def make_document_with_numeric_cf(
+        db_session: AsyncSession,
+        make_custom_field_v2
+):
+    """
+    Create a document of a specific type with one numeric custom field.
+
+    This fixture creates:
+    - A custom field of type "number" (decimal) - reuses if exists in DB
+    - A document type with that custom field - reuses if exists in DB
+    - A document of that type - ALWAYS NEW
+
+    When called multiple times with the same doc_type_name and field_name,
+    it will reuse the same document type and custom field from the database,
+    creating only new documents. This allows testing multiple documents of the same type.
+
+    Args:
+        doc_type_name: Name of the document type (e.g., "Invoice")
+        doc_title: Title of the document (e.g., "invoice-001.pdf")
+        field_name: Name of the numeric custom field (e.g., "Amount")
+        user: User who owns the document
+        precision: Decimal precision for the numeric field (default: 2)
+        parent: Parent folder (defaults to user's home folder)
+
+    Returns:
+        tuple: (document, custom_field)
+    """
+
+    async def _maker(
+            doc_type_name: str,
+            doc_title: str,
+            field_name: str,
+            user: orm.User,
+            precision: int = 2,
+            parent: orm.Folder = None
+    ):
+        # Step 1: Get or create numeric custom field (check DB first)
+        stmt = select(orm.CustomField).where(
+            and_(
+                orm.CustomField.name == field_name,
+                orm.CustomField.type_handler == "number"
+            )
+        ).join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.CUSTOM_FIELD.value,
+                orm.Ownership.resource_id == orm.CustomField.id,
+                orm.Ownership.owner_type == OwnerType.USER.value,
+                orm.Ownership.owner_id == user.id
+            )
+        )
+        result = await db_session.execute(stmt)
+        custom_field = result.scalar_one_or_none()
+
+        if custom_field is None:
+            # Create new custom field
+            custom_field = await make_custom_field_v2(
+                name=field_name,
+                type_handler="number",  # "number" type stores as decimal
+                config={
+                    "precision": precision,
+                    "use_thousand_separator": False,
+                    "prefix": "",
+                    "suffix": ""
+                }
+            )
+
+        # Step 2: Get or create document type with the custom field (check DB first)
+        stmt = select(orm.DocumentType).where(
+            orm.DocumentType.name == doc_type_name
+        ).join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.DOCUMENT_TYPE.value,
+                orm.Ownership.resource_id == orm.DocumentType.id,
+                orm.Ownership.owner_type == OwnerType.USER.value,
+                orm.Ownership.owner_id == user.id
+            )
+        )
+        result = await db_session.execute(stmt)
+        document_type = result.scalar_one_or_none()
+
+        if document_type is None:
+            # Create new document type
+            create_dt_data = schema.CreateDocumentType(
+                name=doc_type_name,
+                custom_field_ids=[custom_field.id],
+                owner_type=OwnerType.USER,
+                owner_id=user.id
+            )
+
+            document_type = await dt_dbapi.create_document_type(
+                db_session,
+                data=create_dt_data
+            )
+
+        # Step 3: Create document of this type (always new)
+        if parent is None:
+            parent_id = user.home_folder_id
+        else:
+            parent_id = parent.id
+
+        doc = orm.Document(
+            id=uuid.uuid4(),
+            ctype="document",
+            title=doc_title,
+            document_type_id=document_type.id,
+            parent_id=parent_id,
+            lang="deu",
+        )
+        db_session.add(doc)
+        await db_session.flush()
+
+        # Step 4: Set ownership on the document
+        await ownership_api.set_owner(
+            session=db_session,
+            resource_type=ResourceType.NODE,
+            resource_id=doc.id,
+            owner_type=OwnerType.USER,
+            owner_id=user.id
+        )
+
+        await db_session.commit()
+        await db_session.refresh(doc)
+        await db_session.refresh(custom_field)
+
+        return doc, custom_field
+
+    return _maker
+

@@ -325,7 +325,7 @@ async def search_documents(
     # =========================================================================
     if params.filters.tags:
         tag_filters = _build_tag_filters(params.filters.tags)
-        if tag_filters:
+        if tag_filters is not None:
             base_query = base_query.where(tag_filters)
             count_query = count_query.where(tag_filters)
 
@@ -424,20 +424,28 @@ def _build_tag_filters(tag_filters: list[schema.TagFilter]):
     conditions = []
 
     for tag_filter in tag_filters:
-        # Positive tags (OR within, AND between filters)
+        if tag_filter.tags_any:
+            tag_conditions = [
+                DocumentSearchIndex.tags.contains([tag])
+                for tag in tag_filter.tags_any
+            ]
+            conditions.append(or_(*tag_conditions))
+
         if tag_filter.tags:
             tag_conditions = [
                 DocumentSearchIndex.tags.contains([tag])
                 for tag in tag_filter.tags
             ]
-            conditions.append(or_(*tag_conditions))
+            conditions.append(and_(*tag_conditions))
 
         # Negative tags (none should be present)
         if tag_filter.tags_not:
+            tag_conditions = []
             for tag in tag_filter.tags_not:
-                conditions.append(
+                tag_conditions.append(
                     ~DocumentSearchIndex.tags.contains([tag])
                 )
+            conditions.append(and_(*tag_conditions))
 
     return and_(*conditions) if conditions else None
 

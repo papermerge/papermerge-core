@@ -40,6 +40,12 @@ from papermerge.core.features.ownership.db import api as ownership_api
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "document" / "tests" / "resources"
 
+pytest_plugins = [
+    "papermerge.core.features.tags.tests.conftest",
+    # Add other feature conftest modules here as needed
+    # "features.documents.tests.conftest",
+    # "features.users.tests.conftest",
+]
 
 @pytest.fixture(scope="session")
 def event_loop():

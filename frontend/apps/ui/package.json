@@ -11,7 +11,11 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "prettier": "prettier --check \"**/*.{ts,tsx}\"",
     "prettier:write": "prettier --write \"**/*.{ts,tsx}\"",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@mantine/core": "^8.3.5",
@@ -44,16 +48,25 @@
     "viewer": "workspace:*"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/js-cookie": "^3.0.6",
+    "@types/jsdom": "^27",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.0.4",
+    "@vitest/ui": "^4.0.3",
+    "happy-dom": "^20.0.8",
+    "jsdom": "^27.0.1",
     "prettier": "^3.6.2",
     "sass": "^1.93.2",
     "typescript": "^5.9.3",
     "vite": "^7.1.11",
     "vite-plugin-static-copy": "^3.1.4",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^4.0.3"
   }
 }

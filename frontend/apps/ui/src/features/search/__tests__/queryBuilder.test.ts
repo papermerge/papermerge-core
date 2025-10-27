@@ -20,7 +20,7 @@ describe("queryBuilder - FTS Tokens", () => {
     const result = buildSearchQuery(tokens)
 
     expect(result.filters.fts).toEqual({
-      terms: ["invoice documents"]
+      terms: ["invoice", "documents"]
     })
   })
 
@@ -172,7 +172,7 @@ describe("queryBuilder - Custom Field Tokens", () => {
     const result = buildSearchQuery(tokens)
 
     expect(result.filters.custom_fields).toEqual([
-      {field_name: "total", operator: ">", value: "100"}
+      {field_name: "total", operator: ">", value: 100}
     ])
   })
 

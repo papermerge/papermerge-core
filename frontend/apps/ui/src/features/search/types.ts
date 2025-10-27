@@ -129,17 +129,6 @@ export interface SearchQueryParams {
 }
 
 // ============================================================================
-// Custom Field Metadata (for autocomplete)
-// ============================================================================
-
-export interface CustomFieldMetadata {
-  id: string
-  name: string
-  type_handler: string // 'text', 'number', 'date', 'boolean', etc.
-  config?: Record<string, any>
-}
-
-// ============================================================================
 // Parser Configuration
 // ============================================================================
 
@@ -178,4 +167,127 @@ export interface ParseError {
 
   /** The problematic token/text */
   token?: string
+}
+
+/**
+ * Represents a parsed token from user input
+ */
+export interface Token {
+  type: TokenType
+  name: string // The token name/key (e.g., "category", "tag", "total")
+  operator?: OperatorType // Operator for custom fields
+  value: string | string[] // The value(s) for the token
+  raw?: string // Original raw text for this token
+}
+
+export interface Suggestion {
+  value: string // The text to insert/complete
+  label: string // Display label (can be different from value)
+  type: SuggestionType // Type of suggestion
+  description?: string // Optional description
+  icon?: string // Optional icon or indicator
+  metadata?: any // Additional metadata (e.g., custom field type)
+}
+
+/**
+ * Custom Field Metadata (for determining operators)
+ */
+export interface CustomFieldMetadata {
+  id: string
+  name: string
+  type_handler: CustomFieldType
+  config?: Record<string, any>
+}
+
+export type CustomFieldType =
+  | "text"
+  | "integer"
+  | "number"
+  | "date"
+  | "datetime"
+  | "boolean"
+  | "monetary"
+  | "yearmonth"
+  | "select"
+  | "multiselect"
+  | "url"
+  | "email"
+
+/**
+ * Parser state for tracking current input context
+ */
+export interface ParserState {
+  currentToken?: Partial<Token>
+  expectingValue: boolean
+  expectingOperator: boolean
+  selectedCategory?: string // For filtering custom fields by category
+}
+
+/**
+ * API Payload Types (matches backend schema)
+ */
+export interface FullTextSearchFilter {
+  terms: string[]
+}
+
+export interface CategoryFilter {
+  values: string[]
+}
+
+export interface TagFilter {
+  tags?: string[] // AND logic - must have all
+  tags_any?: string[] // OR logic - must have any
+  tags_not?: string[] // NOT logic - must not have
+}
+
+export interface CustomFieldFilter {
+  field_name: string
+  operator: OperatorType
+  value: string | number | boolean
+}
+
+export interface SearchFilters {
+  fts?: FullTextSearchFilter
+  category?: CategoryFilter
+  tags?: TagFilter[]
+  custom_fields?: CustomFieldFilter[]
+}
+
+export interface SearchQueryParams {
+  filters: SearchFilters
+  lang?: string
+  document_type_id?: string
+  page_size?: number
+  page_number?: number
+  sort_by?: SortBy
+  sort_direction?: "asc" | "desc"
+}
+
+/**
+ * Token keyword definitions
+ */
+export const TOKEN_KEYWORDS = {
+  TAG: ["tag:", "tag"],
+  TAG_ANY: ["tag_any:", "tag_any"],
+  TAG_NOT: ["tag_not:", "tag_not"],
+  CATEGORY: ["category:", "cat:", "category", "cat"],
+  CUSTOM_FIELD: ["cf:", "custom_field:", "cf", "custom_field"]
+} as const
+
+/**
+ * Operator definitions by field type
+ */
+export const OPERATORS_BY_TYPE: Record<CustomFieldType, OperatorType[]> = {
+  text: ["=", "!=", "contains", "icontains"],
+  integer: ["=", "!=", ">", ">=", "<", "<="],
+  number: ["=", "!=", ">", ">=", "<", "<="],
+  date: ["=", "!=", ">", ">=", "<", "<="],
+  datetime: ["=", "!=", ">", ">=", "<", "<="],
+  boolean: ["=", "!="],
+  monetary: ["=", "!=", ">", ">=", "<", "<="],
+  yearmonth: ["=", "!=", ">", ">=", "<", "<="],
+  select: ["=", "!="],
+  multiselect: ["contains"],
+  url: ["=", "!=", "contains"],
+  email: ["=", "!=", "contains"]
 }

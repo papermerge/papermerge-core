@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'frontend/**'
+      - '.github/workflows/frontend-tests.yml'
   pull_request:
     paths:
       - 'frontend/**'
@@ -13,19 +14,24 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./frontend/apps/ui
+        working-directory: frontend/
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - name: Set Node.js 24.x
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
-          cache: 'yarn'
-          cache-dependency-path: frontend/yarn.lock
+          node-version: 24.x
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
+      - name: Install latest Yarn
+        run: corepack enable
+
+      - name: Activate latest Yarn
+        run: yarn set version 4.9.2
+
+      - name: Install Node.js dependencies
+        run: yarn install --immutable
 
       - name: Run tests
-        run: yarn test:run
+        run: yarn workspace ui test:run

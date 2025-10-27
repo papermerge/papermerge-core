@@ -1,6 +1,5 @@
 import {AppStartListening} from "@/app/listenerMiddleware"
 import {RootState} from "@/app/types"
-import {apiSliceWithSearch} from "@/features/search/apiSlice"
 import type {
   NodeType,
   Paginated,
@@ -90,13 +89,6 @@ const nodesSlice = createSlice({
       (state, action: PayloadAction<NodeType>) => {
         const payload = action.payload
         nodeAdapter.setOne(state, payload)
-      }
-    )
-    builder.addMatcher(
-      apiSliceWithSearch.endpoints.getNodes.matchFulfilled,
-      (state, action: PayloadAction<NodeType[]>) => {
-        const payload = action.payload
-        nodeAdapter.addMany(state, payload)
       }
     )
   }

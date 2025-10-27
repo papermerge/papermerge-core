@@ -22,7 +22,6 @@ import {
 import {GroupDetails, GroupsList} from "@/features/groups/components"
 import Commander from "@/features/nodes/components/Commander"
 import {RoleDetails, RolesList} from "@/features/roles/components"
-import SearchResults from "@/features/search/components/SearchResults"
 import SharedCommander from "@/features/shared_nodes/components/SharedCommander"
 import SharedViewer from "@/features/shared_nodes/components/SharedViewer"
 import {TagDetails, TagsList} from "@/features/tags/components"
@@ -32,7 +31,6 @@ import type {PanelComponent} from "@/types.d/ui"
 const PANEL_COMPONENTS_SAFE = {
   commander: Commander,
   viewer: Viewer,
-  searchResults: SearchResults,
   sharedCommander: SharedCommander,
   sharedViewer: SharedViewer,
   auditLogDetails: AuditLogDetails,

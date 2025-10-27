@@ -16,7 +16,6 @@ import nodesReducer from "@/features/nodes/nodesSlice"
 import thumbnailObjects from "@/features/nodes/thumbnailObjectsSlice"
 import preferencesReducer from "@/features/preferences/storage/preference"
 import rolesReducer from "@/features/roles/storage/role"
-import searchReducer from "@/features/search/searchSlice"
 import sharedNodesReducer from "@/features/shared_nodes/store/sharedNodesSlice"
 import tagsReducer from "@/features/tags/storage/tag"
 import panelRegistryReducer from "@/features/ui/panelRegistry"
@@ -41,7 +40,6 @@ export const store = configureStore({
     users: usersReducer,
     nodes: nodesReducer,
     sharedNodes: sharedNodesReducer,
-    search: searchReducer,
     pages: pagesReducer,
     imageObjects: imageObjects,
     thumbnailObjects: thumbnailObjects,

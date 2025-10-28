@@ -270,22 +270,9 @@ output3a:
         },
         {
             type: "tag",
-            tags: [
-                {
-                    id:,
-                    name:,
-                    fg_color:,
-                    bg_color:,
-                },
-                {
-                    id:,
-                    name:,
-                    fg_color:,
-                    bg_color:,
-                },
-                ...
-            ]
-        } 
+            filter: [],
+            exclude: []
+        }
     ]
 
 
@@ -324,21 +311,8 @@ output3b:
     suggestions: [
         {
             type: "tag",
-            tags: [
-                {
-                    id:,
-                    name:,
-                    fg_color:,
-                    bg_color:,
-                },
-                {
-                    id:,
-                    name:,
-                    fg_color:,
-                    bg_color:,
-                },
-                ...
-            ]
+            filter: [],
+            exclude: []
         } 
     ]
 
@@ -385,21 +359,8 @@ output3c:
     suggestions: [
         {
             type: "tag",
-            tags: [
-                {
-                    id:,
-                    name:,
-                    fg_color:,
-                    bg_color:,
-                },
-                {
-                    id:,
-                    name:,
-                    fg_color:,
-                    bg_color:,
-                },
-                ...
-            ]
+            exclude: ["paid"],
+            filter: []
         } 
     ]
 
@@ -424,7 +385,7 @@ output3d:
                 id:,fg_color:, bg_color:, name: "paid"
             },
             {
-                id:,fg_color:, bg_color:, name: "imporant"
+                id:,fg_color:, bg_color:, name: "important"
             }
             ]
             operator: "any"

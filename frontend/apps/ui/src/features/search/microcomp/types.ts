@@ -12,7 +12,7 @@ export type TokenType =
   | "owner"
 
 interface BasicToken {
-  type: string
+  type: TokenType
   raw: string
 }
 
@@ -26,7 +26,7 @@ export interface CategoryToken extends BasicToken {
   values: string[]
 }
 
-export type ColoredToken = {
+export type ColoredTag = {
   id: string
   fg_color: string
   bg_color: string
@@ -35,7 +35,7 @@ export type ColoredToken = {
 
 export interface TagToken extends BasicToken {
   type: "tag"
-  values: ColoredToken[]
+  values: ColoredTag[]
 }
 
 export interface SpaceToken extends BasicToken {
@@ -45,7 +45,7 @@ export interface SpaceToken extends BasicToken {
 
 export type Token = FTSToken | CategoryToken | SpaceToken | TagToken
 
-export interface ParseError {
+export interface ScannerError {
   /** Error message */
   message: string
 
@@ -57,8 +57,15 @@ export type CurrentText = {
   value: string
 }
 
+export type SuggestionType =
+  | "keyword"
+  | "tag"
+  | "operator"
+  | "category"
+  | "customField"
+
 interface BasicSuggestion {
-  type: string
+  type: SuggestionType
 }
 
 interface OperatorSuggestion extends BasicSuggestion {
@@ -71,24 +78,36 @@ interface KeywordSuggestion extends BasicSuggestion {
   keywords: string[]
 }
 
+interface TagSuggestion extends BasicSuggestion {
+  type: "tag"
+  filter: string[] // user already typed part of the name
+  exclude: string[] // already used in current token
+}
+
+interface CategorySuggestion extends BasicSuggestion {
+  type: "category"
+  filter: string[] // user already typed part of the name
+  exclude: string[] // already used in current token
+}
+
 export type Suggestion =
   | OperatorSuggestion
   | TagSuggestion
   | KeywordSuggestion
   | CategorySuggestion
 
-export interface ParseResult {
-  /** Successfully parsed tokens */
+export interface ScanResult {
+  /** Successfully scanned tokens */
   tokens: Token[]
 
   current?: CurrentText
 
-  /** Any errors encountered during parsing */
-  errors: ParseError[]
+  /** Any errors encountered during scanning */
+  errors?: ScannerError[]
 
-  /** Whether the parse was completely successful */
+  /** Whether the scan was completely successful */
   isValid: boolean
 
   hasSuggestions: boolean
-  suggestions: Suggestion[]
+  suggestions?: Suggestion[]
 }

@@ -1,6 +1,7 @@
 /**
  * Segment input string, preserving quoted strings
  * Handles both quoted values AND quoted field names
+ * Spaces count as tokens as well.
  */
 export function segmentInput(input: string): string[] {
   const segments: string[] = []
@@ -26,10 +27,20 @@ export function segmentInput(input: string): string[] {
       continue
     }
 
-    // Split on spaces when not in quotes
     if (char === " " && !inQuotes && current.trim() != "") {
       segments.push(current)
       current = ""
+      continue
+    }
+
+    if (
+      char != " " &&
+      !inQuotes &&
+      current.length > 0 &&
+      current.trim() == ""
+    ) {
+      segments.push(current)
+      current = char
       continue
     }
 
@@ -42,4 +53,16 @@ export function segmentInput(input: string): string[] {
   }
 
   return segments
+}
+
+export function isSpaceSegment(text: string): boolean {
+  if (text.length == 0) {
+    return true
+  }
+
+  if (text.trim() == "") {
+    return true
+  }
+
+  return false
 }

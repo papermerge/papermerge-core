@@ -104,7 +104,7 @@ export function parseTokens(input: string): ParseResult {
  * Tokenize input string, preserving quoted strings
  * Handles both quoted values AND quoted field names
  */
-function tokenizeInput(input: string): string[] {
+export function tokenizeInput(input: string): string[] {
   const segments: string[] = []
   let current = ""
   let inQuotes = false

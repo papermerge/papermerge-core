@@ -35,6 +35,7 @@ export interface Token {
 
   /** The token name/key (e.g., "category", "tag", "total") */
   name: string
+  alias?: string // e.g. tany or tagany for tag_any,
 
   /** Operator for custom fields (e.g., "gt", "eq") */
   operator?: OperatorType
@@ -146,10 +147,25 @@ export interface ParserConfig {
 // ============================================================================
 // Parse Result
 // ============================================================================
+export type InputType =
+  | "tagName"
+  | "categoryName"
+  | "customFieldName"
+  | "operator"
+  | "value"
+  | "dateValue"
+  | "timestampValue"
+
+export interface RequiredInput {
+  type: InputType
+}
 
 export interface ParseResult {
   /** Successfully parsed tokens */
   tokens: Token[]
+
+  isComplete: boolean
+  requiredInput?: RequiredInput
 
   /** Any errors encountered during parsing */
   errors: ParseError[]

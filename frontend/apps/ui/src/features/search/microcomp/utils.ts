@@ -66,3 +66,15 @@ export function isSpaceSegment(text: string): boolean {
 
   return false
 }
+
+export function isFreeTextSegment(text: string): boolean {
+  if (isSpaceSegment(text)) {
+    return false
+  }
+
+  if (text.includes(":")) {
+    return false
+  }
+
+  return true
+}

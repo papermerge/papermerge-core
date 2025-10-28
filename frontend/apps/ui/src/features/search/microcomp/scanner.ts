@@ -1,5 +1,5 @@
 import {ScannerError, ScanResult, Token} from "./types"
-import {segmentInput, isSpaceSegment} from "./utils"
+import {segmentInput, isSpaceSegment, isFreeTextSegment} from "./utils"
 
 export function scanSearchText(input: string): ScanResult {
   const tokens: Token[] = []
@@ -22,6 +22,23 @@ export function scanSearchText(input: string): ScanResult {
         count: segment.length,
         raw: segment
       })
+    } else if (isFreeTextSegment(segment)) {
+      const lastToken = tokens.pop()
+      if (lastToken?.type == "fts") {
+        lastToken.values.push(segment)
+        lastToken.raw = `${lastToken.raw} ${segment}`
+        tokens.push(lastToken)
+      } else {
+        tokens.push({
+          type: "fts",
+          values: [segment],
+          raw: segment
+        })
+      }
+    } else if (segment.includes(":")) {
+      // tag, cf, category etc
+    } else {
+      // throw an exception?
     }
   }
 

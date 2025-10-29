@@ -1,8 +1,7 @@
 import React from "react"
 import {Combobox, TextInput, Box} from "@mantine/core"
-import {IconTag, IconFolder, IconAdjustments} from "@tabler/icons-react"
 import {useTokenSearch} from "@/features/search/hooks/useTokenSearch"
-import type {Token} from "@/features/search/types"
+import type {Token} from "@/features/search/microcomp/types"
 
 interface Args {
   onSearch?: (tokens: Token[]) => void
@@ -17,60 +16,22 @@ export default function Search({
     combobox,
     inputValue,
     tokens,
-    suggestions,
-    showSuggestions,
-    isLoading,
+    autocomplete,
+    hasAutocomplete,
     activeIndex,
     handleInputChange,
+    handleOptionSubmit,
     removeToken
   } = useTokenSearch({onSearch})
 
-  const getTokenIcon = (type: Token["type"]) => {
-    switch (type) {
-      case "tag":
-      case "tag_any":
-      case "tag_not":
-        return <IconTag size={14} />
-      case "category":
-        return <IconFolder size={14} />
-      case "custom_field":
-        return <IconAdjustments size={14} />
-      default:
-        return null
-    }
-  }
+  const suggestions = autocomplete?.items.map(ac => (
+    <Combobox.Option key={ac} value={ac}>
+      {ac}
+    </Combobox.Option>
+  ))
 
-  const getTokenColor = (type: Token["type"]) => {
-    switch (type) {
-      case "tag":
-        return "blue"
-      case "tag_any":
-        return "cyan"
-      case "tag_not":
-        return "red"
-      case "category":
-        return "violet"
-      case "custom_field":
-        return "grape"
-      default:
-        return "gray"
-    }
-  }
-
-  const formatTokenLabel = (token: Token): string => {
-    if (token.type === "custom_field") {
-      return `${token.name}${token.operator || ""}:${token.value}`
-    }
-    if (token.type === "fts") {
-      return `"${token.value}"`
-    }
-    if (Array.isArray(token.value)) {
-      return `${token.name}:[${token.value.join(", ")}]`
-    }
-    return `${token.name}:${token.value}`
-  }
   return (
-    <Combobox store={combobox} withinPortal={false}>
+    <Combobox store={combobox} onOptionSubmit={handleOptionSubmit}>
       <Combobox.Target>
         <Box
           style={{
@@ -102,22 +63,11 @@ export default function Search({
         </Box>
       </Combobox.Target>
 
-      <Combobox.Dropdown
-        style={{
-          backgroundColor: "white", // dropdown white background
-          color: "black", // dropdown black text
-          border: "1px solid #ccc"
-        }}
-      >
-        <Combobox.Options>
-          <Combobox.Option key={1} value={"one"}>
-            {"One"}
-          </Combobox.Option>
-          <Combobox.Option key={2} value={"two"}>
-            {"Two"}
-          </Combobox.Option>
-        </Combobox.Options>
-      </Combobox.Dropdown>
+      {autocomplete && (
+        <Combobox.Dropdown>
+          <Combobox.Options>{suggestions}</Combobox.Options>
+        </Combobox.Dropdown>
+      )}
     </Combobox>
   )
 }

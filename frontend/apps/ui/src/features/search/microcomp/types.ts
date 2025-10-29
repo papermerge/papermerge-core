@@ -24,7 +24,7 @@ export type KeywordType =
 
 export type TagOperator = "any" | "all" | "not"
 
-interface BasicToken {
+export interface BasicToken {
   type: TokenType
   raw: string
   values: string[]
@@ -69,36 +69,36 @@ export type SuggestionType =
   | "category"
   | "customField"
 
-interface BasicSuggestion {
+export interface BasicSuggestion {
   type: SuggestionType
   items: string[]
 }
 
-interface OperatorSuggestion extends BasicSuggestion {
+export interface SearchOperatorSuggestion extends BasicSuggestion {
   type: "operator"
 }
 
-interface KeywordSuggestion extends BasicSuggestion {
+export interface SearchKeywordSuggestion extends BasicSuggestion {
   type: "keyword"
 }
 
-interface TagSuggestion extends BasicSuggestion {
+export interface SearchTagSuggestion extends BasicSuggestion {
   type: "tag"
   filter: string[] // user already typed part of the name
   exclude: string[] // already used in current token
 }
 
-interface CategorySuggestion extends BasicSuggestion {
+export interface SearchCategorySuggestion extends BasicSuggestion {
   type: "category"
   filter: string[] // user already typed part of the name
   exclude: string[] // already used in current token
 }
 
-export type Suggestion =
-  | OperatorSuggestion
-  | TagSuggestion
-  | KeywordSuggestion
-  | CategorySuggestion
+export type SearchSuggestion =
+  | SearchOperatorSuggestion
+  | SearchTagSuggestion
+  | SearchKeywordSuggestion
+  | SearchCategorySuggestion
 
 export interface ScanResult {
   /** Successfully scanned tokens */
@@ -113,7 +113,7 @@ export interface ScanResult {
   isValid: boolean
 
   hasSuggestions: boolean
-  suggestions?: Suggestion
+  suggestions?: SearchSuggestion
 }
 
 export interface ParseLastSegmentResult {
@@ -121,7 +121,7 @@ export interface ParseLastSegmentResult {
   error?: ScannerError
   isValid: boolean
   hasSuggestions: boolean
-  suggestions?: Suggestion
+  suggestions?: SearchSuggestion
 }
 
 export interface ParseSegmentResult {
@@ -132,5 +132,5 @@ export interface ParseSegmentResult {
 
 export interface SuggestionResult {
   hasSuggestions: boolean
-  suggestions?: Suggestion
+  suggestions?: SearchSuggestion
 }

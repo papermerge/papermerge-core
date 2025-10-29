@@ -11,6 +11,17 @@ export type TokenType =
   | "updated_by"
   | "owner"
 
+export type KeywordType =
+  | "cat"
+  | "tag"
+  | "cf"
+  | "title"
+  | "created_at"
+  | "created_by"
+  | "updated_at"
+  | "updated_by"
+  | "owner"
+
 export type TagOperator = "any" | "all" | "not"
 
 interface BasicToken {
@@ -60,16 +71,15 @@ export type SuggestionType =
 
 interface BasicSuggestion {
   type: SuggestionType
+  items: string[]
 }
 
 interface OperatorSuggestion extends BasicSuggestion {
   type: "operator"
-  operators: string[]
 }
 
 interface KeywordSuggestion extends BasicSuggestion {
   type: "keyword"
-  keywords: string[]
 }
 
 interface TagSuggestion extends BasicSuggestion {
@@ -103,7 +113,7 @@ export interface ScanResult {
   isValid: boolean
 
   hasSuggestions: boolean
-  suggestions?: Suggestion[]
+  suggestions?: Suggestion
 }
 
 export interface ParseLastSegmentResult {
@@ -111,11 +121,16 @@ export interface ParseLastSegmentResult {
   error?: ScannerError
   isValid: boolean
   hasSuggestions: boolean
-  suggestions?: Suggestion[]
+  suggestions?: Suggestion
 }
 
 export interface ParseSegmentResult {
   token?: Token
   error?: ScannerError
   isValid: boolean
+}
+
+export interface SuggestionResult {
+  hasSuggestions: boolean
+  suggestions?: Suggestion
 }

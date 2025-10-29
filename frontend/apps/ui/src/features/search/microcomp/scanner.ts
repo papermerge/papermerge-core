@@ -4,7 +4,9 @@ import {
   ParseLastSegmentResult,
   ParseSegmentResult,
   Token,
-  TagOperator
+  TagOperator,
+  SuggestionResult,
+  KeywordType
 } from "./types"
 import {
   segmentInput,
@@ -14,7 +16,7 @@ import {
   removeQuotes
 } from "./utils"
 
-import {CATEGORY, TAG, TAG_IMPLICIT_OPERATOR, TAG_OP} from "./const"
+import {CATEGORY, KEYWORDS, TAG, TAG_IMPLICIT_OPERATOR, TAG_OP} from "./const"
 
 export function scanSearchText(input: string): ScanResult {
   const tokens: Token[] = []
@@ -27,11 +29,11 @@ export function scanSearchText(input: string): ScanResult {
 
   // Split input into segments, preserving quoted strings
   const segments = segmentInput(trimmed)
-
   let i = 0
+
   while (i < segments.length) {
     const segment = segments[i]
-    if (i == segment.length - 1) {
+    if (i == segments.length - 1) {
       // last segment, which may mean
       // that user is still typing it
       const {token, isValid, error, hasSuggestions, suggestions} =
@@ -54,6 +56,7 @@ export function scanSearchText(input: string): ScanResult {
       const {token, error, isValid} = parseSegment(segment)
       if (isValid && token) {
         tokens.push(token)
+        i++
         continue
       }
 
@@ -75,7 +78,45 @@ export function scanSearchText(input: string): ScanResult {
   }
 }
 
-export function parseLastSegment(segment: string): ParseLastSegmentResult {}
+export function parseLastSegment(segment: string): ParseLastSegmentResult {
+  if (isSpaceSegment(segment)) {
+    const token = {
+      type: "space" as const,
+      count: segment.length,
+      values: [],
+      raw: segment
+    }
+    return {token, isValid: true, hasSuggestions: false}
+  }
+
+  if (!segment.includes(":")) {
+    // user typed some non empty characters (but without a column)
+    const {hasSuggestions, suggestions} = getKeywordSuggestions(segment)
+    return {
+      isValid: true,
+      hasSuggestions,
+      suggestions
+    }
+  }
+
+  const parts = splitByColon(segment)
+  if (parts.length == 1) {
+    //cf, tag, category, title, owner etc
+    const {hasSuggestions, suggestions} = getOperationSuggestion(
+      parts[0] as KeywordType
+    )
+    return {
+      isValid: true,
+      hasSuggestions,
+      suggestions
+    }
+  }
+
+  return {
+    isValid: true,
+    hasSuggestions: false
+  }
+}
 
 export function parseSegment(segment: string): ParseSegmentResult {
   if (isSpaceSegment(segment)) {
@@ -190,3 +231,37 @@ export function parseCategoryToken(
   parts: string[],
   raw: string
 ): ParseSegmentResult {}
+
+export function getKeywordSuggestions(text: string): SuggestionResult {
+  const matches = KEYWORDS.filter(k => k.startsWith(text))
+
+  if (matches.length > 0) {
+    return {
+      hasSuggestions: true,
+      suggestions: {
+        type: "keyword",
+        items: matches.sort()
+      }
+    }
+  }
+
+  return {
+    hasSuggestions: false
+  }
+}
+
+export function getOperationSuggestion(text: KeywordType): SuggestionResult {
+  if (text == "tag") {
+    return {
+      hasSuggestions: true,
+      suggestions: {
+        type: "operator",
+        operators: ["any", "all", "not"]
+      }
+    }
+  }
+
+  return {
+    hasSuggestions: false
+  }
+}

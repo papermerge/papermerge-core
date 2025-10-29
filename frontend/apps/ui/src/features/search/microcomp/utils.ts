@@ -78,3 +78,70 @@ export function isFreeTextSegment(text: string): boolean {
 
   return true
 }
+
+/**
+ * Split string by colon, preserving quoted values
+ * For custom fields, handles operator syntax without trailing colon
+ * Examples:
+ *   "total:>100" → ["total", ">100"]
+ *   "status:=completed" → ["status", "=completed"]
+ *   "total:100" → ["total", "100"] (implies =)
+ */
+export function splitByColon(str: string): string[] {
+  const parts: string[] = []
+  let current = ""
+  let inQuotes = false
+  let quoteChar = ""
+
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i]
+
+    // Handle quotes
+    if ((char === '"' || char === "'") && !inQuotes) {
+      inQuotes = true
+      quoteChar = char
+      current += char
+      continue
+    }
+
+    if (char === quoteChar && inQuotes) {
+      inQuotes = false
+      current += char
+      quoteChar = ""
+      continue
+    }
+
+    // Split on colon when not in quotes
+    if (char === ":" && !inQuotes) {
+      parts.push(current)
+      current = ""
+      continue
+    }
+
+    current += char
+  }
+
+  // Add remaining content
+  parts.push(current)
+
+  return parts
+}
+
+/**
+ * Remove surrounding quotes from a string
+ */
+export function removeQuotes(str: string): string {
+  const trimmed = str.trim()
+
+  // Remove double quotes
+  if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+    return trimmed.slice(1, -1)
+  }
+
+  // Remove single quotes
+  if (trimmed.startsWith("'") && trimmed.endsWith("'")) {
+    return trimmed.slice(1, -1)
+  }
+
+  return trimmed
+}

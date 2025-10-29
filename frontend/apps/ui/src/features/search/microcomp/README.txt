@@ -398,3 +398,21 @@ output3d:
 
     suggestions: []
 
+---------------------------
+Tags
+---------------------------
+
+tag:<operator>:<values>
+
+operator = <empty> | all | any | not |
+values = <value>,<value>,...
+value = string | quaoted string if contains empty spaces 
+
+Examples:
+
+tag:any:important,paid,deleted,asd 
+tag:all:paid,archived
+tag:not:deleted,archived
+tag:invoice
+tag:"Important Notice"
+tag:'Green Field',"Blue sky"

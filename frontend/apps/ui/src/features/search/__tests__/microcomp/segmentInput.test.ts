@@ -46,4 +46,23 @@ describe("segmentInput", () => {
 
     expect(result).toEqual(["some", "'input   value'"])
   })
+  //------------------------------
+  it("should work with tag syntax", () => {
+    const input = " free text tag:'Blue Sky'"
+    const result = segmentInput(input)
+
+    expect(result).toEqual([" ", "free", "text", "tag:'Blue Sky'"])
+  })
+
+  it("should work with tag syntax with multiple spaces", () => {
+    const input = " free text tag:'Blue   Sky','Green   Field'"
+    const result = segmentInput(input)
+
+    expect(result).toEqual([
+      " ",
+      "free",
+      "text",
+      "tag:'Blue   Sky','Green   Field'"
+    ])
+  })
 })

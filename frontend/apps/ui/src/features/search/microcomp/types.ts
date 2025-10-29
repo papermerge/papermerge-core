@@ -11,31 +11,25 @@ export type TokenType =
   | "updated_by"
   | "owner"
 
+export type TagOperator = "any" | "all" | "not"
+
 interface BasicToken {
   type: TokenType
   raw: string
+  values: string[]
 }
 
 export interface FTSToken extends BasicToken {
   type: "fts"
-  values: string[]
 }
 
 export interface CategoryToken extends BasicToken {
   type: "cat"
-  values: string[]
-}
-
-export type ColoredTag = {
-  id: string
-  fg_color: string
-  bg_color: string
-  name: string
 }
 
 export interface TagToken extends BasicToken {
   type: "tag"
-  values: ColoredTag[]
+  operator: TagOperator
 }
 
 export interface SpaceToken extends BasicToken {
@@ -110,4 +104,18 @@ export interface ScanResult {
 
   hasSuggestions: boolean
   suggestions?: Suggestion[]
+}
+
+export interface ParseLastSegmentResult {
+  token?: Token
+  error?: ScannerError
+  isValid: boolean
+  hasSuggestions: boolean
+  suggestions?: Suggestion[]
+}
+
+export interface ParseSegmentResult {
+  token?: Token
+  error?: ScannerError
+  isValid: boolean
 }

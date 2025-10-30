@@ -25,4 +25,16 @@ describe("scanSearchText", () => {
       items: ["cat", "cf", "created_by", "created_at"].sort()
     })
   })
+
+  //----------------------------------------------
+  it("suggestion operations", () => {
+    const input = "some text tag:"
+    const result = scanSearchText(input)
+
+    expect(result.hasSuggestions).toBe(true)
+    expect(result.suggestions).toEqual({
+      type: "operator",
+      items: ["any", "not", "all"].sort()
+    })
+  })
 })

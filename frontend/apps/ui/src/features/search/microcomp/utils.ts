@@ -145,3 +145,29 @@ export function removeQuotes(str: string): string {
 
   return trimmed
 }
+
+/**
+ * autocompleteText("this is a t", "tag") -> this is a tag
+ * autocompleteText("some   te", "text") -> some   text
+ */
+
+export function autocompleteText(inputValue: string, val: string): string {
+  // Trim the input value to remove trailing spaces
+  const trimmed = inputValue.trimEnd()
+
+  // Find the last word in the input (everything after the last space)
+  const lastSpaceIndex = trimmed.lastIndexOf(" ")
+  const lastWord =
+    lastSpaceIndex === -1 ? trimmed : trimmed.substring(lastSpaceIndex + 1)
+
+  // Check if val starts with the last word (case-insensitive comparison)
+  if (val.toLowerCase().startsWith(lastWord.toLowerCase())) {
+    // Replace the partial word with the complete val
+    const prefix =
+      lastSpaceIndex === -1 ? "" : trimmed.substring(0, lastSpaceIndex + 1)
+    return prefix + val
+  }
+
+  // If val doesn't start with the last word, just append it
+  return trimmed + val
+}

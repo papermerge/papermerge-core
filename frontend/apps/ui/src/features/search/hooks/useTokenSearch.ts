@@ -3,8 +3,7 @@ import {useCombobox} from "@mantine/core"
 import type {Token, SearchSuggestion} from "@/features/search/microcomp/types"
 // Use existing tokenParser
 import {scanSearchText} from "@/features/search/microcomp/scanner"
-
-function AutocompleteText(inputValue: string, val: string): string {}
+import {autocompleteText} from "@/features/search/microcomp/utils"
 
 interface UseTokenSearchProps {
   onSearch?: (tokens: Token[]) => void
@@ -21,10 +20,16 @@ export const useTokenSearch = ({onSearch}: UseTokenSearchProps) => {
   })
 
   const handleOptionSubmit = (val: string) => {
-    console.log(val)
-    combobox.closeDropdown()
-    const newInputValue = `${inputValue}${val}`
+    let newInputValue = autocompleteText(inputValue, val)
+
+    newInputValue = `${newInputValue}:`
     setInputValue(newInputValue)
+    console.log(newInputValue)
+    const {hasSuggestions, suggestions} = scanSearchText(newInputValue)
+    setHasAutocomplete(hasSuggestions)
+    console.log(hasAutocomplete)
+    setAutocomplete(suggestions)
+    console.log(suggestions)
   }
 
   // Handle input change

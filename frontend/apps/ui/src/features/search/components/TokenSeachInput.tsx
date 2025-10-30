@@ -2,6 +2,7 @@ import React from "react"
 import {Combobox, TextInput, Box} from "@mantine/core"
 import {useTokenSearch} from "@/features/search/hooks/useTokenSearch"
 import type {Token} from "@/features/search/microcomp/types"
+import AutocompleteOptions from "./AutocompleteOptions"
 
 interface Args {
   onSearch?: (tokens: Token[]) => void
@@ -24,11 +25,9 @@ export default function Search({
     removeToken
   } = useTokenSearch({onSearch})
 
-  const suggestions = autocomplete?.items.map(ac => (
-    <Combobox.Option key={ac} value={ac}>
-      {ac}
-    </Combobox.Option>
-  ))
+  console.log(autocomplete?.type)
+
+  const suggestions = <AutocompleteOptions suggestions={autocomplete} />
 
   return (
     <Combobox store={combobox} onOptionSubmit={handleOptionSubmit}>

@@ -100,16 +100,31 @@ export function parseLastSegment(segment: string): ParseLastSegmentResult {
   }
 
   const parts = splitByColon(segment)
-  if (parts.length == 1) {
+  if (parts.length == 2) {
     //cf, tag, category, title, owner etc
     const {hasSuggestions, suggestions} = getOperationSuggestion(
-      parts[0] as KeywordType
+      parts[0] as KeywordType,
+      parts[1]
     )
     return {
       isValid: true,
       hasSuggestions,
       suggestions
     }
+  }
+
+  if (parts.length == 3) {
+    if (parts[0] == "tag")
+      return {
+        isValid: true,
+        hasSuggestions: true,
+        suggestions: {
+          type: "tag",
+          items: [],
+          filter: [],
+          exclude: []
+        }
+      }
   }
 
   return {
@@ -250,13 +265,19 @@ export function getKeywordSuggestions(text: string): SuggestionResult {
   }
 }
 
-export function getOperationSuggestion(text: KeywordType): SuggestionResult {
+export function getOperationSuggestion(
+  text: KeywordType,
+  filter: string
+): SuggestionResult {
   if (text == "tag") {
+    const all_tag_operators = ["all", "any", "not"]
+    const all_filtered = all_tag_operators.filter(op => op.startsWith(filter))
+    const operators = filter != "" ? all_filtered : all_tag_operators
     return {
       hasSuggestions: true,
       suggestions: {
         type: "operator",
-        operators: ["any", "all", "not"]
+        items: operators.sort()
       }
     }
   }

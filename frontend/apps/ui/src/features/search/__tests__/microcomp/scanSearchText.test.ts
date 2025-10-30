@@ -37,4 +37,33 @@ describe("scanSearchText", () => {
       items: ["any", "not", "all"].sort()
     })
   })
+
+  //----------------------------------------------
+  it("should not suggest tag completion if there is no comma at the end of tag list", () => {
+    const input = "some text tag:invoice"
+    const result = scanSearchText(input)
+
+    expect(result.hasSuggestions).toBe(false)
+    expect(result.suggestions).toEqual(undefined)
+  })
+
+  //----------------------------------------------
+  it("should not suggest tag completion if there is no comma at the end  - with spaces", () => {
+    const input = "some text tag:invoice   " // no comma, however there are some spaces
+    const result = scanSearchText(input)
+
+    expect(result.hasSuggestions).toBe(false)
+    expect(result.suggestions).toEqual(undefined)
+  })
+
+  //----------------------------------------------
+  it("suggestion tag completion if user added a comma", () => {
+    const input = "some text tag:invoice," // notice comma at the end of tag list
+    const result = scanSearchText(input)
+
+    expect(result.hasSuggestions).toBe(true)
+    expect(result.suggestions).toEqual({
+      type: "tag"
+    })
+  })
 })

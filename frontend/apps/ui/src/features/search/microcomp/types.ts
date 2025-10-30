@@ -71,7 +71,7 @@ export type SuggestionType =
 
 export interface BasicSuggestion {
   type: SuggestionType
-  items: string[]
+  items?: string[]
 }
 
 export interface SearchOperatorSuggestion extends BasicSuggestion {
@@ -84,8 +84,8 @@ export interface SearchKeywordSuggestion extends BasicSuggestion {
 
 export interface SearchTagSuggestion extends BasicSuggestion {
   type: "tag"
-  filter: string[] // user already typed part of the name
-  exclude: string[] // already used in current token
+  filter?: string // user already typed part of the name
+  exclude?: string[] // already used in current token
 }
 
 export interface SearchCategorySuggestion extends BasicSuggestion {

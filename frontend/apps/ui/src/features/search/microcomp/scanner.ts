@@ -13,7 +13,9 @@ import {
   isSpaceSegment,
   isFreeTextSegment,
   splitByColon,
-  removeQuotes
+  removeQuotes,
+  getTagValueItemsFilter,
+  getTagValueItemsToExclude
 } from "./utils"
 
 import {CATEGORY, KEYWORDS, TAG, TAG_IMPLICIT_OPERATOR, TAG_OP} from "./const"
@@ -114,17 +116,23 @@ export function parseLastSegment(segment: string): ParseLastSegmentResult {
   }
 
   if (parts.length == 3) {
-    if (parts[0] == "tag")
+    if (parts[0] == "tag") {
+      // part[0] == "tag"
+      // part[1] == any | all | not i.e. operator
+      // part[2] == values:
+      //
+      //    1. inv
+      //    2. invoice,
+      //    3. "blue sky"
+      //    4. "big fat invoice","blue sky",important,
+      const {hasSuggestions, suggestions} = getTagValueSuggestion(parts[2])
+      console.log(suggestions)
       return {
         isValid: true,
-        hasSuggestions: true,
-        suggestions: {
-          type: "tag",
-          items: [],
-          filter: [],
-          exclude: []
-        }
+        hasSuggestions,
+        suggestions
       }
+    }
   }
 
   return {
@@ -284,5 +292,29 @@ export function getOperationSuggestion(
 
   return {
     hasSuggestions: false
+  }
+}
+
+export function getTagValueSuggestion(values: string): SuggestionResult {
+  const trimmedValues = values.trim()
+  if (trimmedValues.length == 0) {
+    return {
+      hasSuggestions: true,
+      suggestions: {
+        type: "tag"
+      }
+    }
+  }
+
+  const itemsToExclude = getTagValueItemsToExclude(values)
+  const itemsFilter = getTagValueItemsFilter(values)
+
+  return {
+    hasSuggestions: true,
+    suggestions: {
+      type: "tag",
+      filter: itemsFilter,
+      exclude: itemsToExclude
+    }
   }
 }

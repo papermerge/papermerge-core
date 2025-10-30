@@ -25,8 +25,6 @@ export default function Search({
     removeToken
   } = useTokenSearch({onSearch})
 
-  console.log(autocomplete?.type)
-
   const suggestions = <AutocompleteOptions suggestions={autocomplete} />
 
   return (
@@ -64,7 +62,9 @@ export default function Search({
 
       {autocomplete && (
         <Combobox.Dropdown>
-          <Combobox.Options>{suggestions}</Combobox.Options>
+          <Combobox.Options mah={200} style={{overflowY: "auto"}}>
+            {suggestions}
+          </Combobox.Options>
         </Combobox.Dropdown>
       )}
     </Combobox>

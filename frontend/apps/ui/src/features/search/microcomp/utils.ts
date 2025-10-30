@@ -165,9 +165,37 @@ export function autocompleteText(inputValue: string, val: string): string {
     // Replace the partial word with the complete val
     const prefix =
       lastSpaceIndex === -1 ? "" : trimmed.substring(0, lastSpaceIndex + 1)
+
+    if (val.includes(" ")) {
+      val = `"${val}"`
+    }
     return prefix + val
   }
 
   // If val doesn't start with the last word, just append it
+  if (val.includes(" ")) {
+    val = `"${val}"`
+  }
   return trimmed + val
+}
+
+/**
+ * Returns last item from the list
+ */
+export function getTagValueItemsFilter(values: string): string {
+  const trimmed = values.trim()
+  const items = trimmed.split(",")
+  const len = items.length
+
+  return items[len - 1].trim()
+}
+
+/**
+ * Returns all but last item from the list
+ */
+export function getTagValueItemsToExclude(values: string): string[] {
+  const trimmed = values.trim()
+  const items = trimmed.split(",")
+
+  return items.slice(0, -1)
 }

@@ -21,14 +21,19 @@ export default function AutocompleteOptions({suggestions}: Args) {
   )
 
   if (suggestions?.type == "tag" && tagsAreLoaded) {
-    if (tags.length === 0) {
+    const filterOne = tags.filter(t => !suggestions.exclude?.includes(t.name))
+    const filterTwo = filterOne.filter(t =>
+      t.name.includes(suggestions.filter || "")
+    )
+
+    if (filterTwo.length === 0) {
       suggestionComponents = (
         <Combobox.Option value="" disabled>
           No tags found
         </Combobox.Option>
       )
     } else {
-      suggestionComponents = tags.map(t => (
+      suggestionComponents = filterTwo.map(t => (
         <Combobox.Option key={t.id} value={t.name}>
           <Tag item={t} />
         </Combobox.Option>
@@ -37,7 +42,7 @@ export default function AutocompleteOptions({suggestions}: Args) {
   }
 
   if (suggestions?.type == "keyword" || suggestions?.type == "operator") {
-    suggestionComponents = suggestions?.items.map(ac => (
+    suggestionComponents = suggestions?.items?.map(ac => (
       <Combobox.Option key={ac} value={ac}>
         {ac}
       </Combobox.Option>

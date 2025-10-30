@@ -5,6 +5,8 @@ import type {Token, SearchSuggestion} from "@/features/search/microcomp/types"
 import {scanSearchText} from "@/features/search/microcomp/scanner"
 import {autocompleteText} from "@/features/search/microcomp/utils"
 
+const TOKEN_NEEDS_COLUMN = ["tag", "any", "all", "not"]
+
 interface UseTokenSearchProps {
   onSearch?: (tokens: Token[]) => void
 }
@@ -22,14 +24,17 @@ export const useTokenSearch = ({onSearch}: UseTokenSearchProps) => {
   const handleOptionSubmit = (val: string) => {
     let newInputValue = autocompleteText(inputValue, val)
 
-    newInputValue = `${newInputValue}:`
+    if (TOKEN_NEEDS_COLUMN.includes(val)) {
+      newInputValue = `${newInputValue}:`
+    } else {
+      combobox.closeDropdown()
+    }
+
     setInputValue(newInputValue)
-    console.log(newInputValue)
     const {hasSuggestions, suggestions} = scanSearchText(newInputValue)
     setHasAutocomplete(hasSuggestions)
-    console.log(hasAutocomplete)
     setAutocomplete(suggestions)
-    console.log(suggestions)
+    combobox.resetSelectedOption()
   }
 
   // Handle input change

@@ -86,7 +86,11 @@ export default function AutocompleteOptions({suggestions}: Args) {
     }
   }
 
-  return components
+  return (
+    <Combobox.Options mah={300} style={{overflowY: "auto"}}>
+      {components}
+    </Combobox.Options>
+  )
 }
 
 interface AutocompleTagOptionsArg {

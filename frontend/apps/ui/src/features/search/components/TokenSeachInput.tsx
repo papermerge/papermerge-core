@@ -59,13 +59,7 @@ export default function Search({
         </Box>
       </Combobox.Target>
 
-      {autocomplete && (
-        <Combobox.Dropdown>
-          <Combobox.Options mah={300} style={{overflowY: "auto"}}>
-            {suggestions}
-          </Combobox.Options>
-        </Combobox.Dropdown>
-      )}
+      {autocomplete && <Combobox.Dropdown>{suggestions}</Combobox.Dropdown>}
     </Combobox>
   )
 }

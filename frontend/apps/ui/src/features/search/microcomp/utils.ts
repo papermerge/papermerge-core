@@ -1,4 +1,4 @@
-import type {SearchSuggestion} from "./types"
+import type {SearchSuggestion, SuggestionType} from "./types"
 
 /**
  * Segment input string, preserving quoted strings
@@ -238,7 +238,15 @@ export function getTagValueItemsToExclude(values: string): string[] {
   return items.slice(0, -1).map(val => removeQuotes(val))
 }
 
-export function hasTagSuggestion(suggestions?: SearchSuggestion[]): boolean {
+interface HasTypeSuggestionArgs {
+  type: SuggestionType
+  suggestions?: SearchSuggestion[]
+}
+
+export function hasThisTypeSuggestion({
+  type,
+  suggestions
+}: HasTypeSuggestionArgs): boolean {
   if (!suggestions) {
     return false
   }
@@ -248,7 +256,7 @@ export function hasTagSuggestion(suggestions?: SearchSuggestion[]): boolean {
   }
 
   for (let i = 0; i < suggestions.length; i++) {
-    if (suggestions[i].type == "tag") {
+    if (suggestions[i].type == type) {
       return true
     }
   }

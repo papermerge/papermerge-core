@@ -34,6 +34,7 @@ export const useTokenSearch = ({onSearch}: UseTokenSearchProps) => {
     const {hasSuggestions, suggestions} = scanSearchText(newInputValue)
     setHasAutocomplete(hasSuggestions)
     setAutocomplete(suggestions)
+    console.log(suggestions)
     combobox.resetSelectedOption()
   }
 

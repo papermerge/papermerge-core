@@ -54,23 +54,8 @@ export function scanSearchText(input: string): ScanResult {
         suggestions,
         isValid
       }
-    } else {
-      const {token, error, isValid} = parseSegment(segment)
-      if (isValid && token) {
-        tokens.push(token)
-        i++
-        continue
-      }
-
-      if (!isValid && error) {
-        return {
-          tokens,
-          errors: [error],
-          isValid: false,
-          hasSuggestions: false
-        }
-      }
     }
+    i++
   }
 
   return {
@@ -104,7 +89,7 @@ export function parseLastSegment(segment: string): ParseLastSegmentResult {
   const parts = splitByColon(segment)
   if (parts.length == 2) {
     //cf, tag, category, title, owner etc
-    const {hasSuggestions, suggestions} = getOperationAndTagSuggestion(
+    const {hasSuggestions, suggestions} = getOperationAndKeywordSuggestion(
       parts[0] as KeywordType,
       parts[1]
     )
@@ -275,7 +260,7 @@ export function getKeywordSuggestions(text: string): SuggestionResult {
   }
 }
 
-export function getOperationAndTagSuggestion(
+export function getOperationAndKeywordSuggestion(
   text: KeywordType,
   value: string
 ): SuggestionResult {
@@ -299,6 +284,47 @@ export function getOperationAndTagSuggestion(
           type: "tag",
           filter: tagItemsFilter,
           exclude: tagItemsToExclude
+        }
+      ]
+    }
+  }
+
+  if (text == "cat") {
+    const catItemsToExclude = getTagValueItemsToExclude(value)
+    const catItemsFilter = getTagValueItemsFilter(value)
+
+    const all_cat_operators = ["any", "not"]
+    const all_filtered_operators = all_cat_operators.filter(op =>
+      op.startsWith(value)
+    )
+    const operators = value != "" ? all_filtered_operators : all_cat_operators
+    return {
+      hasSuggestions: true,
+      suggestions: [
+        {
+          type: "operator",
+          items: operators.sort()
+        },
+        {
+          type: "category",
+          filter: catItemsFilter,
+          exclude: catItemsToExclude
+        }
+      ]
+    }
+  }
+
+  if (text == "cf") {
+    const cfItemsToExclude = getTagValueItemsToExclude(value)
+    const cfItemsFilter = getTagValueItemsFilter(value)
+
+    return {
+      hasSuggestions: true,
+      suggestions: [
+        {
+          type: "customField",
+          filter: cfItemsFilter,
+          exclude: cfItemsToExclude
         }
       ]
     }

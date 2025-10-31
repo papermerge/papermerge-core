@@ -90,8 +90,14 @@ export interface SearchTagSuggestion extends BasicSuggestion {
 
 export interface SearchCategorySuggestion extends BasicSuggestion {
   type: "category"
-  filter: string[] // user already typed part of the name
-  exclude: string[] // already used in current token
+  filter?: string // user already typed part of the name
+  exclude?: string[] // already used in current token
+}
+
+export interface SearchCustomFieldSuggestion extends BasicSuggestion {
+  type: "customField"
+  filter?: string // user already typed part of the name
+  exclude?: string[] // already used in current token
 }
 
 export type SearchSuggestion =
@@ -99,6 +105,7 @@ export type SearchSuggestion =
   | SearchTagSuggestion
   | SearchKeywordSuggestion
   | SearchCategorySuggestion
+  | SearchCustomFieldSuggestion
 
 export interface ScanResult {
   /** Successfully scanned tokens */

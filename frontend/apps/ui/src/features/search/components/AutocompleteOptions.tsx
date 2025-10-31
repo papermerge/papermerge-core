@@ -2,16 +2,22 @@ import {Combobox, Loader} from "@mantine/core"
 import {ReactNode} from "react"
 import Tag from "@/components/Tag"
 import {
+  SearchCustomFieldSuggestion,
+  SearchCategorySuggestion,
   SearchOperatorSuggestion,
   SearchKeywordSuggestion,
   SearchSuggestion,
   SearchTagSuggestion
 } from "@/features/search/microcomp/types"
 import {useGetTagsQuery} from "@/features/tags/storage/api"
+import {useGetDocumentTypesQuery} from "@/features/document-types/storage/api"
+import {useGetCustomFieldsQuery} from "@/features/custom-fields/storage/api"
 import {skipToken} from "@reduxjs/toolkit/query"
-import {hasTagSuggestion} from "@/features/search/microcomp/utils"
+import {hasThisTypeSuggestion} from "@/features/search/microcomp/utils"
 import {ColoredTag} from "@/types"
 import {TFunction} from "i18next"
+import {Category} from "@/features/documents-by-category/types"
+import {CustomField} from "@/types"
 
 interface Args {
   suggestions?: SearchSuggestion[]
@@ -19,8 +25,24 @@ interface Args {
 
 export default function AutocompleteOptions({suggestions}: Args) {
   const {data: tags = [], isSuccess: tagsAreLoaded} = useGetTagsQuery(
-    hasTagSuggestion(suggestions) ? undefined : skipToken
+    hasThisTypeSuggestion({suggestions, type: "tag"}) ? undefined : skipToken
   )
+
+  const {data: categories = [], isSuccess: categoriesAreLoaded} =
+    useGetDocumentTypesQuery(
+      hasThisTypeSuggestion({suggestions, type: "category"})
+        ? undefined
+        : skipToken
+    )
+
+  const {data: customFields = [], isSuccess: customFieldsAreLoaded} =
+    useGetCustomFieldsQuery(
+      hasThisTypeSuggestion({suggestions, type: "customField"})
+        ? undefined
+        : skipToken
+    )
+
+  console.log(suggestions)
 
   let empty: ReactNode = (
     <Combobox.Option value="">
@@ -43,6 +65,26 @@ export default function AutocompleteOptions({suggestions}: Args) {
         <AutocompleTagOptions
           suggestion={suggestion}
           tags={tags}
+          group={group}
+        />
+      )
+    }
+
+    if (suggestion.type == "category" && categoriesAreLoaded) {
+      components.push(
+        <AutocompleCategoryOptions
+          suggestion={suggestion}
+          items={categories}
+          group={group}
+        />
+      )
+    }
+
+    if (suggestion.type == "customField" && customFieldsAreLoaded) {
+      components.push(
+        <AutocompleCustomFieldOptions
+          suggestion={suggestion}
+          items={customFields}
           group={group}
         />
       )
@@ -141,6 +183,76 @@ function AutocompleteOperatorOptions({
   if (group) {
     return (
       <Combobox.Group label={t?.("operator") || "Operator"}>
+        {ret}
+      </Combobox.Group>
+    )
+  }
+
+  return ret
+}
+
+interface AutocompleCategoryOptionsArgs {
+  items: Category[]
+  suggestion: SearchCategorySuggestion
+  group: boolean
+  t?: TFunction
+}
+
+function AutocompleCategoryOptions({
+  items,
+  suggestion,
+  group,
+  t
+}: AutocompleCategoryOptionsArgs) {
+  const filterOne = items.filter(i => !suggestion.exclude?.includes(i.name))
+  const filterTwo = filterOne.filter(i =>
+    i.name.toLocaleLowerCase().startsWith(suggestion.filter || "")
+  )
+
+  const ret = filterTwo.map(i => (
+    <Combobox.Option key={i.id} value={i.name}>
+      {i.name}
+    </Combobox.Option>
+  ))
+
+  if (group) {
+    return (
+      <Combobox.Group label={t?.("categories") || "Categories"}>
+        {ret}
+      </Combobox.Group>
+    )
+  }
+
+  return ret
+}
+
+interface AutocompleCustomFieldOptionsArgs {
+  items: CustomField[]
+  suggestion: SearchCustomFieldSuggestion
+  group: boolean
+  t?: TFunction
+}
+
+function AutocompleCustomFieldOptions({
+  items,
+  suggestion,
+  group,
+  t
+}: AutocompleCustomFieldOptionsArgs) {
+  const filterOne = items.filter(i => !suggestion.exclude?.includes(i.name))
+  const filterTwo = filterOne.filter(i =>
+    i.name.toLocaleLowerCase().startsWith(suggestion.filter || "")
+  )
+
+  const ret = filterTwo.map(i => (
+    <Combobox.Option key={i.id} value={i.name}>
+      {i.name}
+    </Combobox.Option>
+  ))
+
+  if (group) {
+    return (
+      <Combobox.Group label={t?.("customFields") || "Custom Fields"}>
         {ret}
       </Combobox.Group>
     )

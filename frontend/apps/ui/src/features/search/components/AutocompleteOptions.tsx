@@ -23,7 +23,7 @@ export default function AutocompleteOptions({suggestions}: Args) {
   if (suggestions?.type == "tag" && tagsAreLoaded) {
     const filterOne = tags.filter(t => !suggestions.exclude?.includes(t.name))
     const filterTwo = filterOne.filter(t =>
-      t.name.includes(suggestions.filter || "")
+      t.name.toLocaleLowerCase().startsWith(suggestions.filter || "")
     )
 
     if (filterTwo.length === 0) {

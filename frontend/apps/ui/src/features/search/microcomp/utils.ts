@@ -146,6 +146,32 @@ export function removeQuotes(str: string): string {
   return trimmed
 }
 
+function findLongestMatchingIndex(inputValue: string, val: string): number {
+  let bestIdx = -1
+  let longestMatchLength = 0
+
+  // Try each position in inputValue as a potential starting point
+  for (let i = 0; i < inputValue.length; i++) {
+    // Count how many characters match between inputValue[i:] and val prefix
+    let matchLength = 0
+    while (
+      i + matchLength < inputValue.length &&
+      matchLength < val.length &&
+      inputValue[i + matchLength] === val[matchLength]
+    ) {
+      matchLength++
+    }
+
+    // Update if this is the longest match found, or equal length (to get last occurrence)
+    if (matchLength > 0 && matchLength >= longestMatchLength) {
+      longestMatchLength = matchLength
+      bestIdx = i
+    }
+  }
+
+  return bestIdx
+}
+
 /**
  * autocompleteText("this is a t", "tag") -> this is a tag
  * autocompleteText("some   te", "text") -> some   text
@@ -156,15 +182,22 @@ export function autocompleteText(inputValue: string, val: string): string {
   const trimmed = inputValue.trimEnd()
 
   // Find the last word in the input (everything after the last space)
-  const lastSpaceIndex = trimmed.lastIndexOf(" ")
-  const lastWord =
-    lastSpaceIndex === -1 ? trimmed : trimmed.substring(lastSpaceIndex + 1)
+  const longestMatchingIndex = findLongestMatchingIndex(
+    trimmed.toLocaleLowerCase(),
+    val.toLocaleLowerCase()
+  )
+  const matchingWord =
+    longestMatchingIndex === -1
+      ? trimmed
+      : trimmed.substring(longestMatchingIndex)
 
   // Check if val starts with the last word (case-insensitive comparison)
-  if (val.toLowerCase().startsWith(lastWord.toLowerCase())) {
+  if (val.toLowerCase().startsWith(matchingWord.toLowerCase())) {
     // Replace the partial word with the complete val
     const prefix =
-      lastSpaceIndex === -1 ? "" : trimmed.substring(0, lastSpaceIndex + 1)
+      longestMatchingIndex === -1
+        ? ""
+        : trimmed.substring(0, longestMatchingIndex)
 
     if (val.includes(" ")) {
       val = `"${val}"`
@@ -197,5 +230,5 @@ export function getTagValueItemsToExclude(values: string): string[] {
   const trimmed = values.trim()
   const items = trimmed.split(",")
 
-  return items.slice(0, -1)
+  return items.slice(0, -1).map(val => removeQuotes(val))
 }

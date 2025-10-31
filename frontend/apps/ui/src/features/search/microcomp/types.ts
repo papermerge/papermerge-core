@@ -63,7 +63,7 @@ export type CurrentText = {
 }
 
 export type SuggestionType =
-  | "keyword"
+  | "filter"
   | "tag"
   | "operator"
   | "category"
@@ -78,8 +78,8 @@ export interface SearchOperatorSuggestion extends BasicSuggestion {
   type: "operator"
 }
 
-export interface SearchKeywordSuggestion extends BasicSuggestion {
-  type: "keyword"
+export interface SearchFilterSuggestion extends BasicSuggestion {
+  type: "filter"
 }
 
 export interface SearchTagSuggestion extends BasicSuggestion {
@@ -103,7 +103,7 @@ export interface SearchCustomFieldSuggestion extends BasicSuggestion {
 export type SearchSuggestion =
   | SearchOperatorSuggestion
   | SearchTagSuggestion
-  | SearchKeywordSuggestion
+  | SearchFilterSuggestion
   | SearchCategorySuggestion
   | SearchCustomFieldSuggestion
 

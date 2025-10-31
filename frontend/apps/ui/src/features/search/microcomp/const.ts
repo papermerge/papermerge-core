@@ -7,14 +7,14 @@ export const TAG_IMPLICIT_OPERATOR = TAG_OP_ALL
 export const CATEGORY = "cat"
 export const CUSTOM_FIELD = "cf"
 
-export const KEYWORDS = [
-  "cat", // Category
-  "tag",
-  "cf",
-  "title",
-  "created_at",
-  "created_by",
-  "updated_at",
-  "updated_by",
-  "owner"
+export const FILTERS = [
+  "cat:", // Category
+  "tag:",
+  "cf:",
+  "title:",
+  "created_at:",
+  "created_by:",
+  "updated_at:",
+  "updated_by:",
+  "owner:"
 ]

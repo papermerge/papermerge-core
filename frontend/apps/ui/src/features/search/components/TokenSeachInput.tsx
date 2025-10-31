@@ -22,6 +22,7 @@ export default function Search({
     activeIndex,
     handleInputChange,
     handleOptionSubmit,
+    handleOnFocus,
     removeToken
   } = useTokenSearch({onSearch})
 
@@ -50,6 +51,7 @@ export default function Search({
             onChange={event => {
               handleInputChange(event)
             }}
+            onFocus={handleOnFocus}
             style={{
               flex: 1,
               minWidth: 100,

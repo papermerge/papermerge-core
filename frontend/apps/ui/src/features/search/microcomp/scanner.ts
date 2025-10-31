@@ -6,7 +6,7 @@ import {
   Token,
   TagOperator,
   SuggestionResult,
-  KeywordType
+  FilterType
 } from "./types"
 import {
   segmentInput,
@@ -18,7 +18,7 @@ import {
   getTagValueItemsToExclude
 } from "./utils"
 
-import {CATEGORY, KEYWORDS, TAG, TAG_IMPLICIT_OPERATOR, TAG_OP} from "./const"
+import {CATEGORY, FILTERS, TAG, TAG_IMPLICIT_OPERATOR, TAG_OP} from "./const"
 
 export function scanSearchText(input: string): ScanResult {
   const tokens: Token[] = []
@@ -26,7 +26,17 @@ export function scanSearchText(input: string): ScanResult {
 
   const trimmed = input.trim()
   if (!trimmed) {
-    return {tokens, isValid: true, hasSuggestions: false}
+    return {
+      isValid: true,
+      tokens: [],
+      hasSuggestions: true,
+      suggestions: [
+        {
+          type: "filter",
+          items: FILTERS.sort()
+        }
+      ]
+    }
   }
 
   // Split input into segments, preserving quoted strings
@@ -78,7 +88,7 @@ export function parseLastSegment(segment: string): ParseLastSegmentResult {
 
   if (!segment.includes(":")) {
     // user typed some non empty characters (but without a column)
-    const {hasSuggestions, suggestions} = getKeywordSuggestions(segment)
+    const {hasSuggestions, suggestions} = getFilterSuggestions(segment)
     return {
       isValid: true,
       hasSuggestions,
@@ -89,8 +99,8 @@ export function parseLastSegment(segment: string): ParseLastSegmentResult {
   const parts = splitByColon(segment)
   if (parts.length == 2) {
     //cf, tag, category, title, owner etc
-    const {hasSuggestions, suggestions} = getOperationAndKeywordSuggestion(
-      parts[0] as KeywordType,
+    const {hasSuggestions, suggestions} = getOperationAndFilterSuggestion(
+      parts[0] as FilterType,
       parts[1]
     )
     return {
@@ -111,7 +121,15 @@ export function parseLastSegment(segment: string): ParseLastSegmentResult {
       //    3. "blue sky"
       //    4. "big fat invoice","blue sky",important,
       const {hasSuggestions, suggestions} = getTagValueSuggestion(parts[2])
-      console.log(suggestions)
+      return {
+        isValid: true,
+        hasSuggestions,
+        suggestions
+      }
+    }
+
+    if (parts[0] == "cat") {
+      const {hasSuggestions, suggestions} = getCatValueSuggestion(parts[2])
       return {
         isValid: true,
         hasSuggestions,
@@ -240,15 +258,27 @@ export function parseCategoryToken(
   raw: string
 ): ParseSegmentResult {}
 
-export function getKeywordSuggestions(text: string): SuggestionResult {
-  const matches = KEYWORDS.filter(k => k.startsWith(text))
+export function getAllFiltersSuggestion(): SuggestionResult {
+  return {
+    hasSuggestions: true,
+    suggestions: [
+      {
+        type: "filter",
+        items: FILTERS.sort()
+      }
+    ]
+  }
+}
+
+export function getFilterSuggestions(text: string): SuggestionResult {
+  const matches = FILTERS.filter(k => k.startsWith(text))
 
   if (matches.length > 0) {
     return {
       hasSuggestions: true,
       suggestions: [
         {
-          type: "keyword",
+          type: "filter",
           items: matches.sort()
         }
       ]
@@ -260,15 +290,15 @@ export function getKeywordSuggestions(text: string): SuggestionResult {
   }
 }
 
-export function getOperationAndKeywordSuggestion(
-  text: KeywordType,
+export function getOperationAndFilterSuggestion(
+  text: FilterType,
   value: string
 ): SuggestionResult {
   if (text == "tag") {
     const tagItemsToExclude = getTagValueItemsToExclude(value)
     const tagItemsFilter = getTagValueItemsFilter(value)
 
-    const all_tag_operators = ["all", "any", "not"]
+    const all_tag_operators = ["all:", "any:", "not:"]
     const all_filtered_operators = all_tag_operators.filter(op =>
       op.startsWith(value)
     )
@@ -293,7 +323,7 @@ export function getOperationAndKeywordSuggestion(
     const catItemsToExclude = getTagValueItemsToExclude(value)
     const catItemsFilter = getTagValueItemsFilter(value)
 
-    const all_cat_operators = ["any", "not"]
+    const all_cat_operators = ["any:", "not:"]
     const all_filtered_operators = all_cat_operators.filter(op =>
       op.startsWith(value)
     )
@@ -356,6 +386,34 @@ export function getTagValueSuggestion(values: string): SuggestionResult {
     suggestions: [
       {
         type: "tag",
+        filter: itemsFilter,
+        exclude: itemsToExclude
+      }
+    ]
+  }
+}
+
+export function getCatValueSuggestion(values: string): SuggestionResult {
+  const trimmedValues = values.trim()
+  if (trimmedValues.length == 0) {
+    return {
+      hasSuggestions: true,
+      suggestions: [
+        {
+          type: "category"
+        }
+      ]
+    }
+  }
+
+  const itemsToExclude = getTagValueItemsToExclude(values)
+  const itemsFilter = getTagValueItemsFilter(values)
+
+  return {
+    hasSuggestions: true,
+    suggestions: [
+      {
+        type: "category",
         filter: itemsFilter,
         exclude: itemsToExclude
       }

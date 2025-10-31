@@ -3,7 +3,7 @@ import logoURL from "/logo_transparent_bg.svg"
 
 import classes from "./Header.module.css"
 
-import Search from "./Search"
+import Search from "@/features/search/components/TokenSeachInput"
 import SidebarToggle from "./SidebarToggle"
 import UserMenu from "./UserMenu"
 

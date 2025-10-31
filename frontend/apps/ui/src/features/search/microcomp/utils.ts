@@ -148,7 +148,10 @@ export function removeQuotes(str: string): string {
   return trimmed
 }
 
-function findLongestMatchingIndex(inputValue: string, val: string): number {
+export function findLongestMatchingIndex(
+  inputValue: string,
+  val: string
+): number {
   let bestIdx = -1
   let longestMatchLength = 0
 

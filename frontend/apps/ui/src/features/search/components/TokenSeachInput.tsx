@@ -17,7 +17,6 @@ export default function Search({
     inputValue,
     tokens,
     autocomplete,
-    hasAutocomplete,
     handleInputChange,
     handleOptionSubmit,
     handleOnFocus,

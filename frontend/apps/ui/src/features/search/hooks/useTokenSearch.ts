@@ -44,7 +44,6 @@ export const useTokenSearch = ({onSearch}: UseTokenSearchProps) => {
     const nonEmptySpaceToken = localTokens.find(token => token.type != "space")
     if (nonEmptySpaceToken) {
       setInputValue("")
-      console.log(localTokens)
     } else {
       setInputValue(input)
     }

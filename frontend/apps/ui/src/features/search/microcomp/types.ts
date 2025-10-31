@@ -41,16 +41,19 @@ export interface FTSToken extends BasicToken {
 export interface CategoryToken extends BasicToken {
   type: "cat"
   operator?: CategoryOperator
+  operatorIsImplicit?: boolean
 }
 
 export interface TagToken extends BasicToken {
   type: "tag"
   operator?: TagOperator
+  operatorIsImplicit?: boolean
 }
 
 export interface CustomFieldToken extends BasicToken {
   type: "cf"
   operator?: CustomFieldOperator
+  operatorIsImplicit?: boolean
 }
 
 export interface SpaceToken extends BasicToken {

@@ -10,8 +10,8 @@ describe("scanSearchText", () => {
     expect(result.hasSuggestions).toBe(true)
     expect(result.suggestions).toEqual([
       {
-        type: "keyword",
-        items: ["tag", "title"].sort()
+        type: "filter",
+        items: ["tag:", "title:"].sort()
       }
     ])
   })
@@ -24,8 +24,8 @@ describe("scanSearchText", () => {
     expect(result.hasSuggestions).toBe(true)
     expect(result.suggestions).toEqual([
       {
-        type: "keyword",
-        items: ["cat", "cf", "created_by", "created_at"].sort()
+        type: "filter",
+        items: ["cat:", "cf:", "created_by:", "created_at:"].sort()
       }
     ])
   })
@@ -39,7 +39,7 @@ describe("scanSearchText", () => {
     expect(result.suggestions).toEqual([
       {
         type: "operator",
-        items: ["any", "not", "all"].sort()
+        items: ["any:", "not:", "all:"].sort()
       },
       {
         type: "tag",

@@ -1,3 +1,5 @@
+import type {SearchSuggestion} from "./types"
+
 /**
  * Segment input string, preserving quoted strings
  * Handles both quoted values AND quoted field names
@@ -231,4 +233,22 @@ export function getTagValueItemsToExclude(values: string): string[] {
   const items = trimmed.split(",")
 
   return items.slice(0, -1).map(val => removeQuotes(val))
+}
+
+export function hasTagSuggestion(suggestions?: SearchSuggestion[]): boolean {
+  if (!suggestions) {
+    return false
+  }
+
+  if (suggestions && suggestions.length == 0) {
+    return false
+  }
+
+  for (let i = 0; i < suggestions.length; i++) {
+    if (suggestions[i].type == "tag") {
+      return true
+    }
+  }
+
+  return false
 }

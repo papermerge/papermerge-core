@@ -104,7 +104,7 @@ export function parseLastSegment(segment: string): ParseLastSegmentResult {
   const parts = splitByColon(segment)
   if (parts.length == 2) {
     //cf, tag, category, title, owner etc
-    const {hasSuggestions, suggestions} = getOperationSuggestion(
+    const {hasSuggestions, suggestions} = getOperationAndTagSuggestion(
       parts[0] as KeywordType,
       parts[1]
     )
@@ -261,10 +261,12 @@ export function getKeywordSuggestions(text: string): SuggestionResult {
   if (matches.length > 0) {
     return {
       hasSuggestions: true,
-      suggestions: {
-        type: "keyword",
-        items: matches.sort()
-      }
+      suggestions: [
+        {
+          type: "keyword",
+          items: matches.sort()
+        }
+      ]
     }
   }
 
@@ -273,20 +275,32 @@ export function getKeywordSuggestions(text: string): SuggestionResult {
   }
 }
 
-export function getOperationSuggestion(
+export function getOperationAndTagSuggestion(
   text: KeywordType,
-  filter: string
+  value: string
 ): SuggestionResult {
   if (text == "tag") {
+    const tagItemsToExclude = getTagValueItemsToExclude(value)
+    const tagItemsFilter = getTagValueItemsFilter(value)
+
     const all_tag_operators = ["all", "any", "not"]
-    const all_filtered = all_tag_operators.filter(op => op.startsWith(filter))
-    const operators = filter != "" ? all_filtered : all_tag_operators
+    const all_filtered_operators = all_tag_operators.filter(op =>
+      op.startsWith(value)
+    )
+    const operators = value != "" ? all_filtered_operators : all_tag_operators
     return {
       hasSuggestions: true,
-      suggestions: {
-        type: "operator",
-        items: operators.sort()
-      }
+      suggestions: [
+        {
+          type: "operator",
+          items: operators.sort()
+        },
+        {
+          type: "tag",
+          filter: tagItemsFilter,
+          exclude: tagItemsToExclude
+        }
+      ]
     }
   }
 
@@ -300,9 +314,11 @@ export function getTagValueSuggestion(values: string): SuggestionResult {
   if (trimmedValues.length == 0) {
     return {
       hasSuggestions: true,
-      suggestions: {
-        type: "tag"
-      }
+      suggestions: [
+        {
+          type: "tag"
+        }
+      ]
     }
   }
 
@@ -311,10 +327,12 @@ export function getTagValueSuggestion(values: string): SuggestionResult {
 
   return {
     hasSuggestions: true,
-    suggestions: {
-      type: "tag",
-      filter: itemsFilter,
-      exclude: itemsToExclude
-    }
+    suggestions: [
+      {
+        type: "tag",
+        filter: itemsFilter,
+        exclude: itemsToExclude
+      }
+    ]
   }
 }

@@ -113,7 +113,7 @@ export interface ScanResult {
   isValid: boolean
 
   hasSuggestions: boolean
-  suggestions?: SearchSuggestion
+  suggestions?: SearchSuggestion[]
 }
 
 export interface ParseLastSegmentResult {
@@ -121,7 +121,7 @@ export interface ParseLastSegmentResult {
   error?: ScannerError
   isValid: boolean
   hasSuggestions: boolean
-  suggestions?: SearchSuggestion
+  suggestions?: SearchSuggestion[]
 }
 
 export interface ParseSegmentResult {
@@ -132,5 +132,5 @@ export interface ParseSegmentResult {
 
 export interface SuggestionResult {
   hasSuggestions: boolean
-  suggestions?: SearchSuggestion
+  suggestions?: SearchSuggestion[]
 }

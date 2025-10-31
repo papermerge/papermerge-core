@@ -15,7 +15,7 @@ export const useTokenSearch = ({onSearch}: UseTokenSearchProps) => {
   const [inputValue, setInputValue] = useState("")
   const [tokens, setTokens] = useState<Token[]>([])
   const [hasAutocomplete, setHasAutocomplete] = useState(false)
-  const [autocomplete, setAutocomplete] = useState<SearchSuggestion>()
+  const [autocomplete, setAutocomplete] = useState<SearchSuggestion[]>()
   const [activeIndex, setActiveIndex] = useState(0)
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption()

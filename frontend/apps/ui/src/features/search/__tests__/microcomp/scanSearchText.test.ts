@@ -8,10 +8,12 @@ describe("scanSearchText", () => {
     const result = scanSearchText(input)
 
     expect(result.hasSuggestions).toBe(true)
-    expect(result.suggestions).toEqual({
-      type: "keyword",
-      items: ["tag", "title"].sort()
-    })
+    expect(result.suggestions).toEqual([
+      {
+        type: "keyword",
+        items: ["tag", "title"].sort()
+      }
+    ])
   })
 
   //----------------------------------------------
@@ -20,10 +22,12 @@ describe("scanSearchText", () => {
     const result = scanSearchText(input)
 
     expect(result.hasSuggestions).toBe(true)
-    expect(result.suggestions).toEqual({
-      type: "keyword",
-      items: ["cat", "cf", "created_by", "created_at"].sort()
-    })
+    expect(result.suggestions).toEqual([
+      {
+        type: "keyword",
+        items: ["cat", "cf", "created_by", "created_at"].sort()
+      }
+    ])
   })
 
   //----------------------------------------------
@@ -32,10 +36,17 @@ describe("scanSearchText", () => {
     const result = scanSearchText(input)
 
     expect(result.hasSuggestions).toBe(true)
-    expect(result.suggestions).toEqual({
-      type: "operator",
-      items: ["any", "not", "all"].sort()
-    })
+    expect(result.suggestions).toEqual([
+      {
+        type: "operator",
+        items: ["any", "not", "all"].sort()
+      },
+      {
+        type: "tag",
+        exclude: [],
+        filter: ""
+      }
+    ])
   })
 
   //----------------------------------------------
@@ -43,8 +54,15 @@ describe("scanSearchText", () => {
     const input = "some text tag:invoice"
     const result = scanSearchText(input)
 
-    expect(result.hasSuggestions).toBe(false)
-    expect(result.suggestions).toEqual(undefined)
+    expect(result.hasSuggestions).toBe(true)
+    expect(result.suggestions).toEqual([
+      {type: "operator", items: []},
+      {
+        type: "tag",
+        exclude: [],
+        filter: "invoice"
+      }
+    ])
   })
 
   //----------------------------------------------
@@ -52,8 +70,15 @@ describe("scanSearchText", () => {
     const input = "some text tag:invoice   " // no comma, however there are some spaces
     const result = scanSearchText(input)
 
-    expect(result.hasSuggestions).toBe(false)
-    expect(result.suggestions).toEqual(undefined)
+    expect(result.hasSuggestions).toBe(true)
+    expect(result.suggestions).toEqual([
+      {type: "operator", items: []},
+      {
+        type: "tag",
+        exclude: [],
+        filter: "invoice"
+      }
+    ])
   })
 
   //----------------------------------------------
@@ -62,8 +87,16 @@ describe("scanSearchText", () => {
     const result = scanSearchText(input)
 
     expect(result.hasSuggestions).toBe(true)
-    expect(result.suggestions).toEqual({
-      type: "tag"
-    })
+    expect(result.suggestions).toEqual([
+      {
+        type: "operator",
+        items: []
+      },
+      {
+        type: "tag",
+        exclude: ["invoice"],
+        filter: ""
+      }
+    ])
   })
 })

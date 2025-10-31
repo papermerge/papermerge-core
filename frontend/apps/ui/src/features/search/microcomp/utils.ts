@@ -1,18 +1,25 @@
 import type {SearchSuggestion, SuggestionType} from "./types"
 
+interface SegmentInputResult {
+  segments: string[]
+  nonEmptyInputCompletedWithSpace: boolean
+}
+
 /**
  * Segment input string, preserving quoted strings
  * Handles both quoted values AND quoted field names
  * Spaces count as tokens as well.
  */
-export function segmentInput(input: string): string[] {
+export function segmentInput(input: string): SegmentInputResult {
   const segments: string[] = []
   let current = ""
   let inQuotes = false
   let quoteChar = ""
+  let nonEmptyInputCompletedWithSpace = false
 
   for (let i = 0; i < input.length; i++) {
     const char = input[i]
+    nonEmptyInputCompletedWithSpace = false
 
     // Handle quote characters
     if ((char === '"' || char === "'") && !inQuotes) {
@@ -31,6 +38,7 @@ export function segmentInput(input: string): string[] {
 
     if (char === " " && !inQuotes && current.trim() != "") {
       segments.push(current)
+      nonEmptyInputCompletedWithSpace = true
       current = ""
       continue
     }
@@ -50,11 +58,11 @@ export function segmentInput(input: string): string[] {
   }
 
   // Add remaining content
-  if (current.trim()) {
-    segments.push(current.trim())
+  if (current) {
+    segments.push(current)
   }
 
-  return segments
+  return {segments, nonEmptyInputCompletedWithSpace}
 }
 
 export function isSpaceSegment(text: string): boolean {

@@ -1,33 +1,31 @@
 import {
   ScannerError,
   ScanResult,
-  ParseLastSegmentResult,
   ParseSegmentResult,
   Token,
   TagOperator,
+  CategoryOperator,
   SuggestionResult,
-  FilterType
+  FilterType,
+  TagToken
 } from "./types"
 import {
   segmentInput,
   isSpaceSegment,
-  isFreeTextSegment,
   splitByColon,
   removeQuotes,
   getTagValueItemsFilter,
   getTagValueItemsToExclude
 } from "./utils"
 
-import {CATEGORY, FILTERS, TAG, TAG_IMPLICIT_OPERATOR, TAG_OP} from "./const"
+import {FILTERS, TAG_IMPLICIT_OPERATOR} from "./const"
 
 export function scanSearchText(input: string): ScanResult {
   const tokens: Token[] = []
   const errors: ScannerError[] = []
 
-  const trimmed = input.trim()
-  if (!trimmed) {
+  if (!input.trim()) {
     return {
-      isValid: true,
       tokens: [],
       hasSuggestions: true,
       suggestions: [
@@ -40,7 +38,7 @@ export function scanSearchText(input: string): ScanResult {
   }
 
   // Split input into segments, preserving quoted strings
-  const segments = segmentInput(trimmed)
+  const {segments, nonEmptyInputCompletedWithSpace} = segmentInput(input)
   let i = 0
 
   while (i < segments.length) {
@@ -48,21 +46,16 @@ export function scanSearchText(input: string): ScanResult {
     if (i == segments.length - 1) {
       // last segment, which may mean
       // that user is still typing it
-      const {token, isValid, error, hasSuggestions, suggestions} =
-        parseLastSegment(segment)
-      if (isValid && token) {
+      const {token, tokenIsComplete, hasSuggestions, suggestions} =
+        parseSegment(segment, nonEmptyInputCompletedWithSpace)
+      if (tokenIsComplete && token) {
         tokens.push(token)
-      }
-      if (!isValid && error) {
-        errors.push(error)
       }
 
       return {
         tokens,
-        errors,
         hasSuggestions,
-        suggestions,
-        isValid
+        suggestions
       }
     }
     i++
@@ -70,27 +63,38 @@ export function scanSearchText(input: string): ScanResult {
 
   return {
     tokens,
-    isValid: true,
     hasSuggestions: false
   }
 }
 
-export function parseLastSegment(segment: string): ParseLastSegmentResult {
+export function parseSegment(
+  segment: string,
+  nonEmptyInputCompletedWithSpace: boolean
+): ParseSegmentResult {
   if (isSpaceSegment(segment)) {
     const token = {
       type: "space" as const,
       count: segment.length,
-      values: [],
       raw: segment
     }
-    return {token, isValid: true, hasSuggestions: false}
+    return {
+      token,
+      tokenIsComplete: true,
+      hasSuggestions: true,
+      suggestions: [
+        {
+          type: "filter",
+          items: FILTERS.sort()
+        }
+      ]
+    }
   }
 
   if (!segment.includes(":")) {
     // user typed some non empty characters (but without a column)
     const {hasSuggestions, suggestions} = getFilterSuggestions(segment)
     return {
-      isValid: true,
+      tokenIsComplete: false,
       hasSuggestions,
       suggestions
     }
@@ -99,12 +103,15 @@ export function parseLastSegment(segment: string): ParseLastSegmentResult {
   const parts = splitByColon(segment)
   if (parts.length == 2) {
     //cf, tag, category, title, owner etc
-    const {hasSuggestions, suggestions} = getOperationAndFilterSuggestion(
-      parts[0] as FilterType,
-      parts[1]
-    )
+    const {hasSuggestions, suggestions, token, tokenIsComplete} =
+      parseTwoPartsSegment(
+        parts[0] as FilterType,
+        parts[1],
+        nonEmptyInputCompletedWithSpace
+      )
     return {
-      isValid: true,
+      token,
+      tokenIsComplete,
       hasSuggestions,
       suggestions
     }
@@ -120,18 +127,22 @@ export function parseLastSegment(segment: string): ParseLastSegmentResult {
       //    2. invoice,
       //    3. "blue sky"
       //    4. "big fat invoice","blue sky",important,
-      const {hasSuggestions, suggestions} = getTagValueSuggestion(parts[2])
+      const {hasSuggestions, suggestions, token, tokenIsComplete} =
+        parseThreePartsTagSegment(parts[1], parts[1], parts[2])
       return {
-        isValid: true,
+        token,
+        tokenIsComplete,
         hasSuggestions,
         suggestions
       }
     }
 
     if (parts[0] == "cat") {
-      const {hasSuggestions, suggestions} = getCatValueSuggestion(parts[2])
+      const {hasSuggestions, suggestions, token, tokenIsComplete} =
+        parseThreePartsCatSegment(parts[1], parts[1], parts[2])
       return {
-        isValid: true,
+        token,
+        tokenIsComplete,
         hasSuggestions,
         suggestions
       }
@@ -139,127 +150,14 @@ export function parseLastSegment(segment: string): ParseLastSegmentResult {
   }
 
   return {
-    isValid: true,
-    hasSuggestions: false
+    hasSuggestions: false,
+    tokenIsComplete: false
   }
 }
-
-export function parseSegment(segment: string): ParseSegmentResult {
-  if (isSpaceSegment(segment)) {
-    const token = {
-      type: "space" as const,
-      count: segment.length,
-      values: [],
-      raw: segment
-    }
-    return {token, isValid: true}
-  }
-
-  if (isFreeTextSegment(segment)) {
-    const token = {
-      type: "fts" as const,
-      values: [segment],
-      raw: segment
-    }
-
-    return {token, isValid: true}
-  }
-
-  return parseCompleteToken(segment)
-}
-
-export function parseCompleteToken(segment: string): ParseSegmentResult {
-  const parts = splitByColon(segment)
-
-  if (parts.length < 2) {
-    return {
-      error: {
-        message: `Invalid token format: ${segment}`,
-        token: segment
-      },
-      isValid: false
-    }
-  }
-
-  const [key, ...rest] = parts
-  const keyLower = key.toLowerCase()
-
-  if (TAG == keyLower) {
-    return parseTagToken(rest, segment)
-  }
-
-  if (CATEGORY == keyLower) {
-    return parseCategoryToken(rest, segment)
-  }
-
-  return {
-    error: {
-      message: `Unknown key: ${key}`,
-      token: key
-    },
-    isValid: false
-  }
-}
-
-export function parseTagToken(
-  parts: string[],
-  raw: string
-): ParseSegmentResult {
-  if (parts.length == 0 || (parts.length == 1 && parts[0].trim() == "")) {
-    return {
-      error: {
-        message: `Incomplete token`,
-        token: raw
-      },
-      isValid: false
-    }
-  }
-
-  if (parts.length == 2) {
-    // part[0] == <operator>
-    // part[1] == values
-    if (!TAG_OP.includes(parts[0])) {
-      return {
-        error: {
-          message: `Unknown operator ${parts[0]}`
-        },
-        isValid: false
-      }
-    }
-    const values = parts[1].split(",").map(v => removeQuotes(v))
-    return {
-      token: {
-        type: "tag",
-        operator: parts[0] as TagOperator,
-        values: values,
-        raw
-      },
-      isValid: true
-    }
-  }
-
-  // implicit operator -> TAG_OP_ALL
-  //part[0] == values
-  const values = parts[0].split(",").map(v => removeQuotes(v))
-
-  return {
-    token: {
-      type: "tag",
-      operator: TAG_IMPLICIT_OPERATOR,
-      values: values,
-      raw
-    },
-    isValid: true
-  }
-}
-
-export function parseCategoryToken(
-  parts: string[],
-  raw: string
-): ParseSegmentResult {}
 
 export function getAllFiltersSuggestion(): SuggestionResult {
   return {
+    tokenIsComplete: false,
     hasSuggestions: true,
     suggestions: [
       {
@@ -275,6 +173,7 @@ export function getFilterSuggestions(text: string): SuggestionResult {
 
   if (matches.length > 0) {
     return {
+      tokenIsComplete: false,
       hasSuggestions: true,
       suggestions: [
         {
@@ -286,24 +185,52 @@ export function getFilterSuggestions(text: string): SuggestionResult {
   }
 
   return {
+    tokenIsComplete: false,
     hasSuggestions: false
   }
 }
 
-export function getOperationAndFilterSuggestion(
-  text: FilterType,
-  value: string
+export function parseTwoPartsSegment(
+  part1: FilterType,
+  part2: string,
+  nonEmptyInputCompletedWithSpace: boolean
 ): SuggestionResult {
-  if (text == "tag") {
-    const tagItemsToExclude = getTagValueItemsToExclude(value)
-    const tagItemsFilter = getTagValueItemsFilter(value)
+  if (part1 == "tag") {
+    const tagItemsToExclude = getTagValueItemsToExclude(part2)
+    const tagItemsFilter = getTagValueItemsFilter(part2)
 
     const all_tag_operators = ["all:", "any:", "not:"]
     const all_filtered_operators = all_tag_operators.filter(op =>
-      op.startsWith(value)
+      op.startsWith(part2)
     )
-    const operators = value != "" ? all_filtered_operators : all_tag_operators
+    const operators = part2 != "" ? all_filtered_operators : all_tag_operators
+    let token: TagToken = {
+      type: "tag"
+    }
+
+    if (nonEmptyInputCompletedWithSpace) {
+      /**
+       *  user typed "tag:invoice " i.e. with space at the end
+       *  signaling that he/she wants to proceed with next filter
+       * */
+      token.operator = TAG_IMPLICIT_OPERATOR
+      token.values = part2.split(",").map(t => removeQuotes(t))
+      return {
+        token: token,
+        tokenIsComplete: true,
+        hasSuggestions: true,
+        suggestions: [
+          {
+            type: "filter",
+            items: FILTERS.sort()
+          }
+        ]
+      }
+    }
+
     return {
+      token: token,
+      tokenIsComplete: false,
       hasSuggestions: true,
       suggestions: [
         {
@@ -319,16 +246,20 @@ export function getOperationAndFilterSuggestion(
     }
   }
 
-  if (text == "cat") {
-    const catItemsToExclude = getTagValueItemsToExclude(value)
-    const catItemsFilter = getTagValueItemsFilter(value)
+  if (part1 == "cat") {
+    const catItemsToExclude = getTagValueItemsToExclude(part2)
+    const catItemsFilter = getTagValueItemsFilter(part2)
 
     const all_cat_operators = ["any:", "not:"]
     const all_filtered_operators = all_cat_operators.filter(op =>
-      op.startsWith(value)
+      op.startsWith(part2)
     )
-    const operators = value != "" ? all_filtered_operators : all_cat_operators
+    const operators = part2 != "" ? all_filtered_operators : all_cat_operators
     return {
+      token: {
+        type: "cat"
+      },
+      tokenIsComplete: false,
       hasSuggestions: true,
       suggestions: [
         {
@@ -344,11 +275,15 @@ export function getOperationAndFilterSuggestion(
     }
   }
 
-  if (text == "cf") {
-    const cfItemsToExclude = getTagValueItemsToExclude(value)
-    const cfItemsFilter = getTagValueItemsFilter(value)
+  if (part1 == "cf") {
+    const cfItemsToExclude = getTagValueItemsToExclude(part2)
+    const cfItemsFilter = getTagValueItemsFilter(part2)
 
     return {
+      token: {
+        type: "cf"
+      },
+      tokenIsComplete: false,
       hasSuggestions: true,
       suggestions: [
         {
@@ -361,14 +296,24 @@ export function getOperationAndFilterSuggestion(
   }
 
   return {
-    hasSuggestions: false
+    hasSuggestions: false,
+    tokenIsComplete: false
   }
 }
 
-export function getTagValueSuggestion(values: string): SuggestionResult {
-  const trimmedValues = values.trim()
+export function parseThreePartsTagSegment(
+  _: string,
+  part2: string,
+  part3: string
+): SuggestionResult {
+  const trimmedValues = part3.trim()
   if (trimmedValues.length == 0) {
     return {
+      token: {
+        type: "tag",
+        operator: part2 as TagOperator
+      },
+      tokenIsComplete: false,
       hasSuggestions: true,
       suggestions: [
         {
@@ -378,11 +323,17 @@ export function getTagValueSuggestion(values: string): SuggestionResult {
     }
   }
 
-  const itemsToExclude = getTagValueItemsToExclude(values)
-  const itemsFilter = getTagValueItemsFilter(values)
+  const itemsToExclude = getTagValueItemsToExclude(part3)
+  const itemsFilter = getTagValueItemsFilter(part3)
 
   return {
     hasSuggestions: true,
+    token: {
+      type: "tag",
+      operator: part2 as TagOperator,
+      values: part3.split(",").map(t => removeQuotes(t))
+    },
+    tokenIsComplete: false,
     suggestions: [
       {
         type: "tag",
@@ -393,10 +344,19 @@ export function getTagValueSuggestion(values: string): SuggestionResult {
   }
 }
 
-export function getCatValueSuggestion(values: string): SuggestionResult {
-  const trimmedValues = values.trim()
+export function parseThreePartsCatSegment(
+  _: string,
+  part2: string,
+  part3: string
+): SuggestionResult {
+  const trimmedValues = part3.trim()
   if (trimmedValues.length == 0) {
     return {
+      token: {
+        type: "cat",
+        operator: part2 as CategoryOperator
+      },
+      tokenIsComplete: false,
       hasSuggestions: true,
       suggestions: [
         {
@@ -406,11 +366,17 @@ export function getCatValueSuggestion(values: string): SuggestionResult {
     }
   }
 
-  const itemsToExclude = getTagValueItemsToExclude(values)
-  const itemsFilter = getTagValueItemsFilter(values)
+  const itemsToExclude = getTagValueItemsToExclude(part3)
+  const itemsFilter = getTagValueItemsFilter(part3)
 
   return {
     hasSuggestions: true,
+    token: {
+      type: "cat",
+      operator: part2 as CategoryOperator,
+      values: part3.split(",").map(t => removeQuotes(t))
+    },
+    tokenIsComplete: false,
     suggestions: [
       {
         type: "category",

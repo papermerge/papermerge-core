@@ -1,4 +1,3 @@
-import React from "react"
 import {Combobox, TextInput, Box} from "@mantine/core"
 import {useTokenSearch} from "@/features/search/hooks/useTokenSearch"
 import type {Token} from "@/features/search/microcomp/types"
@@ -19,7 +18,6 @@ export default function Search({
     tokens,
     autocomplete,
     hasAutocomplete,
-    activeIndex,
     handleInputChange,
     handleOptionSubmit,
     handleOnFocus,

@@ -11,7 +11,7 @@ export type TokenType =
   | "updated_by"
   | "owner"
 
-export type KeywordType =
+export type FilterType =
   | "cat"
   | "tag"
   | "cf"
@@ -24,10 +24,14 @@ export type KeywordType =
 
 export type TagOperator = "any" | "all" | "not"
 
+export type CategoryOperator = "any" | "not"
+
+export type CustomFieldOperator = ">=" | ">" | "=" | "!=" | "<" | "<="
+
 export interface BasicToken {
   type: TokenType
-  raw: string
-  values: string[]
+  raw?: string
+  values?: string[]
 }
 
 export interface FTSToken extends BasicToken {
@@ -36,11 +40,17 @@ export interface FTSToken extends BasicToken {
 
 export interface CategoryToken extends BasicToken {
   type: "cat"
+  operator?: CategoryOperator
 }
 
 export interface TagToken extends BasicToken {
   type: "tag"
-  operator: TagOperator
+  operator?: TagOperator
+}
+
+export interface CustomFieldToken extends BasicToken {
+  type: "cf"
+  operator?: CustomFieldOperator
 }
 
 export interface SpaceToken extends BasicToken {
@@ -48,7 +58,12 @@ export interface SpaceToken extends BasicToken {
   count: number
 }
 
-export type Token = FTSToken | CategoryToken | SpaceToken | TagToken
+export type Token =
+  | FTSToken
+  | CategoryToken
+  | SpaceToken
+  | TagToken
+  | CustomFieldToken
 
 export interface ScannerError {
   /** Error message */
@@ -113,31 +128,20 @@ export interface ScanResult {
 
   current?: CurrentText
 
-  /** Any errors encountered during scanning */
-  errors?: ScannerError[]
-
-  /** Whether the scan was completely successful */
-  isValid: boolean
-
-  hasSuggestions: boolean
-  suggestions?: SearchSuggestion[]
-}
-
-export interface ParseLastSegmentResult {
-  token?: Token
-  error?: ScannerError
-  isValid: boolean
   hasSuggestions: boolean
   suggestions?: SearchSuggestion[]
 }
 
 export interface ParseSegmentResult {
   token?: Token
-  error?: ScannerError
-  isValid: boolean
+  tokenIsComplete: boolean
+  hasSuggestions: boolean
+  suggestions?: SearchSuggestion[]
 }
 
 export interface SuggestionResult {
   hasSuggestions: boolean
   suggestions?: SearchSuggestion[]
+  token?: Token
+  tokenIsComplete: boolean
 }

@@ -6,9 +6,26 @@
   flex: 0.7;
 }
 
+/* Wrapper for search with proper positioning context */
+.searchWrapper {
+  position: relative;
+  min-height: 42px;
+  z-index: 100;
+  width: 25%; /* Default width */
+  transition: width;
+}
+
+/* Expanded state when focused */
+.searchWrapperExpanded {
+  width: 70%; /* Expanded width */
+}
+
 .inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
+  position: relative;
+  z-index: 50;
+  gap: 1rem; /* Space between items */
 }

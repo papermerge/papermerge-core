@@ -31,6 +31,7 @@ export default function Search({
     tokens,
     autocomplete,
     isFocused,
+    isInputFocused,
     inputRef,
     handleInputChange,
     handleOptionSubmit,
@@ -38,6 +39,8 @@ export default function Search({
     handleBoxBlur,
     handleBoxClick,
     handleClearAll,
+    handleInputFocus,
+    handleInputBlur,
     removeToken
   } = useTokenSearch({onSearch, onFocusChange})
 
@@ -90,6 +93,8 @@ export default function Search({
                 variant="unstyled"
                 placeholder="Search..."
                 value={inputValue}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
                 onChange={event => {
                   handleInputChange(event)
                 }}
@@ -108,7 +113,7 @@ export default function Search({
         </Box>
       </Combobox.Target>
 
-      {autocomplete && isFocused && (
+      {autocomplete && isInputFocused && (
         <Combobox.Dropdown>{suggestions}</Combobox.Dropdown>
       )}
     </Combobox>

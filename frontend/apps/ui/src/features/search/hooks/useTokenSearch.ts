@@ -21,7 +21,7 @@ export const useTokenSearch = ({
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption()
   })
-
+  const [isInputFocused, setIsInputFocused] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -82,11 +82,6 @@ export const useTokenSearch = ({
       }
     ])
     combobox.openDropdown()
-
-    // Automatically focus the input
-    setTimeout(() => {
-      inputRef.current?.focus()
-    }, 10)
   }, [combobox, onFocusChange])
 
   const handleBoxBlur = useCallback(
@@ -114,6 +109,26 @@ export const useTokenSearch = ({
     inputRef.current?.focus()
   }, [])
 
+  const handleInputFocus = useCallback(() => {
+    setIsInputFocused(true)
+    setHasAutocomplete(true)
+    console.log("handleInputFocus")
+    setAutocomplete([
+      {
+        type: "filter",
+        items: FILTERS.sort()
+      }
+    ])
+    combobox.openDropdown()
+  }, [combobox])
+
+  const handleInputBlur = useCallback(() => {
+    setIsInputFocused(false)
+    // Close dropdown when input loses focus
+    console.log("handleInputBlur")
+    combobox.closeDropdown()
+  }, [combobox])
+
   const handleClearAll = useCallback(() => {
     // Clear all tokens
     setTokens([])
@@ -139,6 +154,7 @@ export const useTokenSearch = ({
     autocomplete,
     hasAutocomplete,
     isFocused,
+    isInputFocused,
     inputRef,
     handleInputChange,
     handleOptionSubmit,
@@ -146,6 +162,8 @@ export const useTokenSearch = ({
     handleBoxFocus,
     handleBoxBlur,
     handleBoxClick,
-    handleClearAll
+    handleClearAll,
+    handleInputFocus,
+    handleInputBlur
   }
 }

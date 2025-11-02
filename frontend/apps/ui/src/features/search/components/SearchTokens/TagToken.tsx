@@ -18,6 +18,7 @@ export default function SearchTokenTagComponent({item}: Args) {
         cursor: "pointer",
         transition: "all 0.2s ease"
       }}
+      onClick={e => e.stopPropagation()}
     >
       <Group gap={0}>
         <Text c={"blue"}>tag:</Text>
@@ -35,6 +36,7 @@ function TokenTagOperator({item}: Args) {
       w={"8ch"}
       data={["any:", "all:", "not:"]}
       size="sm"
+      onClick={e => e.stopPropagation()}
       styles={{
         input: {
           minHeight: "auto",
@@ -57,5 +59,5 @@ function TokenTagOperator({item}: Args) {
 }
 
 function TokenTagValues({item}: Args) {
-  return <MultiSelect data={item.values} />
+  return <MultiSelect data={item.values} onClick={e => e.stopPropagation()} />
 }

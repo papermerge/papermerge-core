@@ -3,13 +3,17 @@ import {scanSearchText} from "@/features/search/microcomp/scanner"
 import type {SearchSuggestion, Token} from "@/features/search/microcomp/types"
 import {autocompleteText} from "@/features/search/microcomp/utils"
 import {useCombobox} from "@mantine/core"
-import {useCallback, useState} from "react"
+import {useCallback, useRef, useState} from "react"
 
 interface UseTokenSearchProps {
   onSearch?: (tokens: Token[]) => void
+  onFocusChange?: (isFocused: boolean) => void
 }
 
-export const useTokenSearch = ({onSearch}: UseTokenSearchProps) => {
+export const useTokenSearch = ({
+  onSearch,
+  onFocusChange
+}: UseTokenSearchProps) => {
   const [inputValue, setInputValue] = useState("")
   const [tokens, setTokens] = useState<Token[]>([])
   const [hasAutocomplete, setHasAutocomplete] = useState(false)
@@ -17,6 +21,9 @@ export const useTokenSearch = ({onSearch}: UseTokenSearchProps) => {
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption()
   })
+
+  const [isFocused, setIsFocused] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const handleOptionSubmit = (val: string) => {
     let newInputValue = autocompleteText(inputValue, val)
@@ -64,7 +71,9 @@ export const useTokenSearch = ({onSearch}: UseTokenSearchProps) => {
     [tokens, onSearch]
   )
 
-  const handleOnFocus = () => {
+  const handleBoxFocus = useCallback(() => {
+    setIsFocused(true)
+    onFocusChange?.(true)
     setHasAutocomplete(true)
     setAutocomplete([
       {
@@ -73,7 +82,55 @@ export const useTokenSearch = ({onSearch}: UseTokenSearchProps) => {
       }
     ])
     combobox.openDropdown()
-  }
+
+    // Automatically focus the input
+    setTimeout(() => {
+      inputRef.current?.focus()
+    }, 10)
+  }, [combobox, onFocusChange])
+
+  const handleBoxBlur = useCallback(
+    (e: React.FocusEvent) => {
+      // Check if the new focus target is still within the search component
+      const currentTarget = e.currentTarget
+      const relatedTarget = e.relatedTarget as Node
+
+      // If focus is moving to a child element or staying within, don't blur
+      if (currentTarget.contains(relatedTarget)) {
+        return
+      }
+
+      // Focus is leaving the component entirely - collapse it
+      setTimeout(() => {
+        setIsFocused(false)
+        onFocusChange?.(false)
+        combobox.closeDropdown()
+      }, 150)
+    },
+    [combobox, onFocusChange]
+  )
+
+  const handleBoxClick = useCallback(() => {
+    inputRef.current?.focus()
+  }, [])
+
+  const handleClearAll = useCallback(() => {
+    // Clear all tokens
+    setTokens([])
+
+    // Clear input value
+    setInputValue("")
+
+    // Clear autocomplete
+    setHasAutocomplete(false)
+    setAutocomplete(undefined)
+
+    // Keep focus on the search (don't collapse)
+    inputRef.current?.focus()
+
+    // Trigger search callback with empty tokens
+    onSearch?.([])
+  }, [onSearch])
 
   return {
     inputValue,
@@ -81,9 +138,14 @@ export const useTokenSearch = ({onSearch}: UseTokenSearchProps) => {
     combobox,
     autocomplete,
     hasAutocomplete,
+    isFocused,
+    inputRef,
     handleInputChange,
     handleOptionSubmit,
     removeToken,
-    handleOnFocus
+    handleBoxFocus,
+    handleBoxBlur,
+    handleBoxClick,
+    handleClearAll
   }
 }

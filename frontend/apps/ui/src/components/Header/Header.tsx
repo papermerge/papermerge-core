@@ -1,4 +1,5 @@
 import {Group, useMantineTheme} from "@mantine/core"
+import {useState} from "react"
 import logoURL from "/logo_transparent_bg.svg"
 
 import classes from "./Header.module.css"
@@ -9,6 +10,7 @@ import UserMenu from "./UserMenu"
 
 function Header() {
   const theme = useMantineTheme()
+  const [isSearchFocused, setIsSearchFocused] = useState(false)
 
   return (
     <header
@@ -23,9 +25,11 @@ function Header() {
           <SidebarToggle />
           <img src={logoURL} width={"30px"} />
         </Group>
-        <Group grow className={classes.search}>
-          <Search />
-        </Group>
+        <div
+          className={`${classes.searchWrapper} ${isSearchFocused ? classes.searchWrapperExpanded : ""}`}
+        >
+          <Search onFocusChange={setIsSearchFocused} />
+        </div>
         <Group>
           <UserMenu />
         </Group>

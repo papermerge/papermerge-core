@@ -126,9 +126,8 @@ export type SearchSuggestion =
   | SearchCustomFieldSuggestion
 
 export interface ScanResult {
-  /** Successfully scanned tokens */
-  tokens: Token[]
-
+  token?: Token
+  tokenIsComplete: boolean
   current?: CurrentText
 
   hasSuggestions: boolean

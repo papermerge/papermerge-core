@@ -1,32 +1,32 @@
 import {
+  CategoryOperator,
+  FilterType,
+  ParseSegmentResult,
   ScannerError,
   ScanResult,
-  ParseSegmentResult,
-  Token,
-  TagOperator,
-  CategoryOperator,
   SuggestionResult,
-  FilterType,
-  TagToken
+  TagOperator,
+  TagToken,
+  Token
 } from "./types"
 import {
-  segmentInput,
-  isSpaceSegment,
-  splitByColon,
-  removeQuotes,
   getTagValueItemsFilter,
-  getTagValueItemsToExclude
+  getTagValueItemsToExclude,
+  isSpaceSegment,
+  removeQuotes,
+  segmentInput,
+  splitByColon
 } from "./utils"
 
 import {FILTERS, TAG_IMPLICIT_OPERATOR} from "./const"
 
 export function scanSearchText(input: string): ScanResult {
-  const tokens: Token[] = []
   const errors: ScannerError[] = []
+  let completeToken: Token | undefined
 
   if (!input.trim()) {
     return {
-      tokens: [],
+      tokenIsComplete: false,
       hasSuggestions: true,
       suggestions: [
         {
@@ -49,20 +49,22 @@ export function scanSearchText(input: string): ScanResult {
       const {token, tokenIsComplete, hasSuggestions, suggestions} =
         parseSegment(segment, nonEmptyInputCompletedWithSpace)
       if (tokenIsComplete && token) {
-        tokens.push(token)
+        completeToken = token
       }
 
       return {
-        tokens,
         hasSuggestions,
-        suggestions
+        suggestions,
+        tokenIsComplete,
+        token
       }
     }
     i++
   }
 
   return {
-    tokens,
+    token: completeToken,
+    tokenIsComplete: false,
     hasSuggestions: false
   }
 }

@@ -1,9 +1,9 @@
-import {useState, useCallback} from "react"
-import {useCombobox} from "@mantine/core"
-import type {Token, SearchSuggestion} from "@/features/search/microcomp/types"
-import {scanSearchText} from "@/features/search/microcomp/scanner"
-import {autocompleteText} from "@/features/search/microcomp/utils"
 import {FILTERS} from "@/features/search/microcomp/const"
+import {scanSearchText} from "@/features/search/microcomp/scanner"
+import type {SearchSuggestion, Token} from "@/features/search/microcomp/types"
+import {autocompleteText} from "@/features/search/microcomp/utils"
+import {useCombobox} from "@mantine/core"
+import {useCallback, useState} from "react"
 
 interface UseTokenSearchProps {
   onSearch?: (tokens: Token[]) => void
@@ -22,27 +22,27 @@ export const useTokenSearch = ({onSearch}: UseTokenSearchProps) => {
     let newInputValue = autocompleteText(inputValue, val)
 
     setInputValue(newInputValue)
-    const {hasSuggestions, suggestions} = scanSearchText(newInputValue)
+    const {hasSuggestions, suggestions, token, tokenIsComplete} =
+      scanSearchText(newInputValue)
     setHasAutocomplete(hasSuggestions)
     setAutocomplete(suggestions)
+    if (tokenIsComplete && token?.type != "space") {
+      setInputValue("")
+    } else {
+      setInputValue(newInputValue)
+    }
     combobox.resetSelectedOption()
   }
 
   // Handle input change
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.target.value
-    const {
-      hasSuggestions,
-      suggestions,
-      tokens: localTokens
-    } = scanSearchText(input)
+    const {hasSuggestions, suggestions, token, tokenIsComplete} =
+      scanSearchText(input)
 
     setHasAutocomplete(hasSuggestions)
     setAutocomplete(suggestions)
-    setTokens(localTokens)
-
-    const nonEmptySpaceToken = localTokens.find(token => token.type != "space")
-    if (nonEmptySpaceToken) {
+    if (tokenIsComplete && token?.type != "space") {
       setInputValue("")
     } else {
       setInputValue(input)

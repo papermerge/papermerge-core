@@ -1,7 +1,8 @@
-import {Combobox, TextInput, Box} from "@mantine/core"
 import {useTokenSearch} from "@/features/search/hooks/useTokenSearch"
 import type {Token} from "@/features/search/microcomp/types"
+import {Box, Combobox, TextInput} from "@mantine/core"
 import AutocompleteOptions from "./AutocompleteOptions"
+import SearchTokens from "./SearchTokens/SearchTokens"
 
 interface Args {
   onSearch?: (tokens: Token[]) => void
@@ -41,6 +42,7 @@ export default function Search({
             color: "black" // black text
           }}
         >
+          <SearchTokens items={tokens} />
           <TextInput
             variant="unstyled"
             placeholder="Search..."

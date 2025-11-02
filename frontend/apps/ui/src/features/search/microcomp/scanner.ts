@@ -1,5 +1,6 @@
 import {
   CategoryOperator,
+  CategoryToken,
   FilterType,
   ParseSegmentResult,
   ScannerError,
@@ -18,7 +19,11 @@ import {
   splitByColon
 } from "./utils"
 
-import {FILTERS, TAG_IMPLICIT_OPERATOR} from "./const"
+import {
+  CATEGORY_IMPLICIT_OPERATOR,
+  FILTERS,
+  TAG_IMPLICIT_OPERATOR
+} from "./const"
 
 export function scanSearchText(input: string): ScanResult {
   const errors: ScannerError[] = []
@@ -257,10 +262,32 @@ export function parseTwoPartsSegment(
       op.startsWith(part2)
     )
     const operators = part2 != "" ? all_filtered_operators : all_cat_operators
+    let token: CategoryToken = {
+      type: "cat"
+    }
+
+    if (nonEmptyInputCompletedWithSpace) {
+      /**
+       *  user typed "cat:letter" i.e. with space at the end
+       *  signaling that he/she wants to proceed with next filter
+       * */
+      token.operator = CATEGORY_IMPLICIT_OPERATOR
+      token.values = part2.split(",").map(t => removeQuotes(t))
+      return {
+        token: token,
+        tokenIsComplete: true,
+        hasSuggestions: true,
+        suggestions: [
+          {
+            type: "filter",
+            items: FILTERS.sort()
+          }
+        ]
+      }
+    }
+
     return {
-      token: {
-        type: "cat"
-      },
+      token: token,
       tokenIsComplete: false,
       hasSuggestions: true,
       suggestions: [

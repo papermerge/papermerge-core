@@ -21,13 +21,13 @@ export const useTokenSearch = ({onSearch}: UseTokenSearchProps) => {
   const handleOptionSubmit = (val: string) => {
     let newInputValue = autocompleteText(inputValue, val)
 
-    setInputValue(newInputValue)
     const {hasSuggestions, suggestions, token, tokenIsComplete} =
       scanSearchText(newInputValue)
     setHasAutocomplete(hasSuggestions)
     setAutocomplete(suggestions)
-    if (tokenIsComplete && token?.type != "space") {
+    if (tokenIsComplete && token && token?.type != "space") {
       setInputValue("")
+      setTokens([...tokens, token])
     } else {
       setInputValue(newInputValue)
     }
@@ -42,8 +42,9 @@ export const useTokenSearch = ({onSearch}: UseTokenSearchProps) => {
 
     setHasAutocomplete(hasSuggestions)
     setAutocomplete(suggestions)
-    if (tokenIsComplete && token?.type != "space") {
+    if (tokenIsComplete && token && token?.type != "space") {
       setInputValue("")
+      setTokens([...tokens, token])
     } else {
       setInputValue(input)
     }

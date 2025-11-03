@@ -1,3 +1,4 @@
+import {useAppSelector} from "@/app/hooks"
 import {useTokenSearch} from "@/features/search/hooks/useTokenSearch"
 import type {Token} from "@/features/search/microcomp/types"
 import {
@@ -24,11 +25,11 @@ export default function Search({
   onFocusChange,
   placeholder = "Search documents... (try: tag:, category:, cf:)"
 }: Args) {
+  const tokens = useAppSelector(state => state.search.tokens)
   const [isHovering, setIsHovering] = useState(false)
   const {
     combobox,
     inputValue,
-    tokens,
     autocomplete,
     isFocused,
     isInputFocused,
@@ -40,8 +41,7 @@ export default function Search({
     handleBoxClick,
     handleClearAll,
     handleInputFocus,
-    handleInputBlur,
-    removeToken
+    handleInputBlur
   } = useTokenSearch({onSearch, onFocusChange})
 
   const suggestions = <AutocompleteOptions suggestions={autocomplete} />
@@ -87,7 +87,7 @@ export default function Search({
             </>
           ) : (
             <>
-              <SearchTokens items={tokens} />
+              <SearchTokens />
               <TextInput
                 ref={inputRef}
                 variant="unstyled"

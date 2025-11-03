@@ -4,6 +4,7 @@ import type {SearchSuggestion, Token} from "@/features/search/microcomp/types"
 import {autocompleteText} from "@/features/search/microcomp/utils"
 import {useCombobox} from "@mantine/core"
 import {useCallback, useRef, useState} from "react"
+import {useTokens} from "./useTokens"
 
 interface UseTokenSearchProps {
   onSearch?: (tokens: Token[]) => void
@@ -15,7 +16,7 @@ export const useTokenSearch = ({
   onFocusChange
 }: UseTokenSearchProps) => {
   const [inputValue, setInputValue] = useState("")
-  const [tokens, setTokens] = useState<Token[]>([])
+  const {tokens, addToken, updateToken, removeToken, clearTokens} = useTokens()
   const [hasAutocomplete, setHasAutocomplete] = useState(false)
   const [autocomplete, setAutocomplete] = useState<SearchSuggestion[]>()
   const combobox = useCombobox({
@@ -34,7 +35,7 @@ export const useTokenSearch = ({
     setAutocomplete(suggestions)
     if (tokenIsComplete && token && token?.type != "space") {
       setInputValue("")
-      setTokens([...tokens, token])
+      addToken(token)
     } else {
       setInputValue(newInputValue)
     }
@@ -51,7 +52,7 @@ export const useTokenSearch = ({
     setAutocomplete(suggestions)
     if (tokenIsComplete && token && token?.type != "space") {
       setInputValue("")
-      setTokens([...tokens, token])
+      addToken(token)
     } else {
       setInputValue(input)
     }
@@ -60,16 +61,6 @@ export const useTokenSearch = ({
       combobox.openDropdown()
     }
   }
-
-  // Remove token by index
-  const removeToken = useCallback(
-    (index: number) => {
-      const newTokens = tokens.filter((_, i) => i !== index)
-      setTokens(newTokens)
-      onSearch?.(newTokens)
-    },
-    [tokens, onSearch]
-  )
 
   const handleBoxFocus = useCallback(() => {
     setIsFocused(true)
@@ -130,8 +121,7 @@ export const useTokenSearch = ({
   }, [combobox])
 
   const handleClearAll = useCallback(() => {
-    // Clear all tokens
-    setTokens([])
+    clearTokens()
 
     // Clear input value
     setInputValue("")
@@ -149,7 +139,6 @@ export const useTokenSearch = ({
 
   return {
     inputValue,
-    tokens,
     combobox,
     autocomplete,
     hasAutocomplete,
@@ -158,7 +147,6 @@ export const useTokenSearch = ({
     inputRef,
     handleInputChange,
     handleOptionSubmit,
-    removeToken,
     handleBoxFocus,
     handleBoxBlur,
     handleBoxClick,

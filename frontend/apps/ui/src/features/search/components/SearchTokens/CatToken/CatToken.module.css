@@ -1,0 +1,28 @@
+.tokenContainer {
+  display: inline-flex;
+  align-items: center;
+  background-color: #f0f0f0;
+  border-radius: 0.5rem;
+  padding: 2px 8px;
+  border: 1px solid #d0d0d0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.operatorSelect input {
+  min-height: auto;
+  padding-right: 4px;
+  padding-left: 4px;
+  border: none;
+  background-color: transparent;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.operatorSelect input:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.operatorSelect .mantine-Select-wrapper {
+  margin-bottom: 0;
+}

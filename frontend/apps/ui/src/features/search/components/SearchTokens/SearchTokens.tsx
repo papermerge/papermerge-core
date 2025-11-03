@@ -1,29 +1,31 @@
-import {Token} from "@/features/search/microcomp/types"
+import {useAppSelector} from "@/app/hooks"
 import SearchTokenCategoryComponent from "./CatToken"
 import SearchTokenTagComponent from "./TagToken"
 
-interface Args {
-  items: Token[]
-}
+export default function SearchTokens() {
+  const tokens = useAppSelector(state => state.search.tokens)
 
-export default function SearchTokens({items}: Args) {
-  const components = items.map((i, index) => (
-    <SearchToken key={index} item={i} />
-  ))
-
-  return <>{components}</>
+  return (
+    <>
+      {tokens.map((token, index) => (
+        <SearchToken key={index} index={index} />
+      ))}
+    </>
+  )
 }
 
 interface SearchTokenArgs {
-  item: Token
+  index: number
 }
 
-function SearchToken({item}: SearchTokenArgs) {
-  switch (item.type) {
+function SearchToken({index}: SearchTokenArgs) {
+  const token = useAppSelector(state => state.search.tokens[index])
+
+  switch (token.type) {
     case "tag":
-      return <SearchTokenTagComponent item={item} />
+      return <SearchTokenTagComponent index={index} />
     case "cat":
-      return <SearchTokenCategoryComponent item={item} />
+      return <SearchTokenCategoryComponent index={index} />
   }
 
   return <>Unknown token</>

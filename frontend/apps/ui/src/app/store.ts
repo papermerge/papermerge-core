@@ -16,6 +16,7 @@ import nodesReducer from "@/features/nodes/nodesSlice"
 import thumbnailObjects from "@/features/nodes/thumbnailObjectsSlice"
 import preferencesReducer from "@/features/preferences/storage/preference"
 import rolesReducer from "@/features/roles/storage/role"
+import searchReducer from "@/features/search/storage/search"
 import sharedNodesReducer from "@/features/shared_nodes/store/sharedNodesSlice"
 import tagsReducer from "@/features/tags/storage/tag"
 import panelRegistryReducer from "@/features/ui/panelRegistry"
@@ -23,8 +24,8 @@ import uiReducer from "@/features/ui/uiSlice"
 import usersReducer from "@/features/users/storage/user"
 import currentUserReducer from "@/slices/currentUser"
 import {configureStore} from "@reduxjs/toolkit"
-import {listenerMiddleware} from "./listenerMiddleware"
 import {rtkQueryErrorLogger} from "./globalErrorMiddleware"
+import {listenerMiddleware} from "./listenerMiddleware"
 
 export const store = configureStore({
   reducer: {
@@ -34,6 +35,7 @@ export const store = configureStore({
     tags: tagsReducer,
     groups: groupsReducer,
     roles: rolesReducer,
+    search: searchReducer,
     auditLogs: auditLogsReducer,
     customFields: customFieldsReducer,
     documentTypes: documentTypesReducer,

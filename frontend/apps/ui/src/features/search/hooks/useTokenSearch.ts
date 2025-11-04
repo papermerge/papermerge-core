@@ -115,8 +115,6 @@ export const useTokenSearch = ({
 
   const handleInputBlur = useCallback(() => {
     setIsInputFocused(false)
-    // Close dropdown when input loses focus
-    console.log("handleInputBlur")
     combobox.closeDropdown()
   }, [combobox])
 

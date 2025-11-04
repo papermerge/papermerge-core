@@ -48,7 +48,7 @@ export default function Search({
   const hasTokens = tokens.length > 0
 
   const shouldShowCompactSummary = () => {
-    return !isFocused && tokens.length > 1
+    return !isFocused && tokens.length > 0
   }
 
   const shouldShowClearButton = () => {

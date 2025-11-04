@@ -135,7 +135,12 @@ export function parseSegment(
       //    3. "blue sky"
       //    4. "big fat invoice","blue sky",important,
       const {hasSuggestions, suggestions, token, tokenIsComplete} =
-        parseThreePartsTagSegment(parts[1], parts[1], parts[2])
+        parseThreePartsTagSegment(
+          parts[1],
+          parts[1],
+          parts[2],
+          nonEmptyInputCompletedWithSpace
+        )
       return {
         token,
         tokenIsComplete,
@@ -333,8 +338,28 @@ export function parseTwoPartsSegment(
 export function parseThreePartsTagSegment(
   _: string,
   part2: string,
-  part3: string
+  part3: string,
+  nonEmptyInputCompletedWithSpace: boolean
 ): SuggestionResult {
+  let token: TagToken = {
+    type: "tag"
+  }
+  if (nonEmptyInputCompletedWithSpace) {
+    token.operator = part2 as TagOperator
+    token.values = part3.split(",").map(t => removeQuotes(t))
+    return {
+      token: token,
+      tokenIsComplete: true,
+      hasSuggestions: true,
+      suggestions: [
+        {
+          type: "filter",
+          items: FILTERS.sort()
+        }
+      ]
+    }
+  }
+
   const trimmedValues = part3.trim()
   if (trimmedValues.length == 0) {
     return {

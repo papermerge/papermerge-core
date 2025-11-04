@@ -1,5 +1,6 @@
-import {describe, it, expect} from "vitest"
 import {scanSearchText} from "@/features/search/microcomp/scanner"
+import {describe, expect, it} from "vitest"
+import {FILTERS} from "../../microcomp/const"
 
 describe("scanSearchText", () => {
   //----------------------------------------------
@@ -66,17 +67,22 @@ describe("scanSearchText", () => {
   })
 
   //----------------------------------------------
-  it("should not suggest tag completion if there is no comma at the end  - with spaces", () => {
-    const input = "some text tag:invoice   " // no comma, however there are some spaces
+  it("should return complete token if there one space at the end", () => {
+    const input = "some text tag:invoice " // one space at the end
     const result = scanSearchText(input)
 
     expect(result.hasSuggestions).toBe(true)
+    expect(result.tokenIsComplete).toBe(true)
+    expect(result.token).toEqual({
+      type: "tag",
+      operator: "all",
+      values: ["invoice"]
+    })
+
     expect(result.suggestions).toEqual([
-      {type: "operator", items: []},
       {
-        type: "tag",
-        exclude: [],
-        filter: "invoice"
+        type: "filter",
+        items: FILTERS.sort()
       }
     ])
   })

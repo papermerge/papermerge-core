@@ -1,10 +1,15 @@
 import {
   CategoryOperator,
   CategoryToken,
+  CustomFieldOperator,
+  CustomFieldToken,
+  FilterToken,
   FilterType,
-  ParseSegmentResult,
-  ScannerError,
-  ScanResult,
+  FreeTextToken,
+  LexerResult,
+  ParseError,
+  ParseResult,
+  SearchSuggestion,
   SuggestionResult,
   TagOperator,
   TagToken,
@@ -13,9 +18,7 @@ import {
 import {
   getTagValueItemsFilter,
   getTagValueItemsToExclude,
-  isSpaceSegment,
   removeQuotes,
-  segmentInput,
   splitByColon
 } from "./utils"
 
@@ -25,181 +28,352 @@ import {
   TAG_IMPLICIT_OPERATOR
 } from "./const"
 
-export function scanSearchText(input: string): ScanResult {
-  const errors: ScannerError[] = []
-  let completeToken: Token | undefined
+// ===========================
+// LEXER (Tokenization)
+// ===========================
 
-  if (!input.trim()) {
-    return {
-      tokenIsComplete: false,
-      hasSuggestions: true,
-      suggestions: [
-        {
-          type: "filter",
-          items: FILTERS.sort()
-        }
-      ]
+function lex(input: string): LexerResult {
+  const hasTrailingSemicolon = input.trimEnd().endsWith(";")
+  const tokens = input
+    .split(";")
+    .map(s => s.trim())
+    .filter(s => s.length > 0)
+
+  return {tokens, hasTrailingSemicolon}
+}
+
+// ===========================
+// PARSER (Syntax Analysis)
+// ===========================
+
+export function parse(input: string): ParseResult {
+  const {tokens: rawTokens, hasTrailingSemicolon} = lex(input)
+
+  const parsedTokens: Token[] = []
+  const errors: ParseError[] = []
+
+  // Parse all tokens except possibly the last one
+  const tokensToParseCount = hasTrailingSemicolon
+    ? rawTokens.length
+    : rawTokens.length - 1
+
+  for (let i = 0; i < tokensToParseCount; i++) {
+    try {
+      const token = parseToken(rawTokens[i])
+      parsedTokens.push(token)
+    } catch (e) {
+      errors.push({
+        message: e.message,
+        token: rawTokens[i],
+        position: i
+      })
     }
   }
 
-  // Split input into segments, preserving quoted strings
-  const {segments, nonEmptyInputCompletedWithSpace} = segmentInput(input)
-  let i = 0
+  // Handle incomplete token (user still typing)
+  const currentToken = hasTrailingSemicolon
+    ? undefined
+    : rawTokens[rawTokens.length - 1]
 
-  while (i < segments.length) {
-    const segment = segments[i]
-    if (i == segments.length - 1) {
-      // last segment, which may mean
-      // that user is still typing it
-      const {token, tokenIsComplete, hasSuggestions, suggestions} =
-        parseSegment(segment, nonEmptyInputCompletedWithSpace)
-      if (tokenIsComplete && token) {
-        completeToken = token
-      }
-
-      return {
-        hasSuggestions,
-        suggestions,
-        tokenIsComplete,
-        token
-      }
-    }
-    i++
-  }
+  const suggestions = currentToken
+    ? getSuggestions(currentToken)
+    : getAllFilterSuggestions()
 
   return {
-    token: completeToken,
-    tokenIsComplete: false,
-    hasSuggestions: false
+    tokens: parsedTokens,
+    currentToken,
+    isComplete: hasTrailingSemicolon && errors.length === 0,
+    suggestions,
+    errors
   }
 }
 
-export function parseSegment(
-  segment: string,
-  nonEmptyInputCompletedWithSpace: boolean
-): ParseSegmentResult {
-  if (isSpaceSegment(segment)) {
-    const token = {
-      type: "space" as const,
-      count: segment.length,
-      raw: segment
-    }
-    return {
-      token,
-      tokenIsComplete: true,
-      hasSuggestions: true,
-      suggestions: [
-        {
-          type: "filter",
-          items: FILTERS.sort()
-        }
-      ]
-    }
+// ===========================
+// TOKEN PARSER
+// ===========================
+
+function parseToken(tokenStr: string): Token {
+  // Rule: FreeTextToken | FilterToken
+
+  if (!tokenStr.includes(":")) {
+    return parseFreeTextToken(tokenStr)
   }
 
-  if (!segment.includes(":")) {
-    // user typed some non empty characters (but without a column)
-    const {hasSuggestions, suggestions} = getFilterSuggestions(segment)
-    return {
-      tokenIsComplete: false,
-      hasSuggestions,
-      suggestions
-    }
-  }
+  return parseFilterToken(tokenStr)
+}
 
-  const parts = splitByColon(segment)
-  if (parts.length == 2) {
-    //cf, tag, category, title, owner etc
-    const {hasSuggestions, suggestions, token, tokenIsComplete} =
-      parseTwoPartsSegment(
-        parts[0] as FilterType,
-        parts[1],
-        nonEmptyInputCompletedWithSpace
-      )
-    return {
-      token,
-      tokenIsComplete,
-      hasSuggestions,
-      suggestions
-    }
-  }
-
-  if (parts.length == 3) {
-    if (parts[0] == "tag") {
-      // part[0] == "tag"
-      // part[1] == any | all | not i.e. operator
-      // part[2] == values:
-      //
-      //    1. inv
-      //    2. invoice,
-      //    3. "blue sky"
-      //    4. "big fat invoice","blue sky",important,
-      const {hasSuggestions, suggestions, token, tokenIsComplete} =
-        parseThreePartsTagSegment(
-          parts[1],
-          parts[1],
-          parts[2],
-          nonEmptyInputCompletedWithSpace
-        )
-      return {
-        token,
-        tokenIsComplete,
-        hasSuggestions,
-        suggestions
-      }
-    }
-
-    if (parts[0] == "cat") {
-      const {hasSuggestions, suggestions, token, tokenIsComplete} =
-        parseThreePartsCatSegment(parts[1], parts[1], parts[2])
-      return {
-        token,
-        tokenIsComplete,
-        hasSuggestions,
-        suggestions
-      }
-    }
-  }
-
+function parseFreeTextToken(text: string): FreeTextToken {
   return {
-    hasSuggestions: false,
-    tokenIsComplete: false
+    type: "fts",
+    value: removeQuotes(text),
+    raw: text
   }
 }
 
-export function getAllFiltersSuggestion(): SuggestionResult {
+function parseFilterToken(tokenStr: string): FilterToken {
+  // Rule: FilterToken ::= CustomFieldFilter | TagFilter | CategoryFilter | SimpleFilter
+
+  const parts = splitByColon(tokenStr)
+
+  // Match CustomFieldFilter: "cf" ":" CustomFieldName ":" ComparisonOp ":" Value
+  if (parts[0] === "cf") {
+    return parseCustomFieldFilter(parts, tokenStr)
+  }
+
+  // Match TagFilter: "tag" ":" ...
+  if (parts[0] === "tag") {
+    return parseTagFilter(parts, tokenStr)
+  }
+
+  // Match CategoryFilter: "cat" ":" ...
+  if (parts[0] === "cat") {
+    return parseCategoryFilter(parts, tokenStr)
+  }
+
+  // add other filters here BEGIN
+  //
+  // if (parts[0] == "XYZ") {
+  //  return parseXYZFilter(parts, tokenStr)
+  // }
+  //
+  // add other filters here END
+
+  throw new SyntaxError(`Unknown filter token: ${parts[0]}`)
+}
+
+// ===========================
+// CUSTOM FIELD FILTER
+// ===========================
+
+function parseCustomFieldFilter(
+  parts: string[],
+  raw: string
+): CustomFieldToken {
+  // Rule: "cf" ":" CustomFieldName ":" ComparisonOp ":" Value
+
+  if (parts.length !== 4) {
+    throw new SyntaxError(
+      `Custom field filter expects 4 parts (cf:name:op:value), got ${parts.length}`
+    )
+  }
+
+  const [, fieldName, operator, value] = parts
+
+  validateComparisonOperator(operator)
+
   return {
-    tokenIsComplete: false,
-    hasSuggestions: true,
-    suggestions: [
-      {
-        type: "filter",
-        items: FILTERS.sort()
-      }
-    ]
+    type: "cf",
+    fieldName: removeQuotes(fieldName.trim()),
+    operator: operator as CustomFieldOperator,
+    value: removeQuotes(value.trim()),
+    raw
   }
 }
 
-export function getFilterSuggestions(text: string): SuggestionResult {
-  const matches = FILTERS.filter(k => k.startsWith(text))
+function validateComparisonOperator(op: string): void {
+  const valid = [">", "<", ">=", "<=", "=", "!="]
+  if (!valid.includes(op)) {
+    throw new SyntaxError(
+      `Invalid comparison operator '${op}'. Valid: ${valid.join(", ")}`
+    )
+  }
+}
 
-  if (matches.length > 0) {
+// ===========================
+// TAG FILTER
+// ===========================
+
+function parseTagFilter(parts: string[], raw: string): TagToken {
+  // Rule: TagFilter ::= "tag" ":" TagOp ":" ValueList
+  //                   | "tag" ":" ValueList
+
+  if (parts.length === 2) {
+    // "tag" ":" ValueList (implicit 'all')
     return {
-      tokenIsComplete: false,
-      hasSuggestions: true,
-      suggestions: [
+      type: "tag",
+      operator: "all",
+      operatorIsImplicit: true,
+      values: parseValueList(parts[1]),
+      raw
+    }
+  }
+
+  if (parts.length === 3) {
+    // "tag" ":" TagOp ":" ValueList
+    const operator = parts[1]
+    validateTagOperator(operator)
+
+    return {
+      type: "tag",
+      operator: operator as TagOperator,
+      operatorIsImplicit: false,
+      values: parseValueList(parts[2]),
+      raw
+    }
+  }
+
+  throw new SyntaxError(`Tag filter expects 2 or 3 parts, got ${parts.length}`)
+}
+
+function validateTagOperator(op: string): void {
+  const valid = ["any", "all", "not"]
+  if (!valid.includes(op)) {
+    throw new SyntaxError(
+      `Invalid tag operator '${op}'. Valid: ${valid.join(", ")}`
+    )
+  }
+}
+
+// ===========================
+// CATEGORY FILTER
+// ===========================
+
+function parseCategoryFilter(parts: string[], raw: string): CategoryToken {
+  // Rule: CategoryFilter ::= "cat" ":" CategoryOp ":" ValueList
+  //                        | "cat" ":" ValueList
+
+  if (parts.length === 2) {
+    // "cat" ":" ValueList (implicit 'any')
+    return {
+      type: "cat",
+      operator: "any",
+      operatorIsImplicit: true,
+      values: parseValueList(parts[1]),
+      raw
+    }
+  }
+
+  if (parts.length === 3) {
+    // "cat" ":" CategoryOp ":" ValueList
+    const operator = parts[1]
+    validateCategoryOperator(operator)
+
+    return {
+      type: "cat",
+      operator: operator as CategoryOperator,
+      operatorIsImplicit: false,
+      values: parseValueList(parts[2]),
+      raw
+    }
+  }
+
+  throw new SyntaxError(
+    `Category filter expects 2 or 3 parts, got ${parts.length}`
+  )
+}
+
+function validateCategoryOperator(op: string): void {
+  const valid = ["any", "not"]
+  if (!valid.includes(op)) {
+    throw new SyntaxError(
+      `Invalid category operator '${op}'. Valid: ${valid.join(", ")}`
+    )
+  }
+}
+
+// ===========================
+// VALUE LIST PARSING
+// ===========================
+
+function parseValueList(valuesStr: string): string[] {
+  // Rule: ValueList ::= Value ("," Value)*
+
+  if (!valuesStr.trim()) {
+    throw new SyntaxError("Value list cannot be empty")
+  }
+
+  return valuesStr
+    .split(",")
+    .map(v => v.trim())
+    .map(v => removeQuotes(v))
+    .filter(v => v.length > 0)
+}
+
+export function getAllFilterSuggestions(): SearchSuggestion[] {
+  return [
+    {
+      type: "filter",
+      items: FILTERS.sort()
+    }
+  ]
+}
+
+/**
+ * `text` here is what is user currently typing
+ *
+ * filter1 ; filter2 ; fil
+ *                     ^^^ what is user currently typing
+ *                     ^^^ there is no ";" at the end
+ *
+ * i.e. it may be incomplete filter
+ */
+export function getSuggestions(text: string): SearchSuggestion[] {
+  const parts = splitByColon(text)
+
+  if (parts.length == 1) {
+    // Here we are outside any filter context
+    // it can be either free text or prefix of filter name
+    // e.g.
+    //
+    //  1. ta                    -> tag filter prefix
+    //  2. some free text tatata -> just free text
+    //  3. tag                   -> tag filter prefix
+    //  4. bogota                -> just free text
+    const matches = FILTERS.filter(k => k.startsWith(text))
+
+    if (matches.length > 0) {
+      return [
         {
           type: "filter",
           items: matches.sort()
         }
       ]
     }
+    // user is typing just free text, nothing to suggest
+    return []
   }
 
-  return {
-    tokenIsComplete: false,
-    hasSuggestions: false
+  if (parts[0] === "cf") {
+    return getCustomFieldSuggestions(parts, text)
   }
+
+  // Match TagFilter: "tag" ":" ...
+  if (parts[0] === "tag") {
+    return getTagSuggestions(parts, text)
+  }
+
+  // Match CategoryFilter: "cat" ":" ...
+  if (parts[0] === "cat") {
+    return getCategorySuggestions(parts, text)
+  }
+
+  // add other suggestions here BEGIN
+  //
+  // if (parts[0] == "XYZ") {
+  //  return getXYZSuggestions(parts, text)
+  // }
+  //
+  // add other suggestions here END
+
+  return []
+}
+
+function getCustomFieldSuggestions(
+  parts: string[],
+  raw: string
+): SearchSuggestion[] {
+  return []
+}
+
+function getTagSuggestions(parts: string[], raw: string): SearchSuggestion[] {
+  return []
+}
+
+function getCategorySuggestions(
+  parts: string[],
+  raw: string
+): SearchSuggestion[] {
+  return []
 }
 
 export function parseTwoPartsSegment(

@@ -1,3 +1,16 @@
+export interface LexerResult {
+  tokens: string[]
+  hasTrailingSemicolon: boolean
+}
+
+export interface ParseResult {
+  tokens: Token[]
+  currentToken?: string
+  isComplete: boolean
+  suggestions: SearchSuggestion[]
+  errors: ParseError[]
+}
+
 export type TokenType =
   | "fts" // Free text / full text search
   | "cat" // Category
@@ -31,15 +44,16 @@ export type CustomFieldOperator = ">=" | ">" | "=" | "!=" | "<" | "<="
 export interface BasicToken {
   type: TokenType
   raw?: string
-  values?: string[]
 }
 
-export interface FTSToken extends BasicToken {
+export interface FreeTextToken extends BasicToken {
   type: "fts"
+  value: string
 }
 
 export interface CategoryToken extends BasicToken {
   type: "cat"
+  values?: string[]
   operator?: CategoryOperator
   operatorIsImplicit?: boolean
 }
@@ -48,12 +62,14 @@ export interface TagToken extends BasicToken {
   type: "tag"
   operator?: TagOperator
   operatorIsImplicit?: boolean
+  values?: string[]
 }
 
 export interface CustomFieldToken extends BasicToken {
   type: "cf"
+  fieldName: string
   operator?: CustomFieldOperator
-  operatorIsImplicit?: boolean
+  value: string
 }
 
 export interface SpaceToken extends BasicToken {
@@ -61,19 +77,17 @@ export interface SpaceToken extends BasicToken {
   count: number
 }
 
-export type Token =
-  | FTSToken
-  | CategoryToken
-  | SpaceToken
-  | TagToken
-  | CustomFieldToken
+export type FilterToken = CategoryToken | TagToken | CustomFieldToken
 
-export interface ScannerError {
+export type Token = FreeTextToken | FilterToken
+
+export interface ParseError {
   /** Error message */
   message: string
 
   /** The problematic token/text */
   token?: string
+  position: number
 }
 
 export type CurrentText = {

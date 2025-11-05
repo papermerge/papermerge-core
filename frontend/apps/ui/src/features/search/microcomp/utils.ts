@@ -90,12 +90,26 @@ export function isFreeTextSegment(text: string): boolean {
 }
 
 /**
- * Split string by colon, preserving quoted values
- * For custom fields, handles operator syntax without trailing colon
+ * Split string by colon, preserving quoted values.
+ *
+ * Quotes are escape characters, this means that when
+ * inside quotes colon loses its syntactical meaning. This is needed
+ * because titles, tags, custom fields etc may contain colon as well.
+ *
  * Examples:
- *   "total:>100" → ["total", ">100"]
- *   "status:=completed" → ["status", "=completed"]
- *   "total:100" → ["total", "100"] (implies =)
+ *
+ * 1. Examples without quotes
+ *
+ *     total:100 -> ['total', '100']
+ *     title:has this text -> ['title', 'has this text']
+ *     tag:myvalue -> ['tag', 'myvalue']
+ *
+ * 2. Example with colon quotes:
+ *
+ *    cf:"Total in Quoter: 2": 100 -> ['cf', 'Total in Quoter: 2', '100']
+ *    title:"has this text with : char" -> ['title', 'has this text with : char']
+ *    tag:"namespace:myvalue" -> ['tag', 'namespace:myvalue']
+ *
  */
 export function splitByColon(str: string): string[] {
   const parts: string[] = []

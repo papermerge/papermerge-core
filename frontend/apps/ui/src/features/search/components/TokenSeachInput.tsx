@@ -56,8 +56,12 @@ export default function Search({
   }
 
   const showCompactSummary = shouldShowCompactSummary()
+  const dontShowCompactSummary = !showCompactSummary
 
   const showClearButton = shouldShowClearButton()
+
+  const showSuggestions =
+    autocomplete && autocomplete.length > 0 && isInputFocused
 
   return (
     <Combobox store={combobox} onOptionSubmit={handleOptionSubmit}>
@@ -68,24 +72,18 @@ export default function Search({
           onFocus={handleBoxFocus}
           onBlur={handleBoxBlur}
           onClick={handleBoxClick}
-          onMouseEnter={() => setIsHovering(true)} // ADD
-          onMouseLeave={() => setIsHovering(false)} // ADD
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
         >
-          {showCompactSummary ? (
-            <>
-              {/* Compact mode: Summary text + Clear button */}
-              <SearchCompactSummary
-                tokensCount={tokens.length}
-                isHovering={isHovering}
-              />
-              {showClearButton && (
-                <ClearButton
-                  onClick={handleClearAll}
-                  tooltip="Clear all filters"
-                />
-              )}
-            </>
-          ) : (
+          {showCompactSummary && (
+            <SearchFiltersCompactSummary
+              tokensCount={tokens.length}
+              isHovering={isHovering}
+              showClearButton={showClearButton}
+              handleClearAll={handleClearAll}
+            />
+          )}
+          {dontShowCompactSummary && (
             <>
               <SearchTokens />
               <TextInput
@@ -101,8 +99,8 @@ export default function Search({
                 style={{
                   flex: 1,
                   minWidth: 100,
-                  backgroundColor: "white", // input white background
-                  color: "black" // input black text
+                  backgroundColor: "white",
+                  color: "black"
                 }}
               />
               {showClearButton && (
@@ -113,10 +111,31 @@ export default function Search({
         </Box>
       </Combobox.Target>
 
-      {autocomplete && isInputFocused && (
-        <Combobox.Dropdown>{suggestions}</Combobox.Dropdown>
-      )}
+      {showSuggestions && <Combobox.Dropdown>{suggestions}</Combobox.Dropdown>}
     </Combobox>
+  )
+}
+
+interface SearchFiltersCompactSummaryArgs {
+  tokensCount: number
+  showClearButton: boolean
+  handleClearAll: () => void
+  isHovering: boolean
+}
+
+function SearchFiltersCompactSummary({
+  isHovering,
+  showClearButton,
+  handleClearAll,
+  tokensCount
+}: SearchFiltersCompactSummaryArgs) {
+  return (
+    <>
+      <SearchCompactSummary tokensCount={tokensCount} isHovering={isHovering} />
+      {showClearButton && (
+        <ClearButton onClick={handleClearAll} tooltip="Clear all filters" />
+      )}
+    </>
   )
 }
 

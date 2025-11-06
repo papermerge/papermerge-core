@@ -1,6 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {TagOperator, TagToken} from "@/features/search/microcomp/types"
-import {updateToken} from "@/features/search/storage/search"
+import {removeToken, updateToken} from "@/features/search/storage/search"
 import {TagTokenPresentation} from "./TagToken.presentation"
 import {useTagTokenLogic} from "./useTagToken"
 
@@ -21,6 +21,10 @@ export function TagTokenContainer({index}: TagTokenContainerProps) {
     dispatch(updateToken({index, updates: {values}}))
   }
 
+  const handleRemove = () => {
+    dispatch(removeToken(index))
+  }
+
   // Business logic hook
   const tagLogic = useTagTokenLogic({
     selectedTagNames: token.values || [],
@@ -31,6 +35,7 @@ export function TagTokenContainer({index}: TagTokenContainerProps) {
     <TagTokenPresentation
       item={token}
       onOperatorChange={handleOperatorChange}
+      onRemove={handleRemove}
       selectedTags={tagLogic.selectedTags}
       availableTags={tagLogic.availableTags}
       search={tagLogic.search}

@@ -1,5 +1,5 @@
 import {FILTERS} from "@/features/search/microcomp/const"
-import {scanSearchText} from "@/features/search/microcomp/scanner"
+import {parse} from "@/features/search/microcomp/scanner"
 import type {SearchSuggestion, Token} from "@/features/search/microcomp/types"
 import {autocompleteText} from "@/features/search/microcomp/utils"
 import {useCombobox} from "@mantine/core"
@@ -29,13 +29,17 @@ export const useTokenSearch = ({
   const handleOptionSubmit = (val: string) => {
     let newInputValue = autocompleteText(inputValue, val)
 
-    const {hasSuggestions, suggestions, token, tokenIsComplete} =
-      scanSearchText(newInputValue)
+    const {
+      hasSuggestions,
+      suggestions,
+      tokens: parsedTokens,
+      isComplete
+    } = parse(newInputValue)
     setHasAutocomplete(hasSuggestions)
     setAutocomplete(suggestions)
-    if (tokenIsComplete && token && token?.type != "space") {
+    if (isComplete && parsedTokens.length > 0) {
       setInputValue("")
-      addToken(token)
+      parsedTokens.forEach(t => addToken(t))
     } else {
       setInputValue(newInputValue)
     }
@@ -45,14 +49,18 @@ export const useTokenSearch = ({
   // Handle input change
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.target.value
-    const {hasSuggestions, suggestions, token, tokenIsComplete} =
-      scanSearchText(input)
+    const {
+      hasSuggestions,
+      suggestions,
+      tokens: parsedTokens,
+      isComplete
+    } = parse(input)
 
     setHasAutocomplete(hasSuggestions)
     setAutocomplete(suggestions)
-    if (tokenIsComplete && token && token?.type != "space") {
+    if (isComplete && parsedTokens.length > 0) {
       setInputValue("")
-      addToken(token)
+      parsedTokens.forEach(t => addToken(t))
     } else {
       setInputValue(input)
     }

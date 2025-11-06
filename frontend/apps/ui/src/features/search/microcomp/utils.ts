@@ -1,94 +1,5 @@
 import type {SearchSuggestion, SuggestionType} from "./types"
 
-interface SegmentInputResult {
-  segments: string[]
-  nonEmptyInputCompletedWithSpace: boolean
-}
-
-/**
- * Segment input string, preserving quoted strings
- * Handles both quoted values AND quoted field names
- * Spaces count as tokens as well.
- */
-export function segmentInput(input: string): SegmentInputResult {
-  const segments: string[] = []
-  let current = ""
-  let inQuotes = false
-  let quoteChar = ""
-  let nonEmptyInputCompletedWithSpace = false
-
-  for (let i = 0; i < input.length; i++) {
-    const char = input[i]
-    nonEmptyInputCompletedWithSpace = false
-
-    // Handle quote characters
-    if ((char === '"' || char === "'") && !inQuotes) {
-      inQuotes = true
-      quoteChar = char
-      current += char
-      continue
-    }
-
-    if (char === quoteChar && inQuotes) {
-      inQuotes = false
-      current += char
-      quoteChar = ""
-      continue
-    }
-
-    if (char === " " && !inQuotes && current.trim() != "") {
-      segments.push(current)
-      nonEmptyInputCompletedWithSpace = true
-      current = ""
-      continue
-    }
-
-    if (
-      char != " " &&
-      !inQuotes &&
-      current.length > 0 &&
-      current.trim() == ""
-    ) {
-      segments.push(current)
-      current = char
-      continue
-    }
-
-    current += char
-  }
-
-  // Add remaining content
-  if (current) {
-    segments.push(current)
-  }
-
-  return {segments, nonEmptyInputCompletedWithSpace}
-}
-
-export function isSpaceSegment(text: string): boolean {
-  if (text.length == 0) {
-    return true
-  }
-
-  if (text.trim() == "") {
-    return true
-  }
-
-  return false
-}
-
-export function isFreeTextSegment(text: string): boolean {
-  if (isSpaceSegment(text)) {
-    return false
-  }
-
-  if (text.includes(":")) {
-    return false
-  }
-
-  return true
-}
-
 /**
  * Split string by colon, preserving quoted values.
  *
@@ -242,7 +153,7 @@ export function autocompleteText(inputValue: string, val: string): string {
 /**
  * Returns last item from the list
  */
-export function getTagValueItemsFilter(values: string): string {
+export function getTokenValueItemsFilter(values: string): string {
   const trimmed = values.trim()
   const items = trimmed.split(",")
   const len = items.length
@@ -253,7 +164,7 @@ export function getTagValueItemsFilter(values: string): string {
 /**
  * Returns all but last item from the list
  */
-export function getTagValueItemsToExclude(values: string): string[] {
+export function getTokenValueItemsToExclude(values: string): string[] {
   const trimmed = values.trim()
   const items = trimmed.split(",")
 

@@ -16,8 +16,8 @@ import {
   Token
 } from "./types"
 import {
-  getTagValueItemsFilter,
-  getTagValueItemsToExclude,
+  getTokenValueItemsFilter,
+  getTokenValueItemsToExclude,
   removeQuotes,
   splitByColon
 } from "./utils"
@@ -84,6 +84,7 @@ export function parse(input: string): ParseResult {
     currentToken,
     isComplete: hasTrailingSemicolon && errors.length === 0,
     suggestions,
+    hasSuggestions: suggestions.length > 0,
     errors
   }
 }
@@ -366,6 +367,54 @@ function getCustomFieldSuggestions(
 }
 
 function getTagSuggestions(parts: string[], raw: string): SearchSuggestion[] {
+  if (parts[0] != "tag") {
+    throw new Error(
+      `Failed assumption expected 'tag' found ${parts[0]}; raw=${raw}`
+    )
+  }
+
+  if (parts.length == 2) {
+    // i.e. tag:blah or maybe tag:blah, blah
+    // At this point it is not possible to tell if user it typing
+    // a tag operator i.e. tag:any (thus intention would be tag:any:invoice)
+    // or user intends to type tag value e.g. tag:invoice
+    const part2 = parts[1].trim()
+    const tagValueItemsToExclude = getTokenValueItemsToExclude(part2)
+    const tagValueItemsFilter = getTokenValueItemsFilter(part2)
+
+    const all_tag_operators = ["all:", "any:", "not:"]
+    const all_filtered_operators = all_tag_operators.filter(op =>
+      op.startsWith(part2)
+    )
+    const operators = part2 != "" ? all_filtered_operators : all_tag_operators
+
+    return [
+      {
+        type: "operator",
+        items: operators.sort()
+      },
+      {
+        type: "tag",
+        filter: tagValueItemsFilter,
+        exclude: tagValueItemsToExclude
+      }
+    ]
+  }
+
+  if (parts.length == 3) {
+    // at this point it is sure thing that user is typing tag values
+    const part3 = parts[2].trim()
+    const tagValueItemsToExclude = getTokenValueItemsToExclude(part3.trim())
+    const tagValueItemsFilter = getTokenValueItemsFilter(part3)
+    return [
+      {
+        type: "tag",
+        filter: tagValueItemsFilter,
+        exclude: tagValueItemsToExclude
+      }
+    ]
+  }
+
   return []
 }
 
@@ -382,8 +431,8 @@ export function parseTwoPartsSegment(
   nonEmptyInputCompletedWithSpace: boolean
 ): SuggestionResult {
   if (part1 == "tag") {
-    const tagItemsToExclude = getTagValueItemsToExclude(part2)
-    const tagItemsFilter = getTagValueItemsFilter(part2)
+    const tagItemsToExclude = getTokenValueItemsToExclude(part2)
+    const tagItemsFilter = getTokenValueItemsFilter(part2)
 
     const all_tag_operators = ["all:", "any:", "not:"]
     const all_filtered_operators = all_tag_operators.filter(op =>
@@ -433,8 +482,8 @@ export function parseTwoPartsSegment(
   }
 
   if (part1 == "cat") {
-    const catItemsToExclude = getTagValueItemsToExclude(part2)
-    const catItemsFilter = getTagValueItemsFilter(part2)
+    const catItemsToExclude = getTokenValueItemsToExclude(part2)
+    const catItemsFilter = getTokenValueItemsFilter(part2)
 
     const all_cat_operators = ["any:", "not:"]
     const all_filtered_operators = all_cat_operators.filter(op =>
@@ -484,8 +533,8 @@ export function parseTwoPartsSegment(
   }
 
   if (part1 == "cf") {
-    const cfItemsToExclude = getTagValueItemsToExclude(part2)
-    const cfItemsFilter = getTagValueItemsFilter(part2)
+    const cfItemsToExclude = getTokenValueItemsToExclude(part2)
+    const cfItemsFilter = getTokenValueItemsFilter(part2)
 
     return {
       token: {
@@ -551,8 +600,8 @@ export function parseThreePartsTagSegment(
     }
   }
 
-  const itemsToExclude = getTagValueItemsToExclude(part3)
-  const itemsFilter = getTagValueItemsFilter(part3)
+  const itemsToExclude = getTokenValueItemsToExclude(part3)
+  const itemsFilter = getTokenValueItemsFilter(part3)
 
   return {
     hasSuggestions: true,
@@ -594,8 +643,8 @@ export function parseThreePartsCatSegment(
     }
   }
 
-  const itemsToExclude = getTagValueItemsToExclude(part3)
-  const itemsFilter = getTagValueItemsFilter(part3)
+  const itemsToExclude = getTokenValueItemsToExclude(part3)
+  const itemsFilter = getTokenValueItemsFilter(part3)
 
   return {
     hasSuggestions: true,

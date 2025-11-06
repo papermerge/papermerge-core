@@ -7,6 +7,7 @@ export interface ParseResult {
   tokens: Token[]
   currentToken?: string
   isComplete: boolean
+  hasSuggestions: boolean
   suggestions: SearchSuggestion[]
   errors: ParseError[]
 }

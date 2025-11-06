@@ -1,6 +1,7 @@
 import {TagOperator, TagToken} from "@/features/search/microcomp/types"
 import {ColoredTag} from "@/types"
 import {
+  ActionIcon,
   Box,
   Combobox,
   Group,
@@ -10,6 +11,7 @@ import {
   Text,
   useCombobox
 } from "@mantine/core"
+import {IconX} from "@tabler/icons-react"
 import styles from "./TagToken.module.css"
 
 interface TagTokenPresentationProps {
@@ -17,6 +19,7 @@ interface TagTokenPresentationProps {
   selectedTags: ColoredTag[]
   availableTags: ColoredTag[]
   onOperatorChange?: (operator: TagOperator) => void
+  onRemove?: () => void
   search?: string
   isLoading?: boolean
   combobox?: ReturnType<typeof useCombobox>
@@ -34,12 +37,14 @@ export function TagTokenPresentation({
   selectedTags,
   availableTags,
   onOperatorChange,
+  onRemove,
   search = "",
   isLoading = false,
   combobox,
   onValueSelect,
   onValueRemove,
   onSearchChange,
+
   onBackspace,
   onToggleDropdown,
   onOpenDropdown,
@@ -51,6 +56,11 @@ export function TagTokenPresentation({
     onDropdownOpen: () => fallbackCombobox.updateSelectedOptionIndex("active")
   })
   const comboboxStore = combobox || fallbackCombobox
+
+  const handleRemoveClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onRemove?.()
+  }
 
   return (
     <Box className={styles.tokenContainer} onClick={e => e.stopPropagation()}>
@@ -72,6 +82,14 @@ export function TagTokenPresentation({
           onCloseDropdown={onCloseDropdown}
         />
       </Group>
+      <ActionIcon
+        size="xs"
+        className={styles.removeButton}
+        onClick={handleRemoveClick}
+        aria-label="Remove token"
+      >
+        <IconX size={10} stroke={3} />
+      </ActionIcon>
     </Box>
   )
 }

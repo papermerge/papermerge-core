@@ -458,7 +458,7 @@ function getCategorySuggestions(
     const catValueItemsFilter = getTokenValueItemsFilter(part3)
     return [
       {
-        type: "tag",
+        type: "category",
         filter: catValueItemsFilter,
         exclude: catValueItemsToExclude
       }

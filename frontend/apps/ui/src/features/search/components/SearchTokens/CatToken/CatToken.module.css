@@ -7,6 +7,7 @@
   border: 1px solid #d0d0d0;
   cursor: pointer;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .operatorSelect input {
@@ -25,4 +26,32 @@
 
 .operatorSelect .mantine-Select-wrapper {
   margin-bottom: 0;
+}
+
+.removeButton {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #dc3545;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border: 1px solid white;
+  padding: 0;
+  z-index: 10; /* Ensure it's above other elements */
+}
+
+.tokenContainer:hover .removeButton {
+  opacity: 1;
+}
+
+.removeButton:hover {
+  background-color: #c82333;
 }

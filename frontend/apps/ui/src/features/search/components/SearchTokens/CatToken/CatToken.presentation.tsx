@@ -2,20 +2,28 @@ import {
   CategoryOperator,
   CategoryToken
 } from "@/features/search/microcomp/types"
-import {Box, Group, MultiSelect, Select, Text} from "@mantine/core"
+import {ActionIcon, Box, Group, MultiSelect, Select, Text} from "@mantine/core"
+import {IconX} from "@tabler/icons-react"
 import styles from "./CatToken.module.css"
 
-interface CategoryTokenPresentationProps {
+interface Args {
   item: CategoryToken
   onOperatorChange?: (operator: CategoryOperator) => void
   onValuesChange?: (values: string[]) => void
+  onRemove?: () => void
 }
 
 export function CategoryTokenPresentation({
   item,
   onOperatorChange,
-  onValuesChange
-}: CategoryTokenPresentationProps) {
+  onValuesChange,
+  onRemove
+}: Args) {
+  const handleRemoveClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onRemove?.()
+  }
+
   return (
     <Box className={styles.tokenContainer} onClick={e => e.stopPropagation()}>
       <Group gap={0}>
@@ -26,6 +34,14 @@ export function CategoryTokenPresentation({
         />
         <TokenCategoryValues item={item} onValuesChange={onValuesChange} />
       </Group>
+      <ActionIcon
+        size="xs"
+        className={styles.removeButton}
+        onClick={handleRemoveClick}
+        aria-label="Remove token"
+      >
+        <IconX size={10} stroke={3} />
+      </ActionIcon>
     </Box>
   )
 }

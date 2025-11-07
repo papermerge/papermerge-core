@@ -26,7 +26,7 @@
   padding: 6px 10px;
   border-radius: 4px;
   font-size: 12px;
-  z-index: 1000;
+  z-index: 2000;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   max-width: 400px;
   word-wrap: break-word;

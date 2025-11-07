@@ -1,4 +1,5 @@
 import {useAppSelector} from "@/app/hooks"
+import ConditionalTooltip from "@/components/ConditionalTooltip"
 import {useTokenSearch} from "@/features/search/hooks/useTokenSearch"
 import type {Token} from "@/features/search/microcomp/types"
 import {
@@ -66,7 +67,10 @@ export default function Search({
   const showClearButton = shouldShowClearButton()
 
   const showSuggestions =
-    autocomplete && autocomplete.length > 0 && isInputFocused
+    autocomplete &&
+    autocomplete.length > 0 &&
+    isInputFocused &&
+    validationError.length == 0
 
   return (
     <Combobox store={combobox} onOptionSubmit={handleOptionSubmit}>
@@ -92,32 +96,34 @@ export default function Search({
             <>
               <SearchTokens />
               <Box className={styles.inputWrapper}>
-                <TextInput
-                  ref={inputRef}
-                  variant="unstyled"
-                  placeholder="Search..."
-                  value={inputValue}
-                  onFocus={handleInputFocus}
-                  onBlur={handleInputBlur}
-                  onChange={event => {
-                    handleInputChange(event)
+                <ConditionalTooltip
+                  showTooltipIf={validationError.length > 0}
+                  tooltipProps={{
+                    label: `⚠️ ${validationError}`,
+                    withArrow: true,
+                    opened: true,
+                    position: "top-start",
+                    arrowOffset: 5,
+                    arrowSize: 7
                   }}
-                  onKeyDown={handleKeyDown}
-                  className={styles.inputField}
-                  classNames={{
-                    input: validationError ? styles.inputError : undefined
-                  }}
-                />
-                {validationError && (
-                  <Box className={styles.errorTooltip}>
-                    ⚠️ {validationError}
-                  </Box>
-                )}
-                {!validationError && isInputValid && inputValue.trim() && (
-                  <Box className={styles.helperText}>
-                    ↵ Press Enter to add filter
-                  </Box>
-                )}
+                >
+                  <TextInput
+                    ref={inputRef}
+                    variant="unstyled"
+                    placeholder="Search..."
+                    value={inputValue}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                    onChange={event => {
+                      handleInputChange(event)
+                    }}
+                    onKeyDown={handleKeyDown}
+                    className={styles.inputField}
+                    classNames={{
+                      input: validationError ? styles.inputError : undefined
+                    }}
+                  />
+                </ConditionalTooltip>
               </Box>
               {showClearButton && (
                 <ClearButton onClick={handleClearAll} tooltip="Clear all" />

@@ -209,6 +209,8 @@ export const useTokenSearch = ({
 
     // Clear input value
     setInputValue("")
+    setValidationError("")
+    setIsInputValid(false)
 
     // Clear autocomplete
     setHasAutocomplete(false)

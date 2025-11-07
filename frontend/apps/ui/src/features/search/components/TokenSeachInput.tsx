@@ -13,6 +13,7 @@ import {IconFilter, IconX} from "@tabler/icons-react"
 import {useState} from "react"
 import AutocompleteOptions from "./AutocompleteOptions"
 import SearchTokens from "./SearchTokens/SearchTokens"
+import styles from "./TokenSearchInput.module.css"
 
 interface Args {
   onSearch?: (tokens: Token[]) => void
@@ -41,7 +42,11 @@ export default function Search({
     handleBoxClick,
     handleClearAll,
     handleInputFocus,
-    handleInputBlur
+    handleInputBlur,
+    handleKeyDown,
+    validationError,
+    isInputValid,
+    lastAddedTokenIndex
   } = useTokenSearch({onSearch, onFocusChange})
 
   const suggestions = <AutocompleteOptions suggestions={autocomplete} />
@@ -86,23 +91,34 @@ export default function Search({
           {dontShowCompactSummary && (
             <>
               <SearchTokens />
-              <TextInput
-                ref={inputRef}
-                variant="unstyled"
-                placeholder="Search..."
-                value={inputValue}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
-                onChange={event => {
-                  handleInputChange(event)
-                }}
-                style={{
-                  flex: 1,
-                  minWidth: 100,
-                  backgroundColor: "white",
-                  color: "black"
-                }}
-              />
+              <Box className={styles.inputWrapper}>
+                <TextInput
+                  ref={inputRef}
+                  variant="unstyled"
+                  placeholder="Search..."
+                  value={inputValue}
+                  onFocus={handleInputFocus}
+                  onBlur={handleInputBlur}
+                  onChange={event => {
+                    handleInputChange(event)
+                  }}
+                  onKeyDown={handleKeyDown}
+                  className={styles.inputField}
+                  classNames={{
+                    input: validationError ? styles.inputError : undefined
+                  }}
+                />
+                {validationError && (
+                  <Box className={styles.errorTooltip}>
+                    ⚠️ {validationError}
+                  </Box>
+                )}
+                {!validationError && isInputValid && inputValue.trim() && (
+                  <Box className={styles.helperText}>
+                    ↵ Press Enter to add filter
+                  </Box>
+                )}
+              </Box>
               {showClearButton && (
                 <ClearButton onClick={handleClearAll} tooltip="Clear all" />
               )}

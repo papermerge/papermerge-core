@@ -1,0 +1,51 @@
+.inputWrapper {
+  flex: 1;
+  min-width: 100px;
+  position: relative;
+}
+
+.inputField {
+  background-color: white;
+  color: black;
+}
+
+.inputError {
+  border-color: #fa5252 !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-radius: 4px !important;
+}
+
+.errorTooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background-color: #fa5252;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 2000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  word-wrap: break-word;
+}
+
+.errorTooltip::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 10px;
+  border: 6px solid transparent;
+  border-bottom-color: #fa5252;
+}
+
+.helperText {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  color: #868e96;
+  font-size: 12px;
+}

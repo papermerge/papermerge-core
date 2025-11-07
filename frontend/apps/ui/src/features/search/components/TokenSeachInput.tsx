@@ -1,4 +1,5 @@
 import {useAppSelector} from "@/app/hooks"
+import ConditionalTooltip from "@/components/ConditionalTooltip"
 import {useTokenSearch} from "@/features/search/hooks/useTokenSearch"
 import type {Token} from "@/features/search/microcomp/types"
 import {
@@ -13,6 +14,7 @@ import {IconFilter, IconX} from "@tabler/icons-react"
 import {useState} from "react"
 import AutocompleteOptions from "./AutocompleteOptions"
 import SearchTokens from "./SearchTokens/SearchTokens"
+import styles from "./TokenSearchInput.module.css"
 
 interface Args {
   onSearch?: (tokens: Token[]) => void
@@ -41,7 +43,11 @@ export default function Search({
     handleBoxClick,
     handleClearAll,
     handleInputFocus,
-    handleInputBlur
+    handleInputBlur,
+    handleKeyDown,
+    validationError,
+    isInputValid,
+    lastAddedTokenIndex
   } = useTokenSearch({onSearch, onFocusChange})
 
   const suggestions = <AutocompleteOptions suggestions={autocomplete} />
@@ -61,7 +67,10 @@ export default function Search({
   const showClearButton = shouldShowClearButton()
 
   const showSuggestions =
-    autocomplete && autocomplete.length > 0 && isInputFocused
+    autocomplete &&
+    autocomplete.length > 0 &&
+    isInputFocused &&
+    validationError.length == 0
 
   return (
     <Combobox store={combobox} onOptionSubmit={handleOptionSubmit}>
@@ -86,23 +95,36 @@ export default function Search({
           {dontShowCompactSummary && (
             <>
               <SearchTokens />
-              <TextInput
-                ref={inputRef}
-                variant="unstyled"
-                placeholder="Search..."
-                value={inputValue}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
-                onChange={event => {
-                  handleInputChange(event)
-                }}
-                style={{
-                  flex: 1,
-                  minWidth: 100,
-                  backgroundColor: "white",
-                  color: "black"
-                }}
-              />
+              <Box className={styles.inputWrapper}>
+                <ConditionalTooltip
+                  showTooltipIf={validationError.length > 0}
+                  tooltipProps={{
+                    label: `⚠️ ${validationError}`,
+                    withArrow: true,
+                    opened: true,
+                    position: "top-start",
+                    arrowOffset: 5,
+                    arrowSize: 7
+                  }}
+                >
+                  <TextInput
+                    ref={inputRef}
+                    variant="unstyled"
+                    placeholder="Search..."
+                    value={inputValue}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                    onChange={event => {
+                      handleInputChange(event)
+                    }}
+                    onKeyDown={handleKeyDown}
+                    className={styles.inputField}
+                    classNames={{
+                      input: validationError ? styles.inputError : undefined
+                    }}
+                  />
+                </ConditionalTooltip>
+              </Box>
               {showClearButton && (
                 <ClearButton onClick={handleClearAll} tooltip="Clear all" />
               )}

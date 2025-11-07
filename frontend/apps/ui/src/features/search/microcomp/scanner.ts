@@ -416,5 +416,54 @@ function getCategorySuggestions(
   parts: string[],
   raw: string
 ): SearchSuggestion[] {
+  if (parts[0] != "cat") {
+    throw new Error(
+      `Failed assumption expected 'cat' found ${parts[0]}; raw=${raw}`
+    )
+  }
+
+  if (parts.length == 2) {
+    // i.e. cat:blah or maybe tag:blah, blah
+    // At this point it is not possible to tell if user it typing
+    // a cat operator i.e. cat:any (thus intention would be cat:any:letter)
+    // or user intends to type category value e.g. cat:letter
+    const part2 = parts[1].trim()
+    const catValueItemsToExclude = getTokenValueItemsToExclude(part2)
+    const catValueItemsFilter = getTokenValueItemsFilter(part2)
+
+    const all_category_operators = ["any:", "not:"]
+    const all_filtered_operators = all_category_operators.filter(op =>
+      op.startsWith(part2)
+    )
+    const operators =
+      part2 != "" ? all_filtered_operators : all_category_operators
+
+    return [
+      {
+        type: "operator",
+        items: operators.sort()
+      },
+      {
+        type: "category",
+        filter: catValueItemsFilter,
+        exclude: catValueItemsToExclude
+      }
+    ]
+  }
+
+  if (parts.length == 3) {
+    // at this point it is sure thing that user is typing category values
+    const part3 = parts[2].trim()
+    const catValueItemsToExclude = getTokenValueItemsToExclude(part3.trim())
+    const catValueItemsFilter = getTokenValueItemsFilter(part3)
+    return [
+      {
+        type: "category",
+        filter: catValueItemsFilter,
+        exclude: catValueItemsToExclude
+      }
+    ]
+  }
+
   return []
 }

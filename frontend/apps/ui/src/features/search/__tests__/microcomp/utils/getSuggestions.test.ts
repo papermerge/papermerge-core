@@ -95,4 +95,71 @@ describe("getSuggestions", () => {
       }
     ])
   })
+  //----------------------------------------------
+  it("Category suggestion 1 - cat: - just filter name", () => {
+    const input = "cat:"
+    const result = getSuggestions(input)
+
+    expect(result).toEqual([
+      {
+        type: "operator",
+        items: ["any:", "not:"].sort()
+      },
+      {
+        type: "category",
+        filter: "",
+        exclude: []
+      }
+    ])
+  })
+
+  //----------------------------------------------
+  it("Category suggestion 2 - cat:values - no spaces between filter name and values", () => {
+    const input = "cat:a"
+    const result = getSuggestions(input)
+
+    expect(result).toEqual([
+      {
+        type: "operator",
+        items: ["any:"].sort()
+      },
+      {
+        type: "category",
+        filter: "a",
+        exclude: []
+      }
+    ])
+  })
+
+  //----------------------------------------------
+  it("Category suggestion 3 - cat:  values - with saces between filter name and values", () => {
+    const input = "cat: a"
+    const result = getSuggestions(input)
+
+    expect(result).toEqual([
+      {
+        type: "operator",
+        items: ["any:"].sort()
+      },
+      {
+        type: "category",
+        filter: "a",
+        exclude: []
+      }
+    ])
+  })
+
+  //----------------------------------------------
+  it("Category suggestion 4 - cat:operator:values", () => {
+    const input = "cat:any:letter"
+    const result = getSuggestions(input)
+
+    expect(result).toEqual([
+      {
+        type: "category",
+        filter: "letter",
+        exclude: []
+      }
+    ])
+  })
 })

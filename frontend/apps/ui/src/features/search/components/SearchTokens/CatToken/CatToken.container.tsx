@@ -3,7 +3,7 @@ import {
   CategoryOperator,
   CategoryToken
 } from "@/features/search/microcomp/types"
-import {updateToken} from "@/features/search/storage/search"
+import {removeToken, updateToken} from "@/features/search/storage/search"
 import {CategoryTokenPresentation} from "./CatToken.presentation"
 
 interface CategoryTokenContainerProps {
@@ -24,11 +24,16 @@ export function CategoryTokenContainer({index}: CategoryTokenContainerProps) {
     dispatch(updateToken({index, updates: {values}}))
   }
 
+  const handleRemove = () => {
+    dispatch(removeToken(index))
+  }
+
   return (
     <CategoryTokenPresentation
       item={token}
       onOperatorChange={handleOperatorChange}
       onValuesChange={handleValuesChange}
+      onRemove={handleRemove}
     />
   )
 }

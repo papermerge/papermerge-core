@@ -29,42 +29,26 @@ export function buildSearchQueryParams({
         filters.fts.terms.push(...terms)
         break
 
-      case "category":
+      case "cat":
         // Category filter
         if (!filters.category) {
-          filters.category = {values: []}
+          filters.category = {values: [], operator: token.operator || "any"}
         }
-        const categories = Array.isArray(token.value)
-          ? token.value
-          : [token.value]
-        filters.category.values.push(...categories)
+        const catValues = token.values || []
+        filters.category.values.push(...catValues)
+        filters.category.operator = token.operator || "any"
         break
 
       case "tag":
-        // Tag filter (AND logic - must have all)
         if (!filters.tags) {
-          filters.tags = []
+          filters.tags = {
+            values: [],
+            operator: token.operator || "all"
+          }
         }
-        const tagsAll = Array.isArray(token.value) ? token.value : [token.value]
-        filters.tags.push({tags: tagsAll})
-        break
-
-      case "tag_any":
-        // Tag filter (OR logic - must have any)
-        if (!filters.tags) {
-          filters.tags = []
-        }
-        const tagsAny = Array.isArray(token.value) ? token.value : [token.value]
-        filters.tags.push({tags_any: tagsAny})
-        break
-
-      case "tag_not":
-        // Tag filter (NOT logic - must not have)
-        if (!filters.tags) {
-          filters.tags = []
-        }
-        const tagsNot = Array.isArray(token.value) ? token.value : [token.value]
-        filters.tags.push({tags_not: tagsNot})
+        const tagValues = token.values || []
+        filters.tags.values.push(...tagValues)
+        filters.tags.operator = token.operator || "all"
         break
 
       // We'll add custom_field case later
@@ -86,15 +70,13 @@ export function buildSearchQueryParams({
  * Extract document_type_id from category filter if exactly one category is specified
  */
 export function extractSingleCategoryId(tokens: Token[]): string | null {
-  const categoryTokens = tokens.filter(t => t.type === "category")
+  const categoryTokens = tokens.filter(t => t.type === "cat")
 
   if (categoryTokens.length !== 1) {
     return null
   }
 
-  const values = Array.isArray(categoryTokens[0].value)
-    ? categoryTokens[0].value
-    : [categoryTokens[0].value]
+  const values = categoryTokens[0].values || []
 
   if (values.length !== 1) {
     return null

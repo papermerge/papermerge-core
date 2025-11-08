@@ -8,7 +8,6 @@ from pydantic import (
     BaseModel,
     Field,
     field_validator,
-    model_validator,
     ConfigDict
 )
 
@@ -19,7 +18,7 @@ from papermerge.core.types import OwnerType
 # ENUMS
 # ============================================================================
 
-class Operator(str, Enum):
+class CustomFieldOperator(str, Enum):
     """Comparison operators for filters"""
     # Equality
     EQ = "eq"  # = (exact match)
@@ -37,6 +36,16 @@ class Operator(str, Enum):
     # List operations
     IN = "in"  # value in list
     NOT_IN = "not_in"  # value not in list
+
+
+class TagOperator(str, Enum):
+    ANY = "any"
+    ALL = "all"
+    NOT = "not"
+
+class CategoryOperator(str, Enum):
+    ANY = "any"
+    NOT = "not"
 
 
 class SortBy(str, Enum):
@@ -130,6 +139,12 @@ class CategoryFilter(BaseModel):
         ]
     )
 
+    operator: Optional[CategoryOperator] = Field(
+        CategoryOperator.ANY,
+        description="Operator applied to the category values",
+        examples=[["any", "not"]]
+    )
+
     @field_validator('values')
     @classmethod
     def validate_values(cls, v: List[str]) -> List[str]:
@@ -149,15 +164,6 @@ class CategoryFilter(BaseModel):
 
         return all_values
 
-    model_config = ConfigDict(
-        json_schema_extra={
-            "examples": [
-                {"values": ["Invoice"]},
-                {"values": ["Blue Whale", "Green Whale"]},
-                {"values": ["Annual Report, Quarterly Report"]}
-            ]
-        }
-    )
 
 
 class TagFilter(BaseModel):
@@ -170,23 +176,17 @@ class TagFilter(BaseModel):
     """
     tags: Optional[List[str]] = Field(
         None,
-        description="Tags that must ALL be present (AND logic)",
+        description="Tags values",
         examples=[["urgent", "2024"]]
     )
 
-    tags_any: Optional[List[str]] = Field(
-        None,
-        description="Tags where ANY must be present (OR logic)",
-        examples=[["blue", "green", "red"]]
+    operator: Optional[TagOperator] = Field(
+        TagOperator.ALL,
+        description="Operator applied to the tag",
+        examples=[["all", "any", "not"]]
     )
 
-    tags_not: Optional[List[str]] = Field(
-        None,
-        description="Tags that must NOT be present (exclusion)",
-        examples=[["archived", "deleted"]]
-    )
-
-    @field_validator('tags', 'tags_any', 'tags_not')
+    @field_validator('tags')
     @classmethod
     def validate_tag_list(cls, v: Optional[List[str]]) -> Optional[List[str]]:
         """Validate and clean tag lists"""
@@ -197,28 +197,6 @@ class TagFilter(BaseModel):
         cleaned = [tag.strip() for tag in v if tag and tag.strip()]
 
         return cleaned if cleaned else None
-
-    @model_validator(mode='after')
-    def validate_at_least_one_filter(self):
-        """Ensure at least one tag filter is specified"""
-        if not any([self.tags, self.tags_any, self.tags_not]):
-            raise ValueError('At least one of tags, tags_any, or tags_not must be specified')
-        return self
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "examples": [
-                {"tags": ["urgent", "2024"]},
-                {"tags_any": ["blue", "green"]},
-                {"tags_not": ["archived"]},
-                {
-                    "tags": ["urgent"],
-                    "tags_any": ["blue", "green"],
-                    "tags_not": ["archived"]
-                }
-            ]
-        }
-    )
 
 
 class CustomFieldFilter(BaseModel):
@@ -238,7 +216,7 @@ class CustomFieldFilter(BaseModel):
         examples=["total", "status", "invoice date", "active"]
     )
 
-    operator: Operator = Field(
+    operator: CustomFieldOperator = Field(
         ...,
         description="Comparison operator (must be compatible with field type)",
         examples=["contains", "eq", "gt", "gte"]

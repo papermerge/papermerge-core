@@ -1,7 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from papermerge.core.features.search.db import api as search_dbapi
 from papermerge.core.features.search import schema as search_schema
 from papermerge.core.features.nodes.db import api as nodes_dbapi
+
 
 async def test_fts_search_documents_basic_text_in_title(
     db_session: AsyncSession,
@@ -28,7 +30,7 @@ async def test_fts_search_documents_basic_text_in_title(
     fts = search_schema.FullTextSearchFilter(terms=["note"])
     params = search_schema.SearchQueryParams(
         filters=search_schema.SearchFilters(
-            fts=fts
+            fts=fts,
         ),
         lang=search_schema.SearchLanguage.ENG
     )

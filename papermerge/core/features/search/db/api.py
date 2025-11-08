@@ -271,10 +271,6 @@ async def search_documents(
     Returns:
         SearchDocumentsResponse with FlatDocument items (no custom fields)
     """
-
-    if params.document_type_id:
-        raise ValueError("document_type_id should not be provided for general search")
-
     # Ignore custom fields filter when no document_type_id
     if params.filters.custom_fields:
         logger.warning("custom_fields filter ignored when document_type_id is not provided")

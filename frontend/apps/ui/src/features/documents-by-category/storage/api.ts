@@ -4,7 +4,16 @@ import type {
   DocumentsByCategoryQueryParams,
   FlatDocument
 } from "@/features/documents-by-category/types"
+import type {SearchQueryParams} from "@/features/search/types"
 import type {Paginated} from "@/types"
+
+export interface SearchDocumentsResponse {
+  items: FlatDocument[]
+  page_number: number
+  page_size: number
+  num_pages: number
+  total_items: number
+}
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
@@ -82,13 +91,25 @@ export const apiSliceWithDocumentsByCategory = apiSlice.injectEndpoints({
         "FlatDocument",
         ...result.items.map(({id}) => ({type: "FlatDocument", id}) as const)
       ]
+    }),
+    searchDocuments: builder.mutation<
+      SearchDocumentsResponse,
+      SearchQueryParams
+    >({
+      query: params => ({
+        url: "/search",
+        method: "POST",
+        body: params
+      }),
+      invalidatesTags: ["FlatDocument"]
     })
   }) // endpoint
 })
 
 export const {
   useGetPaginatedDocumentsByCategoryQuery,
-  useGetPaginatedFlatDocumentsQuery
+  useGetPaginatedFlatDocumentsQuery,
+  useSearchDocumentsMutation
 } = apiSliceWithDocumentsByCategory
 
 function buildQueryString(params: DocumentsByCategoryQueryParams = {}): string {

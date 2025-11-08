@@ -12,6 +12,9 @@ from pydantic import (
     ConfigDict
 )
 
+from papermerge.core.types import OwnerType
+
+
 # ============================================================================
 # ENUMS
 # ============================================================================
@@ -283,6 +286,17 @@ class CustomFieldFilter(BaseModel):
     )
 
 
+class OwnerFilter(BaseModel):
+    type: Optional[OwnerType] = Field(
+        OwnerType.USER,
+        description="Filter by document owner type"
+    )
+    name: Optional[str] = Field(
+        None,
+        description="Filter by document owner name"
+    )
+
+
 # ============================================================================
 # MAIN REQUEST/RESPONSE SCHEMAS
 # ============================================================================
@@ -310,6 +324,11 @@ class SearchFilters(BaseModel):
     custom_fields: Optional[List[CustomFieldFilter]] = Field(
         None,
         description="Custom field filters (AND logic between filters)"
+    )
+
+    owner: Optional[OwnerFilter] = Field(
+        None,
+        description="Owner of the document"
     )
 
     def has_any_filter(self) -> bool:
@@ -358,16 +377,6 @@ class SearchQueryParams(BaseModel):
         description="Language for FTS (ISO 639-3 code). If not provided, uses user's preference.",
         examples=["eng", "deu", "fra", "spa"]
     )
-
-    document_type_id: Optional[UUID] = Field(
-        None,
-        description="Restrict search to specific document type. "
-        "If this parameter is specified then 1. `filters.category` is ignored. 2. Response "
-        " will include list of custom fields of respective document type. 3. `filters.custom_fields`"
-        " is looked up for custom fields filtering: referenced custom fields should much this"
-        " document type."
-    )
-
     # Pagination
     page_size: int = Field(
         default=20,
@@ -507,6 +516,10 @@ class SearchDocumentsResponse(BaseModel):
     page_size: int = Field(..., ge=1, description="Items per page")
     num_pages: int = Field(..., ge=0, description="Total number of pages")
     total_items: int = Field(..., ge=0, description="Total number of results")
+    document_type_id: Optional[UUID] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 
 class SearchDocumentsByTypeResponse(BaseModel):
@@ -520,8 +533,10 @@ class SearchDocumentsByTypeResponse(BaseModel):
     page_size: int = Field(..., ge=1, description="Items per page")
     num_pages: int = Field(..., ge=0, description="Total number of pages")
     total_items: int = Field(..., ge=0, description="Total number of results")
+    document_type_id: UUID
     custom_fields: List[CustomFieldInfo] = Field(
         ...,
         description="Custom fields metadata for this document type"
     )
 
+    model_config = ConfigDict(from_attributes=True)

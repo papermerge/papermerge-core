@@ -7,27 +7,25 @@ from sqlalchemy.orm import aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.features.document.db import orm as doc_orm
-from papermerge.core.features.nodes.db import orm as node_orm
-
-logger = logging.getLogger(__name__)
-
-
 from papermerge.core.features.search import schema
 from papermerge.core.features.search.db.orm import DocumentSearchIndex
-from papermerge.core.features.custom_fields.db.orm import CustomField, CustomFieldValue
+from papermerge.core.features.custom_fields.db.orm import CustomField, \
+    CustomFieldValue
 from papermerge.core.features.document_types.db.orm import DocumentType
 from papermerge.core.features.groups.db.orm import UserGroup
 from papermerge.core.types import OwnerType
-from papermerge.core.features.custom_fields.cf_types.registry import TypeRegistry
+from papermerge.core.features.custom_fields.cf_types.registry import \
+    TypeRegistry
 
 logger = logging.getLogger(__name__)
 
 
 async def search_documents_by_type(
     db_session: AsyncSession,
+    document_type_id: UUID,
     *,
     user_id: UUID,
-    params: schema.SearchQueryParams
+    params: schema.SearchQueryParams,
 ) -> schema.SearchDocumentsByTypeResponse:
     """
     Search documents within a SPECIFIC document type with custom field filtering/sorting.
@@ -42,18 +40,13 @@ async def search_documents_by_type(
     Args:
         db_session: AsyncSession for database operations
         user_id: UUID of the current user (for access control)
-        params: SearchQueryParams with document_type_id specified
 
     Returns:
         SearchDocumentsByTypeResponse with DocumentCFV items and custom field metadata
     """
 
-    if not params.document_type_id:
+    if not document_type_id:
         raise ValueError("document_type_id is required for this search type")
-
-    # Ignore category filter when document_type_id is provided
-    if params.filters.category:
-        logger.warning("category filter ignored when document_type_id is provided")
 
     # =======================================================================
     # STEP 1: Get custom fields for this document type
@@ -63,7 +56,7 @@ async def search_documents_by_type(
         .join(
             DocumentType.custom_fields
         )
-        .where(DocumentType.id == params.document_type_id)
+        .where(DocumentType.id == document_type_id)
     )
 
     result_cf = await db_session.execute(stmt_cf)
@@ -86,7 +79,7 @@ async def search_documents_by_type(
     count_query = select(func.count(DocumentSearchIndex.document_id))
 
     # Filter by document type
-    type_filter = DocumentSearchIndex.document_type_id == params.document_type_id
+    type_filter = DocumentSearchIndex.document_type_id == document_type_id
 
     # Access control: user + groups
     user_groups_subquery = select(UserGroup.group_id).where(
@@ -248,7 +241,8 @@ async def search_documents_by_type(
         page_size=params.page_size,
         num_pages=num_pages,
         total_items=total_count,
-        custom_fields=custom_fields_info
+        custom_fields=custom_fields_info,
+        document_type_id=document_type_id
     )
 
 
@@ -378,7 +372,7 @@ async def search_documents(
         page_number=params.page_number,
         page_size=params.page_size,
         num_pages=num_pages,
-        total_items=total_count
+        total_items=total_count,
     )
 
 
@@ -771,3 +765,34 @@ async def find_unindexed_documents(
     logger.info(f"Found {len(unindexed_ids)} documents missing from search index")
 
     return unindexed_ids
+
+
+async def extract_document_type_from_category(
+    db_session: AsyncSession,
+    params: schema.SearchQueryParams
+) -> UUID | None:
+    """
+    Extract document type ID from category filter.
+
+    Returns document type ID if exactly one category is specified,
+    otherwise returns None.
+    """
+    # Check if category filter exists and has exactly one value
+    if not params.filters.category:
+        return None
+
+    if len(params.filters.category.values) != 1:
+        return None
+
+    # Get the single category name
+    category_name = params.filters.category.values[0]
+
+    stmt = select(DocumentType).where(DocumentType.name == category_name)
+    result = await db_session.execute(stmt)
+    document_type = result.scalar_one_or_none()
+
+    if document_type is None:
+        logger.warning(f"Document type not found for category: {category_name}")
+        return None
+
+    return document_type.id

@@ -38,7 +38,6 @@ from papermerge.core.types import OwnerType, ResourceType
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.features.document_types.db import api as dt_dbapi
 
-
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "document" / "tests" / "resources"
 
@@ -1097,8 +1096,8 @@ async def make_node_with_owner(db_session: AsyncSession):
 
 @pytest.fixture
 def make_document_with_numeric_cf(
-        db_session: AsyncSession,
-        make_custom_field_v2
+    db_session: AsyncSession,
+    make_custom_field_v2
 ):
     """
     Create a document of a specific type with one numeric custom field.
@@ -1125,12 +1124,12 @@ def make_document_with_numeric_cf(
     """
 
     async def _maker(
-            doc_type_name: str,
-            doc_title: str,
-            field_name: str,
-            user: orm.User,
-            precision: int = 2,
-            parent: orm.Folder = None
+        doc_type_name: str,
+        doc_title: str,
+        field_name: str,
+        user: orm.User,
+        precision: int = 2,
+        parent: orm.Folder = None
     ):
         # Step 1: Get or create numeric custom field (check DB first)
         stmt = select(orm.CustomField).where(
@@ -1225,4 +1224,3 @@ def make_document_with_numeric_cf(
         return doc, custom_field
 
     return _maker
-

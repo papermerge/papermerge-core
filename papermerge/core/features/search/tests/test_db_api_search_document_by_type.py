@@ -169,6 +169,9 @@ async def test_filter_documents_by_multiple_cf(
 
     params = search_schema.SearchQueryParams(
         filters=search_schema.SearchFilters(
+            category=search_schema.CategoryFilter(
+                values=["Invoice"]
+            ),
             custom_fields=[
                 search_schema.CustomFieldFilter(
                     field_name="Total Amount",
@@ -183,14 +186,14 @@ async def test_filter_documents_by_multiple_cf(
             ]
         ),
         lang=search_schema.SearchLanguage.ENG,
-        document_type_id=invoice_type.id,
     )
 
     # search for receipts with total amount > 30 and vendor = "lidl"
     results = await search_dbapi.search_documents_by_type(
         db_session=db_session,
         user_id=user.id,
-        params=params
+        params=params,
+        document_type_id=invoice_type.id
     )
 
     assert len(results.items) == 1
@@ -263,6 +266,9 @@ async def test_filter_and_sort_documents_by_multiple_cf(
 
     params = search_schema.SearchQueryParams(
         filters=search_schema.SearchFilters(
+            category=search_schema.CategoryFilter(
+                values=["Invoice"]
+            ),
             custom_fields=[
                 search_schema.CustomFieldFilter(
                     field_name="Total Amount",
@@ -279,13 +285,13 @@ async def test_filter_and_sort_documents_by_multiple_cf(
         sort_by="Total Amount",
         sort_direction=search_schema.SortDirection.DESC,
         lang=search_schema.SearchLanguage.ENG,
-        document_type_id=invoice_type.id,
     )
 
     results = await search_dbapi.search_documents_by_type(
         db_session=db_session,
         user_id=user.id,
-        params=params
+        params=params,
+        document_type_id=invoice_type.id
     )
 
     assert len(results.items) == 3

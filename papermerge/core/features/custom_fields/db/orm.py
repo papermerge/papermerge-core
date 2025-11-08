@@ -32,6 +32,9 @@ class CustomField(Base, AuditColumns, OwnedResourceMixin):
         Index('idx_custom_fields_name', 'name'),
     )
 
+    def __repr__(self):
+        return f"CustomField(name={self.name}, type_handler={self.type_handler})"
+
 
 class CustomFieldValue(Base):
     """Custom field values for documents"""

@@ -726,7 +726,7 @@ async def get_document_search_index_stats(
 
 
 async def find_unindexed_documents(
-        db_session: AsyncSession,
+    db_session: AsyncSession,
 ) -> list[UUID]:
     """
     Find documents that exist in the database but are missing from the search index.

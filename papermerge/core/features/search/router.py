@@ -1,5 +1,8 @@
+import logging
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException, status
 
 from papermerge.core.features.auth.dependencies import require_scopes
 from papermerge.core.features.auth import scopes
@@ -13,8 +16,6 @@ router = APIRouter(
     tags=["search"]
 )
 
-from fastapi import HTTPException, status
-import logging
 
 logger = logging.getLogger(__name__)
 

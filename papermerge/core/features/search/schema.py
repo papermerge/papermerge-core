@@ -12,6 +12,7 @@ from pydantic import (
 )
 
 from papermerge.core.types import OwnerType
+from papermerge.core.schemas.common import ByUser, OwnedBy
 
 
 # ============================================================================
@@ -417,13 +418,18 @@ class FlatDocument(BaseModel):
     Flat document result (without custom fields).
     Used in general search across all document types.
     """
-    document_id: UUID = Field(..., description="Document UUID")
+    id: UUID = Field(..., description="Document UUID")
     title: str = Field(..., description="Document title")
     document_type_id: UUID | None = Field(None, description="Document type UUID")
     document_type_name: str | None = Field(None, description="Document type name")
     tags: List[str] = Field(default_factory=list, description="Document tags")
     lang: str = Field(..., description="Document language")
-    last_updated: datetime = Field(..., description="Last update timestamp")
+
+    owned_by: OwnedBy = Field(..., description="Owner information")
+    created_at: datetime = Field(..., description="Creation timestamp")
+    updated_at: datetime = Field(..., description="Last update timestamp")
+    created_by: ByUser | None = Field(None, description="Created by user")
+    updated_by: ByUser | None = Field(None, description="Last updated by user")
 
     model_config = ConfigDict(from_attributes=True)
 

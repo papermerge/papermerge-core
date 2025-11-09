@@ -1,11 +1,11 @@
 import {Group} from "@mantine/core"
 import ColumnSelectorContainer from "./ColumnSelector"
 
-import type {DocumentByCategoryItem} from "../types"
+import type {DocumentListItem} from "../types"
 import SelectDocumentCategory from "./SelectDocumentCategory"
 
 interface Args {
-  items: DocumentByCategoryItem[]
+  items: DocumentListItem[]
 }
 
 export default function ActionButtons({items}: Args) {

@@ -8,18 +8,19 @@ from pydantic import (
     BaseModel,
     Field,
     field_validator,
-    model_validator,
     ConfigDict
 )
 
+from papermerge.core.constants import DEFAULT_TAG_BG_COLOR, DEFAULT_TAG_FG_COLOR
 from papermerge.core.types import OwnerType
+from papermerge.core.schemas.common import ByUser, OwnedBy
 
 
 # ============================================================================
 # ENUMS
 # ============================================================================
 
-class Operator(str, Enum):
+class CustomFieldOperator(str, Enum):
     """Comparison operators for filters"""
     # Equality
     EQ = "eq"  # = (exact match)
@@ -37,6 +38,16 @@ class Operator(str, Enum):
     # List operations
     IN = "in"  # value in list
     NOT_IN = "not_in"  # value not in list
+
+
+class TagOperator(str, Enum):
+    ANY = "any"
+    ALL = "all"
+    NOT = "not"
+
+class CategoryOperator(str, Enum):
+    ANY = "any"
+    NOT = "not"
 
 
 class SortBy(str, Enum):
@@ -130,6 +141,12 @@ class CategoryFilter(BaseModel):
         ]
     )
 
+    operator: Optional[CategoryOperator] = Field(
+        CategoryOperator.ANY,
+        description="Operator applied to the category values",
+        examples=[["any", "not"]]
+    )
+
     @field_validator('values')
     @classmethod
     def validate_values(cls, v: List[str]) -> List[str]:
@@ -149,15 +166,6 @@ class CategoryFilter(BaseModel):
 
         return all_values
 
-    model_config = ConfigDict(
-        json_schema_extra={
-            "examples": [
-                {"values": ["Invoice"]},
-                {"values": ["Blue Whale", "Green Whale"]},
-                {"values": ["Annual Report, Quarterly Report"]}
-            ]
-        }
-    )
 
 
 class TagFilter(BaseModel):
@@ -170,23 +178,17 @@ class TagFilter(BaseModel):
     """
     tags: Optional[List[str]] = Field(
         None,
-        description="Tags that must ALL be present (AND logic)",
+        description="Tags values",
         examples=[["urgent", "2024"]]
     )
 
-    tags_any: Optional[List[str]] = Field(
-        None,
-        description="Tags where ANY must be present (OR logic)",
-        examples=[["blue", "green", "red"]]
+    operator: Optional[TagOperator] = Field(
+        TagOperator.ALL,
+        description="Operator applied to the tag",
+        examples=[["all", "any", "not"]]
     )
 
-    tags_not: Optional[List[str]] = Field(
-        None,
-        description="Tags that must NOT be present (exclusion)",
-        examples=[["archived", "deleted"]]
-    )
-
-    @field_validator('tags', 'tags_any', 'tags_not')
+    @field_validator('tags')
     @classmethod
     def validate_tag_list(cls, v: Optional[List[str]]) -> Optional[List[str]]:
         """Validate and clean tag lists"""
@@ -197,28 +199,6 @@ class TagFilter(BaseModel):
         cleaned = [tag.strip() for tag in v if tag and tag.strip()]
 
         return cleaned if cleaned else None
-
-    @model_validator(mode='after')
-    def validate_at_least_one_filter(self):
-        """Ensure at least one tag filter is specified"""
-        if not any([self.tags, self.tags_any, self.tags_not]):
-            raise ValueError('At least one of tags, tags_any, or tags_not must be specified')
-        return self
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "examples": [
-                {"tags": ["urgent", "2024"]},
-                {"tags_any": ["blue", "green"]},
-                {"tags_not": ["archived"]},
-                {
-                    "tags": ["urgent"],
-                    "tags_any": ["blue", "green"],
-                    "tags_not": ["archived"]
-                }
-            ]
-        }
-    )
 
 
 class CustomFieldFilter(BaseModel):
@@ -238,7 +218,7 @@ class CustomFieldFilter(BaseModel):
         examples=["total", "status", "invoice date", "active"]
     )
 
-    operator: Operator = Field(
+    operator: CustomFieldOperator = Field(
         ...,
         description="Comparison operator (must be compatible with field type)",
         examples=["contains", "eq", "gt", "gte"]
@@ -331,32 +311,6 @@ class SearchFilters(BaseModel):
         description="Owner of the document"
     )
 
-    def has_any_filter(self) -> bool:
-        """Check if any filter is specified"""
-        return any([
-            self.fts is not None,
-            self.category is not None,
-            self.tags is not None and len(self.tags) > 0,
-            self.custom_fields is not None and len(self.custom_fields) > 0
-        ])
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "examples": [
-                {
-                    "fts": {"terms": ["meeting notes"]},
-                    "category": {"values": ["Invoice"]},
-                    "tags": [
-                        {"tags": ["urgent", "2024"]}
-                    ],
-                    "custom_fields": [
-                        {"field_name": "total", "operator": "gt", "value": 100},
-                        {"field_name": "status", "operator": "eq", "value": "completed"}
-                    ]
-                }
-            ]
-        }
-    )
 
 
 class SearchQueryParams(BaseModel):
@@ -366,8 +320,8 @@ class SearchQueryParams(BaseModel):
     All filters are combined with AND logic:
     - FTS AND category AND tags AND custom_fields
     """
-    filters: SearchFilters = Field(
-        ...,
+    filters: Optional[SearchFilters] = Field(
+        [],
         description="Search filters to apply"
     )
 
@@ -401,14 +355,6 @@ class SearchQueryParams(BaseModel):
         default=SortDirection.DESC,
         description="Sort direction"
     )
-
-    @field_validator('filters')
-    @classmethod
-    def validate_filters_not_empty(cls, v: SearchFilters) -> SearchFilters:
-        """Ensure at least one filter is specified"""
-        if not v.has_any_filter():
-            raise ValueError('At least one filter must be specified')
-        return v
 
 
 # ============================================================================
@@ -468,18 +414,33 @@ class CustomFieldInfo(BaseModel):
 # Document Search Results
 # ============================================================================
 
+
+class Category(BaseModel):
+    id: UUID
+    name: str
+
+class Tag(BaseModel):
+    id: UUID
+    name: str
+    bg_color: str | None = DEFAULT_TAG_BG_COLOR
+    fg_color: str | None = DEFAULT_TAG_FG_COLOR
+
 class FlatDocument(BaseModel):
     """
     Flat document result (without custom fields).
     Used in general search across all document types.
     """
-    document_id: UUID = Field(..., description="Document UUID")
+    id: UUID = Field(..., description="Document UUID")
     title: str = Field(..., description="Document title")
-    document_type_id: UUID | None = Field(None, description="Document type UUID")
-    document_type_name: str | None = Field(None, description="Document type name")
-    tags: List[str] = Field(default_factory=list, description="Document tags")
+    category: Category | None = Field(None, description="Document category")
+    tags: List[Tag] = Field(default_factory=list, description="Document tags")
     lang: str = Field(..., description="Document language")
-    last_updated: datetime = Field(..., description="Last update timestamp")
+
+    owned_by: OwnedBy = Field(..., description="Owner information")
+    created_at: datetime = Field(..., description="Creation timestamp")
+    updated_at: datetime = Field(..., description="Last update timestamp")
+    created_by: ByUser | None = Field(None, description="Created by user")
+    updated_by: ByUser | None = Field(None, description="Last updated by user")
 
     model_config = ConfigDict(from_attributes=True)
 

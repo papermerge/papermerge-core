@@ -4,7 +4,7 @@ import {DocTypeGrouped} from "@/features/document-types/types"
 import {
   documentCategoryIDUpdated,
   selectDocumentCategoryID
-} from "@/features/documents-by-category/storage/documentsByCategory"
+} from "@/features/documentsList/storage/documentsByCategory"
 import {Select} from "@mantine/core"
 import {useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
@@ -41,7 +41,7 @@ export default function SelectDocumentCategory() {
     setCurrentDocumentTypeName(newValue)
     dispatch(documentCategoryIDUpdated(document_type_id))
     if (newValue) {
-      navigate(`/documents/by/category/${document_type_id}`)
+      navigate(`/documents/`)
     }
   }
 

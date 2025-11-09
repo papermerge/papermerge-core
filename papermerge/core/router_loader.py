@@ -27,9 +27,11 @@ def discover_routers(features_path: Path) -> List[tuple[APIRouter, str]]:
                 )
                 if hasattr(module, 'router'):
                     routers.append((module.router, feature_name))
-            except (ImportError, AttributeError):
+            except (ImportError, AttributeError) as e:
                 # Skip if no router exists
+                print(f"{feature_name} has no router {e}")
                 pass
+
 
             # Also check for additional routers with suffixes
             # (like router_folders, router_pages, etc.)

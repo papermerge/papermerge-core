@@ -9,7 +9,7 @@ import documentDownloadsReducer from "@/features/document/store/documentDownload
 import docVersReducer from "@/features/document/store/documentVersSlice"
 import imageObjects from "@/features/document/store/imageObjectsSlice"
 import pagesReducer from "@/features/document/store/pagesSlice"
-import documentsByCategoryReducer from "@/features/documents-by-category/storage/documentsByCategory"
+import documentsByCategoryReducer from "@/features/documentsList/storage/documentsByCategory"
 import filesReducer from "@/features/files/filesSlice"
 import groupsReducer from "@/features/groups/storage/group"
 import nodesReducer from "@/features/nodes/nodesSlice"

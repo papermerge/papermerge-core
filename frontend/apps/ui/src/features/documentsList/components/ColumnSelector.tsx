@@ -1,4 +1,5 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import useColumns from "@/features/documentsList/hooks/useColumns"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
   selectPanelVisibleColumns,
@@ -10,8 +11,7 @@ import {TFunction} from "i18next"
 import {ColumnConfig} from "kommon"
 import {useState} from "react"
 import {useTranslation} from "react-i18next"
-import {DocumentByCategoryItem} from "../types"
-import useColumns from "@/features/documents-by-category/hooks/useColumns"
+import {DocumentListItem} from "../types"
 
 export default function ColumnSelectorContainer() {
   const {panelId} = usePanel()
@@ -38,7 +38,7 @@ export default function ColumnSelectorContainer() {
     return {...c, visible: false}
   })
 
-  const onColumnChange = (columns: ColumnConfig<DocumentByCategoryItem>[]) => {
+  const onColumnChange = (columns: ColumnConfig<DocumentListItem>[]) => {
     const newVisibleColumns = columns
       .filter(c => Boolean(c.visible !== false))
       .map(c => c.key)
@@ -70,8 +70,8 @@ const translatableColumnKey = [
 ]
 
 interface ColumnSelectorArgs {
-  columns: ColumnConfig<DocumentByCategoryItem>[]
-  onColumnsChange: (columns: ColumnConfig<DocumentByCategoryItem>[]) => void
+  columns: ColumnConfig<DocumentListItem>[]
+  onColumnsChange: (columns: ColumnConfig<DocumentListItem>[]) => void
   t?: TFunction
 }
 

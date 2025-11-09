@@ -6,14 +6,15 @@ from sqlalchemy import select, func, and_, or_, text
 from sqlalchemy.orm import aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from papermerge.core import orm, schema
 from papermerge.core.features.document.db import orm as doc_orm
-from papermerge.core.features.search import schema
+from papermerge.core.features.search import schema as search_schema
 from papermerge.core.features.search.db.orm import DocumentSearchIndex
 from papermerge.core.features.custom_fields.db.orm import CustomField, \
     CustomFieldValue
 from papermerge.core.features.document_types.db.orm import DocumentType
 from papermerge.core.features.groups.db.orm import UserGroup
-from papermerge.core.types import OwnerType
+from papermerge.core.types import OwnerType, ResourceType
 from papermerge.core.features.custom_fields.cf_types.registry import \
     TypeRegistry
 
@@ -25,8 +26,8 @@ async def search_documents_by_type(
     document_type_id: UUID,
     *,
     user_id: UUID,
-    params: schema.SearchQueryParams,
-) -> schema.SearchDocumentsByTypeResponse:
+    params: search_schema.SearchQueryParams,
+) -> search_schema.SearchDocumentsByTypeResponse:
     """
     Search documents within a SPECIFIC document type with custom field filtering/sorting.
 
@@ -63,7 +64,7 @@ async def search_documents_by_type(
     custom_fields = result_cf.scalars().all()
 
     custom_fields_info = [
-        schema.CustomFieldInfo(
+        search_schema.CustomFieldInfo(
             id=cf.id,
             name=cf.name,
             type_handler=cf.type_handler,
@@ -209,7 +210,7 @@ async def search_documents_by_type(
                         type_handler=cf.type_handler,
                         config=cf.config or {}
                     ),
-                    custom_field_value=schema.CustomFieldValueShort(
+                    custom_field_value=search_schema.CustomFieldValueShort(
                         value=cfv.value if cfv else None,
                         value_text=cfv.value_text if cfv else None,
                         value_numeric=cfv.value_numeric if cfv else None,
@@ -221,7 +222,7 @@ async def search_documents_by_type(
             )
 
         items.append(
-            schema.DocumentCFV(
+            search_schema.DocumentCFV(
                 document_id=row.document_id,
                 title=row.title,
                 document_type_id=row.document_type_id,
@@ -235,7 +236,7 @@ async def search_documents_by_type(
 
     num_pages = math.ceil(total_count / params.page_size)
 
-    return schema.SearchDocumentsByTypeResponse(
+    return search_schema.SearchDocumentsByTypeResponse(
         items=items,
         page_number=params.page_number,
         page_size=params.page_size,
@@ -250,8 +251,8 @@ async def search_documents(
     db_session: AsyncSession,
     *,
     user_id: UUID,
-    params: schema.SearchQueryParams
-) -> schema.SearchDocumentsResponse:
+    params: search_schema.SearchQueryParams
+) -> search_schema.SearchDocumentsResponse:
     """
     Search documents across ALL accessible document types.
 
@@ -261,7 +262,7 @@ async def search_documents(
     - Apply FTS filter
     - Apply tag filters
     - NO custom field filtering (since documents may have different types)
-    - Returns flat document list without custom field values
+    - Returns flat document list with audit trail and colored tags
 
     Args:
         db_session: AsyncSession for database operations
@@ -276,12 +277,51 @@ async def search_documents(
         logger.warning("custom_fields filter ignored when document_type_id is not provided")
 
     # =========================================================================
-    # STEP 1: Build base query
+    # STEP 1: Create aliases for user/group joins
     # =========================================================================
-    base_query = select(DocumentSearchIndex)
-    count_query = select(func.count(DocumentSearchIndex.document_id))
+    created_user = aliased(orm.User, name='created_user')
+    updated_user = aliased(orm.User, name='updated_user')
+    owner_user = aliased(orm.User, name='owner_user')
+    owner_group = aliased(orm.Group, name='owner_group')
 
-    # Access control: user + groups
+    # =========================================================================
+    # STEP 2: Build base query for filtering, sorting, and getting doc IDs
+    # =========================================================================
+    base_query = (
+        select(DocumentSearchIndex)
+        .join(
+            orm.Node,
+            DocumentSearchIndex.document_id == orm.Node.id
+        )
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.NODE.value,
+                orm.Ownership.resource_id == orm.Node.id
+            )
+        )
+    )
+
+    # Build count query with same base structure
+    count_query = (
+        select(func.count(DocumentSearchIndex.document_id.distinct()))
+        .select_from(DocumentSearchIndex)
+        .join(
+            orm.Node,
+            DocumentSearchIndex.document_id == orm.Node.id
+        )
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.NODE.value,
+                orm.Ownership.resource_id == orm.Node.id
+            )
+        )
+    )
+
+    # =========================================================================
+    # STEP 3: Apply access control
+    # =========================================================================
     user_groups_subquery = select(UserGroup.group_id).where(
         UserGroup.user_id == user_id
     )
@@ -301,7 +341,7 @@ async def search_documents(
     count_query = count_query.where(access_filter)
 
     # =========================================================================
-    # STEP 2: Apply FTS filter
+    # STEP 4: Apply FTS filter
     # =========================================================================
     if params.filters.fts:
         fts_query = _build_fts_query(params.filters.fts, params.lang or 'eng')
@@ -309,7 +349,7 @@ async def search_documents(
         count_query = count_query.where(fts_query)
 
     # =========================================================================
-    # STEP 3: Apply category filter
+    # STEP 5: Apply category filter
     # =========================================================================
     if params.filters.category:
         category_filter = _build_category_filter(params.filters.category)
@@ -317,7 +357,7 @@ async def search_documents(
         count_query = count_query.where(category_filter)
 
     # =========================================================================
-    # STEP 4: Apply tag filters
+    # STEP 6: Apply tag filters
     # =========================================================================
     if params.filters.tags:
         tag_filters = _build_tag_filters(params.filters.tags)
@@ -326,44 +366,209 @@ async def search_documents(
             count_query = count_query.where(tag_filters)
 
     # =========================================================================
-    # STEP 5: Apply sorting (no custom fields)
+    # STEP 7: Apply sorting
     # =========================================================================
     base_query = _apply_sorting_simple(base_query, params)
 
     # =========================================================================
-    # STEP 6: Apply pagination
+    # STEP 8: Get paginated document IDs (Solution B)
     # =========================================================================
     offset = (params.page_number - 1) * params.page_size
-    base_query = base_query.limit(params.page_size).offset(offset)
+
+    paginated_doc_ids_query = (
+        base_query
+        .with_only_columns(DocumentSearchIndex.document_id)
+        .limit(params.page_size)
+        .offset(offset)
+    )
+
+    doc_ids_result = await db_session.execute(paginated_doc_ids_query)
+    paginated_doc_ids = [row[0] for row in doc_ids_result.all()]
 
     # =========================================================================
-    # STEP 7: Execute queries
+    # STEP 9: Execute count query
     # =========================================================================
-    result = await db_session.execute(base_query)
-    search_results = result.scalars().all()
-
     count_result = await db_session.execute(count_query)
     total_count = count_result.scalar()
 
-    # =========================================================================
-    # STEP 8: Convert to flat documents (no custom field values)
-    # =========================================================================
-    items = [
-        schema.FlatDocument(
-            document_id=row.document_id,
-            title=row.title,
-            document_type_id=row.document_type_id,
-            document_type_name=row.document_type_name,
-            tags=row.tags or [],
-            lang=row.lang,
-            last_updated=row.last_updated
+    # Early return if no documents found
+    if not paginated_doc_ids:
+        return search_schema.SearchDocumentsResponse(
+            items=[],
+            page_number=params.page_number,
+            page_size=params.page_size,
+            num_pages=0,
+            total_items=total_count,
         )
-        for row in search_results
-    ]
+
+    # =========================================================================
+    # STEP 10: Build full query with ALL joins for the paginated documents
+    # =========================================================================
+    full_query = (
+        select(DocumentSearchIndex)
+        .join(
+            orm.Node,
+            DocumentSearchIndex.document_id == orm.Node.id
+        )
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.NODE.value,
+                orm.Ownership.resource_id == orm.Node.id
+            )
+        )
+        .join(
+            created_user,
+            orm.Node.created_by == created_user.id,
+            isouter=True
+        )
+        .join(
+            updated_user,
+            orm.Node.updated_by == updated_user.id,
+            isouter=True
+        )
+        .join(
+            owner_user,
+            and_(
+                orm.Ownership.owner_type == OwnerType.USER.value,
+                orm.Ownership.owner_id == owner_user.id
+            ),
+            isouter=True
+        )
+        .join(
+            owner_group,
+            and_(
+                orm.Ownership.owner_type == OwnerType.GROUP.value,
+                orm.Ownership.owner_id == owner_group.id
+            ),
+            isouter=True
+        )
+        .join(
+            orm.NodeTagsAssociation,
+            orm.Node.id == orm.NodeTagsAssociation.node_id,
+            isouter=True
+        )
+        .join(
+            orm.Tag,
+            orm.NodeTagsAssociation.tag_id == orm.Tag.id,
+            isouter=True
+        )
+        # CRITICAL: Filter by the paginated document IDs
+        .where(DocumentSearchIndex.document_id.in_(paginated_doc_ids))
+        .add_columns(
+            # Ownership info
+            orm.Ownership.owner_type.label('owner_type'),
+            orm.Ownership.owner_id.label('owner_id'),
+            # Owner user info (when owner is a user)
+            owner_user.id.label('owner_user_id'),
+            owner_user.username.label('owner_username'),
+            # Owner group info (when owner is a group)
+            owner_group.id.label('owner_group_id'),
+            owner_group.name.label('owner_group_name'),
+            # Audit trail - timestamps from nodes table
+            orm.Node.created_at.label('created_at'),
+            orm.Node.updated_at.label('updated_at'),
+            # Audit trail - created by user
+            created_user.id.label('created_by_id'),
+            created_user.username.label('created_by_username'),
+            # Audit trail - updated by user
+            updated_user.id.label('updated_by_id'),
+            updated_user.username.label('updated_by_username'),
+            # Tag columns
+            orm.Tag.id.label('tag_id'),
+            orm.Tag.name.label('tag_name'),
+            orm.Tag.bg_color.label('tag_bg_color'),
+            orm.Tag.fg_color.label('tag_fg_color')
+        )
+        # NO LIMIT/OFFSET here - we already have the exact document IDs we want
+    )
+
+    # =========================================================================
+    # STEP 11: Execute full query
+    # =========================================================================
+    result = await db_session.execute(full_query)
+    search_results = result.all()
+
+    # =========================================================================
+    # STEP 12: Group results by document_id and build response
+    # =========================================================================
+    documents_dict = {}
+
+    for row in search_results:
+        search_index = row[0]  # The DocumentSearchIndex object
+        doc_id = search_index.document_id
+
+        # If this is the first time we see this document, create it
+        if doc_id not in documents_dict:
+            # Build owned_by from ownership data
+            if row.owner_type == OwnerType.USER.value:
+                owned_by = schema.OwnedBy(
+                    id=row.owner_user_id,
+                    name=row.owner_username,
+                    type=OwnerType.USER
+                )
+            else:  # GROUP
+                owned_by = schema.OwnedBy(
+                    id=row.owner_group_id,
+                    name=row.owner_group_name,
+                    type=OwnerType.GROUP
+                )
+
+            # Build audit user objects (handle None values)
+            created_by = None
+            if row.created_by_id:
+                created_by = schema.ByUser(
+                    id=row.created_by_id,
+                    username=row.created_by_username
+                )
+
+            updated_by = None
+            if row.updated_by_id:
+                updated_by = schema.ByUser(
+                    id=row.updated_by_id,
+                    username=row.updated_by_username
+                )
+
+            # Build category if present
+            category = None
+            if search_index.document_type_id and search_index.document_type_name:
+                category = search_schema.Category(
+                    id=search_index.document_type_id,
+                    name=search_index.document_type_name
+                )
+
+            # Create document with empty tags list
+            documents_dict[doc_id] = search_schema.FlatDocument(
+                id=search_index.document_id,
+                title=search_index.title,
+                category=category,
+                tags=[],  # Will be populated below
+                lang=search_index.lang,
+                owned_by=owned_by,
+                created_at=row.created_at,
+                updated_at=row.updated_at,
+                created_by=created_by,
+                updated_by=updated_by
+            )
+
+        # Add tag to document if present (handle documents with no tags)
+        if row.tag_id is not None:
+            tag = search_schema.Tag(
+                id=row.tag_id,
+                name=row.tag_name,
+                bg_color=row.tag_bg_color,
+                fg_color=row.tag_fg_color
+            )
+            # Avoid duplicate tags (in case of data issues)
+            if tag not in documents_dict[doc_id].tags:
+                documents_dict[doc_id].tags.append(tag)
+
+    # Convert dict to list maintaining order (preserve sort order from paginated_doc_ids)
+    items = [documents_dict[doc_id] for doc_id in paginated_doc_ids if doc_id in documents_dict]
 
     num_pages = math.ceil(total_count / params.page_size)
 
-    return schema.SearchDocumentsResponse(
+    return search_schema.SearchDocumentsResponse(
         items=items,
         page_number=params.page_number,
         page_size=params.page_size,
@@ -371,12 +576,11 @@ async def search_documents(
         total_items=total_count,
     )
 
-
 # ============================================================================
 # Helper functions
 # ============================================================================
 
-def _build_fts_query(fts_filter: schema.FullTextSearchFilter, lang: str):
+def _build_fts_query(fts_filter: search_schema.FullTextSearchFilter, lang: str):
     """Build full-text search query with support for AND/OR logic."""
     lang_config_map = {
         'deu': 'german',
@@ -402,7 +606,7 @@ def _build_fts_query(fts_filter: schema.FullTextSearchFilter, lang: str):
     return DocumentSearchIndex.search_vector.op('@@')(ts_query)
 
 
-def _build_category_filter(category_filter: schema.CategoryFilter):
+def _build_category_filter(category_filter: search_schema.CategoryFilter):
     """Build category filter using ILIKE for flexible matching."""
     conditions = []
 
@@ -415,7 +619,7 @@ def _build_category_filter(category_filter: schema.CategoryFilter):
     return or_(*conditions)
 
 
-def _build_tag_filters(tag_filters: list[schema.TagFilter]):
+def _build_tag_filters(tag_filters: list[search_schema.TagFilter]):
     """Build tag filters with positive and negative matching."""
     conditions = []
 
@@ -446,18 +650,18 @@ def _build_tag_filters(tag_filters: list[schema.TagFilter]):
     return and_(*conditions) if conditions else None
 
 
-def _apply_sorting_simple(query, params: schema.SearchQueryParams):
+def _apply_sorting_simple(query, params: search_schema.SearchQueryParams):
     """Apply sorting without custom fields (for general search)."""
     sort_column_map = {
-        schema.SortBy.ID: DocumentSearchIndex.document_id,
-        schema.SortBy.TITLE: DocumentSearchIndex.title,
-        schema.SortBy.CATEGORY: DocumentSearchIndex.document_type_name,
-        schema.SortBy.UPDATED_AT: DocumentSearchIndex.last_updated,
+        search_schema.SortBy.ID: DocumentSearchIndex.document_id,
+        search_schema.SortBy.TITLE: DocumentSearchIndex.title,
+        search_schema.SortBy.CATEGORY: DocumentSearchIndex.document_type_name,
+        search_schema.SortBy.UPDATED_AT: DocumentSearchIndex.last_updated,
     }
 
     sort_column = sort_column_map.get(params.sort_by, DocumentSearchIndex.last_updated)
 
-    if params.sort_direction == schema.SortDirection.DESC:
+    if params.sort_direction == search_schema.SortDirection.DESC:
         query = query.order_by(sort_column.desc())
     else:
         query = query.order_by(sort_column.asc())
@@ -467,7 +671,7 @@ def _apply_sorting_simple(query, params: schema.SearchQueryParams):
 
 def _apply_sorting_with_custom_fields(
         query,
-        params: schema.SearchQueryParams,
+        params: search_schema.SearchQueryParams,
         custom_fields: list[CustomField]
 ):
     """Apply sorting with custom field support (for document type search)."""
@@ -491,7 +695,7 @@ def _apply_sorting_with_custom_fields(
                 )
             )
 
-            if params.sort_direction == schema.SortDirection.DESC:
+            if params.sort_direction == search_schema.SortDirection.DESC:
                 query = query.order_by(sort_column.desc())
             else:
                 query = query.order_by(sort_column.asc())
@@ -765,7 +969,7 @@ async def find_unindexed_documents(
 
 async def extract_document_type_from_category(
     db_session: AsyncSession,
-    params: schema.SearchQueryParams
+    params: search_schema.SearchQueryParams
 ) -> UUID | None:
     """
     Extract document type ID from category filter.

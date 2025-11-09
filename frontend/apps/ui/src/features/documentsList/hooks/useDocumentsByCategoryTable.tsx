@@ -1,9 +1,10 @@
 import {useAppSelector} from "@/app/hooks"
-import {useGetPaginatedFlatDocumentsQuery} from "@/features/documents-by-category/storage/api"
+
+import {useGetPaginatedDocumentsByCategoryQuery} from "@/features/documentsList/storage/api"
 import type {
-  FlatDocumentsQueryParams,
-  FlatDocumentSortBy
-} from "@/features/documents-by-category/storage/api"
+  DocumentsByCategoryQueryParams,
+  SortBy
+} from "@/features/documentsList/types"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
   selectPanelFilters,
@@ -13,7 +14,7 @@ import {
 } from "@/features/ui/panelRegistry"
 import {selectDocumentCategoryID} from "../storage/documentsByCategory"
 
-function useQueryParams(): FlatDocumentsQueryParams {
+function useQueryParams(): DocumentsByCategoryQueryParams {
   const {panelId} = usePanel()
 
   const pageSize = useAppSelector(s => selectPanelPageSize(s, panelId)) || 10
@@ -21,9 +22,9 @@ function useQueryParams(): FlatDocumentsQueryParams {
   const sorting = useAppSelector(s => selectPanelSorting(s, panelId))
   const filters = useAppSelector(s => selectPanelFilters(s, panelId))
 
-  const column = sorting?.column as FlatDocumentSortBy | undefined
+  const column = sorting?.column as SortBy | undefined
 
-  const queryParams: FlatDocumentsQueryParams = {
+  const queryParams: DocumentsByCategoryQueryParams = {
     page_size: pageSize,
     page_number: pageNumber,
     sort_by: column,
@@ -33,14 +34,20 @@ function useQueryParams(): FlatDocumentsQueryParams {
   return queryParams
 }
 
-export default function useFlatDocumentsTable() {
+export default function useDocumentsByCategoryTable() {
   const queryParams = useQueryParams()
   const categoryID = useAppSelector(selectDocumentCategoryID)
 
   const {data, isLoading, isFetching, isError, error} =
-    useGetPaginatedFlatDocumentsQuery(queryParams, {
-      skip: !!categoryID // Skip when categoryID is present
-    })
+    useGetPaginatedDocumentsByCategoryQuery(
+      {
+        document_type_id: categoryID!,
+        params: queryParams
+      },
+      {
+        skip: !categoryID || categoryID === ""
+      }
+    )
 
   return {
     data,

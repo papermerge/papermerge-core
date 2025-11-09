@@ -1,17 +1,20 @@
+import ErrorBoundary from "@/app/ErrorBoundary"
+import DateFMT from "@/components/DateFMT"
+import {MonetaryFMT, NumberFMT} from "@/components/NumberFMT"
 import TimestampZ from "@/components/Timestampz"
 import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
 import {Box, Text} from "@mantine/core"
-import Tags from "@/components/Tags"
 import {TFunction} from "i18next"
 import type {ColumnConfig} from "kommon"
-import type {
-  DocumentByCategoryItem,
-  Category
-} from "@/features/documents-by-category/types"
-import {ByUser, TagType} from "@/types"
+import type {ByUser, DocumentListItem} from "../types"
 
-export default function flatColumns(t?: TFunction) {
-  const columns: ColumnConfig<DocumentByCategoryItem>[] = [
+interface Args {
+  items?: DocumentListItem[]
+  t?: TFunction
+}
+
+export default function documentByCategoryColumns({items, t}: Args) {
+  const firstColumns: ColumnConfig<DocumentListItem>[] = [
     {
       key: "title",
       label:
@@ -40,29 +43,10 @@ export default function flatColumns(t?: TFunction) {
       width: 200,
       minWidth: 100,
       render: value => <TruncatedTextWithCopy value={value as string} />
-    },
-    {
-      key: "category",
-      label:
-        t?.("documentsByCategory.category", {defaultValue: "Category"}) ||
-        "Category",
-      sortable: true,
-      filterable: true,
-      width: 200,
-      minWidth: 150,
-      render: value => (
-        <Text size="sm">{value && (value as Category).name}</Text>
-      )
-    },
-    {
-      key: "tags",
-      label: t?.("documentsByCategory.tags", {defaultValue: "Tags"}) || "Tags",
-      sortable: false,
-      filterable: true,
-      width: 200,
-      minWidth: 150,
-      render: value => <Tags items={value as TagType[]} />
-    },
+    }
+  ]
+
+  const lastColumns: ColumnConfig<DocumentListItem>[] = [
     {
       key: "created_at",
       label:
@@ -115,5 +99,59 @@ export default function flatColumns(t?: TFunction) {
     }
   ]
 
-  return columns
+  let customFieldsColumns: ColumnConfig<DocumentListItem>[] = []
+
+  if (items && items?.length > 0) {
+    items[0].custom_fields.forEach(customFieldColumn => {
+      const func = (_: any, row: DocumentListItem) => {
+        const rowCF = row.custom_fields.find(
+          rcf => rcf.custom_field.name == customFieldColumn.custom_field.name
+        )
+        const rowCFValue = rowCF?.custom_field_value?.value?.raw
+
+        if (rowCFValue) {
+          if (customFieldColumn.custom_field.type_handler == "date") {
+            return (
+              <ErrorBoundary fallback={<Text c="red">{rowCFValue}</Text>}>
+                <DateFMT value={rowCFValue} />
+              </ErrorBoundary>
+            )
+          }
+          if (customFieldColumn.custom_field.type_handler == "monetary") {
+            return <MonetaryFMT value={rowCFValue} />
+          }
+          if (
+            ["integer", "number"].includes(
+              customFieldColumn.custom_field.type_handler
+            )
+          ) {
+            return (
+              <ErrorBoundary fallback={<Text c="red">{rowCFValue}</Text>}>
+                <NumberFMT value={rowCFValue} />
+              </ErrorBoundary>
+            )
+          }
+
+          return <Text size="sm">{rowCFValue}</Text>
+        }
+
+        return <></>
+      }
+
+      const column = {
+        key: customFieldColumn.custom_field.name,
+        label: customFieldColumn.custom_field.name,
+        sortable: true,
+        filterable: false,
+        visible: true,
+        width: 200,
+        minWidth: 100,
+        render: func
+      }
+      // @ts-ignore
+      customFieldsColumns.push(column)
+    })
+  }
+
+  return [...firstColumns, ...customFieldsColumns, ...lastColumns]
 }

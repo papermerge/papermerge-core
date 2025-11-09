@@ -1,9 +1,6 @@
 import {createBrowserRouter, Navigate} from "react-router-dom"
 
 import App from "@/app/App.tsx"
-import Folder, {loader as folderLoader} from "@/pages/Folder"
-import Home, {loader as homeLoader} from "@/pages/Home"
-import Inbox, {loader as inboxLoader} from "@/pages/Inbox"
 import {
   CustomFieldDetails,
   CustomFieldsList
@@ -12,7 +9,7 @@ import {
   DocumentTypeDetails,
   DocumentTypesList
 } from "@/features/document-types/pages"
-import {DocumentByCategoryDetails} from "@/features/documents-by-category/pages"
+import {DocumentByCategoryDetails} from "@/features/documentsList/pages"
 import {GroupDetails, GroupsList} from "@/features/groups/pages"
 import {RoleDetails, RolesList} from "@/features/roles/pages"
 import SharedDocumentView, {
@@ -27,6 +24,9 @@ import SharedNodesListView, {
 import {TagDetails, TagsList} from "@/features/tags/pages"
 import {UserDetails, UsersList} from "@/features/users/pages"
 import Document from "@/pages/Document"
+import Folder, {loader as folderLoader} from "@/pages/Folder"
+import Home, {loader as homeLoader} from "@/pages/Home"
+import Inbox, {loader as inboxLoader} from "@/pages/Inbox"
 import {AuditLogDetails, AuditLogsList} from "./features/audit/pages"
 import {MyPreferences} from "./features/preferences/components"
 
@@ -38,8 +38,8 @@ import {loader as customFieldsLoader} from "@/features/custom-fields/pages/Detai
 import {loader as customFieldsListLoader} from "@/features/custom-fields/pages/List"
 import {loader as documentTypeDetailsLoader} from "@/features/document-types/pages/Details"
 import {loader as documentTypesListLoader} from "@/features/document-types/pages/List"
-import {loader as documentsByCategoryDetailsLoader} from "@/features/documents-by-category/pages/Details"
-import {loader as documentsByCategoryListLoader} from "@/features/documents-by-category/pages/List"
+import {loader as documentsByCategoryDetailsLoader} from "@/features/documentsList/pages/Details"
+import {loader as documentsByCategoryListLoader} from "@/features/documentsList/pages/List"
 import {loader as groupsDetailsLoader} from "@/features/groups/pages/Details"
 import {loader as groupsListLoader} from "@/features/groups/pages/List"
 import {loader as rolesDetailsLoader} from "@/features/roles/pages/Details"
@@ -65,7 +65,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/documents/by/category" replace />
+        element: <Navigate to="/documents" replace />
       },
       {
         path: "/home/:folderId",
@@ -88,12 +88,12 @@ const router = createBrowserRouter([
         loader: documentLoader
       },
       {
-        path: "/documents/by/category",
+        path: "/documents",
         element: <DocumentTypesList />,
         loader: documentsByCategoryListLoader
       },
       {
-        path: "/documents/by/category/:id",
+        path: "/documents/:id",
         element: <DocumentByCategoryDetails />,
         loader: documentsByCategoryDetailsLoader
       },

@@ -1,8 +1,8 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {useAuth} from "@/app/hooks/useAuth"
 import PanelContext from "@/contexts/PanelContext"
 import {
   commanderViewOptionUpdated,
-  selectCommanderDocumentTypeID,
   selectCommanderViewOption,
   selectLastHome,
   selectLastInbox,
@@ -24,10 +24,10 @@ import {
   selectCurrentUserStatus
 } from "@/slices/currentUser.ts"
 import {Center, Group, Loader, Text} from "@mantine/core"
-import {useAuth} from "@/app/hooks/useAuth"
 import {
   IconAlignJustified,
   IconFile,
+  IconFolder,
   IconInbox,
   IconLogs,
   IconMasksTheater,
@@ -35,8 +35,7 @@ import {
   IconTriangleSquareCircle,
   IconUsers,
   IconUsersGroup,
-  IconUserShare,
-  IconFolder
+  IconUserShare
 } from "@tabler/icons-react"
 import {useContext} from "react"
 import {useSelector} from "react-redux"
@@ -71,12 +70,6 @@ function NavBarContent({renderLink, withVersion}: Args) {
   const viewOption = useAppSelector(s => selectCommanderViewOption(s, mode))
   const lastHome = useAppSelector(s => selectLastHome(s, "main"))
   const lastInbox = useAppSelector(s => selectLastInbox(s, "main"))
-  const categoryID = useAppSelector(s =>
-    selectCommanderDocumentTypeID(s, "main")
-  )
-  const categoryURL = categoryID
-    ? `/documents/by/category/${categoryID}`
-    : "/documents/by/category"
 
   const status = useSelector(selectCurrentUserStatus)
   const error = useSelector(selectCurrentUserError)
@@ -110,7 +103,7 @@ function NavBarContent({renderLink, withVersion}: Args) {
     <>
       <div className="navbar">
         {hasPermission(NODE_VIEW) && (
-          <NavLink to={categoryURL} onClick={onClick}>
+          <NavLink to={`/documents/`} onClick={onClick}>
             {renderLink(t("documents"), <IconFile />)}
           </NavLink>
         )}

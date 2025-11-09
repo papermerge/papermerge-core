@@ -1,6 +1,6 @@
 import {Viewer} from "@/features/document/components/Viewer"
-import useCurrentDocVer from "@/features/documents-by-category//hooks/useCurrentDocVer"
-import useCurrentDoc from "@/features/documents-by-category/hooks/useCurrentDoc"
+import useCurrentDocVer from "@/features/documentsList//hooks/useCurrentDocVer"
+import useCurrentDoc from "@/features/documentsList/hooks/useCurrentDoc"
 
 export default function DocumentDetailsContainer() {
   const {doc} = useCurrentDoc()

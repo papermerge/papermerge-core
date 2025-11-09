@@ -1,6 +1,7 @@
-import {Combobox, Loader} from "@mantine/core"
-import {ReactNode} from "react"
 import Tag from "@/components/Tag"
+import {useGetCustomFieldsQuery} from "@/features/custom-fields/storage/api"
+import {useGetDocumentTypesQuery} from "@/features/document-types/storage/api"
+import {Category} from "@/features/documentsList/types"
 import {
   SearchCategorySuggestion,
   SearchCustomFieldSuggestion,
@@ -9,14 +10,13 @@ import {
   SearchSuggestion,
   SearchTagSuggestion
 } from "@/features/search/microcomp/types"
-import {useGetTagsQuery} from "@/features/tags/storage/api"
-import {useGetDocumentTypesQuery} from "@/features/document-types/storage/api"
-import {useGetCustomFieldsQuery} from "@/features/custom-fields/storage/api"
-import {skipToken} from "@reduxjs/toolkit/query"
 import {hasThisTypeSuggestion} from "@/features/search/microcomp/utils"
+import {useGetTagsQuery} from "@/features/tags/storage/api"
 import {ColoredTag, CustomField} from "@/types"
+import {Combobox, Loader} from "@mantine/core"
+import {skipToken} from "@reduxjs/toolkit/query"
 import {TFunction} from "i18next"
-import {Category} from "@/features/documents-by-category/types"
+import {ReactNode} from "react"
 
 interface Args {
   suggestions?: SearchSuggestion[]

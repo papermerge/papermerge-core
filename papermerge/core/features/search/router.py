@@ -1,5 +1,8 @@
+import logging
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException, status
 
 from papermerge.core.features.auth.dependencies import require_scopes
 from papermerge.core.features.auth import scopes
@@ -13,17 +16,30 @@ router = APIRouter(
     tags=["search"]
 )
 
-from fastapi import HTTPException, status
-import logging
 
 logger = logging.getLogger(__name__)
 
 
+@router.post(
+    "/",
+    response_model=SearchDocumentsByTypeResponse | SearchDocumentsResponse,
+    responses={
+        400: {
+            "description": "Invalid search parameters (e.g., invalid date range, non-existent document type)"
+        },
+        403: {
+            "description": "Insufficient permissions - missing required scope: node:view"
+        },
+        500: {
+            "description": "Internal server error - search operation failed"
+        }
+    }
+)
 async def documents_search(
     user: require_scopes(scopes.NODE_VIEW),
     params: SearchQueryParams,
     db_session: AsyncSession = Depends(get_db)
-) -> SearchDocumentsByTypeResponse | SearchDocumentsResponse:
+):
     """
     Advanced document search and filtering.
 

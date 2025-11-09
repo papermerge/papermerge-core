@@ -1,19 +1,37 @@
 import {apiSlice} from "@/features/api/slice"
 import type {
-  DocumentByCategoryItem,
+  DocumentListItem,
   DocumentsByCategoryQueryParams,
   FlatDocument
-} from "@/features/documents-by-category/types"
+} from "@/features/documentsList/types"
 import type {SearchQueryParams} from "@/features/search/types"
-import type {Paginated} from "@/types"
+import type {CustomField, Paginated} from "@/types"
 
+// Add this new interface for single-category search with custom fields
+export interface SearchDocumentsByCategoryResponse {
+  items: DocumentListItem[]
+  page_number: number
+  page_size: number
+  num_pages: number
+  total_items: number
+  document_type_id: string // Present when single category
+  custom_fields: CustomField[] // Custom field metadata
+}
+
+// Update existing interface for flat search (no/multiple categories)
 export interface SearchDocumentsResponse {
   items: FlatDocument[]
   page_number: number
   page_size: number
   num_pages: number
   total_items: number
+  document_type_id?: null // Explicitly null for flat search
 }
+
+// Union type for search results
+export type SearchResponse =
+  | SearchDocumentsResponse
+  | SearchDocumentsByCategoryResponse
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
 
@@ -45,7 +63,7 @@ export interface GetPaginatedDocsByCatArg {
 export const apiSliceWithDocumentsByCategory = apiSlice.injectEndpoints({
   endpoints: builder => ({
     getPaginatedDocumentsByCategory: builder.query<
-      Paginated<DocumentByCategoryItem>,
+      Paginated<DocumentListItem>,
       GetPaginatedDocsByCatArg
     >({
       query: ({document_type_id, params}) => {
@@ -92,12 +110,9 @@ export const apiSliceWithDocumentsByCategory = apiSlice.injectEndpoints({
         ...result.items.map(({id}) => ({type: "FlatDocument", id}) as const)
       ]
     }),
-    searchDocuments: builder.mutation<
-      SearchDocumentsResponse,
-      SearchQueryParams
-    >({
+    searchDocuments: builder.mutation<SearchResponse, SearchQueryParams>({
       query: params => ({
-        url: "/search",
+        url: "/search/",
         method: "POST",
         body: params
       }),

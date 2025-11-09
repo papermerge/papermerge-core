@@ -1,10 +1,9 @@
 import {useAppSelector} from "@/app/hooks"
-
-import {useGetPaginatedDocumentsByCategoryQuery} from "@/features/documents-by-category/storage/api"
 import type {
-  DocumentsByCategoryQueryParams,
-  SortBy
-} from "@/features/documents-by-category/types"
+  FlatDocumentSortBy,
+  FlatDocumentsQueryParams
+} from "@/features/documentsList/storage/api"
+import {useGetPaginatedFlatDocumentsQuery} from "@/features/documentsList/storage/api"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
   selectPanelFilters,
@@ -14,7 +13,7 @@ import {
 } from "@/features/ui/panelRegistry"
 import {selectDocumentCategoryID} from "../storage/documentsByCategory"
 
-function useQueryParams(): DocumentsByCategoryQueryParams {
+function useQueryParams(): FlatDocumentsQueryParams {
   const {panelId} = usePanel()
 
   const pageSize = useAppSelector(s => selectPanelPageSize(s, panelId)) || 10
@@ -22,9 +21,9 @@ function useQueryParams(): DocumentsByCategoryQueryParams {
   const sorting = useAppSelector(s => selectPanelSorting(s, panelId))
   const filters = useAppSelector(s => selectPanelFilters(s, panelId))
 
-  const column = sorting?.column as SortBy | undefined
+  const column = sorting?.column as FlatDocumentSortBy | undefined
 
-  const queryParams: DocumentsByCategoryQueryParams = {
+  const queryParams: FlatDocumentsQueryParams = {
     page_size: pageSize,
     page_number: pageNumber,
     sort_by: column,
@@ -34,20 +33,14 @@ function useQueryParams(): DocumentsByCategoryQueryParams {
   return queryParams
 }
 
-export default function useDocumentsByCategoryTable() {
+export default function useFlatDocumentsTable() {
   const queryParams = useQueryParams()
   const categoryID = useAppSelector(selectDocumentCategoryID)
 
   const {data, isLoading, isFetching, isError, error} =
-    useGetPaginatedDocumentsByCategoryQuery(
-      {
-        document_type_id: categoryID!,
-        params: queryParams
-      },
-      {
-        skip: !categoryID || categoryID === ""
-      }
-    )
+    useGetPaginatedFlatDocumentsQuery(queryParams, {
+      skip: !!categoryID // Skip when categoryID is present
+    })
 
   return {
     data,

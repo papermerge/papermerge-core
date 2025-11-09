@@ -262,7 +262,7 @@ async def search_documents(
     - Apply FTS filter
     - Apply tag filters
     - NO custom field filtering (since documents may have different types)
-    - Returns flat document list without custom field values
+    - Returns flat document list with audit trail and colored tags
 
     Args:
         db_session: AsyncSession for database operations
@@ -276,49 +276,52 @@ async def search_documents(
     if params.filters.custom_fields:
         logger.warning("custom_fields filter ignored when document_type_id is not provided")
 
+    # =========================================================================
+    # STEP 1: Create aliases for user/group joins
+    # =========================================================================
     created_user = aliased(orm.User, name='created_user')
     updated_user = aliased(orm.User, name='updated_user')
     owner_user = aliased(orm.User, name='owner_user')
     owner_group = aliased(orm.Group, name='owner_group')
 
     # =========================================================================
-    # STEP 1: Build base query
+    # STEP 2: Build base query for filtering, sorting, and getting doc IDs
     # =========================================================================
-    base_query = select(DocumentSearchIndex).join(
+    base_query = (
+        select(DocumentSearchIndex)
+        .join(
             orm.Node,
             DocumentSearchIndex.document_id == orm.Node.id
-        ).join(
+        )
+        .join(
             orm.Ownership,
             and_(
                 orm.Ownership.resource_type == ResourceType.NODE.value,
                 orm.Ownership.resource_id == orm.Node.id
             )
-        ).join(
-            created_user,
-            orm.Node.created_by == created_user.id,
-            isouter=True
-        ).join(
-            updated_user,
-            orm.Node.updated_by == updated_user.id,
-            isouter=True
-        ).join(
-            owner_user,
-            and_(
-                orm.Ownership.owner_type == OwnerType.USER.value,
-                orm.Ownership.owner_id == owner_user.id
-            ),
-            isouter=True
-        ).join(
-            owner_group,
-            and_(
-                orm.Ownership.owner_type == OwnerType.GROUP.value,
-                orm.Ownership.owner_id == owner_group.id
-            ),
-            isouter=True
         )
-    count_query = select(func.count(DocumentSearchIndex.document_id))
+    )
 
-    # Access control: user + groups
+    # Build count query with same base structure
+    count_query = (
+        select(func.count(DocumentSearchIndex.document_id.distinct()))
+        .select_from(DocumentSearchIndex)
+        .join(
+            orm.Node,
+            DocumentSearchIndex.document_id == orm.Node.id
+        )
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.NODE.value,
+                orm.Ownership.resource_id == orm.Node.id
+            )
+        )
+    )
+
+    # =========================================================================
+    # STEP 3: Apply access control
+    # =========================================================================
     user_groups_subquery = select(UserGroup.group_id).where(
         UserGroup.user_id == user_id
     )
@@ -338,7 +341,7 @@ async def search_documents(
     count_query = count_query.where(access_filter)
 
     # =========================================================================
-    # STEP 2: Apply FTS filter
+    # STEP 4: Apply FTS filter
     # =========================================================================
     if params.filters.fts:
         fts_query = _build_fts_query(params.filters.fts, params.lang or 'eng')
@@ -346,7 +349,7 @@ async def search_documents(
         count_query = count_query.where(fts_query)
 
     # =========================================================================
-    # STEP 3: Apply category filter
+    # STEP 5: Apply category filter
     # =========================================================================
     if params.filters.category:
         category_filter = _build_category_filter(params.filters.category)
@@ -354,7 +357,7 @@ async def search_documents(
         count_query = count_query.where(category_filter)
 
     # =========================================================================
-    # STEP 4: Apply tag filters
+    # STEP 6: Apply tag filters
     # =========================================================================
     if params.filters.tags:
         tag_filters = _build_tag_filters(params.filters.tags)
@@ -363,16 +366,96 @@ async def search_documents(
             count_query = count_query.where(tag_filters)
 
     # =========================================================================
-    # STEP 5: Apply sorting (no custom fields)
+    # STEP 7: Apply sorting
     # =========================================================================
     base_query = _apply_sorting_simple(base_query, params)
 
     # =========================================================================
-    # STEP 6: Apply pagination
+    # STEP 8: Get paginated document IDs (Solution B)
     # =========================================================================
     offset = (params.page_number - 1) * params.page_size
-    paginated_query = (
-        base_query.add_columns(
+
+    paginated_doc_ids_query = (
+        base_query
+        .with_only_columns(DocumentSearchIndex.document_id)
+        .limit(params.page_size)
+        .offset(offset)
+    )
+
+    doc_ids_result = await db_session.execute(paginated_doc_ids_query)
+    paginated_doc_ids = [row[0] for row in doc_ids_result.all()]
+
+    # =========================================================================
+    # STEP 9: Execute count query
+    # =========================================================================
+    count_result = await db_session.execute(count_query)
+    total_count = count_result.scalar()
+
+    # Early return if no documents found
+    if not paginated_doc_ids:
+        return search_schema.SearchDocumentsResponse(
+            items=[],
+            page_number=params.page_number,
+            page_size=params.page_size,
+            num_pages=0,
+            total_items=total_count,
+        )
+
+    # =========================================================================
+    # STEP 10: Build full query with ALL joins for the paginated documents
+    # =========================================================================
+    full_query = (
+        select(DocumentSearchIndex)
+        .join(
+            orm.Node,
+            DocumentSearchIndex.document_id == orm.Node.id
+        )
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.NODE.value,
+                orm.Ownership.resource_id == orm.Node.id
+            )
+        )
+        .join(
+            created_user,
+            orm.Node.created_by == created_user.id,
+            isouter=True
+        )
+        .join(
+            updated_user,
+            orm.Node.updated_by == updated_user.id,
+            isouter=True
+        )
+        .join(
+            owner_user,
+            and_(
+                orm.Ownership.owner_type == OwnerType.USER.value,
+                orm.Ownership.owner_id == owner_user.id
+            ),
+            isouter=True
+        )
+        .join(
+            owner_group,
+            and_(
+                orm.Ownership.owner_type == OwnerType.GROUP.value,
+                orm.Ownership.owner_id == owner_group.id
+            ),
+            isouter=True
+        )
+        .join(
+            orm.NodeTagsAssociation,
+            orm.Node.id == orm.NodeTagsAssociation.node_id,
+            isouter=True
+        )
+        .join(
+            orm.Tag,
+            orm.NodeTagsAssociation.tag_id == orm.Tag.id,
+            isouter=True
+        )
+        # CRITICAL: Filter by the paginated document IDs
+        .where(DocumentSearchIndex.document_id.in_(paginated_doc_ids))
+        .add_columns(
             # Ownership info
             orm.Ownership.owner_type.label('owner_type'),
             orm.Ownership.owner_id.label('owner_id'),
@@ -390,62 +473,76 @@ async def search_documents(
             created_user.username.label('created_by_username'),
             # Audit trail - updated by user
             updated_user.id.label('updated_by_id'),
-            updated_user.username.label('updated_by_username')
-        ).limit(params.page_size).offset(offset)
+            updated_user.username.label('updated_by_username'),
+            # Tag columns
+            orm.Tag.id.label('tag_id'),
+            orm.Tag.name.label('tag_name'),
+            orm.Tag.bg_color.label('tag_bg_color'),
+            orm.Tag.fg_color.label('tag_fg_color')
+        )
+        # NO LIMIT/OFFSET here - we already have the exact document IDs we want
     )
 
     # =========================================================================
-    # STEP 7: Execute queries
+    # STEP 11: Execute full query
     # =========================================================================
-    result = await db_session.execute(paginated_query)
+    result = await db_session.execute(full_query)
     search_results = result.all()
 
-    count_result = await db_session.execute(count_query)
-    total_count = count_result.scalar()
+    # =========================================================================
+    # STEP 12: Group results by document_id and build response
+    # =========================================================================
+    documents_dict = {}
 
-    # =========================================================================
-    # STEP 8: Convert to flat documents (no custom field values)
-    # =========================================================================
-    items = []
     for row in search_results:
         search_index = row[0]  # The DocumentSearchIndex object
+        doc_id = search_index.document_id
 
-        # Build owned_by from ownership data
-        if row.owner_type == OwnerType.USER.value:
-            owned_by = schema.OwnedBy(
-                id=row.owner_user_id,
-                name=row.owner_username,
-                type=OwnerType.USER
-            )
-        else:  # GROUP
-            owned_by = schema.OwnedBy(
-                id=row.owner_group_id,
-                name=row.owner_group_name,
-                type=OwnerType.GROUP
-            )
+        # If this is the first time we see this document, create it
+        if doc_id not in documents_dict:
+            # Build owned_by from ownership data
+            if row.owner_type == OwnerType.USER.value:
+                owned_by = schema.OwnedBy(
+                    id=row.owner_user_id,
+                    name=row.owner_username,
+                    type=OwnerType.USER
+                )
+            else:  # GROUP
+                owned_by = schema.OwnedBy(
+                    id=row.owner_group_id,
+                    name=row.owner_group_name,
+                    type=OwnerType.GROUP
+                )
 
-        # Build audit user objects (handle None values)
-        created_by = None
-        if row.created_by_id:
-            created_by = schema.ByUser(
-                id=row.created_by_id,
-                username=row.created_by_username
-            )
+            # Build audit user objects (handle None values)
+            created_by = None
+            if row.created_by_id:
+                created_by = schema.ByUser(
+                    id=row.created_by_id,
+                    username=row.created_by_username
+                )
 
-        updated_by = None
-        if row.updated_by_id:
-            updated_by = schema.ByUser(
-                id=row.updated_by_id,
-                username=row.updated_by_username
-            )
+            updated_by = None
+            if row.updated_by_id:
+                updated_by = schema.ByUser(
+                    id=row.updated_by_id,
+                    username=row.updated_by_username
+                )
 
-        items.append(
-            search_schema.FlatDocument(
+            # Build category if present
+            category = None
+            if search_index.document_type_id and search_index.document_type_name:
+                category = search_schema.Category(
+                    id=search_index.document_type_id,
+                    name=search_index.document_type_name
+                )
+
+            # Create document with empty tags list
+            documents_dict[doc_id] = search_schema.FlatDocument(
                 id=search_index.document_id,
                 title=search_index.title,
-                document_type_id=search_index.document_type_id,
-                document_type_name=search_index.document_type_name,
-                tags=search_index.tags or [],
+                category=category,
+                tags=[],  # Will be populated below
                 lang=search_index.lang,
                 owned_by=owned_by,
                 created_at=row.created_at,
@@ -453,7 +550,21 @@ async def search_documents(
                 created_by=created_by,
                 updated_by=updated_by
             )
-        )
+
+        # Add tag to document if present (handle documents with no tags)
+        if row.tag_id is not None:
+            tag = search_schema.Tag(
+                id=row.tag_id,
+                name=row.tag_name,
+                bg_color=row.tag_bg_color,
+                fg_color=row.tag_fg_color
+            )
+            # Avoid duplicate tags (in case of data issues)
+            if tag not in documents_dict[doc_id].tags:
+                documents_dict[doc_id].tags.append(tag)
+
+    # Convert dict to list maintaining order (preserve sort order from paginated_doc_ids)
+    items = [documents_dict[doc_id] for doc_id in paginated_doc_ids if doc_id in documents_dict]
 
     num_pages = math.ceil(total_count / params.page_size)
 
@@ -464,7 +575,6 @@ async def search_documents(
         num_pages=num_pages,
         total_items=total_count,
     )
-
 
 # ============================================================================
 # Helper functions

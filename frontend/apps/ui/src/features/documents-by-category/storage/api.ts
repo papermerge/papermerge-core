@@ -112,7 +112,7 @@ export const apiSliceWithDocumentsByCategory = apiSlice.injectEndpoints({
     }),
     searchDocuments: builder.mutation<SearchResponse, SearchQueryParams>({
       query: params => ({
-        url: "/search",
+        url: "/search/",
         method: "POST",
         body: params
       }),

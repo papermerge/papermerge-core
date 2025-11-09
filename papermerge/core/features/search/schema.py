@@ -11,6 +11,7 @@ from pydantic import (
     ConfigDict
 )
 
+from papermerge.core.constants import DEFAULT_TAG_BG_COLOR, DEFAULT_TAG_FG_COLOR
 from papermerge.core.types import OwnerType
 from papermerge.core.schemas.common import ByUser, OwnedBy
 
@@ -413,6 +414,17 @@ class CustomFieldInfo(BaseModel):
 # Document Search Results
 # ============================================================================
 
+
+class Category(BaseModel):
+    id: UUID
+    name: str
+
+class Tag(BaseModel):
+    id: UUID
+    name: str
+    bg_color: str | None = DEFAULT_TAG_BG_COLOR
+    fg_color: str | None = DEFAULT_TAG_FG_COLOR
+
 class FlatDocument(BaseModel):
     """
     Flat document result (without custom fields).
@@ -420,9 +432,8 @@ class FlatDocument(BaseModel):
     """
     id: UUID = Field(..., description="Document UUID")
     title: str = Field(..., description="Document title")
-    document_type_id: UUID | None = Field(None, description="Document type UUID")
-    document_type_name: str | None = Field(None, description="Document type name")
-    tags: List[str] = Field(default_factory=list, description="Document tags")
+    category: Category | None = Field(None, description="Document category")
+    tags: List[Tag] = Field(default_factory=list, description="Document tags")
     lang: str = Field(..., description="Document language")
 
     owned_by: OwnedBy = Field(..., description="Owner information")

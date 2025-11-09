@@ -18,7 +18,7 @@ import {
 import {
   DocumentsByCategoryDetails,
   DocumentsListByCategory
-} from "@/features/documents-by-category/components"
+} from "@/features/documentsList/components"
 import {GroupDetails, GroupsList} from "@/features/groups/components"
 import Commander from "@/features/nodes/components/Commander"
 import {RoleDetails, RolesList} from "@/features/roles/components"

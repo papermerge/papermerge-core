@@ -1,7 +1,7 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
-import useVisibleColumns from "@/features/documents-by-category/hooks/useVisibleColumns"
-import {showDocumentDetailsInSecondaryPanel} from "@/features/documents-by-category/storage/thunks"
+import useVisibleColumns from "@/features/documentsList/hooks/useVisibleColumns"
+import {showDocumentDetailsInSecondaryPanel} from "@/features/documentsList/storage/thunks"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {selectPanelDetailsEntityId} from "@/features/ui/panelRegistry"
 import {isHTTP403Forbidden} from "@/services/helpers"
@@ -11,7 +11,7 @@ import {DataTable, TablePagination} from "kommon"
 import {useTranslation} from "react-i18next"
 import {useNavigate} from "react-router-dom"
 import useDocumentsListTable from "../hooks/useDocumentsListTable"
-import {DocumentByCategoryItem} from "../types"
+import {DocumentListItem} from "../types"
 import ActionButtons from "./ActionButtons"
 
 export default function DocumentsListByCategory() {
@@ -45,10 +45,10 @@ export default function DocumentsListByCategory() {
     actions.updatePagination({pageNumber})
   }
 
-  const getRowId = (row: DocumentByCategoryItem) => row.id
+  const getRowId = (row: DocumentListItem) => row.id
 
   const onTableRowClick = (
-    row: DocumentByCategoryItem,
+    row: DocumentListItem,
     openInSecondaryPanel: boolean
   ) => {
     if (openInSecondaryPanel) {

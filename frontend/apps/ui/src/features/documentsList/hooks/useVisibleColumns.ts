@@ -1,17 +1,17 @@
 import {useAppSelector} from "@/app/hooks"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 
-import documentByCategoryColumns from "@/features/documents-by-category/components/columns"
-import flatColumns from "@/features/documents-by-category/components/flatColumns"
+import documentByCategoryColumns from "@/features/documentsList/components/columns"
+import flatColumns from "@/features/documentsList/components/flatColumns"
 import {selectDocumentCategoryID} from "../storage/documentsByCategory"
-import {DocumentByCategoryItem} from "../types"
+import {DocumentListItem} from "../types"
 
 import {selectPanelVisibleColumns} from "@/features/ui/panelRegistry"
 import {ColumnConfig} from "kommon"
 import {useTranslation} from "react-i18next"
 import useDocumentsListTable from "./useDocumentsListTable"
 
-export default function useVisibleColumns(): ColumnConfig<DocumentByCategoryItem>[] {
+export default function useVisibleColumns(): ColumnConfig<DocumentListItem>[] {
   const {t} = useTranslation()
   const {panelId} = usePanel()
   const categoryID = useAppSelector(selectDocumentCategoryID)
@@ -19,7 +19,7 @@ export default function useVisibleColumns(): ColumnConfig<DocumentByCategoryItem
   const {data} = useDocumentsListTable()
 
   const hasSelection = selected && selected.length > 0
-  let columns: ColumnConfig<DocumentByCategoryItem>[] = []
+  let columns: ColumnConfig<DocumentListItem>[] = []
 
   console.log(categoryID)
   if (categoryID) {

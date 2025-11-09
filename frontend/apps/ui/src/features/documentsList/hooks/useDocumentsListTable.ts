@@ -1,7 +1,7 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import {useSearchDocumentsMutation} from "@/features/documents-by-category/storage/api"
-import {documentCategoryIDUpdated} from "@/features/documents-by-category/storage/documentsByCategory"
-import {buildSearchQueryParams} from "@/features/documents-by-category/utils/searchHelper"
+import {useSearchDocumentsMutation} from "@/features/documentsList/storage/api"
+import {documentCategoryIDUpdated} from "@/features/documentsList/storage/documentsByCategory"
+import {buildSearchQueryParams} from "@/features/documentsList/utils/searchHelper"
 import type {SearchQueryParams} from "@/features/search/types"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {

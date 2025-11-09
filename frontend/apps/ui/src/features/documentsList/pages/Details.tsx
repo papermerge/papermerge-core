@@ -1,8 +1,8 @@
 import {store} from "@/app/store"
 import DualPanel from "@/components/DualPanel"
+import {documentCategoryIDUpdated} from "@/features/documentsList/storage/documentsByCategory"
 import {LoaderFunctionArgs} from "react-router"
 import {showDocumentsByCategoryListInPanel} from "../storage/thunks"
-import {documentCategoryIDUpdated} from "@/features/documents-by-category/storage/documentsByCategory"
 
 export default function RoleDetailsPage() {
   return <DualPanel />

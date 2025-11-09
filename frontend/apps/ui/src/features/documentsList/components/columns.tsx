@@ -6,15 +6,15 @@ import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
 import {Box, Text} from "@mantine/core"
 import {TFunction} from "i18next"
 import type {ColumnConfig} from "kommon"
-import type {ByUser, DocumentByCategoryItem} from "../types"
+import type {ByUser, DocumentListItem} from "../types"
 
 interface Args {
-  items?: DocumentByCategoryItem[]
+  items?: DocumentListItem[]
   t?: TFunction
 }
 
 export default function documentByCategoryColumns({items, t}: Args) {
-  const firstColumns: ColumnConfig<DocumentByCategoryItem>[] = [
+  const firstColumns: ColumnConfig<DocumentListItem>[] = [
     {
       key: "title",
       label:
@@ -46,7 +46,7 @@ export default function documentByCategoryColumns({items, t}: Args) {
     }
   ]
 
-  const lastColumns: ColumnConfig<DocumentByCategoryItem>[] = [
+  const lastColumns: ColumnConfig<DocumentListItem>[] = [
     {
       key: "created_at",
       label:
@@ -99,11 +99,11 @@ export default function documentByCategoryColumns({items, t}: Args) {
     }
   ]
 
-  let customFieldsColumns: ColumnConfig<DocumentByCategoryItem>[] = []
+  let customFieldsColumns: ColumnConfig<DocumentListItem>[] = []
 
   if (items && items?.length > 0) {
     items[0].custom_fields.forEach(customFieldColumn => {
-      const func = (_: any, row: DocumentByCategoryItem) => {
+      const func = (_: any, row: DocumentListItem) => {
         const rowCF = row.custom_fields.find(
           rcf => rcf.custom_field.name == customFieldColumn.custom_field.name
         )

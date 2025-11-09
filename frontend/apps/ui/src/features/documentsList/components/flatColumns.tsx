@@ -1,10 +1,7 @@
 import Tags from "@/components/Tags"
 import TimestampZ from "@/components/Timestampz"
 import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
-import type {
-  Category,
-  DocumentListItem
-} from "@/features/documents-by-category/types"
+import type {Category, DocumentListItem} from "@/features/documentsList/types"
 import {ByUser, TagType} from "@/types"
 import {Box, Text} from "@mantine/core"
 import {TFunction} from "i18next"

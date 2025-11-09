@@ -1,15 +1,15 @@
 import {apiSlice} from "@/features/api/slice"
 import type {
-  DocumentByCategoryItem,
+  DocumentListItem,
   DocumentsByCategoryQueryParams,
   FlatDocument
-} from "@/features/documents-by-category/types"
+} from "@/features/documentsList/types"
 import type {SearchQueryParams} from "@/features/search/types"
 import type {CustomField, Paginated} from "@/types"
 
 // Add this new interface for single-category search with custom fields
 export interface SearchDocumentsByCategoryResponse {
-  items: DocumentByCategoryItem[]
+  items: DocumentListItem[]
   page_number: number
   page_size: number
   num_pages: number
@@ -63,7 +63,7 @@ export interface GetPaginatedDocsByCatArg {
 export const apiSliceWithDocumentsByCategory = apiSlice.injectEndpoints({
   endpoints: builder => ({
     getPaginatedDocumentsByCategory: builder.query<
-      Paginated<DocumentByCategoryItem>,
+      Paginated<DocumentListItem>,
       GetPaginatedDocsByCatArg
     >({
       query: ({document_type_id, params}) => {

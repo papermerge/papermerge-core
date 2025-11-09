@@ -110,10 +110,7 @@ export const apiSliceWithDocumentsByCategory = apiSlice.injectEndpoints({
         ...result.items.map(({id}) => ({type: "FlatDocument", id}) as const)
       ]
     }),
-    searchDocuments: builder.mutation<
-      SearchDocumentsResponse,
-      SearchQueryParams
-    >({
+    searchDocuments: builder.mutation<SearchResponse, SearchQueryParams>({
       query: params => ({
         url: "/search",
         method: "POST",

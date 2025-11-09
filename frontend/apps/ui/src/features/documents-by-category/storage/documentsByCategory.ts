@@ -4,7 +4,7 @@ import {skipToken} from "@reduxjs/toolkit/query"
 import {apiSliceWithDocumentsByCategory} from "./api"
 
 export type DocumentsByCategorySlice = {
-  categoryID?: string
+  categoryID?: string | null
 }
 
 export const initialState: DocumentsByCategorySlice = {}
@@ -13,10 +13,7 @@ const documentsByCategorySlice = createSlice({
   name: "documentsByCategory",
   initialState,
   reducers: {
-    documentCategoryIDUpdated(
-      state,
-      action: PayloadAction<string | undefined>
-    ) {
+    documentCategoryIDUpdated(state, action: PayloadAction<string | null>) {
       const categoryID = action.payload
       state.categoryID = categoryID
     }

@@ -309,32 +309,6 @@ class SearchFilters(BaseModel):
         description="Owner of the document"
     )
 
-    def has_any_filter(self) -> bool:
-        """Check if any filter is specified"""
-        return any([
-            self.fts is not None,
-            self.category is not None,
-            self.tags is not None and len(self.tags) > 0,
-            self.custom_fields is not None and len(self.custom_fields) > 0
-        ])
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "examples": [
-                {
-                    "fts": {"terms": ["meeting notes"]},
-                    "category": {"values": ["Invoice"]},
-                    "tags": [
-                        {"tags": ["urgent", "2024"]}
-                    ],
-                    "custom_fields": [
-                        {"field_name": "total", "operator": "gt", "value": 100},
-                        {"field_name": "status", "operator": "eq", "value": "completed"}
-                    ]
-                }
-            ]
-        }
-    )
 
 
 class SearchQueryParams(BaseModel):
@@ -344,8 +318,8 @@ class SearchQueryParams(BaseModel):
     All filters are combined with AND logic:
     - FTS AND category AND tags AND custom_fields
     """
-    filters: SearchFilters = Field(
-        ...,
+    filters: Optional[SearchFilters] = Field(
+        [],
         description="Search filters to apply"
     )
 
@@ -379,14 +353,6 @@ class SearchQueryParams(BaseModel):
         default=SortDirection.DESC,
         description="Sort direction"
     )
-
-    @field_validator('filters')
-    @classmethod
-    def validate_filters_not_empty(cls, v: SearchFilters) -> SearchFilters:
-        """Ensure at least one filter is specified"""
-        if not v.has_any_filter():
-            raise ValueError('At least one filter must be specified')
-        return v
 
 
 # ============================================================================

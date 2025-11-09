@@ -1,17 +1,17 @@
+import Tags from "@/components/Tags"
 import TimestampZ from "@/components/Timestampz"
 import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
-import {Box, Text} from "@mantine/core"
-import Tags from "@/components/Tags"
-import {TFunction} from "i18next"
-import type {ColumnConfig} from "kommon"
 import type {
-  DocumentByCategoryItem,
-  Category
+  Category,
+  DocumentListItem
 } from "@/features/documents-by-category/types"
 import {ByUser, TagType} from "@/types"
+import {Box, Text} from "@mantine/core"
+import {TFunction} from "i18next"
+import type {ColumnConfig} from "kommon"
 
 export default function flatColumns(t?: TFunction) {
-  const columns: ColumnConfig<DocumentByCategoryItem>[] = [
+  const columns: ColumnConfig<DocumentListItem>[] = [
     {
       key: "title",
       label:

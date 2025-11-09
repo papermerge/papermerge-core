@@ -1,4 +1,4 @@
-import type {PaginatedArgs, ByUser, OwnedBy, TagType} from "@/types"
+import type {ByUser, OwnedBy, PaginatedArgs, TagType} from "@/types"
 
 export type SortBy = "name" | "created_at" | "created_by"
 
@@ -60,7 +60,7 @@ export type CustomFieldRow = {
   custom_field_value: CustomFieldValue
 }
 
-export interface DocumentByCategoryItem {
+export interface DocumentListItem {
   id: string
   title: string
   category: Category

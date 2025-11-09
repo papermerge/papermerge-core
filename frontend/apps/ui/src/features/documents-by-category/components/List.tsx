@@ -1,8 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
 import useVisibleColumns from "@/features/documents-by-category/hooks/useVisibleColumns"
-import useDocumentsByCategoryTable from "@/features/documents-by-category/hooks/useDocumentsByCategoryTable"
-import useFlatDocumentsTable from "@/features/documents-by-category/hooks/useFlatDocumentsTable"
 import {showDocumentDetailsInSecondaryPanel} from "@/features/documents-by-category/storage/thunks"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {selectPanelDetailsEntityId} from "@/features/ui/panelRegistry"
@@ -12,7 +10,7 @@ import type {SortState} from "kommon"
 import {DataTable, TablePagination} from "kommon"
 import {useTranslation} from "react-i18next"
 import {useNavigate} from "react-router-dom"
-import {selectDocumentCategoryID} from "../storage/documentsByCategory"
+import useDocumentsListTable from "../hooks/useDocumentsListTable"
 import {DocumentByCategoryItem} from "../types"
 import ActionButtons from "./ActionButtons"
 
@@ -21,13 +19,9 @@ export default function DocumentsListByCategory() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const {actions} = usePanel()
-  const categoryID = useAppSelector(selectDocumentCategoryID)
-  const byCategoryResult = useDocumentsByCategoryTable()
-  const flatResult = useFlatDocumentsTable()
 
-  const {isError, data, queryParams, error, isLoading, isFetching} = categoryID
-    ? byCategoryResult
-    : flatResult
+  const {isError, data, queryParams, error, isLoading, isFetching} =
+    useDocumentsListTable()
 
   const visibleColumns = useVisibleColumns()
   const currentDetailsPanelDocID = useAppSelector(s =>

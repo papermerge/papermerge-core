@@ -1,3 +1,4 @@
+import ErrorBoundary from "@/app/ErrorBoundary"
 import DateFMT from "@/components/DateFMT"
 import {MonetaryFMT, NumberFMT} from "@/components/NumberFMT"
 import TimestampZ from "@/components/Timestampz"
@@ -6,7 +7,6 @@ import {Box, Text} from "@mantine/core"
 import {TFunction} from "i18next"
 import type {ColumnConfig} from "kommon"
 import type {ByUser, DocumentByCategoryItem} from "../types"
-import ErrorBoundary from "@/app/ErrorBoundary"
 
 interface Args {
   items?: DocumentByCategoryItem[]

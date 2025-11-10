@@ -445,12 +445,16 @@ class DocumentCFV(BaseModel):
     """
     document_id: UUID
     title: str
-    document_type_id: UUID | None = None
-    document_type_name: str | None = None
-    tags: List[str] = Field(default_factory=list)
+    category: Category | None = Field(None, description="Document category")
+    tags: List[Tag] = Field(default_factory=list, description="Document tags")
     custom_fields: List[CustomFieldRow] = Field(default_factory=list)
     lang: str
-    last_updated: datetime
+
+    owned_by: OwnedBy = Field(..., description="Owner information")
+    created_at: datetime = Field(..., description="Creation timestamp")
+    updated_at: datetime = Field(..., description="Last update timestamp")
+    created_by: ByUser | None = Field(None, description="Created by user")
+    updated_by: ByUser | None = Field(None, description="Last updated by user")
 
     model_config = ConfigDict(from_attributes=True)
 

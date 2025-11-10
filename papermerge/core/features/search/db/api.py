@@ -1,6 +1,7 @@
 import logging
 import math
 from uuid import UUID
+from typing import Sequence
 
 from sqlalchemy import select, func, and_, or_, text
 from sqlalchemy.orm import aliased
@@ -50,8 +51,16 @@ async def search_documents_by_type(
     if not document_type_id:
         raise ValueError("document_type_id is required for this search type")
 
+    # =========================================================================
+    # Create aliases for user/group joins
+    # =========================================================================
+    created_user = aliased(orm.User, name='created_user')
+    updated_user = aliased(orm.User, name='updated_user')
+    owner_user = aliased(orm.User, name='owner_user')
+    owner_group = aliased(orm.Group, name='owner_group')
+
     # =======================================================================
-    # STEP 1: Get custom fields for this document type
+    # Get custom fields for this document type
     # ================================================================== =====
     stmt_cf = (
         select(CustomField)
@@ -75,10 +84,39 @@ async def search_documents_by_type(
     ]
 
     # =========================================================================
-    # STEP 2: Build base query for documents with this document type
+    # Build base query for filtering, sorting, and getting doc IDs
     # =========================================================================
-    base_query = select(DocumentSearchIndex)
-    count_query = select(func.count(DocumentSearchIndex.document_id))
+    base_query = (
+        select(DocumentSearchIndex)
+        .join(
+            orm.Node,
+            DocumentSearchIndex.document_id == orm.Node.id
+        )
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.NODE.value,
+                orm.Ownership.resource_id == orm.Node.id
+            )
+        )
+    )
+
+    # Build count query with same base structure
+    count_query = (
+        select(func.count(DocumentSearchIndex.document_id.distinct()))
+        .select_from(DocumentSearchIndex)
+        .join(
+            orm.Node,
+            DocumentSearchIndex.document_id == orm.Node.id
+        )
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.NODE.value,
+                orm.Ownership.resource_id == orm.Node.id
+            )
+        )
+    )
 
     # Filter by document type
     type_filter = DocumentSearchIndex.document_type_id == document_type_id
@@ -103,7 +141,7 @@ async def search_documents_by_type(
     count_query = count_query.where(and_(type_filter, access_filter))
 
     # =========================================================================
-    # STEP 3: Apply FTS filter
+    # Apply FTS filter
     # =========================================================================
     if params.filters.fts:
         fts_query = _build_fts_query(params.filters.fts, params.lang or 'eng')
@@ -111,16 +149,16 @@ async def search_documents_by_type(
         count_query = count_query.where(fts_query)
 
     # =========================================================================
-    # STEP 4: Apply tag filters
+    # Apply tag filters
     # =========================================================================
     if params.filters.tags:
         tag_filters = _build_tag_filters(params.filters.tags)
-        if tag_filters:
+        if tag_filters is not None:
             base_query = base_query.where(tag_filters)
             count_query = count_query.where(tag_filters)
 
     # =========================================================================
-    # STEP 5: Apply custom field filters
+    # Apply custom field filters
     # =========================================================================
     if params.filters.custom_fields:
         for filter_spec in params.filters.custom_fields:
@@ -162,7 +200,7 @@ async def search_documents_by_type(
             )
 
     # =========================================================================
-    # STEP 6: Apply sorting
+    # Apply sorting
     # =========================================================================
     base_query = _apply_sorting_with_custom_fields(
         base_query,
@@ -278,7 +316,7 @@ async def search_documents(
         logger.warning("custom_fields filter ignored when document_type_id is not provided")
 
     # =========================================================================
-    # STEP 1: Create aliases for user/group joins
+    # Create aliases for user/group joins
     # =========================================================================
     created_user = aliased(orm.User, name='created_user')
     updated_user = aliased(orm.User, name='updated_user')
@@ -286,7 +324,7 @@ async def search_documents(
     owner_group = aliased(orm.Group, name='owner_group')
 
     # =========================================================================
-    # STEP 2: Build base query for filtering, sorting, and getting doc IDs
+    # Build base query for filtering, sorting, and getting doc IDs
     # =========================================================================
     base_query = (
         select(DocumentSearchIndex)
@@ -321,7 +359,7 @@ async def search_documents(
     )
 
     # =========================================================================
-    # STEP 3: Apply access control
+    # Apply access control
     # =========================================================================
     user_groups_subquery = select(UserGroup.group_id).where(
         UserGroup.user_id == user_id
@@ -342,7 +380,7 @@ async def search_documents(
     count_query = count_query.where(access_filter)
 
     # =========================================================================
-    # STEP 4: Apply FTS filter
+    # Apply FTS filter
     # =========================================================================
     if params.filters.fts:
         fts_query = _build_fts_query(params.filters.fts, params.lang or 'eng')
@@ -350,14 +388,14 @@ async def search_documents(
         count_query = count_query.where(fts_query)
 
     # =========================================================================
-    # STEP 5: Apply category filter
+    # Apply category filter
     if params.filters.categories:
         category_filter = _build_category_filter(params.filters.categories)
         base_query = base_query.where(category_filter)
         count_query = count_query.where(category_filter)
 
     # =========================================================================
-    # STEP 6: Apply tag filters
+    # Apply tag filters
     # =========================================================================
     if params.filters.tags:
         tag_filters = _build_tag_filters(params.filters.tags)
@@ -366,12 +404,12 @@ async def search_documents(
             count_query = count_query.where(tag_filters)
 
     # =========================================================================
-    # STEP 7: Apply sorting
+    # Apply sorting
     # =========================================================================
     base_query = _apply_sorting_simple(base_query, params)
 
     # =========================================================================
-    # STEP 8: Get paginated document IDs (Solution B)
+    # Get paginated document IDs
     # =========================================================================
     offset = (params.page_number - 1) * params.page_size
 
@@ -628,7 +666,6 @@ def _build_category_filter(category_filters: list[search_schema.CategoryFilter])
 def _build_tag_filters(tag_filters: list[search_schema.TagFilter]):
     """Build tag filters with positive and negative matching."""
     conditions = []
-
     for tag_filter in tag_filters:
         if tag_filter.operator == TagOperator.ANY:
             tag_conditions = [
@@ -676,7 +713,7 @@ def _apply_sorting_simple(query, params: search_schema.SearchQueryParams):
 def _apply_sorting_with_custom_fields(
         query,
         params: search_schema.SearchQueryParams,
-        custom_fields: list[CustomField]
+        custom_fields: Sequence[CustomField]
 ):
     """Apply sorting with custom field support (for document type search)."""
 

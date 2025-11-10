@@ -1,12 +1,14 @@
 import ErrorBoundary from "@/app/ErrorBoundary"
 import DateFMT from "@/components/DateFMT"
 import {MonetaryFMT, NumberFMT} from "@/components/NumberFMT"
+import Tags from "@/components/Tags"
 import TimestampZ from "@/components/Timestampz"
 import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
+import type {Category, DocumentListItem} from "@/features/documentsList/types"
+import type {ByUser} from "@/types"
 import {Box, Text} from "@mantine/core"
 import {TFunction} from "i18next"
 import type {ColumnConfig} from "kommon"
-import type {ByUser, DocumentListItem} from "../types"
 
 interface Args {
   items?: DocumentListItem[]
@@ -43,6 +45,28 @@ export default function documentByCategoryColumns({items, t}: Args) {
       width: 200,
       minWidth: 100,
       render: value => <TruncatedTextWithCopy value={value as string} />
+    },
+    {
+      key: "category",
+      label:
+        t?.("documentsByCategory.category", {defaultValue: "Category"}) ||
+        "Category",
+      sortable: true,
+      filterable: true,
+      width: 200,
+      minWidth: 150,
+      render: value => (
+        <Text size="sm">{value && (value as Category).name}</Text>
+      )
+    },
+    {
+      key: "tags",
+      label: t?.("documentsByCategory.tags", {defaultValue: "Tags"}) || "Tags",
+      sortable: false,
+      filterable: true,
+      width: 200,
+      minWidth: 150,
+      render: value => <Tags items={value as TagType[]} />
     }
   ]
 

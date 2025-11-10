@@ -443,8 +443,8 @@ class DocumentCFV(BaseModel):
     Document with custom field values.
     Used in document type-specific search.
     """
-    document_id: UUID
-    title: str
+    id: UUID = Field(..., description="Document UUID")
+    title: str = Field(..., description="Document title")
     category: Category | None = Field(None, description="Document category")
     tags: List[Tag] = Field(default_factory=list, description="Document tags")
     custom_fields: List[CustomFieldRow] = Field(default_factory=list)

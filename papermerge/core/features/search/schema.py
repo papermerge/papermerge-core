@@ -133,7 +133,7 @@ class CategoryFilter(BaseModel):
     values: List[str] = Field(
         ...,
         min_length=1,
-        description="Category names (OR logic between values)",
+        description="Category names",
         examples=[
             ["Invoice"],
             ["Blue Whale", "Green Whale"],
@@ -149,22 +149,15 @@ class CategoryFilter(BaseModel):
 
     @field_validator('values')
     @classmethod
-    def validate_values(cls, v: List[str]) -> List[str]:
-        """Split comma-separated values and validate"""
-        if not v:
-            raise ValueError('Category values cannot be empty')
+    def validate_cat_values(cls, v: Optional[List[str]]) -> Optional[List[str]]:
+        """Validate and clean category values"""
+        if v is None:
+            return None
 
-        # Split comma-separated values
-        all_values = []
-        for value in v:
-            # Split by comma and strip whitespace
-            parts = [part.strip() for part in value.split(',') if part.strip()]
-            all_values.extend(parts)
+        # Remove empty strings and strip whitespace
+        cleaned = [cat.strip() for cat in v if cat and cat.strip()]
 
-        if not all_values:
-            raise ValueError('Category values cannot be empty after cleaning')
-
-        return all_values
+        return cleaned if cleaned else None
 
 
 
@@ -176,8 +169,8 @@ class TagFilter(BaseModel):
     - tags_any: Must have ANY of these tags (OR logic)
     - tags_not: Must NOT have these tags (exclusion)
     """
-    tags: Optional[List[str]] = Field(
-        None,
+    values: List[str] = Field(
+        ...,
         description="Tags values",
         examples=[["urgent", "2024"]]
     )
@@ -188,10 +181,10 @@ class TagFilter(BaseModel):
         examples=[["all", "any", "not"]]
     )
 
-    @field_validator('tags')
+    @field_validator('values')
     @classmethod
-    def validate_tag_list(cls, v: Optional[List[str]]) -> Optional[List[str]]:
-        """Validate and clean tag lists"""
+    def validate_tag_values(cls, v: Optional[List[str]]) -> Optional[List[str]]:
+        """Validate and clean tag values"""
         if v is None:
             return None
 
@@ -291,7 +284,7 @@ class SearchFilters(BaseModel):
         description="Full-text search across title, category, tags, and text custom fields"
     )
 
-    category: Optional[CategoryFilter] = Field(
+    categories: Optional[List[CategoryFilter]] = Field(
         None,
         description="Filter by document category/type (FTS matching)"
     )

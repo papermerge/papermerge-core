@@ -41,8 +41,8 @@ export interface CustomFieldFilter {
 
 export interface SearchFilters {
   fts?: FullTextSearchFilter
-  category?: CategoryFilter
-  tags?: TagFilter
+  categories?: CategoryFilter[]
+  tags?: TagFilter[]
   custom_fields?: CustomFieldFilter[]
 }
 

@@ -1,3 +1,7 @@
+import {
+  CATEGORY_IMPLICIT_OPERATOR,
+  TAG_IMPLICIT_OPERATOR
+} from "@/features/search/microcomp/const"
 import type {Token} from "@/features/search/microcomp/types"
 import type {SearchQueryParams} from "@/features/search/types"
 import type {SortState} from "kommon"
@@ -21,34 +25,39 @@ export function buildSearchQueryParams({
   for (const token of tokens) {
     switch (token.type) {
       case "fts":
-        // Full-text search
         if (!filters.fts) {
-          filters.fts = {terms: []}
+          filters.fts = {terms: [token.value]}
+        } else {
+          filters.fts.terms.push(token.value)
         }
-        const terms = Array.isArray(token.value) ? token.value : [token.value]
-        filters.fts.terms.push(...terms)
         break
 
       case "cat":
-        // Category filter
-        if (!filters.category) {
-          filters.category = {values: [], operator: token.operator || "any"}
+        const newCat = {
+          values: token.values || [],
+          operator: token.operator || CATEGORY_IMPLICIT_OPERATOR
         }
-        const catValues = token.values || []
-        filters.category.values.push(...catValues)
-        filters.category.operator = token.operator || "any"
+
+        if (!filters.categories) {
+          filters.categories = [newCat]
+        } else {
+          filters.categories.push(newCat)
+        }
+
         break
 
       case "tag":
-        if (!filters.tags) {
-          filters.tags = {
-            values: [],
-            operator: token.operator || "all"
-          }
+        const newTag = {
+          values: token.values || [],
+          operator: token.operator || TAG_IMPLICIT_OPERATOR
         }
-        const tagValues = token.values || []
-        filters.tags.values.push(...tagValues)
-        filters.tags.operator = token.operator || "all"
+
+        if (!filters.tags) {
+          filters.tags = [newTag]
+        } else {
+          filters.tags.push(newTag)
+        }
+
         break
 
       // We'll add custom_field case later

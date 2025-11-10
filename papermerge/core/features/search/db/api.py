@@ -6,6 +6,7 @@ from sqlalchemy import select, func, and_, or_, text
 from sqlalchemy.orm import aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from papermerge.core.features.search.schema import TagOperator, CategoryOperator
 from papermerge.core import orm, schema
 from papermerge.core.features.document.db import orm as doc_orm
 from papermerge.core.features.search import schema as search_schema
@@ -350,9 +351,8 @@ async def search_documents(
 
     # =========================================================================
     # STEP 5: Apply category filter
-    # =========================================================================
-    if params.filters.category:
-        category_filter = _build_category_filter(params.filters.category)
+    if params.filters.categories:
+        category_filter = _build_category_filter(params.filters.categories)
         base_query = base_query.where(category_filter)
         count_query = count_query.where(category_filter)
 
@@ -606,17 +606,23 @@ def _build_fts_query(fts_filter: search_schema.FullTextSearchFilter, lang: str):
     return DocumentSearchIndex.search_vector.op('@@')(ts_query)
 
 
-def _build_category_filter(category_filter: search_schema.CategoryFilter):
-    """Build category filter using ILIKE for flexible matching."""
+def _build_category_filter(category_filters: list[search_schema.CategoryFilter]):
+    """Build category filter"""
     conditions = []
 
-    for value in category_filter.values:
-        conditions.append(
-            DocumentSearchIndex.document_type_name.ilike(f'%{value}%')
-        )
+    for cat_filter in category_filters:
+        if cat_filter.operator in CategoryOperator.ANY:
+            cat_conditions = [
+                DocumentSearchIndex.document_type_name == value
+                for value in cat_filter.values
+            ]
+            conditions.append(or_(*cat_conditions))  # OR_(...)
+        elif cat_filter.operator in CategoryOperator.NOT:
+            cat_condition = ~DocumentSearchIndex.document_type_name.in_(cat_filter.values)
+            conditions.append(cat_condition)
 
-    # OR logic: match any of the specified categories
-    return or_(*conditions)
+    # AND logic: match all the specified categories
+    return and_(*conditions)
 
 
 def _build_tag_filters(tag_filters: list[search_schema.TagFilter]):
@@ -624,29 +630,27 @@ def _build_tag_filters(tag_filters: list[search_schema.TagFilter]):
     conditions = []
 
     for tag_filter in tag_filters:
-        if tag_filter.tags_any:
+        if tag_filter.operator == TagOperator.ANY:
             tag_conditions = [
-                DocumentSearchIndex.tags.contains([tag])
-                for tag in tag_filter.tags_any
+                DocumentSearchIndex.tags.contains([value])
+                for value in tag_filter.values
             ]
-            conditions.append(or_(*tag_conditions))
-
-        if tag_filter.tags:
+            conditions.append(or_(*tag_conditions)) # OR_(...)
+        elif tag_filter.operator == TagOperator.ALL:
             tag_conditions = [
-                DocumentSearchIndex.tags.contains([tag])
-                for tag in tag_filter.tags
+                DocumentSearchIndex.tags.contains([value])
+                for value in tag_filter.values
             ]
-            conditions.append(and_(*tag_conditions))
-
-        # Negative tags (none should be present)
-        if tag_filter.tags_not:
+            conditions.append(and_(*tag_conditions)) # AND_(...)
+        elif tag_filter.operator == TagOperator.NOT:
             tag_conditions = []
-            for tag in tag_filter.tags_not:
+            for value in tag_filter.values:
                 tag_conditions.append(
-                    ~DocumentSearchIndex.tags.contains([tag])
+                    ~DocumentSearchIndex.tags.contains([value])  # ~...
                 )
             conditions.append(and_(*tag_conditions))
 
+    # final AND_(all tag filters)
     return and_(*conditions) if conditions else None
 
 
@@ -978,14 +982,20 @@ async def extract_document_type_from_category(
     otherwise returns None.
     """
     # Check if category filter exists and has exactly one value
-    if not params.filters.category:
+    if not params.filters.categories:
         return None
 
-    if len(params.filters.category.values) != 1:
+    if len(params.filters.categories) != 1:
         return None
 
+    if len(params.filters.categories[0].values) != 1:
+        return None
+
+    # At this point there is one category filter with only one value ->
+    # user signals that he/she intends to filter documents
+    # scoped by one single category.
     # Get the single category name
-    category_name = params.filters.category.values[0]
+    category_name = params.filters.categories[0].values[0]
 
     stmt = select(DocumentType).where(DocumentType.name == category_name)
     result = await db_session.execute(stmt)

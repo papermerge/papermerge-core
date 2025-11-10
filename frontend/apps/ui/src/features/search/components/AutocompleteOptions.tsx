@@ -64,13 +64,18 @@ export default function AutocompleteOptions({suggestions}: Args) {
 
     if (suggestion.type == "category" && categoriesAreLoaded) {
       components.push(
-        <AutocompleCategoryOptions suggestion={suggestion} items={categories} />
+        <AutocompleCategoryOptions
+          key={suggestion.type}
+          suggestion={suggestion}
+          items={categories}
+        />
       )
     }
 
     if (suggestion.type == "customField" && customFieldsAreLoaded) {
       components.push(
         <AutocompleCustomFieldOptions
+          key={suggestion.type}
           suggestion={suggestion}
           items={customFields}
         />
@@ -78,11 +83,21 @@ export default function AutocompleteOptions({suggestions}: Args) {
     }
 
     if (suggestion.type == "filter") {
-      components.push(<AutocompleteFilterOptions suggestion={suggestion} />)
+      components.push(
+        <AutocompleteFilterOptions
+          key={suggestion.type}
+          suggestion={suggestion}
+        />
+      )
     }
 
     if (suggestion.type == "operator") {
-      components.push(<AutocompleteOperatorOptions suggestion={suggestion} />)
+      components.push(
+        <AutocompleteOperatorOptions
+          key={suggestion.type}
+          suggestion={suggestion}
+        />
+      )
     }
   }
 

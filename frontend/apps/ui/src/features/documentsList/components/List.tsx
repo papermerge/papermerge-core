@@ -65,10 +65,7 @@ export default function DocumentsListByCategory() {
   return (
     <Stack style={{height: "100%"}}>
       <Group w={"100%"}>
-        <ActionButtons
-          //@ts-ignore
-          items={data?.items || []}
-        />
+        <ActionButtons />
       </Group>
       <DataTable
         //@ts-ignore

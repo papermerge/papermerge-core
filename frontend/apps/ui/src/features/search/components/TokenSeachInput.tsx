@@ -6,11 +6,12 @@ import {
   ActionIcon,
   Box,
   Combobox,
+  Group,
   Text,
   TextInput,
   Tooltip
 } from "@mantine/core"
-import {IconFilter, IconX} from "@tabler/icons-react"
+import {IconCornerDownLeft, IconFilter, IconX} from "@tabler/icons-react"
 import {useState} from "react"
 import AutocompleteOptions from "./AutocompleteOptions"
 import SearchTokens from "./SearchTokens/SearchTokens"
@@ -72,6 +73,21 @@ export default function Search({
     isInputFocused &&
     validationError.length == 0
 
+  const handleSubmitClick = () => {
+    if (inputRef.current) {
+      // Create and dispatch a synthetic Enter key event
+      const enterEvent = new KeyboardEvent("keydown", {
+        key: "Enter",
+        code: "Enter",
+        keyCode: 13,
+        which: 13,
+        bubbles: true,
+        cancelable: true
+      })
+      inputRef.current.dispatchEvent(enterEvent)
+    }
+  }
+
   return (
     <Combobox store={combobox} onOptionSubmit={handleOptionSubmit}>
       <Combobox.Target>
@@ -95,7 +111,7 @@ export default function Search({
           {dontShowCompactSummary && (
             <>
               <SearchTokens />
-              <Box className={styles.inputWrapper}>
+              <Group className={styles.inputWrapper}>
                 <ConditionalTooltip
                   showTooltipIf={validationError.length > 0}
                   tooltipProps={{
@@ -124,7 +140,8 @@ export default function Search({
                     }}
                   />
                 </ConditionalTooltip>
-              </Box>
+                {isInputValid && <EnterKeyButton onClick={handleSubmitClick} />}
+              </Group>
               {showClearButton && (
                 <ClearButton onClick={handleClearAll} tooltip="Clear all" />
               )}
@@ -288,5 +305,17 @@ function ClearButton({onClick, tooltip = "Clear all"}: ClearButtonArgs) {
         />
       </ActionIcon>
     </Tooltip>
+  )
+}
+
+interface EnterKeyButtonArgs {
+  onClick: () => void
+}
+
+function EnterKeyButton({onClick}: EnterKeyButtonArgs) {
+  return (
+    <ActionIcon onClick={onClick} variant="default">
+      <IconCornerDownLeft size={16} />
+    </ActionIcon>
   )
 }

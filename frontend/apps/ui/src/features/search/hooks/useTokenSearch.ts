@@ -37,10 +37,16 @@ export const useTokenSearch = ({
       hasSuggestions,
       suggestions,
       tokens: parsedTokens,
-      isComplete
+      isComplete,
+      errors
     } = parse(newInputValue)
     setHasAutocomplete(hasSuggestions)
     setAutocomplete(suggestions)
+
+    if (errors.length === 0) {
+      setIsInputValid(true)
+    }
+
     if (isComplete && parsedTokens.length > 0) {
       setInputValue("")
       parsedTokens.forEach(t => addToken(t))
@@ -72,9 +78,7 @@ export const useTokenSearch = ({
     if (input.trim()) {
       const testInput = input + ";"
       const testResult = parse(testInput)
-      setIsInputValid(
-        testResult.errors.length === 0 && testResult.tokens.length > 0
-      )
+      setIsInputValid(testResult.errors.length === 0)
     } else {
       setIsInputValid(false)
     }

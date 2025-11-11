@@ -137,16 +137,9 @@ export function autocompleteText(inputValue: string, val: string): string {
         ? ""
         : trimmed.substring(0, longestMatchingIndex)
 
-    if (val.includes(" ")) {
-      val = `"${val}"`
-    }
     return prefix + val
   }
 
-  // If val doesn't start with the last word, just append it
-  if (val.includes(" ")) {
-    val = `"${val}"`
-  }
   return trimmed + val
 }
 

@@ -162,4 +162,18 @@ describe("getSuggestions", () => {
       }
     ])
   })
+
+  //----------------------------------------------
+  it("Custom field basic - cf:", () => {
+    const input = "cf:"
+    const result = getSuggestions(input)
+
+    expect(result).toEqual([
+      {
+        type: "customField",
+        filter: "",
+        exclude: []
+      }
+    ])
+  })
 })

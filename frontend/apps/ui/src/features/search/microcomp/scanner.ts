@@ -357,6 +357,25 @@ function getCustomFieldSuggestions(
   parts: string[],
   raw: string
 ): SearchSuggestion[] {
+  if (parts[0] != "cf") {
+    throw new Error(
+      `Failed assumption expected 'cat' found ${parts[0]}; raw=${raw}`
+    )
+  }
+  if (parts.length == 2) {
+    // i.e. cf:blah or maybe cf:blah
+    const part2 = parts[1].trim()
+    const catValueItemsToExclude = getTokenValueItemsToExclude(part2)
+    const catValueItemsFilter = getTokenValueItemsFilter(part2)
+    return [
+      {
+        type: "customField",
+        filter: catValueItemsFilter,
+        exclude: catValueItemsToExclude
+      }
+    ]
+  }
+
   return []
 }
 
@@ -423,7 +442,7 @@ function getCategorySuggestions(
   }
 
   if (parts.length == 2) {
-    // i.e. cat:blah or maybe tag:blah, blah
+    // i.e. cat:blah or maybe cat:blah, blah
     // At this point it is not possible to tell if user it typing
     // a cat operator i.e. cat:any (thus intention would be cat:any:letter)
     // or user intends to type category value e.g. cat:letter

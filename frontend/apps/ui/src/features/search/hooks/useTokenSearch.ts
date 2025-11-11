@@ -47,6 +47,9 @@ export const useTokenSearch = ({
       typeHandler: customFieldTypeHandler as CustomFieldDataType,
       suggestionType: suggestionType as SuggestionType
     }
+    if (suggestionType == "customField") {
+      newInputValue = newInputValue + ":"
+    }
 
     const {
       hasSuggestions,

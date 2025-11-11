@@ -36,26 +36,26 @@ packages = [
 requires-python = ">=3.13,<4"
 dependencies = [
     "redis (>=5.2, <6)",
-    "celery[gevent,redis] (>=5.2)",
-    "pyyaml (>=6.0)",
-    "python-magic  (>=0.4)",
-    "uritemplate (>=4.1.1)",
-    "pdf2image (>=1.16.0)",
-    "uvicorn (>=0.32)",
-    "python-jose (>=3.3.0)",
-    "img2pdf >=0.5.1",
+    "celery[gevent,redis] (>=5.5.3)",
+    "pyyaml (>=6.0.3)",
+    "python-magic (>=0.4.27)",
+    "uritemplate (>=4.2.0)",
+    "pdf2image (>=1.17.0)",
+    "uvicorn (>=0.38.0)",
+    "python-jose (>=3.5.0)",
+    "img2pdf (>=0.6.3)",
     "passlib >=1.7.4",
-    "sqlalchemy >=2.0",
-    "typer >=0.13",
-    "rich >=13",
-    "pytz >=2024.1",
-    "pydantic-settings >=2",
-    "alembic >=1.13.3",
-    "fastapi[standard] >=0.115",
-    "taskipy >=1.14",
+    "sqlalchemy (>=2.0.44)",
+    "typer (>=0.20.0)",
+    "rich (>=14.2.0)",
+    "pytz (>=2025.2)",
+    "pydantic-settings (>=2.12.0)",
+    "alembic (>=1.17.1)",
+    "fastapi[standard] (>=0.121.1)",
+    "taskipy (>=1.14.1)",
     "asyncpg (>=0.30.0,<0.31.0)",
     "aiofiles (>=24.1.0,<25.0.0)",
-    "psycopg2-binary (>=2.9.2)"
+    "psycopg2-binary (>=2.9.11)"
 ]
 
 [project.urls]
@@ -64,7 +64,7 @@ Source = "https://github.com/papermerge/papermerge-core"
 
 
 [project.optional-dependencies]
-cloud = ["botocore (>=1.35)", "boto3 (>=1.35)", "cryptography (>=43)"]
+cloud = ["botocore (>=1.40.70)", "boto3 (>=1.40.70)", "cryptography (>=46.0.3)"]
 
 [tool.poetry.group.test]
 optional = true

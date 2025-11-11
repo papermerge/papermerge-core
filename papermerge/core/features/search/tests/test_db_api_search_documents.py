@@ -42,7 +42,7 @@ async def test_fts_search_documents_basic_text_in_title(
     )
 
     assert len(results.items) == 1
-    assert results.items[0].document_id == doc.id
+    assert results.items[0].id == doc.id
 
 
 async def test_fts_search_documents_two_terms_text_in_title(
@@ -88,7 +88,7 @@ async def test_fts_search_documents_two_terms_text_in_title(
     )
 
     assert len(results.items) == 1
-    assert results.items[0].document_id == doc.id
+    assert results.items[0].id == doc.id
 
 
 async def test_search_documents_by_one_tag(
@@ -124,7 +124,7 @@ async def test_search_documents_by_one_tag(
         filters=search_schema.SearchFilters(
             tags=[
                 search_schema.TagFilter(
-                    tags=["green"]
+                    values=["green"]
             )   ]
         ),
         lang=search_schema.SearchLanguage.ENG
@@ -137,7 +137,7 @@ async def test_search_documents_by_one_tag(
     )
 
     assert len(results.items) == 1
-    assert results.items[0].document_id == doc.id
+    assert results.items[0].id == doc.id
 
 
 async def test_search_documents_that_has_all_tags(
@@ -200,7 +200,7 @@ async def test_search_documents_that_has_all_tags(
         filters=search_schema.SearchFilters(
             tags=[
                 search_schema.TagFilter(
-                    tags=["green", "blue"]
+                    values=["green", "blue"]
             )   ]
         ),
         lang=search_schema.SearchLanguage.ENG
@@ -213,7 +213,7 @@ async def test_search_documents_that_has_all_tags(
     )
 
     assert len(results.items) == 1
-    assert results.items[0].document_id == doc.id
+    assert results.items[0].id == doc.id
 
 
 async def test_search_documents_that_has_any_tags(
@@ -269,7 +269,8 @@ async def test_search_documents_that_has_any_tags(
         filters=search_schema.SearchFilters(
             tags=[
                 search_schema.TagFilter(
-                    tags_any=["green", "blue"]
+                    values=["green", "blue"],
+                    operator=search_schema.TagOperator.ANY
                 )
             ]
         ),
@@ -283,7 +284,7 @@ async def test_search_documents_that_has_any_tags(
     )
 
     assert len(results.items) == 2
-    found_document_ids = {doc.document_id for doc in results.items}
+    found_document_ids = {doc.id for doc in results.items}
     assert found_document_ids == {doc.id, dblue.id}
 
 
@@ -353,7 +354,8 @@ async def test_tags_not(
         filters=search_schema.SearchFilters(
             tags=[
                 search_schema.TagFilter(
-                    tags_not=["deleted", "archived"]
+                    values=["deleted", "archived"],
+                    operator=search_schema.TagOperator.NOT
                 )
             ]
         ),
@@ -367,4 +369,4 @@ async def test_tags_not(
     )
 
     assert len(results.items) == 1
-    assert results.items[0].document_id == doc.id
+    assert results.items[0].id == doc.id

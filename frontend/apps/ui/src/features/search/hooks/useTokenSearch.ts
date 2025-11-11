@@ -1,8 +1,13 @@
 import {FILTERS} from "@/features/search/microcomp/const"
 import {parse} from "@/features/search/microcomp/scanner"
-import type {SearchSuggestion, Token} from "@/features/search/microcomp/types"
+import type {
+  SearchSuggestion,
+  SuggestionType,
+  Token
+} from "@/features/search/microcomp/types"
 import {autocompleteText} from "@/features/search/microcomp/utils"
-import {useCombobox} from "@mantine/core"
+import {CustomFieldDataType} from "@/types"
+import {ComboboxOptionProps, useCombobox} from "@mantine/core"
 import {useCallback, useRef, useState} from "react"
 import {useTokens} from "./useTokens"
 
@@ -30,8 +35,18 @@ export const useTokenSearch = ({
   const [isInputValid, setIsInputValid] = useState(false)
   const [lastAddedTokenIndex, setLastAddedTokenIndex] = useState<number>(-1)
 
-  const handleOptionSubmit = (val: string) => {
+  const handleOptionSubmit = (
+    val: string,
+    optionProps: ComboboxOptionProps
+  ) => {
+    const customFieldTypeHandler = (optionProps as any)["data-type-handler"]
+    const suggestionType = (optionProps as any)["data-suggestion-type"]
+
     let newInputValue = autocompleteText(inputValue, val)
+    const extraData = {
+      typeHandler: customFieldTypeHandler as CustomFieldDataType,
+      suggestionType: suggestionType as SuggestionType
+    }
 
     const {
       hasSuggestions,
@@ -39,7 +54,7 @@ export const useTokenSearch = ({
       tokens: parsedTokens,
       isComplete,
       errors
-    } = parse(newInputValue)
+    } = parse(newInputValue, extraData)
     setHasAutocomplete(hasSuggestions)
     setAutocomplete(suggestions)
 

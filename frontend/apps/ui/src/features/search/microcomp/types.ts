@@ -1,3 +1,5 @@
+import {CustomFieldDataType} from "@/types"
+
 export interface LexerResult {
   tokens: string[]
   hasTrailingSemicolon: boolean
@@ -161,4 +163,9 @@ export interface SuggestionResult {
   suggestions?: SearchSuggestion[]
   token?: Token
   tokenIsComplete: boolean
+}
+
+export interface ParseExtraData {
+  typeHandler?: CustomFieldDataType
+  suggestionType?: SuggestionType
 }

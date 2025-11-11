@@ -214,7 +214,12 @@ function AutocompleCustomFieldOptions({
   )
 
   const ret = filterTwo.map(i => (
-    <Combobox.Option key={i.id} value={i.name}>
+    <Combobox.Option
+      key={i.id}
+      value={i.name}
+      data-type-handler={i.type_handler}
+      data-suggestion-type="customField"
+    >
       {i.name}
     </Combobox.Option>
   ))

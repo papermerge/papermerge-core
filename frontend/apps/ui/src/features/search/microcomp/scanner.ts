@@ -7,6 +7,7 @@ import {
   FreeTextToken,
   LexerResult,
   ParseError,
+  ParseExtraData,
   ParseResult,
   SearchSuggestion,
   TagOperator,
@@ -40,7 +41,7 @@ function lex(input: string): LexerResult {
 // PARSER (Syntax Analysis)
 // ===========================
 
-export function parse(input: string): ParseResult {
+export function parse(input: string, extra?: ParseExtraData): ParseResult {
   const {tokens: rawTokens, hasTrailingSemicolon} = lex(input)
 
   const parsedTokens: Token[] = []
@@ -70,7 +71,7 @@ export function parse(input: string): ParseResult {
     : rawTokens[rawTokens.length - 1]
 
   const suggestions = currentToken
-    ? getSuggestions(currentToken)
+    ? getSuggestions(currentToken, extra)
     : getAllFilterSuggestions()
 
   return {
@@ -302,7 +303,10 @@ export function getAllFilterSuggestions(): SearchSuggestion[] {
  *
  * i.e. it may be incomplete filter
  */
-export function getSuggestions(text: string): SearchSuggestion[] {
+export function getSuggestions(
+  text: string,
+  extra?: ParseExtraData
+): SearchSuggestion[] {
   const parts = splitByColon(text)
 
   if (parts.length == 1) {
@@ -329,7 +333,7 @@ export function getSuggestions(text: string): SearchSuggestion[] {
   }
 
   if (parts[0] === "cf") {
-    return getCustomFieldSuggestions(parts, text)
+    return getCustomFieldSuggestions(parts, text, extra)
   }
 
   // Match TagFilter: "tag" ":" ...
@@ -355,8 +359,10 @@ export function getSuggestions(text: string): SearchSuggestion[] {
 
 function getCustomFieldSuggestions(
   parts: string[],
-  raw: string
+  raw: string,
+  extra?: ParseExtraData
 ): SearchSuggestion[] {
+  console.log(extra)
   if (parts[0] != "cf") {
     throw new Error(
       `Failed assumption expected 'cat' found ${parts[0]}; raw=${raw}`

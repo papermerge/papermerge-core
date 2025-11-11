@@ -190,19 +190,19 @@ files = [
 
 [[package]]
 name = "boto3"
-version = "1.40.65"
+version = "1.40.69"
 description = "The AWS SDK for Python"
 optional = true
 python-versions = ">=3.9"
 groups = ["main"]
 markers = "extra == \"cloud\""
 files = [
-    {file = "boto3-1.40.65-py3-none-any.whl", hash = "sha256:ab91d8d8ef0477997d35abebf67829e52e50bf807b02333affa384c70b33c86b"},
-    {file = "boto3-1.40.65.tar.gz", hash = "sha256:52e2715838d65e6b000e0077a942ce2d3e1a38f9764414ad01a602912eccf924"},
+    {file = "boto3-1.40.69-py3-none-any.whl", hash = "sha256:c3f710a1990c4be1c0db43b938743d4e404c7f1f06d5f1fa0c8e9b1cea4290b2"},
+    {file = "boto3-1.40.69.tar.gz", hash = "sha256:5273f6bac347331a87db809dff97d8736c50c3be19f2bb36ad08c5131c408976"},
 ]
 
 [package.dependencies]
-botocore = ">=1.40.65,<1.41.0"
+botocore = ">=1.40.69,<1.41.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.14.0,<0.15.0"
 
@@ -211,15 +211,15 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.40.65"
+version = "1.40.69"
 description = "Low-level, data-driven core of boto 3."
 optional = true
 python-versions = ">=3.9"
 groups = ["main"]
 markers = "extra == \"cloud\""
 files = [
-    {file = "botocore-1.40.65-py3-none-any.whl", hash = "sha256:152f595321f5a2b712601286650e912c2e5ca3b109892ab4c0175ac58d8de10d"},
-    {file = "botocore-1.40.65.tar.gz", hash = "sha256:cdbbf9d90a9e9c4a6000055013d98b92efc4ceb1bce0d9bcd70e14461dc22ab3"},
+    {file = "botocore-1.40.69-py3-none-any.whl", hash = "sha256:5d810efeb9e18f91f32690642fa81ae60e482eefeea0d35ec72da2e3d924c1a5"},
+    {file = "botocore-1.40.69.tar.gz", hash = "sha256:df310ddc4d2de5543ba3df4e4b5f9907a2951896d63a9fbae115c26ca0976951"},
 ]
 
 [package.dependencies]
@@ -1097,21 +1097,19 @@ all = ["flake8 (>=7.1.1)", "mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.6.2
 
 [[package]]
 name = "img2pdf"
-version = "0.6.1"
-description = "Convert images to PDF via direct JPEG inclusion."
+version = "0.6.3"
+description = "Lossless conversion of raster images to PDF."
 optional = false
-python-versions = "*"
+python-versions = ">=3.5"
 groups = ["main"]
 files = [
-    {file = "img2pdf-0.6.1.tar.gz", hash = "sha256:306e279eb832bc159d7d6294b697a9fbd11b4be1f799b14b3b2174fb506af289"},
+    {file = "img2pdf-0.6.3-py3-none-any.whl", hash = "sha256:44d12d235752edd17c43c04ff39952cdc5dd4c6aba90569c4902bd445085266b"},
+    {file = "img2pdf-0.6.3.tar.gz", hash = "sha256:219518020f5bd242bdc46493941ea3f756f664c2e86f2454721e74353f58cd95"},
 ]
 
 [package.dependencies]
 pikepdf = "*"
 Pillow = "*"
-
-[package.extras]
-gui = ["tkinter"]
 
 [[package]]
 name = "iniconfig"
@@ -2024,14 +2022,14 @@ typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
 name = "pydantic-settings"
-version = "2.11.0"
+version = "2.12.0"
 description = "Settings management using Pydantic"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pydantic_settings-2.11.0-py3-none-any.whl", hash = "sha256:fe2cea3413b9530d10f3a5875adffb17ada5c1e1bab0b2885546d7310415207c"},
-    {file = "pydantic_settings-2.11.0.tar.gz", hash = "sha256:d0e87a1c7d33593beb7194adb8470fc426e95ba02af83a0f23474a04c9a08180"},
+    {file = "pydantic_settings-2.12.0-py3-none-any.whl", hash = "sha256:fddb9fd99a5b18da837b29710391e945b1e30c135477f484084ee513adb93809"},
+    {file = "pydantic_settings-2.12.0.tar.gz", hash = "sha256:005538ef951e3c2a68e1c08b292b5f2e71490def8589d4221b95dab00dafcfd0"},
 ]
 
 [package.dependencies]
@@ -2103,18 +2101,18 @@ dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "requests
 
 [[package]]
 name = "pytest-asyncio"
-version = "1.2.0"
+version = "1.3.0"
 description = "Pytest support for asyncio"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["test"]
 files = [
-    {file = "pytest_asyncio-1.2.0-py3-none-any.whl", hash = "sha256:8e17ae5e46d8e7efe51ab6494dd2010f4ca8dae51652aa3c8d55acf50bfb2e99"},
-    {file = "pytest_asyncio-1.2.0.tar.gz", hash = "sha256:c609a64a2a8768462d0c99811ddb8bd2583c33fd33cf7f21af1c142e824ffb57"},
+    {file = "pytest_asyncio-1.3.0-py3-none-any.whl", hash = "sha256:611e26147c7f77640e6d0a92a38ed17c3e9848063698d5c93d5aa7aa11cebff5"},
+    {file = "pytest_asyncio-1.3.0.tar.gz", hash = "sha256:d7f52f36d231b80ee124cd216ffb19369aa168fc10095013c6b014a34d3ee9e5"},
 ]
 
 [package.dependencies]
-pytest = ">=8.2,<9"
+pytest = ">=8.2,<10"
 
 [package.extras]
 docs = ["sphinx (>=5.3)", "sphinx-rtd-theme (>=1)"]
@@ -3179,4 +3177,4 @@ pg = ["psycopg2-binary"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<4"
-content-hash = "8b5daf0d7baf02acf718e58020e0b176a126690ada329fee998de7acf70297dd"
+content-hash = "e73599a8577460d9cb3a37bc6933837aae39b453a8626935da878cab2c2b0945"

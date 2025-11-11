@@ -62,7 +62,7 @@
     "happy-dom": "^20.0.10",
     "jsdom": "^27.1.0",
     "prettier": "^3.6.2",
-    "sass": "^1.93.3",
+    "sass": "^1.94.0",
     "typescript": "^5.9.3",
     "vite": "^7.2.2",
     "vite-plugin-static-copy": "^3.1.4",

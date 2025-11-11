@@ -43,13 +43,15 @@ async def test_fitler_document_numeric_custom_field(
 
     params = search_schema.SearchQueryParams(
         filters=search_schema.SearchFilters(
-            category=search_schema.CategoryFilter(
-                values=["Invoice"]
-            ),
+            categories=[
+                search_schema.CategoryFilter(
+                    values=["Invoice"]
+                )
+            ],
             custom_fields=[
                 search_schema.CustomFieldFilter(
                     field_name="Amount",
-                    operator=search_schema.Operator.GT,
+                    operator=search_schema.CustomFieldOperator.GT,
                     value=100
                 )
             ]
@@ -65,18 +67,20 @@ async def test_fitler_document_numeric_custom_field(
     )
 
     assert len(results.items) == 1
-    assert results.items[0].document_id == doc1.id
+    assert results.items[0].id == doc1.id
     assert results.items[0].title == "large-bill.pdf"
 
     params = search_schema.SearchQueryParams(
         filters=search_schema.SearchFilters(
-            category=search_schema.CategoryFilter(
-                values=["Invoice"]
-            ),
+            categories=[
+                search_schema.CategoryFilter(
+                    values=["Invoice"]
+                )
+            ],
             custom_fields=[
                 search_schema.CustomFieldFilter(
                     field_name="Amount",
-                    operator=search_schema.Operator.LT,
+                    operator=search_schema.CustomFieldOperator.LT,
                     value=100
                 )
             ]
@@ -92,7 +96,7 @@ async def test_fitler_document_numeric_custom_field(
     )
 
     assert len(results.items) == 1
-    assert results.items[0].document_id == doc2.id
+    assert results.items[0].id == doc2.id
     assert results.items[0].title == "tiny-bill.pdf"
 
 
@@ -169,18 +173,20 @@ async def test_filter_documents_by_multiple_cf(
 
     params = search_schema.SearchQueryParams(
         filters=search_schema.SearchFilters(
-            category=search_schema.CategoryFilter(
-                values=["Invoice"]
-            ),
+            categories=[
+                search_schema.CategoryFilter(
+                    values=["Invoice"]
+                )
+            ],
             custom_fields=[
                 search_schema.CustomFieldFilter(
                     field_name="Total Amount",
-                    operator=search_schema.Operator.GT,
+                    operator=search_schema.CustomFieldOperator.GT,
                     value=30
                 ),
                 search_schema.CustomFieldFilter(
                     field_name="Vendor",
-                    operator=search_schema.Operator.EQ,
+                    operator=search_schema.CustomFieldOperator.EQ,
                     value="lidl"
                 )
             ]
@@ -197,7 +203,7 @@ async def test_filter_documents_by_multiple_cf(
     )
 
     assert len(results.items) == 1
-    assert results.items[0].document_id == doc_2.id
+    assert results.items[0].id == doc_2.id
     assert results.items[0].title == "doc_2.pdf"
 
 
@@ -266,18 +272,20 @@ async def test_filter_and_sort_documents_by_multiple_cf(
 
     params = search_schema.SearchQueryParams(
         filters=search_schema.SearchFilters(
-            category=search_schema.CategoryFilter(
-                values=["Invoice"]
-            ),
+            categories=[
+                search_schema.CategoryFilter(
+                    values=["Invoice"]
+                )
+            ],
             custom_fields=[
                 search_schema.CustomFieldFilter(
                     field_name="Total Amount",
-                    operator=search_schema.Operator.GT,
+                    operator=search_schema.CustomFieldOperator.GT,
                     value=20
                 ),
                 search_schema.CustomFieldFilter(
                     field_name="Vendor",
-                    operator=search_schema.Operator.EQ,
+                    operator=search_schema.CustomFieldOperator.EQ,
                     value="lidl"
                 )
             ]
@@ -295,7 +303,7 @@ async def test_filter_and_sort_documents_by_multiple_cf(
     )
 
     assert len(results.items) == 3
-    actual_document_ids = [doc.document_id for doc in results.items]
+    actual_document_ids = [doc.id for doc in results.items]
     # 1. doc with amount 49.05
     # 2. doc with amount 29.05
     # 3. doc with amount 21.03

@@ -4,7 +4,7 @@ def test_basic_schema():
     input = {
         "filters": {
             "tags": [
-                {"tags": ["blue", "green"]}
+                {"values": ["blue", "green"]}
             ]
         },
         "lang": "eng"
@@ -13,7 +13,7 @@ def test_basic_schema():
         filters=search_schema.SearchFilters(
             tags=[
                 search_schema.TagFilter(
-                    tags=["blue", "green"]
+                    values=["blue", "green"]
                 )
             ]
         ),

@@ -189,3 +189,24 @@ export function hasThisTypeSuggestion({
 
   return false
 }
+
+type OperatorSymbol = "=" | "!=" | ">" | ">=" | "<" | "<="
+type OperatorText = "eq" | "ne" | "gt" | "gte" | "lt" | "lte"
+
+const SYMBOL_MAP: Record<OperatorSymbol, OperatorText> = {
+  "=": "eq",
+  "!=": "ne",
+  ">": "gt",
+  ">=": "gte",
+  "<": "lt",
+  "<=": "lte"
+} as const
+
+export function operatorSym2Text(sym: string): OperatorText | null {
+  if (sym in SYMBOL_MAP) {
+    return SYMBOL_MAP[sym as OperatorSymbol]
+  }
+
+  console.warn(`operatorSym2Text: Operator sym=${sym} not found in symbol map`)
+  return null
+}

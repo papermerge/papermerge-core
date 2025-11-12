@@ -21,7 +21,7 @@ import {
   splitByColon
 } from "./utils"
 
-import {FILTERS} from "./const"
+import {FILTERS, OPERATOR_NUMERIC, OPERATOR_TEXT} from "./const"
 
 // ===========================
 // LEXER (Tokenization)
@@ -362,12 +362,12 @@ function getCustomFieldSuggestions(
   raw: string,
   extra?: ParseExtraData
 ): SearchSuggestion[] {
-  console.log(extra)
   if (parts[0] != "cf") {
     throw new Error(
       `Failed assumption expected 'cat' found ${parts[0]}; raw=${raw}`
     )
   }
+  ////////////////////////
   if (parts.length == 2) {
     // i.e. cf:blah or maybe cf:blah
     const part2 = parts[1].trim()
@@ -381,6 +381,34 @@ function getCustomFieldSuggestions(
       }
     ]
   }
+  /////////////////////////////
+  if (parts.length == 3) {
+    // i.e. cf:Total EUR:
+    if (!extra) {
+      return []
+    }
+
+    if (extra.suggestionType != "customField") {
+      return []
+    }
+
+    if (!extra.typeHandler) {
+      return []
+    }
+
+    if (["float", "int", "monetary", "date"].includes(extra.typeHandler)) {
+      return [
+        {
+          type: "operator",
+          items: OPERATOR_NUMERIC
+        }
+      ]
+    }
+
+    if (extra.typeHandler == "text") {
+      return [{type: "operator", items: OPERATOR_TEXT}]
+    }
+  } // END of parts.lenth == 3
 
   return []
 }

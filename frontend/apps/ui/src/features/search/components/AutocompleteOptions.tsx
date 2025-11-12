@@ -1,6 +1,8 @@
+import {useAppSelector} from "@/app/hooks"
 import Tag from "@/components/Tag"
 import {useGetCustomFieldsQuery} from "@/features/custom-fields/storage/api"
 import {useGetDocumentTypesQuery} from "@/features/document-types/storage/api"
+import {selectDocumentCategoryID} from "@/features/documentsList/storage/documentsByCategory"
 import {Category} from "@/features/documentsList/types"
 import {
   SearchCategorySuggestion,
@@ -23,6 +25,7 @@ interface Args {
 }
 
 export default function AutocompleteOptions({suggestions}: Args) {
+  const categoryID = useAppSelector(selectDocumentCategoryID)
   const {data: tags = [], isSuccess: tagsAreLoaded} = useGetTagsQuery(
     hasThisTypeSuggestion({suggestions, type: "tag"}) ? undefined : skipToken
   )
@@ -37,7 +40,7 @@ export default function AutocompleteOptions({suggestions}: Args) {
   const {data: customFields = [], isSuccess: customFieldsAreLoaded} =
     useGetCustomFieldsQuery(
       hasThisTypeSuggestion({suggestions, type: "customField"})
-        ? undefined
+        ? {document_type_id: categoryID}
         : skipToken
     )
 

@@ -7,6 +7,7 @@ export const TAG_IMPLICIT_OPERATOR = TAG_OP_ALL
 export const CATEGORY = "cat"
 export const CATEGORY_IMPLICIT_OPERATOR = "any"
 export const CUSTOM_FIELD = "cf"
+export const CUSTOM_FIELD_IMPLICIT_OPERATOR = "="
 
 export const FILTERS = [
   "cat:", // Category
@@ -18,4 +19,13 @@ export const FILTERS = [
   "updated_at:",
   "updated_by:",
   "owner:"
+]
+
+export const OPERATOR_NUMERIC = [">=:", ">:", "<=:", "<:", "=:", "!=:"]
+export const OPERATOR_TEXT = [
+  "=:",
+  "contains:",
+  "iContains:",
+  "startsWith:",
+  "iStartsWith:"
 ]

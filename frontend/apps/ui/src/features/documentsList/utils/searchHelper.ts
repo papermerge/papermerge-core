@@ -3,7 +3,11 @@ import {
   TAG_IMPLICIT_OPERATOR
 } from "@/features/search/microcomp/const"
 import type {Token} from "@/features/search/microcomp/types"
-import type {SearchQueryParams} from "@/features/search/types"
+import {operatorSym2Text} from "@/features/search/microcomp/utils"
+import type {
+  CustomFieldFilter,
+  SearchQueryParams
+} from "@/features/search/types"
 import type {SortState} from "kommon"
 
 interface BuildSearchParamsArgs {
@@ -59,6 +63,19 @@ export function buildSearchQueryParams({
         }
 
         break
+
+      case "cf":
+        const newCF = {
+          field_name: token.fieldName,
+          operator: operatorSym2Text(token.operator || "="),
+          value: token.value
+        } as CustomFieldFilter
+
+        if (!filters.custom_fields) {
+          filters.custom_fields = [newCF]
+        } else {
+          filters.custom_fields.push(newCF)
+        }
 
       // We'll add custom_field case later
       default:

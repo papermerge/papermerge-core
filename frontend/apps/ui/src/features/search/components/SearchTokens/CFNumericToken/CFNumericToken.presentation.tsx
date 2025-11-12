@@ -27,6 +27,7 @@ export function CFNumericTokenPresentation({
     <Box className={styles.tokenContainer} onClick={e => e.stopPropagation()}>
       <Group gap={0}>
         <Text c={"blue"}>cf:</Text>
+        <Text c={"blue"}>{item.fieldName}:</Text>
         <CFNumericOperator item={item} onOperatorChange={onOperatorChange} />
         <NumberInput value={item.value} onChange={onValueChange} w="15ch" />
       </Group>

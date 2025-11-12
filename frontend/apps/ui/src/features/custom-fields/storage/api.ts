@@ -4,14 +4,19 @@ import type {
   CustomFieldQueryParams
 } from "@/features/custom-fields/types"
 import type {
-  Owner,
   CustomField,
   CustomFieldUpdate,
   NewCustomField,
+  Owner,
   Paginated
 } from "@/types"
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
+
+interface GetCustomFieldsArgs {
+  owner?: Owner
+  document_type_id?: string | null
+}
 
 export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
   endpoints: builder => ({
@@ -38,12 +43,21 @@ export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
         ...result.items.map(({id}) => ({type: "CustomField", id}) as const)
       ]
     }),
-    getCustomFields: builder.query<CustomField[], Owner | undefined>({
-      query: (owner?: Owner) => {
-        if (owner && owner.type == "group") {
-          return `/custom-fields/all?group_id=${owner.id}`
+    getCustomFields: builder.query<CustomField[], GetCustomFieldsArgs>({
+      query: ({owner, document_type_id}: GetCustomFieldsArgs) => {
+        const params = new URLSearchParams()
+
+        if (document_type_id) {
+          params.append("document_type_id", document_type_id)
         }
-        return "/custom-fields/all"
+
+        if (owner?.type === "group") {
+          params.append("group_id", owner.id.toString())
+        } else if (owner?.type === "user") {
+          params.append("user_id", owner.id.toString())
+        }
+
+        return `/custom-fields/all?${params.toString()}`
       },
       providesTags: (result = [], _error, _arg) => [
         "CustomField",

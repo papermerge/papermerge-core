@@ -1,8 +1,14 @@
+import type {CustomFieldType} from "@/features/custom-fields/types"
 import {FILTERS} from "@/features/search/microcomp/const"
 import {parse} from "@/features/search/microcomp/scanner"
-import type {SearchSuggestion, Token} from "@/features/search/microcomp/types"
+import type {
+  SearchSuggestion,
+  SuggestionType,
+  Token
+} from "@/features/search/microcomp/types"
 import {autocompleteText} from "@/features/search/microcomp/utils"
-import {useCombobox} from "@mantine/core"
+import {CustomFieldDataType} from "@/types"
+import {ComboboxOptionProps, useCombobox} from "@mantine/core"
 import {useCallback, useRef, useState} from "react"
 import {useTokens} from "./useTokens"
 
@@ -16,6 +22,8 @@ export const useTokenSearch = ({
   onFocusChange
 }: UseTokenSearchProps) => {
   const [inputValue, setInputValue] = useState("")
+  /** Custom field type currently being typed */
+  const [currentCFType, setCurrentCFType] = useState<CustomFieldType>()
   const {tokens, addToken, updateToken, removeToken, clearTokens} = useTokens()
   const [hasAutocomplete, setHasAutocomplete] = useState(false)
   const [autocomplete, setAutocomplete] = useState<SearchSuggestion[]>()
@@ -30,8 +38,25 @@ export const useTokenSearch = ({
   const [isInputValid, setIsInputValid] = useState(false)
   const [lastAddedTokenIndex, setLastAddedTokenIndex] = useState<number>(-1)
 
-  const handleOptionSubmit = (val: string) => {
+  const handleOptionSubmit = (
+    val: string,
+    optionProps: ComboboxOptionProps
+  ) => {
+    const customFieldTypeHandler = (optionProps as any)["data-type-handler"]
+    const suggestionType = (optionProps as any)["data-suggestion-type"]
+
     let newInputValue = autocompleteText(inputValue, val)
+    const extraData = {
+      typeHandler: customFieldTypeHandler as CustomFieldDataType,
+      suggestionType: suggestionType as SuggestionType
+    }
+    if (suggestionType == "customField") {
+      newInputValue = newInputValue + ":"
+    }
+    if (customFieldTypeHandler) {
+      // remember cf type
+      setCurrentCFType(customFieldTypeHandler)
+    }
 
     const {
       hasSuggestions,
@@ -39,7 +64,7 @@ export const useTokenSearch = ({
       tokens: parsedTokens,
       isComplete,
       errors
-    } = parse(newInputValue)
+    } = parse(newInputValue, extraData)
     setHasAutocomplete(hasSuggestions)
     setAutocomplete(suggestions)
 
@@ -48,8 +73,15 @@ export const useTokenSearch = ({
     }
 
     if (isComplete && parsedTokens.length > 0) {
+      parsedTokens.forEach(t => {
+        if (t.type == "cf" && currentCFType) {
+          addToken({...t, typeHandler: currentCFType})
+        } else {
+          addToken(t)
+        }
+      })
+      setCurrentCFType(undefined)
       setInputValue("")
-      parsedTokens.forEach(t => addToken(t))
     } else {
       setInputValue(newInputValue)
     }
@@ -62,7 +94,6 @@ export const useTokenSearch = ({
 
     // Clear previous validation error when user types
     setValidationError("")
-
     const {
       hasSuggestions,
       suggestions,
@@ -152,6 +183,7 @@ export const useTokenSearch = ({
   }, [combobox])
 
   const handleKeyDown = useCallback(
+    // KEY == ENTER
     (event: React.KeyboardEvent<HTMLInputElement>) => {
       const {key} = event
 
@@ -180,7 +212,14 @@ export const useTokenSearch = ({
         // Success - add tokens and clear input
         if (parseResult.tokens.length > 0) {
           const currentTokenCount = tokens.length
-          parseResult.tokens.forEach(t => addToken(t))
+          parseResult.tokens.forEach(t => {
+            if (t.type == "cf" && currentCFType) {
+              addToken({...t, typeHandler: currentCFType})
+            } else {
+              addToken(t)
+            }
+          })
+          setCurrentCFType(undefined)
 
           // Mark the last added token for animation
           setLastAddedTokenIndex(

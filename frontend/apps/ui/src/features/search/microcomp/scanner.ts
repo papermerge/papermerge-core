@@ -7,6 +7,7 @@ import {
   FreeTextToken,
   LexerResult,
   ParseError,
+  ParseExtraData,
   ParseResult,
   SearchSuggestion,
   TagOperator,
@@ -20,7 +21,7 @@ import {
   splitByColon
 } from "./utils"
 
-import {FILTERS} from "./const"
+import {FILTERS, OPERATOR_NUMERIC, OPERATOR_TEXT} from "./const"
 
 // ===========================
 // LEXER (Tokenization)
@@ -40,7 +41,7 @@ function lex(input: string): LexerResult {
 // PARSER (Syntax Analysis)
 // ===========================
 
-export function parse(input: string): ParseResult {
+export function parse(input: string, extra?: ParseExtraData): ParseResult {
   const {tokens: rawTokens, hasTrailingSemicolon} = lex(input)
 
   const parsedTokens: Token[] = []
@@ -70,7 +71,7 @@ export function parse(input: string): ParseResult {
     : rawTokens[rawTokens.length - 1]
 
   const suggestions = currentToken
-    ? getSuggestions(currentToken)
+    ? getSuggestions(currentToken, extra)
     : getAllFilterSuggestions()
 
   return {
@@ -302,7 +303,10 @@ export function getAllFilterSuggestions(): SearchSuggestion[] {
  *
  * i.e. it may be incomplete filter
  */
-export function getSuggestions(text: string): SearchSuggestion[] {
+export function getSuggestions(
+  text: string,
+  extra?: ParseExtraData
+): SearchSuggestion[] {
   const parts = splitByColon(text)
 
   if (parts.length == 1) {
@@ -329,7 +333,7 @@ export function getSuggestions(text: string): SearchSuggestion[] {
   }
 
   if (parts[0] === "cf") {
-    return getCustomFieldSuggestions(parts, text)
+    return getCustomFieldSuggestions(parts, text, extra)
   }
 
   // Match TagFilter: "tag" ":" ...
@@ -355,8 +359,57 @@ export function getSuggestions(text: string): SearchSuggestion[] {
 
 function getCustomFieldSuggestions(
   parts: string[],
-  raw: string
+  raw: string,
+  extra?: ParseExtraData
 ): SearchSuggestion[] {
+  if (parts[0] != "cf") {
+    throw new Error(
+      `Failed assumption expected 'cat' found ${parts[0]}; raw=${raw}`
+    )
+  }
+  ////////////////////////
+  if (parts.length == 2) {
+    // i.e. cf:blah or maybe cf:blah
+    const part2 = parts[1].trim()
+    const catValueItemsToExclude = getTokenValueItemsToExclude(part2)
+    const catValueItemsFilter = getTokenValueItemsFilter(part2)
+    return [
+      {
+        type: "customField",
+        filter: catValueItemsFilter,
+        exclude: catValueItemsToExclude
+      }
+    ]
+  }
+  /////////////////////////////
+  if (parts.length == 3) {
+    // i.e. cf:Total EUR:
+    if (!extra) {
+      return []
+    }
+
+    if (extra.suggestionType != "customField") {
+      return []
+    }
+
+    if (!extra.typeHandler) {
+      return []
+    }
+
+    if (["float", "int", "monetary", "date"].includes(extra.typeHandler)) {
+      return [
+        {
+          type: "operator",
+          items: OPERATOR_NUMERIC
+        }
+      ]
+    }
+
+    if (extra.typeHandler == "text") {
+      return [{type: "operator", items: OPERATOR_TEXT}]
+    }
+  } // END of parts.lenth == 3
+
   return []
 }
 
@@ -423,7 +476,7 @@ function getCategorySuggestions(
   }
 
   if (parts.length == 2) {
-    // i.e. cat:blah or maybe tag:blah, blah
+    // i.e. cat:blah or maybe cat:blah, blah
     // At this point it is not possible to tell if user it typing
     // a cat operator i.e. cat:any (thus intention would be cat:any:letter)
     // or user intends to type category value e.g. cat:letter

@@ -17,7 +17,7 @@ from papermerge.core.features.users.schema import User
 from papermerge.core.features.users.db import api as user_dbapi
 from papermerge.core.db.engine import get_db
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
-from papermerge.core.types import ResourceType
+from papermerge.core.types import ResourceType, OwnerType
 from .schema import CustomFieldParams
 
 router = APIRouter(
@@ -44,6 +44,7 @@ async def get_custom_fields_without_pagination(
         User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
     ],
     group_id: uuid.UUID | None = None,
+    document_type_id: uuid.UUID | None = None,
     db_session: AsyncSession = Depends(get_db),
 ):
     """Get all custom fields without pagination
@@ -60,10 +61,9 @@ async def get_custom_fields_without_pagination(
     Required scope: `{scope}`
     """
     owner_id = group_id or user.id
+    owner_type = OwnerType.USER
     if group_id:
-        owner_type = 'group'
-    else:
-        owner_type = 'user'
+        owner_type = OwnerType.GROUP
 
     owner=schema.Owner(owner_id=owner_id, owner_type=owner_type)
 
@@ -74,7 +74,7 @@ async def get_custom_fields_without_pagination(
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
 
     result = await dbapi.get_custom_fields_without_pagination(
-        db_session, owner=owner
+        db_session, owner=owner, document_type_id=document_type_id
     )
 
     return result

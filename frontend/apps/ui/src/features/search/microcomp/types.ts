@@ -1,3 +1,6 @@
+import type {CustomFieldType} from "@/features/custom-fields/types"
+import {CustomFieldDataType} from "@/types"
+
 export interface LexerResult {
   tokens: string[]
   hasTrailingSemicolon: boolean
@@ -40,7 +43,28 @@ export type TagOperator = "any" | "all" | "not"
 
 export type CategoryOperator = "any" | "not"
 
-export type CustomFieldOperator = ">=" | ">" | "=" | "!=" | "<" | "<="
+export type CustomFieldNumericOperator =
+  | ">="
+  | ">"
+  | "="
+  | "!="
+  | "<"
+  | "<="
+  | "!="
+export type CustomFieldTextOperator =
+  | "!="
+  | "="
+  | "contains"
+  | "iContains"
+  | "startsWith"
+  | "iStartsWith"
+
+export type CustomFieldBooleanOperator = "=" | "!="
+
+export type CustomFieldOperator =
+  | CustomFieldNumericOperator
+  | CustomFieldTextOperator
+  | CustomFieldBooleanOperator
 
 export interface BasicToken {
   type: TokenType
@@ -70,7 +94,8 @@ export interface CustomFieldToken extends BasicToken {
   type: "cf"
   fieldName: string
   operator?: CustomFieldOperator
-  value: string
+  typeHandler: CustomFieldType
+  value: string | number
 }
 
 export interface SpaceToken extends BasicToken {
@@ -161,4 +186,9 @@ export interface SuggestionResult {
   suggestions?: SearchSuggestion[]
   token?: Token
   tokenIsComplete: boolean
+}
+
+export interface ParseExtraData {
+  typeHandler?: CustomFieldDataType
+  suggestionType?: SuggestionType
 }

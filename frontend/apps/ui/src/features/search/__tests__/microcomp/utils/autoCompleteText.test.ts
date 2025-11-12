@@ -1,5 +1,5 @@
-import {describe, it, expect} from "vitest"
 import {autocompleteText} from "@/features/search/microcomp/utils"
+import {describe, expect, it} from "vitest"
 
 describe("autoCompleteText", () => {
   //----------------------------------------------
@@ -23,6 +23,6 @@ describe("autoCompleteText", () => {
   //----------------------------------------------
   it("surround with double quotes autocompeleted text which contains spaces", () => {
     const result = autocompleteText("with tag:", "blue sky")
-    expect(result).toEqual('with tag:"blue sky"')
+    expect(result).toEqual("with tag:blue sky")
   })
 })

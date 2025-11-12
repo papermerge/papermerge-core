@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 async def get_custom_fields_without_pagination(
     db_session: AsyncSession,
     owner: schema.Owner,
+    document_type_id: uuid.UUID | None = None
 ) -> list[schema.CustomField]:
     """
     Get all custom fields for a given owner without pagination.
@@ -80,6 +81,17 @@ async def get_custom_fields_without_pagination(
         .order_by(orm.CustomField.name.asc())
     )
 
+    if document_type_id is not None:
+        stmt = stmt.join(
+            orm.DocumentTypeCustomField,
+            orm.CustomField.id == orm.DocumentTypeCustomField.custom_field_id
+        ).join(
+            orm.DocumentType,
+            orm.DocumentTypeCustomField.document_type_id == orm.DocumentType.id
+        ).where(
+            orm.DocumentType.id == document_type_id
+        )
+
     results = (await db_session.execute(stmt)).all()
 
     # Build response
@@ -92,13 +104,13 @@ async def get_custom_fields_without_pagination(
             owned_by = schema.OwnedBy(
                 id=row.user_id,
                 name=row.username,
-                type="user"
+                type=OwnerType.USER
             )
         else:  # group
             owned_by = schema.OwnedBy(
                 id=row.group_id,
                 name=row.group_name,
-                type="group"
+                type=OwnerType.GROUP
             )
 
         items.append(schema.CustomField(

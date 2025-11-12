@@ -1,5 +1,6 @@
 import {useAppSelector} from "@/app/hooks"
 import SearchTokenCategoryComponent from "./CatToken"
+import CustomFieldToken from "./CustomFieldToken"
 import FreeTextTokenComponent from "./FTSToken"
 import SearchTokenTagComponent from "./TagToken"
 
@@ -29,6 +30,8 @@ function SearchToken({index}: SearchTokenArgs) {
       return <SearchTokenCategoryComponent index={index} />
     case "fts":
       return <FreeTextTokenComponent index={index} />
+    case "cf":
+      return <CustomFieldToken index={index} />
   }
 
   return <>Unknown token</>

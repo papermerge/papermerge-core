@@ -65,7 +65,7 @@ export function TagTokenPresentation({
   return (
     <Box className={styles.tokenContainer} onClick={e => e.stopPropagation()}>
       <Group gap={0}>
-        <Text c={"blue"}>tag:</Text>
+        <Text c={"grape"}>tag:</Text>
         <TokenTagOperator item={item} onOperatorChange={onOperatorChange} />
         <TokenTagValues
           selectedTags={selectedTags}

@@ -4,6 +4,7 @@ import logoURL from "/logo_transparent_bg.svg"
 
 import classes from "./Header.module.css"
 
+import {ClearNotificationsButton} from "@/features/notifications/components/ClearButton"
 import Search from "@/features/search/components/TokenSeachInput"
 import SidebarToggle from "./SidebarToggle"
 import UserMenu from "./UserMenu"
@@ -20,10 +21,11 @@ function Header() {
         color: theme.colors.pmg[0]
       }}
     >
-      <div className={classes.inner}>
+      <Group className={classes.inner}>
         <Group>
           <SidebarToggle />
           <img src={logoURL} width={"30px"} />
+          <ClearNotificationsButton />
         </Group>
         <div
           className={`${classes.searchWrapper} ${isSearchFocused ? classes.searchWrapperExpanded : ""}`}
@@ -33,7 +35,7 @@ function Header() {
         <Group>
           <UserMenu />
         </Group>
-      </div>
+      </Group>
     </header>
   )
 }

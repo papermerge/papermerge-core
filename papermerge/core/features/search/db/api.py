@@ -47,7 +47,6 @@ async def search_documents_by_type(
     Returns:
         SearchDocumentsByTypeResponse with DocumentCFV items and custom field metadata
     """
-
     if not document_type_id:
         raise ValueError("document_type_id is required for this search type")
 
@@ -238,6 +237,8 @@ async def search_documents_by_type(
             page_size=params.page_size,
             num_pages=0,
             total_items=total_count,
+            custom_fields=[],
+            document_type_id=document_type_id
         )
 
     # =========================================================================

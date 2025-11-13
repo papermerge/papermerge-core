@@ -6,17 +6,21 @@ import flatColumns from "@/features/documentsList/components/flatColumns"
 import {selectDocumentCategoryID} from "../storage/documentsByCategory"
 import {DocumentListItem} from "../types"
 
+import type {
+  SearchDocumentsByCategoryResponse,
+  SearchDocumentsResponse
+} from "@/features/documentsList/storage/api"
 import {selectPanelVisibleColumns} from "@/features/ui/panelRegistry"
 import {ColumnConfig} from "kommon"
 import {useTranslation} from "react-i18next"
-import useDocumentsListTable from "./useDocumentsListTable"
 
-export default function useVisibleColumns(): ColumnConfig<DocumentListItem>[] {
+export default function useVisibleColumns(
+  data?: SearchDocumentsResponse | SearchDocumentsByCategoryResponse
+): ColumnConfig<DocumentListItem>[] {
   const {t} = useTranslation()
   const {panelId} = usePanel()
   const categoryID = useAppSelector(selectDocumentCategoryID)
   const selected = useAppSelector(s => selectPanelVisibleColumns(s, panelId))
-  const {data} = useDocumentsListTable()
 
   const hasSelection = selected && selected.length > 0
   let columns: ColumnConfig<DocumentListItem>[] = []

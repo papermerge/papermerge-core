@@ -23,7 +23,7 @@ export default function DocumentsListByCategory() {
   const {isError, data, queryParams, error, isLoading, isFetching} =
     useDocumentsListTable()
 
-  const visibleColumns = useVisibleColumns()
+  const visibleColumns = useVisibleColumns(data)
   const currentDetailsPanelDocID = useAppSelector(s =>
     selectPanelDetailsEntityId(s, "secondary")
   )
@@ -77,9 +77,6 @@ export default function DocumentsListByCategory() {
         }}
         onSortChange={handleSortChange}
         loading={isLoading || isFetching}
-        emptyMessage={t("rolesList.noRolesFound", {
-          defaultValue: "No roles found"
-        })}
         withCheckbox={true}
         onRowClick={onTableRowClick}
         getRowId={getRowId}

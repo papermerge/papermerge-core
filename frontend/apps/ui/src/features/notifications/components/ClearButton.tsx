@@ -10,7 +10,7 @@ interface ClearNotificationsButtonProps {
 }
 
 export function ClearNotificationsButton({
-  threshold = 3
+  threshold = 1
 }: ClearNotificationsButtonProps) {
   const {t} = useTranslation()
   const count = useAppSelector(selectNotificationCount)

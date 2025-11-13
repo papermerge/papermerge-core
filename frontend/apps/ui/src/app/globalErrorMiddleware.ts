@@ -2,10 +2,10 @@
 // RTK Query Middleware for Global Error Handling
 // ============================================================================
 
-import {isRejectedWithValue, Middleware, Action} from "@reduxjs/toolkit"
-import {notifications} from "@mantine/notifications"
-import {t} from "i18next"
+import {notifications} from "@/features/notifications/utils"
 import {getErrorMessage, getErrorTitle} from "@/utils/errorHandling"
+import {Action, isRejectedWithValue, Middleware} from "@reduxjs/toolkit"
+import {t} from "i18next"
 
 interface RTKQueryAction extends Action {
   meta?: {

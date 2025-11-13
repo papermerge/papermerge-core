@@ -573,6 +573,7 @@
   "cancel": "Abrechen",
   "save": "Speichern",
   "files": "Dateien",
+  "clearNotifications": "Alle {{count}} Benachrichtigungen löschen",
   "currency": {
     "all": "ALL - Albanischer Lek",
     "amd": "AMD - Armenischer Dram",

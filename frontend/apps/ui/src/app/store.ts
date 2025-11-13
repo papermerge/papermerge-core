@@ -14,6 +14,7 @@ import filesReducer from "@/features/files/filesSlice"
 import groupsReducer from "@/features/groups/storage/group"
 import nodesReducer from "@/features/nodes/nodesSlice"
 import thumbnailObjects from "@/features/nodes/thumbnailObjectsSlice"
+import notificationsReducer from "@/features/notifications/storage/notifications"
 import preferencesReducer from "@/features/preferences/storage/preference"
 import rolesReducer from "@/features/roles/storage/role"
 import searchReducer from "@/features/search/storage/search"
@@ -47,6 +48,7 @@ export const store = configureStore({
     thumbnailObjects: thumbnailObjects,
     documentDownloads: documentDownloadsReducer,
     ui: uiReducer,
+    notifications: notificationsReducer,
     docVers: docVersReducer,
     docs: docsReducer,
     files: filesReducer,

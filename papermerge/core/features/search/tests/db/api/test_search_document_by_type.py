@@ -1,5 +1,6 @@
 from collections import namedtuple
 
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.features.search import schema as search_schema
@@ -308,3 +309,134 @@ async def test_filter_and_sort_documents_by_multiple_cf(
     # 2. doc with amount 29.05
     # 3. doc with amount 21.03
     assert actual_document_ids == [docs[3].id, docs[0].id, docs[4].id]
+
+
+@pytest.mark.parametrize(
+    "valid_search_cf_value",
+    ["30", 30, 0, "0", "49.95", 49.95],
+)
+async def test_filter_by_monetary_custom_field_valid_values(
+    valid_search_cf_value,
+    db_session: AsyncSession,
+    user,
+    make_document_type_with_custom_fields,
+    make_document
+):
+    """
+    In this scenario filter gets valid values as different data types
+    str, int etc
+    """
+    doc = await make_document(
+        title="Doc Title",
+        user=user,
+        parent=user.home_folder,
+        lang=search_schema.SearchLanguage.ENG
+    )
+    invoice_type = await make_document_type_with_custom_fields(
+        name="Invoice",
+        custom_fields=[
+            {"name": "Invoice Date", "type_handler": "date"},
+            {"name": "Vendor", "type_handler": "text"},
+            {
+                "name": "Total Amount", "type_handler": "monetary",
+                "config": {"currency": "EUR"}
+            },
+        ]
+    )
+    await doc_dbapi.update_doc_type(
+        db_session,
+        document_id=doc.id,
+        document_type_id=invoice_type.id
+    )
+    await cf_dbapi.update_document_custom_field_values(
+        db_session,
+        document_id=doc.id,
+        custom_fields={
+            "Total Amount": "59.05",
+            "Vendor": "lidl",
+            "Invoice Date": "2024-12-16"
+        }
+    )
+
+    params = search_schema.SearchQueryParams(
+        filters=search_schema.SearchFilters(
+            categories=[
+                search_schema.CategoryFilter(
+                    values=["Invoice"]
+                )
+            ],
+            custom_fields=[
+                search_schema.CustomFieldFilter(
+                    field_name="Total Amount",
+                    operator=search_schema.CustomFieldOperator.GT,
+                    value=valid_search_cf_value
+                )
+            ]
+        ),
+        lang=search_schema.SearchLanguage.ENG,
+    )
+
+    results = await search_dbapi.search_documents_by_type(
+        db_session=db_session,
+        user_id=user.id,
+        params=params,
+        document_type_id=invoice_type.id
+    )
+
+    assert len(results.items) == 1
+    assert results.items[0].id == doc.id
+    assert results.items[0].title == "Doc Title"
+
+
+@pytest.mark.parametrize(
+    "invalid_search_cf_value",
+    ["-","coco", "this is not a monetary value", ""],
+)
+async def test_filter_by_monetary_custom_field_invalid_values(
+    invalid_search_cf_value,
+    db_session: AsyncSession,
+    user,
+    make_document_type_with_custom_fields,
+    make_document
+):
+    """
+    In this scenario filter gets invalid values as different data types
+    str, int etc
+    """
+    invoice_type = await make_document_type_with_custom_fields(
+        name="Invoice",
+        custom_fields=[
+            {"name": "Invoice Date", "type_handler": "date"},
+            {"name": "Vendor", "type_handler": "text"},
+            {
+                "name": "Total Amount", "type_handler": "monetary",
+                "config": {"currency": "EUR"}
+            },
+        ]
+    )
+
+    params = search_schema.SearchQueryParams(
+        filters=search_schema.SearchFilters(
+            categories=[
+                search_schema.CategoryFilter(
+                    values=["Invoice"]
+                )
+            ],
+            custom_fields=[
+                search_schema.CustomFieldFilter(
+                    field_name="Total Amount",
+                    operator=search_schema.CustomFieldOperator.GT,
+                    value=invalid_search_cf_value
+                )
+            ]
+        ),
+        lang=search_schema.SearchLanguage.ENG,
+    )
+
+    with pytest.raises(ValueError):
+        await search_dbapi.search_documents_by_type(
+            db_session=db_session,
+            user_id=user.id,
+            params=params,
+            document_type_id=invoice_type.id
+        )

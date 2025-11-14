@@ -9,7 +9,10 @@ import {
   selectPanelPageSize,
   selectPanelSorting
 } from "@/features/ui/panelRegistry"
+import {useDebouncedValue} from "@mantine/hooks"
 import {useEffect} from "react"
+
+const DEBOUNCE_WAIT_TIME_MS = 600 // miliseconds
 
 export default function useDocumentsListTable() {
   const {panelId} = usePanel()
@@ -27,11 +30,17 @@ export default function useDocumentsListTable() {
   const [searchDocuments, {data, isLoading, isError, error}] =
     useSearchDocumentsMutation()
 
+  const [debouncedSearchTokens] = useDebouncedValue(
+    searchTokens,
+    DEBOUNCE_WAIT_TIME_MS,
+    {leading: true}
+  )
+
   // Trigger search when tokens change or pagination changes
   useEffect(() => {
     // Build search params from tokens
     const searchParams: SearchQueryParams = buildSearchQueryParams({
-      tokens: searchTokens,
+      tokens: debouncedSearchTokens,
       pageNumber,
       pageSize,
       sorting
@@ -39,7 +48,7 @@ export default function useDocumentsListTable() {
 
     // Execute search
     searchDocuments(searchParams)
-  }, [searchTokens, pageNumber, pageSize, sorting])
+  }, [debouncedSearchTokens, pageNumber, pageSize, sorting])
 
   // Update document_type_id when data changes
   useEffect(() => {

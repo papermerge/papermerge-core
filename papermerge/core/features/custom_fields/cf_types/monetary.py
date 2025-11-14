@@ -1,6 +1,9 @@
 from decimal import Decimal, InvalidOperation
 from typing import Any, Type
 
+from sqlalchemy.sql import ColumnElement
+from sqlalchemy import cast, Numeric
+
 from .base import CustomFieldTypeHandler, ValidationResult
 from .config import MonetaryConfig
 from .registry import TypeRegistry
@@ -79,6 +82,42 @@ class MonetaryTypeHandler(CustomFieldTypeHandler[MonetaryConfig]):
             )
 
         return ValidationResult(is_valid=True)
+
+    def get_filter_expression(
+        self,
+        column: ColumnElement,
+        operator: str,
+        value: Any,
+        config: MonetaryConfig
+    ) -> ColumnElement:
+        # Handle null checks without converting value
+        if operator == "is_null":
+            return column.is_(None)
+        elif operator == "is_not_null":
+            return column.isnot(None)
+
+        try:
+            value = Decimal(value)
+        except (ValueError, TypeError, InvalidOperation) as ex:
+            raise ValueError(f"Invalid monetary value '{value}': {ex}")
+
+        column = cast(column, Numeric)
+
+        if operator == "eq":
+            return column == value
+        elif operator == "ne":
+            return column != value
+        elif operator == "gt":
+            return column > value
+        elif operator == "gte":
+            return column >= value
+        elif operator == "lt":
+            return column < value
+        elif operator == "lte":
+            return column <= value
+        else:
+            raise ValueError(f"Unsupported operator: {operator}")
+
 
     def get_sort_column(self) -> str:
         return "value_numeric"

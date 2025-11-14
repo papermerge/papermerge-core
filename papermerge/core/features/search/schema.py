@@ -246,17 +246,6 @@ class CustomFieldFilter(BaseModel):
             raise ValueError('value cannot be None')
         return v
 
-    model_config = ConfigDict(
-        json_schema_extra={
-            "examples": [
-                {"field_name": "total", "operator": "gt", "value": 100},
-                {"field_name": "status", "operator": "contains", "value": "comp"},
-                {"field_name": "status", "operator": "eq", "value": "completed"},
-                {"field_name": "invoice date", "operator": "gte", "value": "2024-01-01"},
-                {"field_name": "active", "operator": "eq", "value": True}
-            ]
-        }
-    )
 
 
 class OwnerFilter(BaseModel):

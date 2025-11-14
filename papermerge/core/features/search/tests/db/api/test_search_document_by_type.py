@@ -312,11 +312,21 @@ async def test_filter_and_sort_documents_by_multiple_cf(
 
 
 @pytest.mark.parametrize(
-    "valid_search_cf_value",
-    ["30", 30, 0, "0", "49.95", 49.95],
+    "valid_lower_value, valid_upper_value",
+    [
+        ("30", 60),
+        (30, 60),
+        (0, 60),
+        ("0", 60),
+        ("49.95", 60),
+        (49.95, 60),
+        ("59.04", "59.06"),
+        (59.04, 59.06)
+    ],
 )
 async def test_filter_by_monetary_custom_field_valid_values(
-    valid_search_cf_value,
+    valid_lower_value,
+    valid_upper_value,
     db_session: AsyncSession,
     user,
     make_document_type_with_custom_fields,
@@ -369,9 +379,14 @@ async def test_filter_by_monetary_custom_field_valid_values(
                 search_schema.CustomFieldFilter(
                     field_name="Total Amount",
                     operator=search_schema.CustomFieldOperator.GT,
-                    value=valid_search_cf_value
+                    value=valid_lower_value
+                ),
+                search_schema.CustomFieldFilter(
+                    field_name="Total Amount",
+                    operator=search_schema.CustomFieldOperator.LT,
+                    value=valid_upper_value
                 )
-            ]
+            ],
         ),
         lang=search_schema.SearchLanguage.ENG,
     )

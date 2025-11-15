@@ -24,6 +24,8 @@ export const useTokenSearch = ({
   const [inputValue, setInputValue] = useState("")
   /** Custom field type currently being typed */
   const [currentCFType, setCurrentCFType] = useState<CustomFieldType>()
+  const [currentSuggestionType, setCurrentSuggestionType] =
+    useState<SuggestionType>()
   const {tokens, addToken, updateToken, removeToken, clearTokens} = useTokens()
   const [autocomplete, setAutocomplete] = useState<SearchSuggestion[]>()
   const combobox = useCombobox({
@@ -47,15 +49,22 @@ export const useTokenSearch = ({
 
     let newInputValue = autocompleteText(inputValue, val)
     const extraData = {
-      typeHandler: customFieldTypeHandler as CustomFieldDataType,
-      suggestionType: suggestionType as SuggestionType
+      typeHandler:
+        (customFieldTypeHandler as CustomFieldDataType) || currentCFType,
+      suggestionType:
+        (suggestionType as SuggestionType) || currentSuggestionType
     }
+
     if (suggestionType == "customField") {
       newInputValue = newInputValue + ":"
     }
     if (customFieldTypeHandler) {
       // remember cf type
       setCurrentCFType(customFieldTypeHandler)
+    }
+
+    if (suggestionType) {
+      setCurrentSuggestionType(suggestionType)
     }
 
     const {

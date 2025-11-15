@@ -7,6 +7,7 @@ import type {
   Token
 } from "@/features/search/microcomp/types"
 import {autocompleteText} from "@/features/search/microcomp/utils"
+import {CustomFieldDataType} from "@/types"
 import {ComboboxOptionProps, useCombobox} from "@mantine/core"
 import {useCallback, useRef, useState} from "react"
 import {useTokens} from "./useTokens"
@@ -23,8 +24,6 @@ export const useTokenSearch = ({
   const [inputValue, setInputValue] = useState("")
   /** Custom field type currently being typed */
   const [currentCFType, setCurrentCFType] = useState<CustomFieldType>()
-  const [currentSuggestionType, setCurrentSuggestionType] =
-    useState<SuggestionType>()
   const {tokens, addToken, updateToken, removeToken, clearTokens} = useTokens()
   const [hasAutocomplete, setHasAutocomplete] = useState(false)
   const [autocomplete, setAutocomplete] = useState<SearchSuggestion[]>()
@@ -33,6 +32,7 @@ export const useTokenSearch = ({
   })
   const [isInputFocused, setIsInputFocused] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
+  const [isCompactMode, setIsCompactMode] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const [validationError, setValidationError] = useState<string>("")
@@ -45,24 +45,18 @@ export const useTokenSearch = ({
   ) => {
     const customFieldTypeHandler = (optionProps as any)["data-type-handler"]
     const suggestionType = (optionProps as any)["data-suggestion-type"]
+
+    let newInputValue = autocompleteText(inputValue, val)
+    const extraData = {
+      typeHandler: customFieldTypeHandler as CustomFieldDataType,
+      suggestionType: suggestionType as SuggestionType
+    }
+    if (suggestionType == "customField") {
+      newInputValue = newInputValue + ":"
+    }
     if (customFieldTypeHandler) {
       // remember cf type
       setCurrentCFType(customFieldTypeHandler)
-    }
-
-    if (suggestionType) {
-      // remember suggestion type
-      setCurrentSuggestionType(suggestionType)
-    }
-
-    let extraData = {
-      typeHandler: currentCFType || customFieldTypeHandler,
-      suggestionType: currentSuggestionType || suggestionType
-    }
-
-    let newInputValue = autocompleteText(inputValue, val)
-    if (suggestionType == "customField") {
-      newInputValue = newInputValue + ":"
     }
 
     const {
@@ -132,6 +126,10 @@ export const useTokenSearch = ({
       combobox.openDropdown()
     }
   }
+
+  const toggleCompactModeHandler = useCallback(() => {
+    setIsCompactMode(!isCompactMode)
+  }, [combobox])
 
   const handleBoxFocus = useCallback(() => {
     setIsFocused(true)
@@ -278,6 +276,7 @@ export const useTokenSearch = ({
     combobox,
     autocomplete,
     hasAutocomplete,
+    isCompactMode,
     isFocused,
     isInputFocused,
     inputRef,
@@ -290,6 +289,7 @@ export const useTokenSearch = ({
     handleInputFocus,
     handleInputBlur,
     handleKeyDown,
+    toggleCompactModeHandler,
     validationError,
     isInputValid,
     lastAddedTokenIndex

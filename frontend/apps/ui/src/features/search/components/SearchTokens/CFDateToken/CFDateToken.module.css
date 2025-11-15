@@ -10,22 +10,14 @@
   position: relative;
 }
 
-.operatorSelect input {
-  min-height: auto;
-  padding-right: 4px;
-  padding-left: 4px;
-  border: none;
-  background-color: transparent;
-  font-size: 14px;
-  cursor: pointer;
+.datePickerWrapper {
+  position: relative;
+  z-index: 500; /* Higher than search wrapper (z-index: 100) */
 }
 
-.operatorSelect input:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.operatorSelect .mantine-Select-wrapper {
-  margin-bottom: 0;
+/* Ensure the popover appears above everything */
+.datePickerWrapper :global(.mantine-Popover-dropdown) {
+  z-index: 201 !important;
 }
 
 .removeButton {

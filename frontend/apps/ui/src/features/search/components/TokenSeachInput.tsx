@@ -11,7 +11,12 @@ import {
   TextInput,
   Tooltip
 } from "@mantine/core"
-import {IconCornerDownLeft, IconFilter, IconX} from "@tabler/icons-react"
+import {
+  IconArrowsMinimize,
+  IconCornerDownLeft,
+  IconFilter,
+  IconX
+} from "@tabler/icons-react"
 import {useState} from "react"
 import AutocompleteOptions from "./AutocompleteOptions"
 import SearchTokens from "./SearchTokens/SearchTokens"
@@ -35,6 +40,7 @@ export default function Search({
     inputValue,
     autocomplete,
     isFocused,
+    isCompactMode,
     isInputFocused,
     inputRef,
     handleInputChange,
@@ -45,6 +51,7 @@ export default function Search({
     handleClearAll,
     handleInputFocus,
     handleInputBlur,
+    toggleCompactModeHandler,
     handleKeyDown,
     validationError,
     isInputValid,
@@ -54,17 +61,9 @@ export default function Search({
   const suggestions = <AutocompleteOptions suggestions={autocomplete} />
   const hasTokens = tokens.length > 0
 
-  const shouldShowCompactSummary = () => {
-    return !isFocused && tokens.length > 0
-  }
-
   const shouldShowClearButton = () => {
     return tokens.length > 0 || inputValue.length > 0
   }
-
-  const showCompactSummary = shouldShowCompactSummary()
-  const dontShowCompactSummary = !showCompactSummary
-
   const showClearButton = shouldShowClearButton()
 
   const showSuggestions =
@@ -100,7 +99,7 @@ export default function Search({
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
-          {showCompactSummary && (
+          {isCompactMode && (
             <SearchFiltersCompactSummary
               tokensCount={tokens.length}
               isHovering={isHovering}
@@ -108,7 +107,7 @@ export default function Search({
               handleClearAll={handleClearAll}
             />
           )}
-          {dontShowCompactSummary && (
+          {!isCompactMode && (
             <>
               <SearchTokens />
               <Group className={styles.inputWrapper}>
@@ -142,6 +141,7 @@ export default function Search({
                 </ConditionalTooltip>
                 {isInputValid && <EnterKeyButton onClick={handleSubmitClick} />}
               </Group>
+              <ToggleCompactModeButton onClick={toggleCompactModeHandler} />
               {showClearButton && (
                 <ClearButton onClick={handleClearAll} tooltip="Clear all" />
               )}
@@ -300,6 +300,49 @@ function ClearButton({onClick, tooltip = "Clear all"}: ClearButtonArgs) {
           size={16}
           style={{
             color: isHovering ? "#fa5252" : "#868e96", // Red on hover, gray default
+            transition: "color 0.2s ease"
+          }}
+        />
+      </ActionIcon>
+    </Tooltip>
+  )
+}
+
+interface ToggleCompactModeButtonArgs {
+  onClick: () => void
+  tooltip?: string
+}
+
+function ToggleCompactModeButton({
+  onClick,
+  tooltip = "Show only summary"
+}: ToggleCompactModeButtonArgs) {
+  const [isHovering, setIsHovering] = useState(false)
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent triggering box focus
+    onClick()
+  }
+
+  return (
+    <Tooltip label={tooltip} position="bottom" withArrow>
+      <ActionIcon
+        variant="subtle"
+        color="gray"
+        size="sm"
+        onClick={handleClick}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+        style={{
+          flexShrink: 0, // Don't let button shrink
+          transition: "color 0.2s ease",
+          marginLeft: "auto"
+        }}
+      >
+        <IconArrowsMinimize
+          size={16}
+          style={{
+            color: isHovering ? "#00aeffff" : "#7ab6f2ff", // Red on hover, gray default
             transition: "color 0.2s ease"
           }}
         />

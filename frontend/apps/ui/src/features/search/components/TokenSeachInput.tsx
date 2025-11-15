@@ -23,6 +23,30 @@ import AutocompleteOptions from "./AutocompleteOptions"
 import SearchTokens from "./SearchTokens/SearchTokens"
 import styles from "./TokenSearchInput.module.css"
 
+const SearchBoxStyle = {
+  position: "absolute" as const,
+  top: 0,
+  left: 0,
+  right: 0,
+  border: "1px solid #ccc",
+  borderRadius: 8,
+  padding: "4px 8px",
+  display: "flex",
+  alignItems: "center",
+  gap: 4,
+  backgroundColor: "white",
+  color: "black",
+  zIndex: 100,
+  transition: "all 0.2s ease",
+  flexWrap: "wrap" as const,
+  minHeight: "42px",
+  maxHeight: "300px",
+  overflowY: "auto" as const,
+  overflowX: "hidden" as const,
+  width: "600px",
+  boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)"
+}
+
 interface Args {
   onSearch?: (tokens: Token[]) => void
   onFocusChange?: (isFocused: boolean) => void
@@ -40,16 +64,14 @@ export default function Search({
     combobox,
     inputValue,
     autocomplete,
-    isFocused,
     isCompactMode,
     isInputFocused,
     inputRef,
     handleInputChange,
     handleOptionSubmit,
-    handleBoxFocus,
-    handleBoxClick,
     handleClearAll,
     handleInputFocus,
+    handleInputBlur,
     toggleCompactModeHandler,
     handleKeyDown,
     validationError,
@@ -57,7 +79,6 @@ export default function Search({
   } = useTokenSearch({onSearch, onFocusChange})
 
   const suggestions = <AutocompleteOptions suggestions={autocomplete} />
-  const hasTokens = tokens.length > 0
 
   const shouldShowClearButton = () => {
     return tokens.length > 0 || inputValue.length > 0
@@ -88,14 +109,7 @@ export default function Search({
   return (
     <Combobox store={combobox} onOptionSubmit={handleOptionSubmit}>
       <Combobox.Target>
-        <Box
-          style={getContainerStyles({hasTokens, isFocused})}
-          tabIndex={0}
-          onFocus={handleBoxFocus}
-          onClick={handleBoxClick}
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
-        >
+        <Box style={SearchBoxStyle}>
           {isCompactMode && (
             <SearchFiltersCompactSummary
               toggleCompactModeHandler={toggleCompactModeHandler}
@@ -126,6 +140,7 @@ export default function Search({
                     placeholder="Search..."
                     value={inputValue}
                     onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
                     onChange={event => {
                       handleInputChange(event)
                     }}
@@ -138,7 +153,9 @@ export default function Search({
                 </ConditionalTooltip>
                 {isInputValid && <EnterKeyButton onClick={handleSubmitClick} />}
               </Group>
-              <ToggleCompactModeButton onClick={toggleCompactModeHandler} />
+              {tokens.length > 0 && (
+                <ToggleCompactModeButton onClick={toggleCompactModeHandler} />
+              )}
               {showClearButton && (
                 <ClearButton onClick={handleClearAll} tooltip="Clear all" />
               )}
@@ -181,55 +198,6 @@ function SearchFiltersCompactSummary({
       </Group>
     </Group>
   )
-}
-
-interface GetContainerStylesArgs {
-  isFocused: boolean
-  hasTokens: boolean
-}
-
-function getContainerStyles({hasTokens, isFocused}: GetContainerStylesArgs) {
-  const baseStyles = {
-    position: "absolute" as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    border: "1px solid #ccc",
-    borderRadius: 8,
-    padding: "4px 8px",
-    display: "flex",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: "white",
-    color: "black",
-    zIndex: 100,
-    transition: "all 0.2s ease"
-  }
-
-  if (isFocused) {
-    // EXPANDED STATE - When user is actively searching
-    return {
-      ...baseStyles,
-      flexWrap: "wrap" as const,
-      minHeight: "42px",
-      maxHeight: "300px",
-      overflowY: "auto" as const,
-      overflowX: "hidden" as const,
-      boxShadow: hasTokens
-        ? "0 4px 12px rgba(0, 0, 0, 0.15)"
-        : "0 2px 6px rgba(0, 0, 0, 0.1)"
-    }
-  } else {
-    // COLLAPSED STATE - Compact view when not focused
-    return {
-      ...baseStyles,
-      flexWrap: "nowrap" as const,
-      height: "42px", // Fixed single line
-      maxHeight: "42px",
-      overflow: "hidden" as const, // Hide all overflow
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.08)"
-    }
-  }
 }
 
 interface SearchCompactSummaryArgs {

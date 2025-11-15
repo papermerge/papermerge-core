@@ -134,22 +134,6 @@ export const useTokenSearch = ({
     }
   }, [combobox])
 
-  const handleBoxFocus = useCallback(() => {
-    setIsFocused(true)
-    onFocusChange?.(true)
-    setAutocomplete([
-      {
-        type: "filter",
-        items: FILTERS.sort()
-      }
-    ])
-    combobox.openDropdown()
-  }, [combobox, onFocusChange])
-
-  const handleBoxClick = useCallback(() => {
-    inputRef.current?.focus()
-  }, [])
-
   const handleInputFocus = useCallback(() => {
     setIsInputFocused(true)
     setAutocomplete([
@@ -271,8 +255,6 @@ export const useTokenSearch = ({
     inputRef,
     handleInputChange,
     handleOptionSubmit,
-    handleBoxFocus,
-    handleBoxClick,
     handleClearAll,
     handleInputFocus,
     handleInputBlur,

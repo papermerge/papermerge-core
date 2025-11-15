@@ -126,6 +126,7 @@ export type SuggestionType =
   | "operator"
   | "category"
   | "customField"
+  | "calendarDate"
 
 export interface BasicSuggestion {
   type: SuggestionType
@@ -158,12 +159,17 @@ export interface SearchCustomFieldSuggestion extends BasicSuggestion {
   exclude?: string[] // already used in current token
 }
 
+export interface SearchCalendarDateSuggestion extends BasicSuggestion {
+  type: "calendarDate"
+}
+
 export type SearchSuggestion =
   | SearchOperatorSuggestion
   | SearchTagSuggestion
   | SearchFilterSuggestion
   | SearchCategorySuggestion
   | SearchCustomFieldSuggestion
+  | SearchCalendarDateSuggestion
 
 export interface ScanResult {
   token?: Token

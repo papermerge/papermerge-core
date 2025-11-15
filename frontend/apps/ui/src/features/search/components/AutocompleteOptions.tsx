@@ -5,6 +5,7 @@ import {useGetDocumentTypesQuery} from "@/features/document-types/storage/api"
 import {selectDocumentCategoryID} from "@/features/documentsList/storage/documentsByCategory"
 import {Category} from "@/features/documentsList/types"
 import {
+  SearchCalendarDateSuggestion,
   SearchCategorySuggestion,
   SearchCustomFieldSuggestion,
   SearchFilterSuggestion,
@@ -16,9 +17,10 @@ import {hasThisTypeSuggestion} from "@/features/search/microcomp/utils"
 import {useGetTagsQuery} from "@/features/tags/storage/api"
 import {ColoredTag, CustomField} from "@/types"
 import {Combobox, Loader} from "@mantine/core"
+import {DatePicker} from "@mantine/dates"
 import {skipToken} from "@reduxjs/toolkit/query"
 import {TFunction} from "i18next"
-import {ReactNode} from "react"
+import {ReactNode, useState} from "react"
 
 interface Args {
   suggestions?: SearchSuggestion[]
@@ -100,6 +102,12 @@ export default function AutocompleteOptions({suggestions}: Args) {
           key={suggestion.type}
           suggestion={suggestion}
         />
+      )
+    }
+
+    if (suggestion.type == "calendarDate") {
+      components.push(
+        <CalendarDate key={suggestion.type} suggestion={suggestion} />
       )
     }
   }
@@ -231,5 +239,29 @@ function AutocompleCustomFieldOptions({
     <Combobox.Group label={t?.("customFields") || "Custom Fields"}>
       {ret}
     </Combobox.Group>
+  )
+}
+
+interface CalendarDateArgs {
+  suggestion: SearchCalendarDateSuggestion
+}
+
+function CalendarDate({suggestion}: CalendarDateArgs) {
+  const [value, setValue] = useState<string>()
+
+  const handleChange = (val: string | null) => {
+    const newValue = val || ""
+    setValue(newValue)
+  }
+
+  return (
+    <Combobox.Option
+      key={value}
+      value={value || ""}
+      data-type-handler={"date"}
+      data-suggestion-type="calendarDate"
+    >
+      <DatePicker value={value} onChange={handleChange} />
+    </Combobox.Option>
   )
 }

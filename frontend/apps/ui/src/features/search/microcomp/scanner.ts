@@ -409,6 +409,27 @@ function getCustomFieldSuggestions(
       return [{type: "operator", items: OPERATOR_TEXT}]
     }
   } // END of parts.lenth == 3
+  ////////////////////////////////////
+  if (parts.length == 4) {
+    // i.e. cf:Datum:>:
+    //                  ^ user is typing here
+    if (!extra) {
+      return []
+    }
+
+    if (extra.suggestionType != "customField") {
+      return []
+    }
+
+    if (extra.typeHandler == "date") {
+      return [
+        {
+          type: "calendarDate"
+        }
+      ]
+    }
+  }
+  ///////////////////////////////////
 
   return []
 }

@@ -1,5 +1,6 @@
 import {useAppSelector} from "@/app/hooks"
 import {CustomFieldToken} from "@/features/search/microcomp/types"
+import CFDateToken from "./CFDateToken"
 import CFNumericToken from "./CFNumericToken"
 
 interface Args {
@@ -15,5 +16,9 @@ export default function CustomFieldTokenComponent({index}: Args) {
     return <CFNumericToken index={index} />
   }
 
-  return <>Unknown Custom Field Token</>
+  if (token.typeHandler == "date") {
+    return <CFDateToken index={index} />
+  }
+
+  return <>Unknown Custom Field Token: {token.typeHandler}</>
 }

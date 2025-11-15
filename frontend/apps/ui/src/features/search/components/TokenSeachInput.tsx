@@ -12,6 +12,7 @@ import {
   Tooltip
 } from "@mantine/core"
 import {
+  IconArrowsMaximize,
   IconArrowsMinimize,
   IconCornerDownLeft,
   IconFilter,
@@ -46,16 +47,13 @@ export default function Search({
     handleInputChange,
     handleOptionSubmit,
     handleBoxFocus,
-    handleBoxBlur,
     handleBoxClick,
     handleClearAll,
     handleInputFocus,
-    handleInputBlur,
     toggleCompactModeHandler,
     handleKeyDown,
     validationError,
-    isInputValid,
-    lastAddedTokenIndex
+    isInputValid
   } = useTokenSearch({onSearch, onFocusChange})
 
   const suggestions = <AutocompleteOptions suggestions={autocomplete} />
@@ -94,13 +92,13 @@ export default function Search({
           style={getContainerStyles({hasTokens, isFocused})}
           tabIndex={0}
           onFocus={handleBoxFocus}
-          onBlur={handleBoxBlur}
           onClick={handleBoxClick}
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
           {isCompactMode && (
             <SearchFiltersCompactSummary
+              toggleCompactModeHandler={toggleCompactModeHandler}
               tokensCount={tokens.length}
               isHovering={isHovering}
               showClearButton={showClearButton}
@@ -128,7 +126,6 @@ export default function Search({
                     placeholder="Search..."
                     value={inputValue}
                     onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
                     onChange={event => {
                       handleInputChange(event)
                     }}
@@ -160,21 +157,29 @@ interface SearchFiltersCompactSummaryArgs {
   showClearButton: boolean
   handleClearAll: () => void
   isHovering: boolean
+  toggleCompactModeHandler: () => void
 }
 
 function SearchFiltersCompactSummary({
   isHovering,
   showClearButton,
   handleClearAll,
+  toggleCompactModeHandler,
   tokensCount
 }: SearchFiltersCompactSummaryArgs) {
   return (
-    <>
+    <Group justify="space-between" w="100%">
       <SearchCompactSummary tokensCount={tokensCount} isHovering={isHovering} />
-      {showClearButton && (
-        <ClearButton onClick={handleClearAll} tooltip="Clear all filters" />
-      )}
-    </>
+      <Group>
+        <ToggleCompactModeButton
+          isCompactMode={true}
+          onClick={toggleCompactModeHandler}
+        />
+        {showClearButton && (
+          <ClearButton onClick={handleClearAll} tooltip="Clear all filters" />
+        )}
+      </Group>
+    </Group>
   )
 }
 
@@ -260,10 +265,6 @@ function SearchCompactSummary({
       >
         {tokensCount} active {tokensCount === 1 ? "filter" : "filters"}
       </span>
-      <span>·</span>
-      <span style={{fontSize: "0.85rem"}}>
-        {isHovering ? "Click here" : "Click to expand"}
-      </span>
     </Text>
   )
 }
@@ -311,17 +312,24 @@ function ClearButton({onClick, tooltip = "Clear all"}: ClearButtonArgs) {
 interface ToggleCompactModeButtonArgs {
   onClick: () => void
   tooltip?: string
+  isCompactMode?: boolean
 }
 
 function ToggleCompactModeButton({
   onClick,
-  tooltip = "Show only summary"
+  tooltip = "Show only summary",
+  isCompactMode = false
 }: ToggleCompactModeButtonArgs) {
   const [isHovering, setIsHovering] = useState(false)
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation() // Prevent triggering box focus
     onClick()
+  }
+
+  const iconStyles = {
+    color: isHovering ? "#00aeffff" : "#7ab6f2ff", // Red on hover, gray default
+    transition: "color 0.2s ease"
   }
 
   return (
@@ -339,13 +347,8 @@ function ToggleCompactModeButton({
           marginLeft: "auto"
         }}
       >
-        <IconArrowsMinimize
-          size={16}
-          style={{
-            color: isHovering ? "#00aeffff" : "#7ab6f2ff", // Red on hover, gray default
-            transition: "color 0.2s ease"
-          }}
-        />
+        {isCompactMode && <IconArrowsMaximize size={16} style={iconStyles} />}
+        {!isCompactMode && <IconArrowsMinimize size={16} style={iconStyles} />}
       </ActionIcon>
     </Tooltip>
   )

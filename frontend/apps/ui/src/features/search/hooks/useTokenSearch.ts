@@ -211,7 +211,6 @@ export const useTokenSearch = ({
           setInputValue("")
           setValidationError("")
           setIsInputValid(false)
-          setHasAutocomplete(true)
           setAutocomplete([
             {
               type: "filter",

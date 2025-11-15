@@ -4,6 +4,7 @@ import {CustomFieldToken} from "@/features/search/microcomp/types"
 import {ActionIcon, Box, Group, Select, Text} from "@mantine/core"
 import {DatePickerInput} from "@mantine/dates"
 import {IconX} from "@tabler/icons-react"
+import {useState} from "react"
 import styles from "./CFDateToken.module.css"
 
 interface Args {
@@ -19,6 +20,7 @@ export function CFDateTokenPresentation({
   onValueChange,
   onRemove
 }: Args) {
+  const [isOpen, setIsOpen] = useState(false)
   const handleRemoveClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     onRemove?.()
@@ -30,9 +32,16 @@ export function CFDateTokenPresentation({
         <Text c={"blue"}>cf:</Text>
         <Text c={"blue"}>{item.fieldName}:</Text>
         <CFNumericOperator item={item} onOperatorChange={onOperatorChange} />
+
         <DatePickerInput
           value={new Date(item.value)}
           onClick={e => e.stopPropagation()}
+          size="sm"
+          w="15ch"
+          popoverProps={{
+            withinPortal: true,
+            zIndex: 1000
+          }}
         />
       </Group>
       <ActionIcon
@@ -68,8 +77,6 @@ function CFNumericOperator({item, onOperatorChange}: TokenTagOperatorArgs) {
       data={OPERATOR_NUMERIC}
       size="sm"
       onChange={handleChange}
-      onClick={e => e.stopPropagation()}
-      className={styles.operatorSelect}
     />
   )
 }

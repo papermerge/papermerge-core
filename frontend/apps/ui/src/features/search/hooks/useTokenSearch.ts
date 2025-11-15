@@ -7,6 +7,7 @@ import type {
   Token
 } from "@/features/search/microcomp/types"
 import {autocompleteText} from "@/features/search/microcomp/utils"
+import {CustomFieldDataType} from "@/types"
 import {ComboboxOptionProps, useCombobox} from "@mantine/core"
 import {useCallback, useRef, useState} from "react"
 import {useTokens} from "./useTokens"
@@ -26,13 +27,13 @@ export const useTokenSearch = ({
   const [currentSuggestionType, setCurrentSuggestionType] =
     useState<SuggestionType>()
   const {tokens, addToken, updateToken, removeToken, clearTokens} = useTokens()
-  const [hasAutocomplete, setHasAutocomplete] = useState(false)
   const [autocomplete, setAutocomplete] = useState<SearchSuggestion[]>()
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption()
   })
   const [isInputFocused, setIsInputFocused] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
+  const [isCompactMode, setIsCompactMode] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const [validationError, setValidationError] = useState<string>("")
@@ -45,34 +46,33 @@ export const useTokenSearch = ({
   ) => {
     const customFieldTypeHandler = (optionProps as any)["data-type-handler"]
     const suggestionType = (optionProps as any)["data-suggestion-type"]
+
+    let newInputValue = autocompleteText(inputValue, val)
+    const extraData = {
+      typeHandler:
+        (customFieldTypeHandler as CustomFieldDataType) || currentCFType,
+      suggestionType:
+        (suggestionType as SuggestionType) || currentSuggestionType
+    }
+
+    if (suggestionType == "customField") {
+      newInputValue = newInputValue + ":"
+    }
     if (customFieldTypeHandler) {
       // remember cf type
       setCurrentCFType(customFieldTypeHandler)
     }
 
     if (suggestionType) {
-      // remember suggestion type
       setCurrentSuggestionType(suggestionType)
     }
 
-    let extraData = {
-      typeHandler: currentCFType || customFieldTypeHandler,
-      suggestionType: currentSuggestionType || suggestionType
-    }
-
-    let newInputValue = autocompleteText(inputValue, val)
-    if (suggestionType == "customField") {
-      newInputValue = newInputValue + ":"
-    }
-
     const {
-      hasSuggestions,
       suggestions,
       tokens: parsedTokens,
       isComplete,
       errors
     } = parse(newInputValue, extraData)
-    setHasAutocomplete(hasSuggestions)
     setAutocomplete(suggestions)
 
     if (errors.length === 0) {
@@ -109,7 +109,6 @@ export const useTokenSearch = ({
       errors
     } = parse(input)
 
-    setHasAutocomplete(hasSuggestions)
     setAutocomplete(suggestions)
 
     // Real-time validation: check if current input would be valid
@@ -133,48 +132,19 @@ export const useTokenSearch = ({
     }
   }
 
-  const handleBoxFocus = useCallback(() => {
-    setIsFocused(true)
-    onFocusChange?.(true)
-    setHasAutocomplete(true)
-    setAutocomplete([
-      {
-        type: "filter",
-        items: FILTERS.sort()
-      }
-    ])
-    combobox.openDropdown()
-  }, [combobox, onFocusChange])
+  const toggleCompactModeHandler = useCallback(() => {
+    const newValue = !isCompactMode
+    setIsCompactMode(newValue)
 
-  const handleBoxBlur = useCallback(
-    (e: React.FocusEvent) => {
-      // Check if the new focus target is still within the search component
-      const currentTarget = e.currentTarget
-      const relatedTarget = e.relatedTarget as Node
-
-      // If focus is moving to a child element or staying within, don't blur
-      if (currentTarget.contains(relatedTarget)) {
-        return
-      }
-
-      // Focus is leaving the component entirely - collapse it
-      setTimeout(() => {
-        setIsFocused(false)
-        onFocusChange?.(false)
-        combobox.closeDropdown()
-      }, 150)
-    },
-    [combobox, onFocusChange]
-  )
-
-  const handleBoxClick = useCallback(() => {
-    inputRef.current?.focus()
-  }, [])
+    if (newValue) {
+      // if newValue is true == it is now in compact mode
+      combobox.closeDropdown()
+      setAutocomplete([])
+    }
+  }, [combobox])
 
   const handleInputFocus = useCallback(() => {
     setIsInputFocused(true)
-    setHasAutocomplete(true)
-    console.log("handleInputFocus")
     setAutocomplete([
       {
         type: "filter",
@@ -241,7 +211,6 @@ export const useTokenSearch = ({
           setInputValue("")
           setValidationError("")
           setIsInputValid(false)
-          setHasAutocomplete(true)
           setAutocomplete([
             {
               type: "filter",
@@ -262,8 +231,6 @@ export const useTokenSearch = ({
     setValidationError("")
     setIsInputValid(false)
 
-    // Clear autocomplete
-    setHasAutocomplete(false)
     setAutocomplete(undefined)
 
     // Keep focus on the search (don't collapse)
@@ -273,23 +240,34 @@ export const useTokenSearch = ({
     onSearch?.([])
   }, [onSearch])
 
+  const hasAutocomplete = () => {
+    if (!autocomplete) {
+      return false
+    }
+
+    if (autocomplete.length > 0) {
+      return true
+    }
+
+    return false
+  }
+
   return {
     inputValue,
     combobox,
     autocomplete,
-    hasAutocomplete,
+    hasAutocomplete: hasAutocomplete(),
+    isCompactMode,
     isFocused,
     isInputFocused,
     inputRef,
     handleInputChange,
     handleOptionSubmit,
-    handleBoxFocus,
-    handleBoxBlur,
-    handleBoxClick,
     handleClearAll,
     handleInputFocus,
     handleInputBlur,
     handleKeyDown,
+    toggleCompactModeHandler,
     validationError,
     isInputValid,
     lastAddedTokenIndex

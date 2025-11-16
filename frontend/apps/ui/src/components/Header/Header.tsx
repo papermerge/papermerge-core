@@ -27,11 +27,11 @@ function Header() {
           <img src={logoURL} width={"30px"} />
           <ClearNotificationsButton />
         </Group>
-        <div
+        <Group
           className={`${classes.searchWrapper} ${isSearchFocused ? classes.searchWrapperExpanded : ""}`}
         >
           <Search onFocusChange={setIsSearchFocused} />
-        </div>
+        </Group>
         <Group>
           <UserMenu />
         </Group>

@@ -8,11 +8,9 @@ export interface LexerResult {
 
 export interface ParseResult {
   tokens: Token[]
-  currentToken?: string
-  isComplete: boolean
+  errors: string[]
   hasSuggestions: boolean
   suggestions: SearchSuggestion[]
-  errors: ParseError[]
 }
 
 export type TokenType =
@@ -21,7 +19,6 @@ export type TokenType =
   | "tag" // Tag
   | "cf" // Custom Field
   | "title"
-  | "space"
   | "created_at"
   | "created_by"
   | "updated_at"
@@ -29,6 +26,8 @@ export type TokenType =
   | "owner"
 
 export type FilterType =
+  | "fts"
+  | "title"
   | "cat"
   | "tag"
   | "cf"
@@ -92,29 +91,15 @@ export interface TagToken extends BasicToken {
 
 export interface CustomFieldToken extends BasicToken {
   type: "cf"
-  fieldName: string
+  fieldName?: string
   operator?: CustomFieldOperator
-  typeHandler: CustomFieldType
-  value: string | number
-}
-
-export interface SpaceToken extends BasicToken {
-  type: "space"
-  count: number
+  typeHandler?: CustomFieldType
+  value?: string | number
 }
 
 export type FilterToken = CategoryToken | TagToken | CustomFieldToken
 
 export type Token = FreeTextToken | FilterToken
-
-export interface ParseError {
-  /** Error message */
-  message: string
-
-  /** The problematic token/text */
-  token?: string
-  position: number
-}
 
 export type CurrentText = {
   value: string

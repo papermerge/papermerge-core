@@ -9,12 +9,10 @@ interface Args {
   tokensCount: number
   showClearButton: boolean
   handleClearAll: () => void
-  isHovering: boolean
   toggleCompactModeHandler: () => void
 }
 
 export default function SearchFiltersCompactSummary({
-  isHovering,
   showClearButton,
   handleClearAll,
   toggleCompactModeHandler,
@@ -22,7 +20,7 @@ export default function SearchFiltersCompactSummary({
 }: Args) {
   return (
     <Group justify="space-between" w="100%">
-      <SearchCompactSummary tokensCount={tokensCount} isHovering={isHovering} />
+      <SearchCompactSummary tokensCount={tokensCount} />
       <Group>
         <ToggleCompactModeButton
           isCompactMode={true}

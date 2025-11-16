@@ -2,7 +2,6 @@ import {useAppSelector} from "@/app/hooks"
 import {useTokenSearch} from "@/features/search/hooks/useTokenSearch"
 import type {Token} from "@/features/search/microcomp/types"
 import {Box, Combobox} from "@mantine/core"
-import {useState} from "react"
 
 import SearchFiltersCompactSummary from "./SearchFiltersCompactSummary"
 import ClearButton from "./SearchFiltersCompactSummary/ClearButon"
@@ -20,7 +19,7 @@ interface Args {
 
 export default function Search({onSearch, onFocusChange}: Args) {
   const tokens = useAppSelector(state => state.search.tokens)
-  const [isHovering, setIsHovering] = useState(false)
+
   const {
     combobox,
     inputValue,
@@ -75,7 +74,6 @@ export default function Search({onSearch, onFocusChange}: Args) {
             <SearchFiltersCompactSummary
               toggleCompactModeHandler={toggleCompactModeHandler}
               tokensCount={tokens.length}
-              isHovering={isHovering}
               showClearButton={showClearButton}
               handleClearAll={handleClearAll}
             />

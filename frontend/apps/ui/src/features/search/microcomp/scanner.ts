@@ -9,18 +9,19 @@ import {removeQuotes, splitByColon} from "./utils"
 
 import {FILTERS} from "./const"
 
-// ===========================
-// PARSER (Syntax Analysis)
-// ===========================
+interface ParseArgs {
+  input: string
+  enterKey?: boolean
+}
 
-export function parse(input: string): ParseResult {
+export function parse({input, enterKey = false}: ParseArgs): ParseResult {
   const tokens: Token[] = []
   const errors: string[] = []
 
   const trimmedInput = input.trim()
 
   try {
-    const token = parseToken(input)
+    const token = parseToken({tokenStr: input, enterKey})
 
     if (token) {
       tokens.push(token)
@@ -29,39 +30,57 @@ export function parse(input: string): ParseResult {
     errors.push(e as string)
   }
 
-  const suggestions =
-    trimmedInput.length > 0
-      ? getSuggestions(trimmedInput)
-      : getAllFilterSuggestions()
+  const suggestions = getSuggestions(trimmedInput)
+  const hasSuggestions = suggestions.length > 0
 
   return {
     tokens,
     errors,
     suggestions,
-    hasSuggestions: suggestions.length > 0
+    hasSuggestions
   }
 }
 
-// ===========================
-// TOKEN PARSER
-// ===========================
+interface ParseTokenArgs {
+  tokenStr: string
+  enterKey?: boolean
+}
 
-function parseToken(tokenStr: string): Token | null {
-  // Rule: FreeTextToken | FilterToken
+function parseToken({tokenStr, enterKey}: ParseTokenArgs): Token | null {
+  const parts = splitByColon(tokenStr)
+  const isFTSToken = parts.length == 1
 
-  if (!tokenStr.includes(":")) {
-    return parseFreeTextToken(tokenStr)
+  if (isFTSToken) {
+    return parseFreeTextToken({text: tokenStr, enterKey})
   }
 
   return parseFilterToken(tokenStr)
 }
 
-function parseFreeTextToken(text: string): FreeTextToken {
-  return {
-    type: "fts",
-    value: removeQuotes(text),
-    raw: text
+/**
+ * FTS token is freely typed text
+ *
+ * User signals that he/she has completed typing FTS token by
+ * pressing enter key
+ */
+interface ParseFreetextTokenArgs {
+  text: string
+  enterKey?: boolean
+}
+
+function parseFreeTextToken({
+  text,
+  enterKey = false
+}: ParseFreetextTokenArgs): FreeTextToken | null {
+  if (enterKey) {
+    return {
+      type: "fts",
+      value: removeQuotes(text),
+      raw: text
+    }
   }
+
+  return null
 }
 function parseFilterToken(tokenStr: string): FilterToken | null {
   // Rule: FilterToken ::= CustomFieldFilter | TagFilter | CategoryFilter | SimpleFilter
@@ -84,16 +103,18 @@ function parseFilterToken(tokenStr: string): FilterToken | null {
   return null
 }
 
-export function getAllFilterSuggestions(): SearchSuggestion[] {
-  return [
-    {
-      type: "filter",
-      items: FILTERS.sort()
-    }
-  ]
-}
-
 export function getSuggestions(text: string): SearchSuggestion[] {
+  const trimmedText = text.trim()
+
+  if (trimmedText.length == 0) {
+    return [
+      {
+        type: "filter",
+        items: FILTERS.sort()
+      }
+    ]
+  }
+
   const parts = splitByColon(text)
 
   if (parts.length == 1) {

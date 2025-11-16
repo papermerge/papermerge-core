@@ -1,11 +1,6 @@
-import type {CustomFieldType} from "@/features/custom-fields/types"
 import {FILTERS} from "@/features/search/microcomp/const"
 import {parse} from "@/features/search/microcomp/scanner"
-import type {
-  SearchSuggestion,
-  SuggestionType,
-  Token
-} from "@/features/search/microcomp/types"
+import type {SearchSuggestion, Token} from "@/features/search/microcomp/types"
 import {autocompleteText} from "@/features/search/microcomp/utils"
 import {useCombobox} from "@mantine/core"
 import {useCallback, useRef, useState} from "react"
@@ -21,10 +16,6 @@ export const useTokenSearch = ({
   onFocusChange
 }: UseTokenSearchProps) => {
   const [inputValue, setInputValue] = useState("")
-  /** Custom field type currently being typed */
-  const [currentCFType, setCurrentCFType] = useState<CustomFieldType>()
-  const [currentSuggestionType, setCurrentSuggestionType] =
-    useState<SuggestionType>()
   const {tokens, addToken, updateToken, removeToken, clearTokens} = useTokens()
   const [autocomplete, setAutocomplete] = useState<SearchSuggestion[]>()
   const combobox = useCombobox({
@@ -36,18 +27,12 @@ export const useTokenSearch = ({
   const inputRef = useRef<HTMLInputElement>(null)
 
   const [validationError, setValidationError] = useState<string>("")
-  const [isInputValid, setIsInputValid] = useState(false)
-  const [lastAddedTokenIndex, setLastAddedTokenIndex] = useState<number>(-1)
 
   const handleOptionSubmit = (val: string) => {
     let newInputValue = autocompleteText(inputValue, val)
 
-    const {suggestions, tokens, errors} = parse(newInputValue)
+    const {suggestions, tokens, errors} = parse({input: newInputValue})
     setAutocomplete(suggestions)
-
-    if (errors.length === 0) {
-      setIsInputValid(true)
-    }
 
     tokens.forEach(t => addToken(t))
 
@@ -62,7 +47,7 @@ export const useTokenSearch = ({
 
     // Clear previous validation error when user types
     setValidationError("")
-    const {hasSuggestions, suggestions, tokens} = parse(input)
+    const {hasSuggestions, suggestions, tokens} = parse({input})
 
     setAutocomplete(suggestions)
 
@@ -113,50 +98,28 @@ export const useTokenSearch = ({
       // Handle Enter key
       if (key === "Enter") {
         event.preventDefault() // Prevent form submission
+        const trimmedValue = inputValue.trim()
 
         // If input is empty, do nothing
-        if (!inputValue.trim()) {
+        if (!trimmedValue) {
           return
         }
 
-        // Append semicolon and try to parse
-        const inputWithSemicolon = inputValue + ";"
-        const parseResult = parse(inputWithSemicolon)
+        const {tokens, errors} = parse({input: trimmedValue, enterKey: true})
 
         // Check for errors
-        if (parseResult.errors.length > 0) {
-          const firstError = parseResult.errors[0]
-          setValidationError(
-            `Error in '${firstError.token || inputValue}': ${firstError.message}`
-          )
+        if (errors.length > 0) {
+          const firstError = errors[0]
+          setValidationError(firstError)
           return
         }
 
         // Success - add tokens and clear input
-        if (parseResult.tokens.length > 0) {
-          const currentTokenCount = tokens.length
-          parseResult.tokens.forEach(t => {
-            if (t.type == "cf" && currentCFType) {
-              addToken({...t, typeHandler: currentCFType})
-            } else {
-              addToken(t)
-            }
-          })
-          setCurrentCFType(undefined)
-
-          // Mark the last added token for animation
-          setLastAddedTokenIndex(
-            currentTokenCount + parseResult.tokens.length - 1
-          )
-
-          // Clear the animation after 600ms
-          setTimeout(() => {
-            setLastAddedTokenIndex(-1)
-          }, 600)
+        if (tokens.length > 0) {
+          tokens.forEach(t => addToken(t))
 
           setInputValue("")
           setValidationError("")
-          setIsInputValid(false)
           setAutocomplete([
             {
               type: "filter",
@@ -175,7 +138,6 @@ export const useTokenSearch = ({
     // Clear input value
     setInputValue("")
     setValidationError("")
-    setIsInputValid(false)
 
     setAutocomplete(undefined)
 
@@ -215,7 +177,6 @@ export const useTokenSearch = ({
     handleKeyDown,
     toggleCompactModeHandler,
     validationError,
-    isInputValid,
-    lastAddedTokenIndex
+    isInputValid: validationError.length == 0
   }
 }

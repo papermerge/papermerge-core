@@ -29,6 +29,8 @@ export default function SearchInput({
   handleSubmitClick,
   handleKeyDown
 }: Args) {
+  const showEnterKey = isInputValid && inputValue.trim().length > 0
+
   return (
     <Group className={styles.inputWrapper}>
       <ConditionalTooltip
@@ -59,7 +61,7 @@ export default function SearchInput({
           }}
         />
       </ConditionalTooltip>
-      {isInputValid && <EnterKeyButton onClick={handleSubmitClick} />}
+      {showEnterKey && <EnterKeyButton onClick={handleSubmitClick} />}
     </Group>
   )
 }

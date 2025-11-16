@@ -5,7 +5,7 @@ import logoURL from "/logo_transparent_bg.svg"
 import classes from "./Header.module.css"
 
 import {ClearNotificationsButton} from "@/features/notifications/components/ClearButton"
-import Search from "@/features/search/components/TokenSeachInput"
+import Search from "@/features/search/components/Search"
 import SidebarToggle from "./SidebarToggle"
 import UserMenu from "./UserMenu"
 

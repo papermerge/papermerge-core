@@ -97,9 +97,7 @@ export default function Search({onSearch, onFocusChange}: Args) {
               {tokens.length > 0 && (
                 <ToggleCompactModeButton onClick={toggleCompactModeHandler} />
               )}
-              {showClearButton && (
-                <ClearButton onClick={handleClearAll} tooltip="Clear all" />
-              )}
+              {showClearButton && <ClearButton onClick={handleClearAll} />}
             </>
           )}
         </Box>

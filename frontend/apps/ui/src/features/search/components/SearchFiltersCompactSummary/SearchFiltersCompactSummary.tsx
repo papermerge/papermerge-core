@@ -28,9 +28,7 @@ export default function SearchFiltersCompactSummary({
           isCompactMode={true}
           onClick={toggleCompactModeHandler}
         />
-        {showClearButton && (
-          <ClearButton onClick={handleClearAll} tooltip="Clear all filters" />
-        )}
+        {showClearButton && <ClearButton onClick={handleClearAll} />}
       </Group>
     </Group>
   )

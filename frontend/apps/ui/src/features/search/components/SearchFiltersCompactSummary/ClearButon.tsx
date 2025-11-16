@@ -1,14 +1,15 @@
 import {ActionIcon, Tooltip} from "@mantine/core"
 import {IconX} from "@tabler/icons-react"
 import {useState} from "react"
+import {useTranslation} from "react-i18next"
 
 interface Args {
   onClick: () => void
-  tooltip?: string
 }
 
-export default function ClearButton({onClick, tooltip = "Clear all"}: Args) {
+export default function ClearButton({onClick}: Args) {
   const [isHovering, setIsHovering] = useState(false)
+  const {t} = useTranslation()
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation() // Prevent triggering box focus
@@ -16,7 +17,11 @@ export default function ClearButton({onClick, tooltip = "Clear all"}: Args) {
   }
 
   return (
-    <Tooltip label={tooltip} position="bottom" withArrow>
+    <Tooltip
+      label={t("clearAll", {defaultValue: "Clear All"})}
+      position="bottom"
+      withArrow
+    >
       <ActionIcon
         variant="subtle"
         color="gray"

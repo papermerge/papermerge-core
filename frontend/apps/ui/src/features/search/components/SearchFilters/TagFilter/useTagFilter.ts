@@ -8,7 +8,7 @@ interface UseTagTokenLogicProps {
   onValuesChange?: (values: string[]) => void
 }
 
-export function useTagTokenLogic({
+export function useTagFilterLogic({
   selectedTagNames,
   onValuesChange
 }: UseTagTokenLogicProps) {

@@ -1,4 +1,4 @@
-import {TagOperator, TagToken} from "@/features/search/microcomp/types"
+import {TagFilter, TagOperator} from "@/features/search/microcomp/types"
 import {ColoredTag} from "@/types"
 import {
   ActionIcon,
@@ -12,10 +12,10 @@ import {
   useCombobox
 } from "@mantine/core"
 import {IconX} from "@tabler/icons-react"
-import styles from "./TagToken.module.css"
+import styles from "./TagFilter.module.css"
 
 interface TagTokenPresentationProps {
-  item: TagToken
+  item: TagFilter
   selectedTags: ColoredTag[]
   availableTags: ColoredTag[]
   onOperatorChange?: (operator: TagOperator) => void
@@ -32,7 +32,7 @@ interface TagTokenPresentationProps {
   onCloseDropdown?: () => void
 }
 
-export function TagTokenPresentation({
+export function TagFilterPresentation({
   item,
   selectedTags,
   availableTags,
@@ -95,7 +95,7 @@ export function TagTokenPresentation({
 }
 
 interface TokenTagOperatorProps {
-  item: TagToken
+  item: TagFilter
   onOperatorChange?: (operator: TagOperator) => void
 }
 

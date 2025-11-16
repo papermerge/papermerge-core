@@ -1,39 +1,41 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import {TagOperator, TagToken} from "@/features/search/microcomp/types"
-import {removeToken, updateToken} from "@/features/search/storage/search"
-import {TagTokenPresentation} from "./TagToken.presentation"
-import {useTagTokenLogic} from "./useTagToken"
+import {TagFilter, TagOperator} from "@/features/search/microcomp/types"
+import {removeFilter, updateFilter} from "@/features/search/storage/search"
+import {TagFilterPresentation} from "./TagFilter.presentation"
+import {useTagFilterLogic} from "./useTagFilter"
 
-interface TagTokenContainerProps {
+interface TagFilterContainerProps {
   index: number
 }
 
-export function TagTokenContainer({index}: TagTokenContainerProps) {
+export function TagFilterContainer({index}: TagFilterContainerProps) {
   const dispatch = useAppDispatch()
-  const token = useAppSelector(state => state.search.tokens[index]) as TagToken
+  const filter = useAppSelector(
+    state => state.search.filters[index]
+  ) as TagFilter
 
   // Redux handlers
   const handleOperatorChange = (operator: TagOperator) => {
-    dispatch(updateToken({index, updates: {operator}}))
+    dispatch(updateFilter({index, updates: {operator}}))
   }
 
   const handleValuesChange = (values: string[]) => {
-    dispatch(updateToken({index, updates: {values}}))
+    dispatch(updateFilter({index, updates: {values}}))
   }
 
   const handleRemove = () => {
-    dispatch(removeToken(index))
+    dispatch(removeFilter(index))
   }
 
   // Business logic hook
-  const tagLogic = useTagTokenLogic({
-    selectedTagNames: token.values || [],
+  const tagLogic = useTagFilterLogic({
+    selectedTagNames: filter.values || [],
     onValuesChange: handleValuesChange
   })
 
   return (
-    <TagTokenPresentation
-      item={token}
+    <TagFilterPresentation
+      item={filter}
       onOperatorChange={handleOperatorChange}
       onRemove={handleRemove}
       selectedTags={tagLogic.selectedTags}

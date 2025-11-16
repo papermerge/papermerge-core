@@ -2,35 +2,22 @@ import type {CustomFieldType} from "@/features/custom-fields/types"
 import {CustomFieldDataType} from "@/types"
 
 export interface LexerResult {
-  tokens: string[]
+  filters: string[]
   hasTrailingSemicolon: boolean
 }
 
 export interface ParseResult {
-  tokens: Token[]
+  filters: Filter[]
   errors: string[]
   hasSuggestions: boolean
   suggestions: SearchSuggestion[]
 }
 
-export type TokenType =
+export type FilterType =
   | "fts" // Free text / full text search
   | "cat" // Category
   | "tag" // Tag
   | "cf" // Custom Field
-  | "title"
-  | "created_at"
-  | "created_by"
-  | "updated_at"
-  | "updated_by"
-  | "owner"
-
-export type FilterType =
-  | "fts"
-  | "title"
-  | "cat"
-  | "tag"
-  | "cf"
   | "title"
   | "created_at"
   | "created_by"
@@ -65,31 +52,31 @@ export type CustomFieldOperator =
   | CustomFieldTextOperator
   | CustomFieldBooleanOperator
 
-export interface BasicToken {
-  type: TokenType
+export interface BasicFilter {
+  type: FilterType
   raw?: string
 }
 
-export interface FreeTextToken extends BasicToken {
+export interface FreeTextFilter extends BasicFilter {
   type: "fts"
   value: string
 }
 
-export interface CategoryToken extends BasicToken {
+export interface CategoryFilter extends BasicFilter {
   type: "cat"
   values?: string[]
   operator?: CategoryOperator
   operatorIsImplicit?: boolean
 }
 
-export interface TagToken extends BasicToken {
+export interface TagFilter extends BasicFilter {
   type: "tag"
   operator?: TagOperator
   operatorIsImplicit?: boolean
   values?: string[]
 }
 
-export interface CustomFieldToken extends BasicToken {
+export interface CustomFieldFilter extends BasicFilter {
   type: "cf"
   fieldName?: string
   operator?: CustomFieldOperator
@@ -97,9 +84,9 @@ export interface CustomFieldToken extends BasicToken {
   value?: string | number
 }
 
-export type FilterToken = CategoryToken | TagToken | CustomFieldToken
+export type FilterFilter = CategoryFilter | TagFilter | CustomFieldFilter
 
-export type Token = FreeTextToken | FilterToken
+export type Filter = FreeTextFilter | FilterFilter
 
 export type CurrentText = {
   value: string
@@ -157,7 +144,7 @@ export type SearchSuggestion =
   | SearchCalendarDateSuggestion
 
 export interface ScanResult {
-  token?: Token
+  token?: Filter
   tokenIsComplete: boolean
   current?: CurrentText
 
@@ -166,7 +153,7 @@ export interface ScanResult {
 }
 
 export interface ParseSegmentResult {
-  token?: Token
+  token?: Filter
   tokenIsComplete: boolean
   hasSuggestions: boolean
   suggestions?: SearchSuggestion[]
@@ -175,7 +162,7 @@ export interface ParseSegmentResult {
 export interface SuggestionResult {
   hasSuggestions: boolean
   suggestions?: SearchSuggestion[]
-  token?: Token
+  token?: Filter
   tokenIsComplete: boolean
 }
 

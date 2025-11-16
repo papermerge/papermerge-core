@@ -19,7 +19,7 @@ export default function useDocumentsListTable() {
   const dispatch = useAppDispatch()
 
   // Get search tokens from Redux
-  const searchTokens = useAppSelector(state => state.search.tokens)
+  const searchTokens = useAppSelector(state => state.search.filters)
 
   // Get pagination and sorting from panel state
   const pageSize = useAppSelector(s => selectPanelPageSize(s, panelId)) || 10
@@ -40,7 +40,7 @@ export default function useDocumentsListTable() {
   useEffect(() => {
     // Build search params from tokens
     const searchParams: SearchQueryParams = buildSearchQueryParams({
-      tokens: debouncedSearchTokens,
+      filters: debouncedSearchTokens,
       pageNumber,
       pageSize,
       sorting

@@ -1,22 +1,28 @@
 import {FILTERS} from "@/features/search/microcomp/const"
 import {parse} from "@/features/search/microcomp/scanner"
-import type {SearchSuggestion, Token} from "@/features/search/microcomp/types"
+import type {Filter, SearchSuggestion} from "@/features/search/microcomp/types"
 import {autocompleteText} from "@/features/search/microcomp/utils"
 import {useCombobox} from "@mantine/core"
 import {useCallback, useRef, useState} from "react"
-import {useTokens} from "./useTokens"
+import {useFilters} from "./useFilters"
 
-interface UseTokenSearchProps {
-  onSearch?: (tokens: Token[]) => void
+interface UseFilterSearchProps {
+  onSearch?: (tokens: Filter[]) => void
   onFocusChange?: (isFocused: boolean) => void
 }
 
-export const useTokenSearch = ({
+export const useFilterSearch = ({
   onSearch,
   onFocusChange
-}: UseTokenSearchProps) => {
+}: UseFilterSearchProps) => {
   const [inputValue, setInputValue] = useState("")
-  const {tokens, addToken, updateToken, removeToken, clearTokens} = useTokens()
+  const {
+    filters: filterList,
+    addFilter,
+    updateFilter,
+    removeFilter,
+    clearFilters
+  } = useFilters()
   const [autocomplete, setAutocomplete] = useState<SearchSuggestion[]>()
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption()
@@ -31,10 +37,10 @@ export const useTokenSearch = ({
   const handleOptionSubmit = (val: string) => {
     let newInputValue = autocompleteText(inputValue, val)
 
-    const {suggestions, tokens, errors} = parse({input: newInputValue})
+    const {suggestions, filters, errors} = parse({input: newInputValue})
     setAutocomplete(suggestions)
 
-    tokens.forEach(t => addToken(t))
+    filters.forEach(f => addFilter(f))
 
     setInputValue("")
 
@@ -47,13 +53,13 @@ export const useTokenSearch = ({
 
     // Clear previous validation error when user types
     setValidationError("")
-    const {hasSuggestions, suggestions, tokens} = parse({input})
+    const {hasSuggestions, suggestions, filters} = parse({input})
 
     setAutocomplete(suggestions)
 
-    if (tokens.length > 0) {
+    if (filters.length > 0) {
       setInputValue("")
-      tokens.forEach(t => addToken(t))
+      filters.forEach(f => addFilter(f))
     } else {
       setInputValue(input)
     }
@@ -105,7 +111,7 @@ export const useTokenSearch = ({
           return
         }
 
-        const {tokens, errors} = parse({input: trimmedValue, enterKey: true})
+        const {filters, errors} = parse({input: trimmedValue, enterKey: true})
 
         // Check for errors
         if (errors.length > 0) {
@@ -115,8 +121,8 @@ export const useTokenSearch = ({
         }
 
         // Success - add tokens and clear input
-        if (tokens.length > 0) {
-          tokens.forEach(t => addToken(t))
+        if (filters.length > 0) {
+          filters.forEach(t => addFilter(t))
 
           setInputValue("")
           setValidationError("")
@@ -129,11 +135,11 @@ export const useTokenSearch = ({
         }
       }
     },
-    [inputValue, addToken, tokens.length]
+    [inputValue, addFilter, filterList.length]
   )
 
   const handleClearAll = useCallback(() => {
-    clearTokens()
+    clearFilters()
 
     // Clear input value
     setInputValue("")

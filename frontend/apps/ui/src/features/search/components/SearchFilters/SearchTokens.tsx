@@ -1,15 +1,15 @@
 import {useAppSelector} from "@/app/hooks"
-import SearchTokenCategoryComponent from "./CatToken"
-import CustomFieldToken from "./CustomFieldToken"
-import FreeTextTokenComponent from "./FTSToken"
-import SearchTokenTagComponent from "./TagToken"
+import SearchTokenCategoryComponent from "./CatFilter"
+import CustomFieldToken from "./CustomFieldFilter"
+import FreeTextTokenComponent from "./FTSFilter"
+import SearchTokenTagComponent from "./TagFilter"
 
 export default function SearchTokens() {
-  const tokens = useAppSelector(state => state.search.tokens)
+  const filters = useAppSelector(state => state.search.filters)
 
   return (
     <>
-      {tokens.map((token, index) => (
+      {filters.map((filter, index) => (
         <SearchToken key={index} index={index} />
       ))}
     </>
@@ -21,9 +21,9 @@ interface SearchTokenArgs {
 }
 
 function SearchToken({index}: SearchTokenArgs) {
-  const token = useAppSelector(state => state.search.tokens[index])
+  const filter = useAppSelector(state => state.search.filters[index])
 
-  switch (token.type) {
+  switch (filter.type) {
     case "tag":
       return <SearchTokenTagComponent index={index} />
     case "cat":
@@ -34,5 +34,5 @@ function SearchToken({index}: SearchTokenArgs) {
       return <CustomFieldToken index={index} />
   }
 
-  return <>Unknown token</>
+  return <>Unknown filter</>
 }

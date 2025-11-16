@@ -1,26 +1,23 @@
 import {OPERATOR_NUMERIC} from "@/features/search/microcomp/const"
 import type {CustomFieldNumericOperator as CustomFieldNumericOperatorType} from "@/features/search/microcomp/types"
-import {CustomFieldToken} from "@/features/search/microcomp/types"
-import {ActionIcon, Box, Group, Select, Text} from "@mantine/core"
-import {DatePickerInput} from "@mantine/dates"
+import {CustomFieldFilter} from "@/features/search/microcomp/types"
+import {ActionIcon, Box, Group, NumberInput, Select, Text} from "@mantine/core"
 import {IconX} from "@tabler/icons-react"
-import {useState} from "react"
-import styles from "./CFDateToken.module.css"
+import styles from "./CFNumericFilter.module.css"
 
 interface Args {
-  item: CustomFieldToken
+  item: CustomFieldFilter
   onOperatorChange?: (operator: CustomFieldNumericOperatorType) => void
   onValueChange?: (value: string | number) => void
   onRemove?: () => void
 }
 
-export function CFDateTokenPresentation({
+export function CFNumericFilterPresentation({
   item,
   onOperatorChange,
   onValueChange,
   onRemove
 }: Args) {
-  const [isOpen, setIsOpen] = useState(false)
   const handleRemoveClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     onRemove?.()
@@ -32,17 +29,7 @@ export function CFDateTokenPresentation({
         <Text c={"blue"}>cf:</Text>
         <Text c={"blue"}>{item.fieldName}:</Text>
         <CFNumericOperator item={item} onOperatorChange={onOperatorChange} />
-
-        <DatePickerInput
-          value={new Date(item.value)}
-          onClick={e => e.stopPropagation()}
-          size="sm"
-          w="15ch"
-          popoverProps={{
-            withinPortal: true,
-            zIndex: 1000
-          }}
-        />
+        <NumberInput value={item.value} onChange={onValueChange} w="15ch" />
       </Group>
       <ActionIcon
         size="xs"
@@ -56,12 +43,12 @@ export function CFDateTokenPresentation({
   )
 }
 
-interface TokenTagOperatorArgs {
-  item: CustomFieldToken
+interface FilterTagOperatorArgs {
+  item: CustomFieldFilter
   onOperatorChange?: (operator: CustomFieldNumericOperatorType) => void
 }
 
-function CFNumericOperator({item, onOperatorChange}: TokenTagOperatorArgs) {
+function CFNumericOperator({item, onOperatorChange}: FilterTagOperatorArgs) {
   const handleChange = (value: string | null) => {
     if (value && onOperatorChange) {
       // Remove the trailing colon to get just the operator
@@ -77,6 +64,8 @@ function CFNumericOperator({item, onOperatorChange}: TokenTagOperatorArgs) {
       data={OPERATOR_NUMERIC}
       size="sm"
       onChange={handleChange}
+      onClick={e => e.stopPropagation()}
+      className={styles.operatorSelect}
     />
   )
 }

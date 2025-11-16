@@ -72,7 +72,6 @@ export interface CategoryFilter extends BasicFilter {
 export interface TagFilter extends BasicFilter {
   type: "tag"
   operator?: TagOperator
-  operatorIsImplicit?: boolean
   values?: string[]
 }
 
@@ -84,13 +83,11 @@ export interface CustomFieldFilter extends BasicFilter {
   value?: string | number
 }
 
-export type FilterFilter = CategoryFilter | TagFilter | CustomFieldFilter
-
-export type Filter = FreeTextFilter | FilterFilter
-
-export type CurrentText = {
-  value: string
-}
+export type Filter =
+  | FreeTextFilter
+  | CategoryFilter
+  | TagFilter
+  | CustomFieldFilter
 
 export type SuggestionType =
   | "filter"
@@ -100,53 +97,16 @@ export type SuggestionType =
   | "customField"
   | "calendarDate"
 
-export interface BasicSuggestion {
-  type: SuggestionType
-  items?: string[]
-}
-
-export interface SearchOperatorSuggestion extends BasicSuggestion {
-  type: "operator"
-}
-
-export interface SearchFilterSuggestion extends BasicSuggestion {
+export interface SearchFilterSuggestion {
   type: "filter"
+  items: string[]
 }
 
-export interface SearchTagSuggestion extends BasicSuggestion {
-  type: "tag"
-  filter?: string // user already typed part of the name
-  exclude?: string[] // already used in current token
-}
-
-export interface SearchCategorySuggestion extends BasicSuggestion {
-  type: "category"
-  filter?: string // user already typed part of the name
-  exclude?: string[] // already used in current token
-}
-
-export interface SearchCustomFieldSuggestion extends BasicSuggestion {
-  type: "customField"
-  filter?: string // user already typed part of the name
-  exclude?: string[] // already used in current token
-}
-
-export interface SearchCalendarDateSuggestion extends BasicSuggestion {
-  type: "calendarDate"
-}
-
-export type SearchSuggestion =
-  | SearchOperatorSuggestion
-  | SearchTagSuggestion
-  | SearchFilterSuggestion
-  | SearchCategorySuggestion
-  | SearchCustomFieldSuggestion
-  | SearchCalendarDateSuggestion
+export type SearchSuggestion = SearchFilterSuggestion
 
 export interface ScanResult {
   token?: Filter
   tokenIsComplete: boolean
-  current?: CurrentText
 
   hasSuggestions: boolean
   suggestions?: SearchSuggestion[]

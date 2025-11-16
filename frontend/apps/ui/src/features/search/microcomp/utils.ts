@@ -1,5 +1,3 @@
-import type {SearchSuggestion, SuggestionType} from "./types"
-
 /**
  * Split string by colon, preserving quoted values.
  *
@@ -141,53 +139,6 @@ export function autocompleteText(inputValue: string, val: string): string {
   }
 
   return trimmed + val
-}
-
-/**
- * Returns last item from the list
- */
-export function getTokenValueItemsFilter(values: string): string {
-  const trimmed = values.trim()
-  const items = trimmed.split(",")
-  const len = items.length
-
-  return items[len - 1].trim()
-}
-
-/**
- * Returns all but last item from the list
- */
-export function getTokenValueItemsToExclude(values: string): string[] {
-  const trimmed = values.trim()
-  const items = trimmed.split(",")
-
-  return items.slice(0, -1).map(val => removeQuotes(val))
-}
-
-interface HasTypeSuggestionArgs {
-  type: SuggestionType
-  suggestions?: SearchSuggestion[]
-}
-
-export function hasThisTypeSuggestion({
-  type,
-  suggestions
-}: HasTypeSuggestionArgs): boolean {
-  if (!suggestions) {
-    return false
-  }
-
-  if (suggestions && suggestions.length == 0) {
-    return false
-  }
-
-  for (let i = 0; i < suggestions.length; i++) {
-    if (suggestions[i].type == type) {
-      return true
-    }
-  }
-
-  return false
 }
 
 type OperatorSymbol = "=" | "!=" | ">" | ">=" | "<" | "<="

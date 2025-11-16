@@ -1,0 +1,37 @@
+import {Group} from "@mantine/core"
+
+import ToggleCompactModeButton from "@/features/search/components/ToggleCompactModeButton"
+
+import ClearButton from "./ClearButon"
+import SearchCompactSummary from "./CompactSummary"
+
+interface Args {
+  tokensCount: number
+  showClearButton: boolean
+  handleClearAll: () => void
+  isHovering: boolean
+  toggleCompactModeHandler: () => void
+}
+
+export default function SearchFiltersCompactSummary({
+  isHovering,
+  showClearButton,
+  handleClearAll,
+  toggleCompactModeHandler,
+  tokensCount
+}: Args) {
+  return (
+    <Group justify="space-between" w="100%">
+      <SearchCompactSummary tokensCount={tokensCount} isHovering={isHovering} />
+      <Group>
+        <ToggleCompactModeButton
+          isCompactMode={true}
+          onClick={toggleCompactModeHandler}
+        />
+        {showClearButton && (
+          <ClearButton onClick={handleClearAll} tooltip="Clear all filters" />
+        )}
+      </Group>
+    </Group>
+  )
+}

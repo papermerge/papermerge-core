@@ -9,7 +9,7 @@ import ToggleCompactModeButton from "./ToggleCompactModeButton"
 
 import AutocompleteOptions from "./AutocompleteOptions"
 import styles from "./Search.module.css"
-import SearchTokens from "./SearchFilters/SearchTokens"
+import SearchFilters from "./SearchFilters"
 import SearchInput from "./SearchInput"
 
 interface Args {
@@ -80,7 +80,7 @@ export default function Search({onSearch, onFocusChange}: Args) {
           )}
           {!isCompactMode && (
             <>
-              <SearchTokens />
+              <SearchFilters />
               <SearchInput
                 inputRef={inputRef}
                 validationError={validationError}

@@ -1,6 +1,6 @@
 import {useAppSelector} from "@/app/hooks"
-import {useTokenSearch} from "@/features/search/hooks/useTokenSearch"
-import type {Token} from "@/features/search/microcomp/types"
+import {useFilterSearch} from "@/features/search/hooks/useTokenSearch"
+import type {Filter} from "@/features/search/microcomp/types"
 import {Box, Combobox} from "@mantine/core"
 
 import SearchFiltersCompactSummary from "./SearchFiltersCompactSummary"
@@ -9,16 +9,16 @@ import ToggleCompactModeButton from "./ToggleCompactModeButton"
 
 import AutocompleteOptions from "./AutocompleteOptions"
 import styles from "./Search.module.css"
+import SearchFilters from "./SearchFilters"
 import SearchInput from "./SearchInput"
-import SearchTokens from "./SearchTokens/SearchTokens"
 
 interface Args {
-  onSearch?: (tokens: Token[]) => void
+  onSearch?: (tokens: Filter[]) => void
   onFocusChange?: (isFocused: boolean) => void
 }
 
 export default function Search({onSearch, onFocusChange}: Args) {
-  const tokens = useAppSelector(state => state.search.tokens)
+  const filters = useAppSelector(state => state.search.filters)
 
   const {
     combobox,
@@ -36,12 +36,12 @@ export default function Search({onSearch, onFocusChange}: Args) {
     handleKeyDown,
     validationError,
     isInputValid
-  } = useTokenSearch({onSearch, onFocusChange})
+  } = useFilterSearch({onSearch, onFocusChange})
 
   const suggestions = <AutocompleteOptions suggestions={autocomplete} />
 
   const shouldShowClearButton = () => {
-    return tokens.length > 0 || inputValue.length > 0
+    return filters.length > 0 || inputValue.length > 0
   }
   const showClearButton = shouldShowClearButton()
 
@@ -73,14 +73,14 @@ export default function Search({onSearch, onFocusChange}: Args) {
           {isCompactMode && (
             <SearchFiltersCompactSummary
               toggleCompactModeHandler={toggleCompactModeHandler}
-              tokensCount={tokens.length}
+              tokensCount={filters.length}
               showClearButton={showClearButton}
               handleClearAll={handleClearAll}
             />
           )}
           {!isCompactMode && (
             <>
-              <SearchTokens />
+              <SearchFilters />
               <SearchInput
                 inputRef={inputRef}
                 validationError={validationError}
@@ -92,7 +92,7 @@ export default function Search({onSearch, onFocusChange}: Args) {
                 handleSubmitClick={handleSubmitClick}
                 handleKeyDown={handleKeyDown}
               />
-              {tokens.length > 0 && (
+              {filters.length > 0 && (
                 <ToggleCompactModeButton onClick={toggleCompactModeHandler} />
               )}
               {showClearButton && <ClearButton onClick={handleClearAll} />}

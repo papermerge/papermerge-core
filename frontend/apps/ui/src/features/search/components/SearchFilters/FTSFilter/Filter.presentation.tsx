@@ -1,14 +1,14 @@
-import {FreeTextToken} from "@/features/search/microcomp/types"
+import {FreeTextFilter} from "@/features/search/microcomp/types"
 import {ActionIcon, Box} from "@mantine/core"
 import {IconX} from "@tabler/icons-react"
-import styles from "./Token.module.css"
+import styles from "./Filter.module.css"
 
 interface Args {
-  item: FreeTextToken
+  item: FreeTextFilter
   onRemove?: () => void
 }
 
-export default function FTSTokenPresentation({item, onRemove}: Args) {
+export default function FTSFilterPresentation({item, onRemove}: Args) {
   const handleRemoveClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     onRemove?.()

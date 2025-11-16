@@ -1,17 +1,17 @@
-import type {Token} from "@/features/search/microcomp/types"
+import type {Filter} from "@/features/search/microcomp/types"
 import {createSlice, PayloadAction} from "@reduxjs/toolkit"
 
 export interface SavedSearch {
   id: string
   name: string
-  tokens: Token[]
+  filters: Filter[]
   createdAt: string
   updatedAt: string
 }
 
 export interface SearchState {
   // Current active search
-  tokens: Token[]
+  filters: Filter[]
 
   // Saved searches (future feature)
   savedSearches: SavedSearch[]
@@ -19,7 +19,7 @@ export interface SearchState {
 }
 
 export const initialState: SearchState = {
-  tokens: [],
+  filters: [],
   savedSearches: [],
   activeSearchId: null
 }
@@ -28,35 +28,35 @@ const searchSlice = createSlice({
   name: "search",
   initialState,
   reducers: {
-    addToken: (state, action: PayloadAction<Token>) => {
-      state.tokens.push(action.payload)
+    addFilter: (state, action: PayloadAction<Filter>) => {
+      state.filters.push(action.payload)
     },
 
-    updateToken: (
+    updateFilter: (
       state,
-      action: PayloadAction<{index: number; updates: Partial<Token>}>
+      action: PayloadAction<{index: number; updates: Partial<Filter>}>
     ) => {
       const {index, updates} = action.payload
-      if (state.tokens[index]) {
-        state.tokens[index] = {...state.tokens[index], ...updates} as Token
+      if (state.filters[index]) {
+        state.filters[index] = {...state.filters[index], ...updates} as Filter
       }
     },
 
-    removeToken: (state, action: PayloadAction<number>) => {
-      state.tokens.splice(action.payload, 1)
+    removeFilter: (state, action: PayloadAction<number>) => {
+      state.filters.splice(action.payload, 1)
     },
 
-    clearTokens: state => {
-      state.tokens = []
+    clearFilters: state => {
+      state.filters = []
     },
 
-    setTokens: (state, action: PayloadAction<Token[]>) => {
-      state.tokens = action.payload
+    setFilters: (state, action: PayloadAction<Filter[]>) => {
+      state.filters = action.payload
     }
   }
 })
 
-export const {addToken, updateToken, removeToken, clearTokens, setTokens} =
+export const {addFilter, updateFilter, removeFilter, clearFilters, setFilters} =
   searchSlice.actions
 
 export default searchSlice.reducer

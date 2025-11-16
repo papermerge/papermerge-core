@@ -2,35 +2,22 @@ import type {CustomFieldType} from "@/features/custom-fields/types"
 import {CustomFieldDataType} from "@/types"
 
 export interface LexerResult {
-  tokens: string[]
+  filters: string[]
   hasTrailingSemicolon: boolean
 }
 
 export interface ParseResult {
-  tokens: Token[]
+  filters: Filter[]
   errors: string[]
   hasSuggestions: boolean
   suggestions: SearchSuggestion[]
 }
 
-export type TokenType =
+export type FilterType =
   | "fts" // Free text / full text search
   | "cat" // Category
   | "tag" // Tag
   | "cf" // Custom Field
-  | "title"
-  | "created_at"
-  | "created_by"
-  | "updated_at"
-  | "updated_by"
-  | "owner"
-
-export type FilterType =
-  | "fts"
-  | "title"
-  | "cat"
-  | "tag"
-  | "cf"
   | "title"
   | "created_at"
   | "created_by"
@@ -65,31 +52,30 @@ export type CustomFieldOperator =
   | CustomFieldTextOperator
   | CustomFieldBooleanOperator
 
-export interface BasicToken {
-  type: TokenType
+export interface BasicFilter {
+  type: FilterType
   raw?: string
 }
 
-export interface FreeTextToken extends BasicToken {
+export interface FreeTextFilter extends BasicFilter {
   type: "fts"
   value: string
 }
 
-export interface CategoryToken extends BasicToken {
+export interface CategoryFilter extends BasicFilter {
   type: "cat"
   values?: string[]
   operator?: CategoryOperator
   operatorIsImplicit?: boolean
 }
 
-export interface TagToken extends BasicToken {
+export interface TagFilter extends BasicFilter {
   type: "tag"
   operator?: TagOperator
-  operatorIsImplicit?: boolean
   values?: string[]
 }
 
-export interface CustomFieldToken extends BasicToken {
+export interface CustomFieldFilter extends BasicFilter {
   type: "cf"
   fieldName?: string
   operator?: CustomFieldOperator
@@ -97,13 +83,11 @@ export interface CustomFieldToken extends BasicToken {
   value?: string | number
 }
 
-export type FilterToken = CategoryToken | TagToken | CustomFieldToken
-
-export type Token = FreeTextToken | FilterToken
-
-export type CurrentText = {
-  value: string
-}
+export type Filter =
+  | FreeTextFilter
+  | CategoryFilter
+  | TagFilter
+  | CustomFieldFilter
 
 export type SuggestionType =
   | "filter"
@@ -113,60 +97,23 @@ export type SuggestionType =
   | "customField"
   | "calendarDate"
 
-export interface BasicSuggestion {
-  type: SuggestionType
-  items?: string[]
-}
-
-export interface SearchOperatorSuggestion extends BasicSuggestion {
-  type: "operator"
-}
-
-export interface SearchFilterSuggestion extends BasicSuggestion {
+export interface SearchFilterSuggestion {
   type: "filter"
+  items: string[]
 }
 
-export interface SearchTagSuggestion extends BasicSuggestion {
-  type: "tag"
-  filter?: string // user already typed part of the name
-  exclude?: string[] // already used in current token
-}
-
-export interface SearchCategorySuggestion extends BasicSuggestion {
-  type: "category"
-  filter?: string // user already typed part of the name
-  exclude?: string[] // already used in current token
-}
-
-export interface SearchCustomFieldSuggestion extends BasicSuggestion {
-  type: "customField"
-  filter?: string // user already typed part of the name
-  exclude?: string[] // already used in current token
-}
-
-export interface SearchCalendarDateSuggestion extends BasicSuggestion {
-  type: "calendarDate"
-}
-
-export type SearchSuggestion =
-  | SearchOperatorSuggestion
-  | SearchTagSuggestion
-  | SearchFilterSuggestion
-  | SearchCategorySuggestion
-  | SearchCustomFieldSuggestion
-  | SearchCalendarDateSuggestion
+export type SearchSuggestion = SearchFilterSuggestion
 
 export interface ScanResult {
-  token?: Token
+  token?: Filter
   tokenIsComplete: boolean
-  current?: CurrentText
 
   hasSuggestions: boolean
   suggestions?: SearchSuggestion[]
 }
 
 export interface ParseSegmentResult {
-  token?: Token
+  token?: Filter
   tokenIsComplete: boolean
   hasSuggestions: boolean
   suggestions?: SearchSuggestion[]
@@ -175,7 +122,7 @@ export interface ParseSegmentResult {
 export interface SuggestionResult {
   hasSuggestions: boolean
   suggestions?: SearchSuggestion[]
-  token?: Token
+  token?: Filter
   tokenIsComplete: boolean
 }
 

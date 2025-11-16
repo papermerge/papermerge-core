@@ -1,37 +1,39 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {
-  CustomFieldNumericOperator,
-  CustomFieldToken
+  CustomFieldFilter,
+  CustomFieldNumericOperator
 } from "@/features/search/microcomp/types"
-import {removeToken, updateToken} from "@/features/search/storage/search"
-import {CFDateTokenPresentation} from "./CFDateToken.presentation"
+import {removeFilter, updateFilter} from "@/features/search/storage/search"
+import {CFNumericFilterPresentation} from "./CFNumericFilter.presentation"
 
-interface CFNumericTokenContainerProps {
+interface CFNumericFilterContainerProps {
   index: number
 }
 
-export function CFDateTokenContainer({index}: CFNumericTokenContainerProps) {
+export function CFNumericFilterContainer({
+  index
+}: CFNumericFilterContainerProps) {
   const dispatch = useAppDispatch()
   const token = useAppSelector(
-    state => state.search.tokens[index]
-  ) as CustomFieldToken
+    state => state.search.filters[index]
+  ) as CustomFieldFilter
 
   // Redux handlers
   const handleOperatorChange = (operator: CustomFieldNumericOperator) => {
-    dispatch(updateToken({index, updates: {operator}}))
+    dispatch(updateFilter({index, updates: {operator}}))
   }
 
   const handleValueChange = (value: string | number) => {
     const num = parseInt(value as string)
-    dispatch(updateToken({index, updates: {value: num}}))
+    dispatch(updateFilter({index, updates: {value: num}}))
   }
 
   const handleRemove = () => {
-    dispatch(removeToken(index))
+    dispatch(removeFilter(index))
   }
 
   return (
-    <CFDateTokenPresentation
+    <CFNumericFilterPresentation
       item={token}
       onRemove={handleRemove}
       onValueChange={handleValueChange}

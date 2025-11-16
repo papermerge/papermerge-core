@@ -2,7 +2,7 @@ import {
   CATEGORY_IMPLICIT_OPERATOR,
   TAG_IMPLICIT_OPERATOR
 } from "@/features/search/microcomp/const"
-import type {Token} from "@/features/search/microcomp/types"
+import type {Filter} from "@/features/search/microcomp/types"
 import {operatorSym2Text} from "@/features/search/microcomp/utils"
 import type {
   CustomFieldFilter,
@@ -11,80 +11,80 @@ import type {
 import type {SortState} from "kommon"
 
 interface BuildSearchParamsArgs {
-  tokens: Token[]
+  filters: Filter[]
   pageNumber: number
   pageSize: number
   sorting?: SortState | null
 }
 
 export function buildSearchQueryParams({
-  tokens,
+  filters,
   pageNumber,
   pageSize,
   sorting
 }: BuildSearchParamsArgs): SearchQueryParams {
-  const filters: SearchQueryParams["filters"] = {}
+  const filterList: SearchQueryParams["filters"] = {}
 
-  // Process each token
-  for (const token of tokens) {
-    switch (token.type) {
+  // Process each filter
+  for (const filter of filters) {
+    switch (filter.type) {
       case "fts":
-        if (!filters.fts) {
-          filters.fts = {terms: [token.value]}
+        if (!filterList.fts) {
+          filterList.fts = {terms: [filter.value]}
         } else {
-          filters.fts.terms.push(token.value)
+          filterList.fts.terms.push(filter.value)
         }
         break
 
       case "cat":
         const newCat = {
-          values: token.values || [],
-          operator: token.operator || CATEGORY_IMPLICIT_OPERATOR
+          values: filter.values || [],
+          operator: filter.operator || CATEGORY_IMPLICIT_OPERATOR
         }
 
-        if (!filters.categories) {
-          filters.categories = [newCat]
+        if (!filterList.categories) {
+          filterList.categories = [newCat]
         } else {
-          filters.categories.push(newCat)
+          filterList.categories.push(newCat)
         }
 
         break
 
       case "tag":
         const newTag = {
-          values: token.values || [],
-          operator: token.operator || TAG_IMPLICIT_OPERATOR
+          values: filter.values || [],
+          operator: filter.operator || TAG_IMPLICIT_OPERATOR
         }
 
-        if (!filters.tags) {
-          filters.tags = [newTag]
+        if (!filterList.tags) {
+          filterList.tags = [newTag]
         } else {
-          filters.tags.push(newTag)
+          filterList.tags.push(newTag)
         }
 
         break
 
       case "cf":
         const newCF = {
-          field_name: token.fieldName,
-          operator: operatorSym2Text(token.operator || "="),
-          value: token.value
+          field_name: filter.fieldName,
+          operator: operatorSym2Text(filter.operator || "="),
+          value: filter.value
         } as CustomFieldFilter
 
-        if (!filters.custom_fields) {
-          filters.custom_fields = [newCF]
+        if (!filterList.custom_fields) {
+          filterList.custom_fields = [newCF]
         } else {
-          filters.custom_fields.push(newCF)
+          filterList.custom_fields.push(newCF)
         }
 
       // We'll add custom_field case later
       default:
-        console.warn(`Unknown token type: ${token.type}`)
+        console.warn(`Unknown filter type: ${filter.type}`)
     }
   }
 
   return {
-    filters,
+    filters: filterList,
     page_number: pageNumber,
     page_size: pageSize,
     sort_by: sorting?.column || undefined,
@@ -95,14 +95,14 @@ export function buildSearchQueryParams({
 /**
  * Extract document_type_id from category filter if exactly one category is specified
  */
-export function extractSingleCategoryId(tokens: Token[]): string | null {
-  const categoryTokens = tokens.filter(t => t.type === "cat")
+export function extractSingleCategoryId(filters: Filter[]): string | null {
+  const categoryFilters = filters.filter(t => t.type === "cat")
 
-  if (categoryTokens.length !== 1) {
+  if (categoryFilters.length !== 1) {
     return null
   }
 
-  const values = categoryTokens[0].values || []
+  const values = categoryFilters[0].values || []
 
   if (values.length !== 1) {
     return null

@@ -1,10 +1,4 @@
-import {
-  FilterToken,
-  FreeTextToken,
-  ParseResult,
-  SearchSuggestion,
-  Token
-} from "./types"
+import {Filter, FreeTextFilter, ParseResult, SearchSuggestion} from "./types"
 import {removeQuotes, splitByColon} from "./utils"
 
 import {FILTERS} from "./const"
@@ -15,16 +9,16 @@ interface ParseArgs {
 }
 
 export function parse({input, enterKey = false}: ParseArgs): ParseResult {
-  const tokens: Token[] = []
+  const filters: Filter[] = []
   const errors: string[] = []
 
   const trimmedInput = input.trim()
 
   try {
-    const token = parseToken({tokenStr: input, enterKey})
+    const filter = parseToken({tokenStr: input, enterKey})
 
-    if (token) {
-      tokens.push(token)
+    if (filter) {
+      filters.push(filter)
     }
   } catch (e) {
     errors.push(e as string)
@@ -34,7 +28,7 @@ export function parse({input, enterKey = false}: ParseArgs): ParseResult {
   const hasSuggestions = suggestions.length > 0
 
   return {
-    tokens,
+    filters,
     errors,
     suggestions,
     hasSuggestions
@@ -46,7 +40,7 @@ interface ParseTokenArgs {
   enterKey?: boolean
 }
 
-function parseToken({tokenStr, enterKey}: ParseTokenArgs): Token | null {
+function parseToken({tokenStr, enterKey}: ParseTokenArgs): Filter | null {
   const parts = splitByColon(tokenStr)
   const isFTSToken = parts.length == 1
 
@@ -54,7 +48,7 @@ function parseToken({tokenStr, enterKey}: ParseTokenArgs): Token | null {
     return parseFreeTextToken({text: tokenStr, enterKey})
   }
 
-  return parseFilterToken(tokenStr)
+  return parseFilter(tokenStr)
 }
 
 /**
@@ -71,7 +65,7 @@ interface ParseFreetextTokenArgs {
 function parseFreeTextToken({
   text,
   enterKey = false
-}: ParseFreetextTokenArgs): FreeTextToken | null {
+}: ParseFreetextTokenArgs): FreeTextFilter | null {
   if (enterKey) {
     return {
       type: "fts",
@@ -82,10 +76,10 @@ function parseFreeTextToken({
 
   return null
 }
-function parseFilterToken(tokenStr: string): FilterToken | null {
-  // Rule: FilterToken ::= CustomFieldFilter | TagFilter | CategoryFilter | SimpleFilter
+function parseFilter(input: string): Filter | null {
+  // Rule: Filter ::= CustomFieldFilter | TagFilter | CategoryFilter | SimpleFilter
 
-  const parts = splitByColon(tokenStr)
+  const parts = splitByColon(input)
   const filters = ["cf", "tag", "cat"] as const
 
   const filter = parts[0]

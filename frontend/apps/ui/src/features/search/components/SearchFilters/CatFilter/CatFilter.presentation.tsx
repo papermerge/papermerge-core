@@ -1,19 +1,19 @@
 import {
-  CategoryOperator,
-  CategoryToken
+  CategoryFilter,
+  CategoryOperator
 } from "@/features/search/microcomp/types"
 import {ActionIcon, Box, Group, MultiSelect, Select, Text} from "@mantine/core"
 import {IconX} from "@tabler/icons-react"
-import styles from "./CatToken.module.css"
+import styles from "./CatFilter.module.css"
 
 interface Args {
-  item: CategoryToken
+  item: CategoryFilter
   onOperatorChange?: (operator: CategoryOperator) => void
   onValuesChange?: (values: string[]) => void
   onRemove?: () => void
 }
 
-export function CategoryTokenPresentation({
+export function CategoryFilterPresentation({
   item,
   onOperatorChange,
   onValuesChange,
@@ -28,11 +28,11 @@ export function CategoryTokenPresentation({
     <Box className={styles.tokenContainer} onClick={e => e.stopPropagation()}>
       <Group gap={0}>
         <Text c={"green"}>cat:</Text>
-        <TokenCategoryOperator
+        <FilterCategoryOperator
           item={item}
           onOperatorChange={onOperatorChange}
         />
-        <TokenCategoryValues item={item} onValuesChange={onValuesChange} />
+        <FilterCategoryValues item={item} onValuesChange={onValuesChange} />
       </Group>
       <ActionIcon
         size="xs"
@@ -46,15 +46,15 @@ export function CategoryTokenPresentation({
   )
 }
 
-interface TokenCategoryOperatorProps {
-  item: CategoryToken
+interface FilterCategoryOperatorProps {
+  item: CategoryFilter
   onOperatorChange?: (operator: CategoryOperator) => void
 }
 
-function TokenCategoryOperator({
+function FilterCategoryOperator({
   item,
   onOperatorChange
-}: TokenCategoryOperatorProps) {
+}: FilterCategoryOperatorProps) {
   const handleChange = (value: string | null) => {
     if (value && onOperatorChange) {
       // Remove the trailing colon to get just the operator
@@ -76,12 +76,15 @@ function TokenCategoryOperator({
   )
 }
 
-interface TokenCategoryValuesProps {
-  item: CategoryToken
+interface FilterCategoryValuesProps {
+  item: CategoryFilter
   onValuesChange?: (values: string[]) => void
 }
 
-function TokenCategoryValues({item, onValuesChange}: TokenCategoryValuesProps) {
+function FilterCategoryValues({
+  item,
+  onValuesChange
+}: FilterCategoryValuesProps) {
   const handleChange = (values: string[]) => {
     if (onValuesChange) {
       onValuesChange(values)

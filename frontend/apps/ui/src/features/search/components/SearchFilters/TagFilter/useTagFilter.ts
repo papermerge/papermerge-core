@@ -3,15 +3,12 @@ import {ColoredTag} from "@/types"
 import {useCombobox} from "@mantine/core"
 import {useMemo, useState} from "react"
 
-interface UseTagTokenLogicProps {
+interface Args {
   selectedTagNames: string[]
   onValuesChange?: (values: string[]) => void
 }
 
-export function useTagFilterLogic({
-  selectedTagNames,
-  onValuesChange
-}: UseTagTokenLogicProps) {
+export default function useTagFilter({selectedTagNames, onValuesChange}: Args) {
   const {data: allTags = [], isLoading} = useGetTagsQuery(undefined)
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption(),

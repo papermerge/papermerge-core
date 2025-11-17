@@ -1,4 +1,5 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {useGetDocumentTypesQuery} from "@/features/document-types/storage/api"
 import {
   CategoryFilter,
   CategoryOperator
@@ -15,6 +16,7 @@ export function CategoryFilterContainer({index}: CategoryFilterContainerProps) {
   const token = useAppSelector(
     state => state.search.filters[index]
   ) as CategoryFilter
+  const data = useGetDocumentTypesQuery(undefined)
 
   const handleOperatorChange = (operator: CategoryOperator) => {
     dispatch(updateFilter({index, updates: {operator}}))
@@ -31,6 +33,7 @@ export function CategoryFilterContainer({index}: CategoryFilterContainerProps) {
   return (
     <CategoryFilterPresentation
       item={token}
+      data={data}
       onOperatorChange={handleOperatorChange}
       onValuesChange={handleValuesChange}
       onRemove={handleRemove}

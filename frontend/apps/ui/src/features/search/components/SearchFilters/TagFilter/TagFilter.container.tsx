@@ -2,7 +2,7 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {TagFilter, TagOperator} from "@/features/search/microcomp/types"
 import {removeFilter, updateFilter} from "@/features/search/storage/search"
 import {TagFilterPresentation} from "./TagFilter.presentation"
-import {useTagFilterLogic} from "./useTagFilter"
+import useTagFilter from "./useTagFilter"
 
 interface TagFilterContainerProps {
   index: number
@@ -28,7 +28,7 @@ export function TagFilterContainer({index}: TagFilterContainerProps) {
   }
 
   // Business logic hook
-  const tagLogic = useTagFilterLogic({
+  const tagLogic = useTagFilter({
     selectedTagNames: filter.values || [],
     onValuesChange: handleValuesChange
   })

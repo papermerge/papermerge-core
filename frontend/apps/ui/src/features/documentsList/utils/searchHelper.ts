@@ -51,6 +51,10 @@ export function buildSearchQueryParams({
         break
 
       case "tag":
+        if (!filter.values) {
+          break
+        }
+
         const newTag = {
           values: filter.values || [],
           operator: filter.operator || TAG_IMPLICIT_OPERATOR
@@ -109,4 +113,50 @@ export function extractSingleCategoryId(filters: Filter[]): string | null {
   }
 
   return values[0]
+}
+
+/**
+ *
+ * Incomplete filters are OK for being displayed in UI.
+ * However, incomplete filters should not be sent to server for searches.
+ * Incomplete filters are those with missing values (or missing operator).
+ * Examples:
+ *
+ * Incomplete Filter                            |   Complete Filter
+ * -------------------------------------------------------------------------------------------------------
+ *  {type: "tag", operator: "any"}              |  {type: "tag", operator: "any", values: ["blue"]}
+ *  {type: "tag"}                               |  {type: "tag", operator: "all", values: ["blue", "green"]}
+ *  {type: "tag", operator: "any", values: []}  |  {type: "tag", operator: "any", values: ["blue", "green"]}
+ *
+ * This function produces an unique string from complete tag (to be used as parameter in useEffect),
+ * so that only on change of complete filters FE will send search request to BE
+ */
+export function uniqueSearchString(filters: Filter[]): string {
+  const onlyCompleteFilters = filters.filter(f => {
+    if (f.type == "fts" && f.value) {
+      return true
+    }
+
+    if (f.type == "tag" && f.values && f.values.length > 0) {
+      return true
+    }
+
+    if (f.type == "cat" && f.values && f.values.length > 0) {
+      return true
+    }
+
+    return false
+  })
+
+  const operators = onlyCompleteFilters
+    .filter(f => f.operator)
+    .map(f => f.operator)
+  const values1 = onlyCompleteFilters.map(f => f.value)
+  const values2 = onlyCompleteFilters.map(f => f.values)
+
+  return JSON.stringify({
+    operators,
+    values1,
+    values2
+  })
 }

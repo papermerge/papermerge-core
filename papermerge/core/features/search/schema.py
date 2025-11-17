@@ -293,6 +293,16 @@ class SearchFilters(BaseModel):
         description="Owner of the document"
     )
 
+    @field_validator('tags')
+    @classmethod
+    def validate_tag_values(cls, tags: Optional[TagFilter]) -> Any:
+        """Validate tags
+
+        tag values should be non-empty. Tags with empty values
+        are removed from the list
+        """
+        return [tag for tag in tags if tag.values and len(tag.values) > 0]
+
 
 
 class SearchQueryParams(BaseModel):

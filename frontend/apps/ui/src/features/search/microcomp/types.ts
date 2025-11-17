@@ -55,6 +55,9 @@ export type CustomFieldOperator =
 export interface BasicFilter {
   type: FilterType
   raw?: string
+  operator?: string
+  value?: string | number
+  values?: string[]
 }
 
 export interface FreeTextFilter extends BasicFilter {

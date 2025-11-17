@@ -1,7 +1,10 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useSearchDocumentsMutation} from "@/features/documentsList/storage/api"
 import {documentCategoryIDUpdated} from "@/features/documentsList/storage/documentsByCategory"
-import {buildSearchQueryParams} from "@/features/documentsList/utils/searchHelper"
+import {
+  buildSearchQueryParams,
+  uniqueSearchString
+} from "@/features/documentsList/utils/searchHelper"
 import type {SearchQueryParams} from "@/features/search/types"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
@@ -35,6 +38,7 @@ export default function useDocumentsListTable() {
     DEBOUNCE_WAIT_TIME_MS,
     {leading: true}
   )
+  const relevantParamsString = uniqueSearchString(debouncedSearchTokens)
 
   // Trigger search when tokens change or pagination changes
   useEffect(() => {
@@ -48,7 +52,7 @@ export default function useDocumentsListTable() {
 
     // Execute search
     searchDocuments(searchParams)
-  }, [debouncedSearchTokens, pageNumber, pageSize, sorting])
+  }, [relevantParamsString, pageNumber, pageSize, sorting])
 
   // Update document_type_id when data changes
   useEffect(() => {

@@ -71,7 +71,7 @@ def test_tag_filters_with_empty_values_2():
 
 
 def test_category_filters_with_empty_values():
-    """tag filters with empty values are removed from the list"""
+    """category filters with empty values are removed from the list"""
     input = {
         "filters": {
             "categories": [

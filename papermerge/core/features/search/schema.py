@@ -132,7 +132,6 @@ class CategoryFilter(BaseModel):
     """
     values: List[str] = Field(
         ...,
-        min_length=1,
         description="Category names",
         examples=[
             ["Invoice"],
@@ -302,6 +301,16 @@ class SearchFilters(BaseModel):
         are removed from the list
         """
         return [tag for tag in tags if tag.values and len(tag.values) > 0]
+
+    @field_validator('categories')
+    @classmethod
+    def validate_tag_categories(cls, cats: Optional[CategoryFilter]) -> Any:
+        """Validate categories
+
+        Categories values should be non-empty. Categories with empty values
+        are removed from the list
+        """
+        return [cat for cat in cats if cat.values and len(cat.values) > 0]
 
 
 

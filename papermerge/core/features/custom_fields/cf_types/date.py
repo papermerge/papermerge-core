@@ -1,6 +1,9 @@
 from datetime import date, datetime
 from typing import Any, Type
 
+from sqlalchemy.sql import ColumnElement
+from sqlalchemy import cast, Date
+
 from .base import CustomFieldTypeHandler, ValidationResult
 from .config import DateConfig
 from .registry import TypeRegistry
@@ -82,6 +85,51 @@ class DateTypeHandler(CustomFieldTypeHandler[DateConfig]):
             )
 
         return ValidationResult(is_valid=True)
+
+    def get_filter_expression(
+        self,
+        column: ColumnElement,
+        operator: str,
+        value: Any,
+        config: DateConfig
+    ) -> ColumnElement:
+        # Handle null checks without converting value
+        if operator == "is_null":
+            return column.is_(None)
+        elif operator == "is_not_null":
+            return column.isnot(None)
+
+        # Convert to Python date object
+        try:
+            if isinstance(value, str):
+                date_value = datetime.strptime(value, "%Y-%m-%d").date()
+            elif isinstance(value, datetime):
+                date_value = value.date()
+            elif isinstance(value, date):
+                date_value = value
+            else:
+                raise ValueError(f"Cannot convert {type(value)} to date")
+        except (ValueError, TypeError) as ex:
+            raise ValueError(f"Invalid date value '{value}': {ex}")
+
+        # Cast the column to Date type and compare with Python date object
+        date_column = cast(column, Date)
+
+        if operator == "eq":
+            return date_column == date_value
+        elif operator == "ne":
+            return date_column != date_value
+        elif operator == "gt":
+            return date_column > date_value
+        elif operator == "gte":
+            return date_column >= date_value
+        elif operator == "lt":
+            return date_column < date_value
+        elif operator == "lte":
+            return date_column <= date_value
+        else:
+            raise ValueError(f"Unsupported operator for date: {operator}")
+
 
     def get_sort_column(self) -> str:
         return "value_date"

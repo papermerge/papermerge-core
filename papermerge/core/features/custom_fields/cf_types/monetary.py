@@ -116,7 +116,7 @@ class MonetaryTypeHandler(CustomFieldTypeHandler[MonetaryConfig]):
         elif operator == "lte":
             return column <= value
         else:
-            raise ValueError(f"Unsupported operator: {operator}")
+            raise ValueError(f"Unsupported operator for monetary: {operator}")
 
 
     def get_sort_column(self) -> str:

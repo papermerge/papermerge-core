@@ -68,3 +68,23 @@ def test_tag_filters_with_empty_values_2():
     )
 
     assert search_schema.SearchQueryParams(**input) == expected_output
+
+
+def test_category_filters_with_empty_values():
+    """category filters with empty values are removed from the list"""
+    input = {
+        "filters": {
+            "categories": [
+                {"values": []},
+                {"values": [], "operator": "any"},
+                {"values": [], "operator": "not"}
+            ]
+        },
+        "lang": "eng"
+    }
+    expected_output = search_schema.SearchQueryParams(
+        filters=search_schema.SearchFilters(categories=[]),
+        lang=search_schema.SearchLanguage.ENG
+    )
+
+    assert search_schema.SearchQueryParams(**input) == expected_output

@@ -65,7 +65,7 @@ export function TagFilterPresentation({
   return (
     <Box className={styles.tokenContainer} onClick={e => e.stopPropagation()}>
       <Group gap={0}>
-        <Text c={"grape"}>tag:</Text>
+        <Text c={"green"}>tag:</Text>
         <TokenTagOperator item={item} onOperatorChange={onOperatorChange} />
         <TokenTagValues
           selectedTags={selectedTags}
@@ -102,17 +102,15 @@ interface TokenTagOperatorProps {
 function TokenTagOperator({item, onOperatorChange}: TokenTagOperatorProps) {
   const handleChange = (value: string | null) => {
     if (value && onOperatorChange) {
-      // Remove the trailing colon to get just the operator
-      const operator = value.replace(":", "") as TagOperator
-      onOperatorChange(operator)
+      onOperatorChange(value as TagOperator)
     }
   }
 
   return (
     <Select
-      value={`${item.operator || "all"}:`}
+      value={item.operator || "all"}
       w={"8ch"}
-      data={["any:", "all:", "not:"]}
+      data={["any", "all", "not"]}
       size="sm"
       onChange={handleChange}
       onClick={e => e.stopPropagation()}

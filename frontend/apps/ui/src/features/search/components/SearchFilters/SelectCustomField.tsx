@@ -1,6 +1,7 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useGetCustomFieldsQuery} from "@/features/custom-fields/storage/api"
 import {selectDocumentCategoryID} from "@/features/documentsList/storage/documentsByCategory"
+import {CustomFieldFilter} from "@/features/search/microcomp/types"
 import {updateFilter} from "@/features/search/storage/search"
 import {Select} from "@mantine/core"
 
@@ -11,17 +12,21 @@ interface Args {
 export default function SelectCustomField({index}: Args) {
   const dispatch = useAppDispatch()
   const categoryID = useAppSelector(selectDocumentCategoryID)
+  const filter = useAppSelector(
+    state => state.search.filters[index]
+  ) as CustomFieldFilter
+
   const {
     data = [],
     isLoading,
     error
   } = useGetCustomFieldsQuery({document_type_id: categoryID})
-  const selectData = data?.map(i => {
+  const selectData = data.map(i => {
     return {value: i.id, label: i.name}
   })
 
   const handleChange = (value: string | null) => {
-    const cf = data.find(i => i.id == value)
+    const cf = data.find(i => i.id === value)
     if (!cf) {
       console.warn(`filter with ID=${value} not found`)
       return
@@ -31,7 +36,8 @@ export default function SelectCustomField({index}: Args) {
         index,
         updates: {
           typeHandler: cf.type_handler,
-          fieldName: cf.name
+          fieldName: cf.name,
+          id: cf.id
         }
       })
     )
@@ -71,8 +77,10 @@ export default function SelectCustomField({index}: Args) {
     return selectData
   }
 
+  console.log(filter)
   return (
     <Select
+      value={filter.id}
       data={renderSelectData()}
       size="sm"
       onChange={handleChange}

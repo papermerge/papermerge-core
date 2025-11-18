@@ -1,1 +1,3 @@
-export {CFDateFilterContainer as default} from "./CFDateFilter.container"
+import CFDateFilter from "./CFDateFilter"
+
+export default CFDateFilter

@@ -84,6 +84,7 @@ export interface CustomFieldFilter extends BasicFilter {
   operator?: CustomFieldOperator
   typeHandler?: CustomFieldType
   value?: string | number
+  id?: string
 }
 
 export type Filter =

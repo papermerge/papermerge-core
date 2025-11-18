@@ -77,7 +77,6 @@ export default function SelectCustomField({index}: Args) {
     return selectData
   }
 
-  console.log(filter)
   return (
     <Select
       value={filter.id}

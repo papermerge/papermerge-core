@@ -145,6 +145,10 @@ export function uniqueSearchString(filters: Filter[]): string {
       return true
     }
 
+    if (f.type == "cf" && f.value && f.fieldName && f.operator) {
+      return true
+    }
+
     return false
   })
 

@@ -2,6 +2,7 @@ import {useAppSelector} from "@/app/hooks"
 import {CustomFieldFilter} from "@/features/search/microcomp/types"
 import CFDateToken from "./CFDateFilter"
 import CFNumericToken from "./CFNumericFilter"
+import CFSelectTypeHandler from "./CFSelectTypeHandler"
 
 interface Args {
   index: number
@@ -11,6 +12,14 @@ export default function CustomFieldTokenComponent({index}: Args) {
   const filter = useAppSelector(
     state => state.search.filters[index]
   ) as CustomFieldFilter
+
+  if (!filter) {
+    return <>Filter not found</>
+  }
+
+  if (!filter.typeHandler) {
+    return <CFSelectTypeHandler index={index} />
+  }
 
   if (
     filter.typeHandler &&

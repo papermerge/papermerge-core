@@ -21,7 +21,7 @@ export const FILTERS = [
   "owner:"
 ]
 
-export const OPERATOR_NUMERIC = [">=:", ">:", "<=:", "<:", "=:", "!=:"]
+export const OPERATOR_NUMERIC = [">=", ">", "<=", "<", "=", "!="]
 export const OPERATOR_TEXT = [
   "=:",
   "contains:",

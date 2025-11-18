@@ -76,9 +76,8 @@ function parseFreeTextToken({
 
   return null
 }
-function parseFilter(input: string): Filter | null {
-  // Rule: Filter ::= CustomFieldFilter | TagFilter | CategoryFilter | SimpleFilter
 
+function parseFilter(input: string): Filter | null {
   const parts = splitByColon(input)
   const filters = ["cf", "tag", "cat"] as const
 

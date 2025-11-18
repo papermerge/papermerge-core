@@ -25,7 +25,6 @@ export default function useVisibleColumns(
   const hasSelection = selected && selected.length > 0
   let columns: ColumnConfig<DocumentListItem>[] = []
 
-  console.log(categoryID)
   if (categoryID) {
     // different set of columns depending on category ID
     columns = documentByCategoryColumns({items: data?.items, t})

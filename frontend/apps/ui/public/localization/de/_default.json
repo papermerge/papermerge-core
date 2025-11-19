@@ -574,6 +574,10 @@
   "save": "Speichern",
   "files": "Dateien",
   "clearNotifications": "Alle {{count}} Benachrichtigungen löschen",
+  "search": {
+    "showAllFilters": "Alle Filter anzeigen",
+    "showOnlySummary": "Nur Zusammenfassung anzeigen"
+  },
   "currency": {
     "all": "ALL - Albanischer Lek",
     "amd": "AMD - Armenischer Dram",

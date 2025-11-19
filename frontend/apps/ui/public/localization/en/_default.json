@@ -574,6 +574,10 @@
   "save": "Save",
   "files": "Files",
   "clearNotifications": "Clear {{count}} notifications",
+  "search": {
+    "showAllFilters": "Show all filters",
+    "showOnlySummary": "Show only summary"
+  },
   "currency": {
     "all": "ALL - Albanian Lek",
     "amd": "AMD - Armenian Dram",

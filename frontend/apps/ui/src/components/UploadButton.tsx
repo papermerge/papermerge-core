@@ -3,7 +3,7 @@ import {apiSlice} from "@/features/api/slice"
 import {uploadFile} from "@/features/files/filesSlice"
 import {generateThumbnail} from "@/features/nodes/thumbnailObjectsSlice"
 import type {UploadFileOutput} from "@/features/nodes/types"
-import {Button, FileButton, Menu, Tooltip} from "@mantine/core"
+import {Button, FileButton, Menu} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconUpload} from "@tabler/icons-react"
 import {useState} from "react"
@@ -108,15 +108,10 @@ export default function UploadButton() {
     <>
       <Menu shadow="md" width={200}>
         <Menu.Target>
-          <Tooltip
-            label={t("common.upload", {defaultValue: "Upload"})}
-            withArrow
-          >
-            <Button rightSection={<IconChevronDown size={16} />}>
-              <IconUpload size={16} style={{marginRight: 8}} />
-              {t("common.upload")}
-            </Button>
-          </Tooltip>
+          <Button rightSection={<IconChevronDown size={16} />}>
+            <IconUpload size={16} style={{marginRight: 8}} />
+            {t("common.upload")}
+          </Button>
         </Menu.Target>
 
         <Menu.Dropdown>

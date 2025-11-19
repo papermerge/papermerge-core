@@ -20,7 +20,6 @@ import Cookies from "js-cookie"
 import type {
   FileItemStatus,
   FileItemType,
-  FolderType,
   NodeType,
   SortMenuColumn,
   SortMenuDirection
@@ -104,7 +103,7 @@ type DocumentTypeIDArgs = {
 export interface UploaderFileItemArgs {
   item: {
     source: NodeType | null
-    target: FolderType
+    target_id: string
     file_name: string
   }
   status: FileItemStatus
@@ -341,7 +340,7 @@ const uiSlice = createSlice({
       action: PayloadAction<UploaderFileItemArgs>
     ) => {
       const file_name = action.payload.item.file_name
-      const target_id = action.payload.item.target.id
+      const target_id = action.payload.item.target_id
       const itemToAdd = {
         status: action.payload.status,
         error: action.payload.error,

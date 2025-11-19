@@ -1,12 +1,11 @@
-import { uploaderFileItemUpdated } from "@/features/ui/uiSlice";
-import type { FolderType, NodeType, OCRCode } from "@/types";
-import type { UUID } from "@/types.d/common";
-import { getBaseURL, getDefaultHeaders } from "@/utils";
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import axios from "axios";
-import { UploadFileOutput } from "../nodes/types";
-import { fileManager } from "./fileManager";
-
+import {uploaderFileItemUpdated} from "@/features/ui/uiSlice"
+import type {NodeType} from "@/types"
+import type {UUID} from "@/types.d/common"
+import {getBaseURL, getDefaultHeaders} from "@/utils"
+import {createAsyncThunk, createSlice, PayloadAction} from "@reduxjs/toolkit"
+import axios from "axios"
+import {UploadFileOutput} from "../nodes/types"
+import {fileManager} from "./fileManager"
 
 type FilesAddedType = {
   nodeID: string
@@ -16,13 +15,12 @@ type FilesAddedType = {
   size: number
 }
 
-
 type UploadFileInput = {
   file: File
   refreshTarget: boolean
-  target: FolderType
+  target_id: string
   ocr: boolean
-  lang: OCRCode
+  lang: string
 }
 
 type CreateDocumentType = {
@@ -44,10 +42,10 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
     let defaultHeaders = getDefaultHeaders()
     const data1: CreateDocumentType = {
       title: args.file.name,
-      parent_id: args.target.id,
+      parent_id: args.target_id,
       ctype: "document",
       lang: args.lang,
-      ocr: args.ocr
+      ocr: false
     }
     const buffer = await args.file.arrayBuffer()
 
@@ -55,7 +53,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
       uploaderFileItemUpdated({
         item: {
           source: null,
-          target: args.target,
+          target_id: args.target_id,
           file_name: args.file.name
         },
         status: "uploading",
@@ -79,7 +77,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
         uploaderFileItemUpdated({
           item: {
             source: null,
-            target: args.target,
+            target_id: args.target_id,
             file_name: args.file.name
           },
           status: "failure",
@@ -89,7 +87,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
       return {
         file_name: args.file.name,
         source: null,
-        target: args.target
+        target_id: args.target_id
       }
     }
 
@@ -98,7 +96,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
         uploaderFileItemUpdated({
           item: {
             source: null,
-            target: args.target,
+            target_id: args.target_id,
             file_name: args.file.name
           },
           status: "failure",
@@ -108,7 +106,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
       return {
         file_name: args.file.name,
         source: null,
-        target: args.target
+        target_id: args.target_id
       }
     }
 
@@ -151,7 +149,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
         uploaderFileItemUpdated({
           item: {
             source: null,
-            target: args.target,
+            target_id: args.target_id,
             file_name: args.file.name
           },
           status: "failure",
@@ -161,7 +159,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
       return {
         file_name: args.file.name,
         source: null,
-        target: args.target
+        target_id: args.target_id
       }
     }
 
@@ -170,7 +168,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
         uploaderFileItemUpdated({
           item: {
             source: createdNode,
-            target: args.target,
+            target_id: args.target_id,
             file_name: args.file.name
           },
           status: "success",
@@ -183,7 +181,7 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
         uploaderFileItemUpdated({
           item: {
             source: null,
-            target: args.target,
+            target_id: args.target_id,
             file_name: args.file.name
           },
           status: "failure",
@@ -193,14 +191,14 @@ export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
       return {
         file_name: args.file.name,
         source: null,
-        target: args.target
+        target_id: args.target_id
       }
     }
 
     return {
       file_name: args.file.name,
       source: createdNode,
-      target: args.target
+      target_id: args.target_id
     }
   }
 )
@@ -222,18 +220,15 @@ const initialState: FilesState = {
   files: []
 }
 
-
 export const filesSlice = createSlice({
   name: "files",
   initialState,
   reducers: {
     filesAdded(state, action: PayloadAction<FilesAddedType>) {
-      state.files = [
-        ...state.files, action.payload
-      ]
+      state.files = [...state.files, action.payload]
     }
-  },
+  }
 })
 
 export default filesSlice.reducer
-export const { filesAdded } = filesSlice.actions
+export const {filesAdded} = filesSlice.actions

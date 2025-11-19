@@ -1,8 +1,7 @@
-
-import type { FolderType, NodeType } from "@/types"
+import type {NodeType} from "@/types"
 
 export type UploadFileOutput = {
   source: NodeType | null
-  target: FolderType
+  target_id: string
   file_name: string
 }

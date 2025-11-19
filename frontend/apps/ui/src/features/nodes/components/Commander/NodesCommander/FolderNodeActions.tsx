@@ -23,7 +23,6 @@ import EditNodeTagsButton from "./EditNodeTagsButton"
 import EditNodeTitleButton from "./EditNodeTitleButton"
 import NewFolderButton from "./NewFolderButton"
 import SortMenu from "./SortMenu"
-import UploadButton from "./UploadButton"
 
 export default function FolderNodeActions() {
   const [filterText, selectFilterText] = useState<string>()
@@ -51,7 +50,6 @@ export default function FolderNodeActions() {
   return (
     <Group ref={ref} justify="space-between">
       <Group>
-        {selectedCount == 0 && <UploadButton />}
         {selectedCount == 0 && <NewFolderButton />}
         {selectedCount == 1 && <EditNodeTitleButton />}
         {selectedCount == 1 && <EditNodeTagsButton />}

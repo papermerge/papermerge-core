@@ -6,6 +6,7 @@ import classes from "./Header.module.css"
 
 import {ClearNotificationsButton} from "@/features/notifications/components/ClearButton"
 import Search from "@/features/search/components/Search"
+import UploadButton from "../UploadButton"
 import SidebarToggle from "./SidebarToggle"
 import UserMenu from "./UserMenu"
 
@@ -25,6 +26,7 @@ function Header() {
         <Group>
           <SidebarToggle />
           <img src={logoURL} width={"30px"} />
+          <UploadButton />
           <ClearNotificationsButton />
         </Group>
         <Group

@@ -1,9 +1,7 @@
-// features/ui/panelRegistry.ts
 import type {RootState} from "@/app/types"
 import type {PanelComponent} from "@/types.d/ui"
-import {createSlice, PayloadAction} from "@reduxjs/toolkit"
+import {createSelector, createSlice, PayloadAction} from "@reduxjs/toolkit"
 import type {SortState} from "kommon"
-import {createSelector} from "@reduxjs/toolkit"
 
 // ============================================================================
 // TYPES

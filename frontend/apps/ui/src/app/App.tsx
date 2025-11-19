@@ -10,7 +10,6 @@ import {
   selectCurrentUserStatus
 } from "@/slices/currentUser"
 
-import Uploader from "@/components/Uploader"
 import "./App.css"
 import {useUILanguage, useUITheme} from "./hooks"
 
@@ -37,7 +36,7 @@ function App() {
         <main className="main-content">
           <Outlet />
         </main>
-        <Uploader />
+        {/* <Uploader /> */}
       </div>
     </>
   )

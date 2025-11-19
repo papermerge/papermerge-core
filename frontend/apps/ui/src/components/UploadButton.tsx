@@ -3,10 +3,9 @@ import {apiSlice} from "@/features/api/slice"
 import {uploadFile} from "@/features/files/filesSlice"
 import {generateThumbnail} from "@/features/nodes/thumbnailObjectsSlice"
 import type {UploadFileOutput} from "@/features/nodes/types"
-import {Button, FileButton, Menu} from "@mantine/core"
+import {Button, Menu} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconUpload} from "@tabler/icons-react"
-import {useState} from "react"
 
 import {
   SUPPORTED_EXTENSIONS,
@@ -22,6 +21,7 @@ import {
   IconHome,
   IconInbox
 } from "@tabler/icons-react"
+import {useRef, useState} from "react"
 import {useTranslation} from "react-i18next"
 import SupportedFilesInfoModal from "../features/nodes/components/Commander/NodesCommander/SupportedFilesInfoModal"
 
@@ -35,14 +35,17 @@ type UploadDestination = {
 export default function UploadButton() {
   const {t} = useTranslation()
   const dispatch = useAppDispatch()
+  const [selectedDestinationID, setSelectedDestinationID] = useState<string>()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [
     supportedFilesInfoOpened,
     {open: supportedFilesInfoOpen, close: supportedFilesInfoClose}
   ] = useDisclosure(false)
-  const [uploadFiles, setUploadFiles] = useState<File[]>()
+
   const folderID = useAppSelector(s => selectCurrentNodeID(s, "main"))
   const currentUser = useAppSelector(selectCurrentUser)
   const userPreferences = useAppSelector(selectMyPreferences)
+
   let destinations: UploadDestination[] = [
     {
       id: currentUser.inbox_folder_id,
@@ -68,49 +71,87 @@ export default function UploadButton() {
     })
   }
 
-  const onUpload = async (files: File[], destinationID: string) => {
-    if (!files) {
-      console.error("Empty array for uploaded files")
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = event.target.files
+    console.log(
+      "File input changed, files:",
+      files,
+      "destination:",
+      selectedDestinationID
+    )
+
+    if (!files || files.length === 0 || !selectedDestinationID) {
+      console.error("No files selected or no destination")
       return
     }
 
-    const validFiles = files.filter(isSupportedFile)
+    const fileArray = Array.from(files)
+    const validFiles = fileArray.filter(isSupportedFile)
 
     if (validFiles.length === 0) {
       supportedFilesInfoOpen()
+      // Reset input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
       return
     }
-    if (uploadFiles) {
-      for (let i = 0; i < uploadFiles.length; i++) {
-        const result = await dispatch(
-          uploadFile({
-            file: uploadFiles[i],
-            refreshTarget: true,
-            lang: userPreferences.uploaded_document_lang,
-            ocr: false,
-            target_id: destinationID
-          })
-        )
-        const newlyCreatedNode = result.payload as UploadFileOutput
 
-        if (newlyCreatedNode.source?.id) {
-          const newNodeID = newlyCreatedNode.source?.id
-          dispatch(
-            generateThumbnail({node_id: newNodeID, file: uploadFiles[i]})
-          )
-        }
-        dispatch(apiSlice.util.invalidateTags(["Node"]))
+    for (let i = 0; i < validFiles.length; i++) {
+      const result = await dispatch(
+        uploadFile({
+          file: validFiles[i],
+          refreshTarget: true,
+          lang: userPreferences.uploaded_document_lang,
+          ocr: false,
+          target_id: selectedDestinationID
+        })
+      )
+      const newlyCreatedNode = result.payload as UploadFileOutput
+
+      if (newlyCreatedNode.source?.id) {
+        const newNodeID = newlyCreatedNode.source?.id
+        dispatch(generateThumbnail({node_id: newNodeID, file: validFiles[i]}))
       }
     }
+
+    dispatch(apiSlice.util.invalidateTags(["Node"]))
+
+    // Reset the file input and destination
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+    setSelectedDestinationID(undefined)
+  }
+
+  const handleMenuItemClick = (destinationID: string) => {
+    console.log("Menu item clicked, destination:", destinationID)
+    setSelectedDestinationID(destinationID)
+    // Trigger file input click
+    setTimeout(() => {
+      fileInputRef.current?.click()
+    }, 100)
   }
 
   return (
     <>
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={MIME_TYPES}
+        multiple
+        onChange={handleFileChange}
+        style={{display: "none"}}
+      />
+
       <Menu shadow="md" width={200}>
         <Menu.Target>
           <Button rightSection={<IconChevronDown size={16} />}>
             <IconUpload size={16} style={{marginRight: 8}} />
-            {t("common.upload")}
+            {t("common.upload", {defaultValue: "Upload"})}
           </Button>
         </Menu.Target>
 
@@ -119,18 +160,13 @@ export default function UploadButton() {
             {t("common.upload_to", {defaultValue: "Upload to"})}
           </Menu.Label>
           {destinations.map(dest => (
-            <FileButton
+            <Menu.Item
               key={dest.id}
-              onChange={files => onUpload(files, dest.id)}
-              accept={MIME_TYPES}
-              multiple
+              leftSection={dest.icon}
+              onClick={() => handleMenuItemClick(dest.id)}
             >
-              {props => (
-                <Menu.Item leftSection={dest.icon} {...props}>
-                  {dest.label}
-                </Menu.Item>
-              )}
-            </FileButton>
+              {dest.label}
+            </Menu.Item>
           ))}
         </Menu.Dropdown>
       </Menu>

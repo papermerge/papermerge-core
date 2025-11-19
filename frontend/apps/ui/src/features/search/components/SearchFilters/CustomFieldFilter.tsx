@@ -1,7 +1,7 @@
 import {useAppSelector} from "@/app/hooks"
 import {CustomFieldFilter} from "@/features/search/microcomp/types"
-import CFDateToken from "./CFDateFilter"
-import CFNumericToken from "./CFNumericFilter"
+import CFDateFilter from "./CFDateFilter"
+import CFNumericFilter from "./CFNumericFilter"
 import CFSelectTypeHandler from "./CFSelectTypeHandler"
 
 interface Args {
@@ -25,11 +25,11 @@ export default function CustomFieldTokenComponent({index}: Args) {
     filter.typeHandler &&
     ["int", "float", "monetary"].includes(filter.typeHandler)
   ) {
-    return <CFNumericToken index={index} />
+    return <CFNumericFilter index={index} />
   }
 
   if (filter.typeHandler == "date") {
-    return <CFDateToken index={index} />
+    return <CFDateFilter index={index} />
   }
 
   return <>Unknown Custom Field Token: {filter.typeHandler}</>

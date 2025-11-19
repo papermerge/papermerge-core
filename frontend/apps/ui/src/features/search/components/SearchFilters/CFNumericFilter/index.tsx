@@ -1,1 +1,3 @@
-export {CFNumericFilterContainer as default} from "./CFNumericFilter.container"
+import CFNumericFilter from "./CFNumericFilter"
+
+export default CFNumericFilter

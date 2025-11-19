@@ -18,7 +18,7 @@ import {useEffect} from "react"
 const DEBOUNCE_WAIT_TIME_MS = 600 // miliseconds
 
 export default function useDocumentsListTable() {
-  const {panelId} = usePanel()
+  const {panelId, actions} = usePanel()
   const dispatch = useAppDispatch()
 
   // Get search tokens from Redux
@@ -53,6 +53,11 @@ export default function useDocumentsListTable() {
     // Execute search
     searchDocuments(searchParams)
   }, [relevantParamsString, pageNumber, pageSize, sorting])
+
+  useEffect(() => {
+    // reset page number when search param change
+    actions.updatePagination({pageNumber: 1})
+  }, [relevantParamsString])
 
   // Update document_type_id when data changes
   useEffect(() => {

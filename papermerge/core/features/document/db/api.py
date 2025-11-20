@@ -41,7 +41,6 @@ from papermerge.core.pathlib import (
 )
 from papermerge.core import config
 
-
 settings = config.get_settings()
 logger = logging.getLogger(__name__)
 
@@ -491,7 +490,8 @@ async def create_document(
         owner_type=owner_type,
         owner_id=owner_id,
         name=attrs.title,
-        parent_id=attrs.parent_id
+        parent_id=attrs.parent_id,
+        ctype="folder"
     )
 
     if not is_unique:

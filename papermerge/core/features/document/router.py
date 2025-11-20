@@ -10,6 +10,7 @@ from fastapi import (
     status,
     Query,
     Depends,
+    Form
 )
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,6 +26,8 @@ from papermerge.core.features.document.schema import (
 from papermerge.core import schema
 from papermerge.core.config import get_settings, FileServer
 from papermerge.core.tasks import send_task
+from papermerge.core.features.nodes.db import api as nodes_dbapi
+from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.db import common as dbapi_common
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.db.engine import get_db
@@ -146,6 +149,124 @@ async def get_document_custom_field_values(
         )
     except NoResultFound:
         raise exc.HTTP404NotFound()
+
+    return doc
+
+
+@router.post(
+    "/upload",
+    status_code=201,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{scopes.NODE_CREATE}` or `{scopes.DOCUMENT_UPLOAD}` permission",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
+async def upload_document(
+    user: require_scopes(scopes.NODE_CREATE, scopes.DOCUMENT_UPLOAD),
+    file: UploadFile,
+    title: str | None = Form(None),
+    parent_id: uuid.UUID | None = Form(None),
+    ocr: bool = Form(False),
+    lang: str | None = Form(None),
+    db_session: AsyncSession = Depends(get_db),
+) -> schema.Document:
+    """
+    Upload a document with metadata in a single request.
+
+    This is a convenience endpoint that combines node creation and file upload.
+
+    Usage with cURL:
+
+            $ curl <server url>/api/documents/upload -F "file=@booking.pdf"
+                -F "title=coco.pdf"
+                -F "lang=eng"
+                -F "parent_id=<UUID of parent folder>"
+
+    The only required field is `file`:
+
+            $ curl <server url>/api/documents/upload -F "file=@booking.pdf"
+
+    If parent_id is not provided, the document will be uploaded to the user's inbox.
+    If title is not provided, the filename will be used as the title.
+    User needs as well `NODE_VIEW` permission on the parent folder.
+    (Users of course have `NODE_VIEW` permission on their own inbox folder)
+    """
+    if parent_id is None:
+        parent_id = user.inbox_folder_id
+
+    if not title:
+        title = file.filename
+
+    # Check permission on parent
+    if not await dbapi_common.has_node_perm(
+        db_session,
+        node_id=parent_id,
+        codename=scopes.NODE_VIEW,
+        user_id=user.id,
+    ):
+        raise exc.HTTP403Forbidden()
+
+    # At this point user has
+    # 1. NODE_VIEW perm on the parent node
+    # 2. CREATE_NODE and DOCUMENT_UPLOAD perms
+
+    # Use user's default language if not specified
+    if lang is None:
+        default_value = config.papermerge__main__default_document_lang
+        # take value from user preferences if present or from
+        # global application config otherwise
+        lang = user.preferences.document_default_lang or default_value
+
+    # Read file content
+    content = await file.read()
+
+    max_file_size = config.papermerge__main__max_file_size * 1024 * 1024
+    if len(content) > max_file_size:
+        raise HTTPException(
+            status_code=413,  # Payload Too Large
+            detail=f"File too large. Maximum size is {max_file_size / (1024*1024)}MB"
+        )
+
+    # Create document node
+    new_document = schema.NewDocument(
+        title=title,
+        lang=lang,
+        parent_id=parent_id,
+        size=file.size or 0,
+        page_count=0,
+        ocr=ocr,
+        file_name=file.filename or title,
+        ctype="document",
+    )
+
+    async with AsyncAuditContext(
+        db_session,
+        user_id=user.id,
+        username=user.username
+    ):
+        # Step 1: Create document node
+        created_node, error = await doc_dbapi.create_document(db_session, new_document)
+
+        if error:
+            raise HTTPException(status_code=400, detail=error.model_dump())
+
+        # Step 2: Upload file content
+        doc, upload_error = await dbapi.upload(
+            db_session,
+            document_id=created_node.id,
+            size=file.size or 0,
+            content=io.BytesIO(content),
+            file_name=file.filename or title,
+            content_type=file.headers.get("content-type"),
+        )
+
+        if upload_error:
+            await nodes_dbapi.delete_nodes(
+                db_session, node_ids=[created_node.id], user_id=user.id
+            )
+            raise HTTPException(status_code=400, detail=upload_error.model_dump())
 
     return doc
 

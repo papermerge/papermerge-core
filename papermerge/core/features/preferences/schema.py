@@ -128,6 +128,10 @@ class Preferences(BaseModel):
         default="light",
         description="UI Theme"
     )
+    document_default_lang: str | None = Field(
+        default=None,
+        description="Default language for the documents"
+    )
 
     @field_validator('timezone')
     @classmethod

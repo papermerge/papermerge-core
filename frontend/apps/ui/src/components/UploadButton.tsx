@@ -14,23 +14,14 @@ import {
 import {isSupportedFile} from "@/features/nodes/utils"
 import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
+import useUploadDestinationFolder from "@/hooks/useUploadDestinationFolder"
 import {selectCurrentUser} from "@/slices/currentUser"
-import {
-  IconChevronDown,
-  IconFolder,
-  IconHome,
-  IconInbox
-} from "@tabler/icons-react"
+import {IconChevronDown, IconFolder} from "@tabler/icons-react"
 import {useRef, useState} from "react"
 import {useTranslation} from "react-i18next"
 import SupportedFilesInfoModal from "../features/nodes/components/Commander/NodesCommander/SupportedFilesInfoModal"
 
 const MIME_TYPES = [...SUPPORTED_EXTENSIONS, ...SUPPORTED_MIME_TYPES].join(",")
-type UploadDestination = {
-  id: string
-  label: string
-  icon: React.ReactNode
-}
 
 export default function UploadButton() {
   const {t} = useTranslation()
@@ -46,18 +37,7 @@ export default function UploadButton() {
   const currentUser = useAppSelector(selectCurrentUser)
   const userPreferences = useAppSelector(selectMyPreferences)
 
-  let destinations: UploadDestination[] = [
-    {
-      id: currentUser.inbox_folder_id,
-      label: t("common.inbox", {defaultValue: "Inbox"}),
-      icon: <IconInbox size={16} />
-    },
-    {
-      id: currentUser.home_folder_id,
-      label: t("common.home", {defaultValue: "Home"}),
-      icon: <IconHome size={16} />
-    }
-  ]
+  let destinations = useUploadDestinationFolder()
 
   if (
     folderID &&
@@ -67,7 +47,7 @@ export default function UploadButton() {
     destinations.push({
       id: folderID,
       label: t("common.current_location", {defaultValue: "Current Location"}),
-      icon: <IconFolder size={16} />
+      icon: IconFolder
     })
   }
 
@@ -111,7 +91,7 @@ export default function UploadButton() {
       )
       const newlyCreatedNode = result.payload as UploadFileOutput
 
-      if (newlyCreatedNode.source?.id) {
+      if (newlyCreatedNode && newlyCreatedNode.source?.id) {
         const newNodeID = newlyCreatedNode.source?.id
         dispatch(generateThumbnail({node_id: newNodeID, file: validFiles[i]}))
       }
@@ -134,6 +114,19 @@ export default function UploadButton() {
       fileInputRef.current?.click()
     }, 100)
   }
+
+  const MenuItems = destinations.map(dest => {
+    const Icon = dest.icon
+    return (
+      <Menu.Item
+        key={dest.id}
+        leftSection={<Icon size={16} />}
+        onClick={() => handleMenuItemClick(dest.id)}
+      >
+        {dest.label}
+      </Menu.Item>
+    )
+  })
 
   return (
     <>
@@ -159,15 +152,7 @@ export default function UploadButton() {
           <Menu.Label>
             {t("common.upload_to", {defaultValue: "Upload to"})}
           </Menu.Label>
-          {destinations.map(dest => (
-            <Menu.Item
-              key={dest.id}
-              leftSection={dest.icon}
-              onClick={() => handleMenuItemClick(dest.id)}
-            >
-              {dest.label}
-            </Menu.Item>
-          ))}
+          {MenuItems}
         </Menu.Dropdown>
       </Menu>
 

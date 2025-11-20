@@ -570,3 +570,9 @@ export type ExtractPagesReturnType = {
   source?: DocumentType
   target: DocumentType
 }
+
+export type SpecialFolderType = {
+  id: string
+  label: string
+  icon: React.ComponentType<{size?: number; stroke?: number; color?: string}>
+}

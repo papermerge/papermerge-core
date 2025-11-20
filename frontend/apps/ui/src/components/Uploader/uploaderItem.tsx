@@ -1,6 +1,4 @@
-import {useAppSelector} from "@/app/hooks"
-import PanelContext from "@/contexts/PanelContext"
-import {FileItemType, PanelMode} from "@/types"
+import {FileItemType} from "@/types"
 import {
   Box,
   Group,
@@ -11,11 +9,10 @@ import {
   Tooltip,
   rem
 } from "@mantine/core"
-import {IconCircleCheck, IconFolder, IconX} from "@tabler/icons-react"
-import {useContext} from "react"
-import {useNavigate} from "react-router-dom"
+import {IconCircleCheck, IconX} from "@tabler/icons-react"
+//import {useNavigate} from "react-router-dom"
 
-import {selectLastPageSize} from "@/features/ui/uiSlice"
+//import {selectLastPageSize} from "@/features/ui/uiSlice"
 import classes from "./uploaderItem.module.css"
 
 type Args = {
@@ -23,13 +20,13 @@ type Args = {
 }
 
 export default function UploaderItem({fileItem}: Args) {
-  const mode: PanelMode = useContext(PanelContext)
-  const navigate = useNavigate()
-  const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
+  //const mode: PanelMode = useContext(PanelContext)
+  //const navigate = useNavigate()
+  //const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
   let statusComponent
 
   const onTargetClick = () => {
-    navigate(`/folder/${fileItem.target.id}?page_size=${lastPageSize}`)
+    //navigate(`/folder/${fileItem.target.id}?page_size=${lastPageSize}`)
   }
 
   const onFileClick = () => {
@@ -57,6 +54,7 @@ export default function UploaderItem({fileItem}: Args) {
       <Tooltip label={fileItem.error}>
         <List.Item className={classes.uploaderItem} icon={statusComponent}>
           <Group justify="space-between">
+            {/*
             <Group
               justify="center"
               gap="xs"
@@ -65,6 +63,7 @@ export default function UploaderItem({fileItem}: Args) {
             >
               <IconFolder /> {fileItem.target.title}
             </Group>
+            */}
             <Box className={classes.uploaderItemFile}>{fileItem.file_name}</Box>
           </Group>
         </List.Item>
@@ -75,12 +74,14 @@ export default function UploaderItem({fileItem}: Args) {
   return (
     <List.Item className={classes.uploaderItem} icon={statusComponent}>
       <Group justify="space-between">
+        {/*
         <Group className={classes.uploaderItemTarget} onClick={onTargetClick}>
           <IconFolder />
           <Text w={150} truncate="end">
             {fileItem.target.title}
           </Text>
         </Group>
+        */}
         <Box className={classes.uploaderItemFile} onClick={onFileClick}>
           <Text w={150} truncate="end">
             {fileItem.file_name}

@@ -5,6 +5,7 @@ import {Outlet} from "react-router-dom"
 
 import Header from "@/components/Header/Header"
 import NavBar from "@/components/NavBar"
+import Uploader from "@/components/Uploader"
 import {
   selectCurrentUserError,
   selectCurrentUserStatus
@@ -36,7 +37,7 @@ function App() {
         <main className="main-content">
           <Outlet />
         </main>
-        {/* <Uploader /> */}
+        <Uploader />
       </div>
     </>
   )

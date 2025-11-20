@@ -5,12 +5,12 @@ import {Outlet} from "react-router-dom"
 
 import Header from "@/components/Header/Header"
 import NavBar from "@/components/NavBar"
+import Uploader from "@/components/Uploader"
 import {
   selectCurrentUserError,
   selectCurrentUserStatus
 } from "@/slices/currentUser"
 
-import Uploader from "@/components/Uploader"
 import "./App.css"
 import {useUILanguage, useUITheme} from "./hooks"
 

@@ -61,6 +61,8 @@ export type Preferences = {
   number_format: string
   timestamp_format: string
   ui_theme: string // light / dark
+  uploaded_document_lang: string
+  search_lang: string
 }
 
 export interface SelectOption {

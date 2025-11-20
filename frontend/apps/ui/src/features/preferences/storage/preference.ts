@@ -14,7 +14,9 @@ const defaultPreferences: Preferences = {
   number_format: "eu_dot",
   timezone: "UTC",
   ui_language: "en",
-  ui_theme: "light"
+  ui_theme: "light",
+  uploaded_document_lang: "eng",
+  search_lang: "eng"
 }
 
 export const initialState: PreferencesState = {

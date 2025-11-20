@@ -222,7 +222,7 @@ async def upload_document(
     # Read file content
     content = await file.read()
 
-    max_file_size = config.papermerge__main__max_file_size * 1024 * 1024
+    max_file_size = config.papermerge__main__max_file_size_mb * 1024 * 1024
     if len(content) > max_file_size:
         raise HTTPException(
             status_code=413,  # Payload Too Large

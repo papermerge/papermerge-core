@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     # default value for document full text search language (if nothing else
     # is provided)
     papermerge__main__default_search_lang: str = 'deu'
+    papermerge__main__max_file_size_mb: int = 25  # in MB
     papermerge__main__logging_cfg: Path | None = Path("/etc/papermerge/logging.yaml")
     papermerge__main__media_root: Path = Path("media")
     papermerge__main__api_prefix: str = ''

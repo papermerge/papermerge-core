@@ -178,21 +178,18 @@ async def upload_document(
     This is a convenience endpoint that combines node creation and file upload.
 
     Usage with cURL:
-        $ curl <server url>/documents/upload \
-          -F "file=@booking.pdf" \
-          -F "title=My Booking" \
-          -F "parent_id=6a3e3953-3b7d-429e-a6c8-d361b7953eb9" \
-          -F "lang=deu" \
-          -H "Authorization: Bearer <your token>"
+
+            $ curl <server url>/api/documents/upload -F "file=@booking.pdf"
+                -F "title=coco.pdf"
+                -F "lang=eng"
+                -F "parent_id=<UUID of parent folder>"
+
+    The only required field is `file`:
+
+            $ curl <server url>/api/documents/upload -F "file=@booking.pdf"
 
     If parent_id is not provided, the document will be uploaded to the user's inbox.
     If title is not provided, the filename will be used as the title.
-
-    The basic version would be:
-
-        $ curl <server url>/documents/upload \
-          -F "file=@booking.pdf" \
-          -H "Authorization: Bearer <your token>"
     """
     if parent_id is None:
         parent_id = user.inbox_folder_id
@@ -218,6 +215,13 @@ async def upload_document(
 
     # Read file content
     content = await file.read()
+
+    max_file_size = config.papermerge__main__max_file_size * 1024 * 1024
+    if len(content) > max_file_size:
+        raise HTTPException(
+            status_code=413,  # Payload Too Large
+            detail=f"File too large. Maximum size is {max_file_size / (1024*1024)}MB"
+        )
 
     # Create document node
     new_document = schema.NewDocument(

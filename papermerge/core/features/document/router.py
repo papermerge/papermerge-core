@@ -190,6 +190,8 @@ async def upload_document(
 
     If parent_id is not provided, the document will be uploaded to the user's inbox.
     If title is not provided, the filename will be used as the title.
+    User needs as well `NODE_VIEW` permission on the parent folder.
+    (Users of course have `NODE_VIEW` permission on their own inbox folder)
     """
     if parent_id is None:
         parent_id = user.inbox_folder_id
@@ -201,10 +203,14 @@ async def upload_document(
     if not await dbapi_common.has_node_perm(
         db_session,
         node_id=parent_id,
-        codename=scopes.NODE_CREATE,
+        codename=scopes.NODE_VIEW,
         user_id=user.id,
     ):
         raise exc.HTTP403Forbidden()
+
+    # At this point user has
+    # 1. NODE_VIEW perm on the parent node
+    # 2. CREATE_NODE and DOCUMENT_UPLOAD perms
 
     # Use user's default language if not specified
     if lang is None:
@@ -236,9 +242,9 @@ async def upload_document(
     )
 
     async with AsyncAuditContext(
-            db_session,
-            user_id=user.id,
-            username=user.username
+        db_session,
+        user_id=user.id,
+        username=user.username
     ):
         # Step 1: Create document node
         created_node, error = await doc_dbapi.create_document(db_session, new_document)

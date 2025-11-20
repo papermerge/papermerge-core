@@ -10,6 +10,12 @@ class FileServer(str, Enum):
 
 class Settings(BaseSettings):
     papermerge__database__url: str
+    # default value for document's "lang" attribute (if nothing else
+    # is provided)
+    papermerge__main__default_document_lang: str = 'deu'
+    # default value for document full text search language (if nothing else
+    # is provided)
+    papermerge__main__default_search_lang: str = 'deu'
     papermerge__main__logging_cfg: Path | None = Path("/etc/papermerge/logging.yaml")
     papermerge__main__media_root: Path = Path("media")
     papermerge__main__api_prefix: str = ''
@@ -20,6 +26,7 @@ class Settings(BaseSettings):
     papermerge__main__cf_domain: str | None = None
     papermerge__main__cache_enabled: bool = False
     papermerge__redis__url: str | None = None
+
     papermerge__ocr__default_lang_code: str = 'deu'
     papermerge__preview__page_size_sm: int = 200  # pixels
     # When is OCR triggered ?
@@ -34,6 +41,4 @@ class Settings(BaseSettings):
 settings = Settings()
 
 def get_settings():
-    # lazy load setting
-
     return settings

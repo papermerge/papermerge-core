@@ -32,19 +32,19 @@ class InvalidFileError(Exception):
 
 # Magic bytes for file type detection
 MAGIC_BYTES = {
-    MimeType.PDF: [
+    MimeType.application_pdf: [
         b'%PDF-',  # PDF signature at start
     ],
-    MimeType.JPEG: [
+    MimeType.image_jpeg: [
         b'\xFF\xD8\xFF\xDB',  # JPEG/JFIF
         b'\xFF\xD8\xFF\xE0',  # JPEG/JFIF
         b'\xFF\xD8\xFF\xE1',  # JPEG/EXIF
         b'\xFF\xD8\xFF\xEE',  # JPEG
     ],
-    MimeType.PNG: [
+    MimeType.image_png: [
         b'\x89PNG\r\n\x1a\n',  # PNG signature
     ],
-    MimeType.TIFF: [
+    MimeType.image_tiff: [
         b'II\x2A\x00',  # TIFF little-endian
         b'MM\x00\x2A',  # TIFF big-endian
     ],
@@ -53,12 +53,12 @@ MAGIC_BYTES = {
 
 # File extension to mime type mapping
 EXTENSION_MAP = {
-    'pdf': MimeType.PDF,
-    'jpg': MimeType.JPEG,
-    'jpeg': MimeType.JPEG,
-    'png': MimeType.PNG,
-    'tif': MimeType.TIFF,
-    'tiff': MimeType.TIFF,
+    'pdf': MimeType.application_pdf,
+    'jpg': MimeType.image_jpeg,
+    'jpeg': MimeType.image_jpeg,
+    'png': MimeType.image_png,
+    'tif': MimeType.image_tiff,
+    'tiff': MimeType.image_tiff,
 }
 
 
@@ -124,7 +124,7 @@ def validate_file_structure(content: bytes, mime_type: MimeType) -> None:
         InvalidFileError: If file is corrupted or cannot be processed
     """
     try:
-        if mime_type == MimeType.PDF:
+        if mime_type == MimeType.application_pdf:
             # Validate PDF structure using pikepdf
             pdf = pikepdf.open(io.BytesIO(content))
             page_count = len(pdf.pages)
@@ -140,7 +140,7 @@ def validate_file_structure(content: bytes, mime_type: MimeType) -> None:
             # pikepdf objects are context managers, close explicitly
             pdf.close()
 
-        elif mime_type in (MimeType.JPEG, MimeType.PNG, MimeType.TIFF):
+        elif mime_type in (MimeType.image_jpeg, MimeType.image_png, MimeType.image_tiff):
             # Validate image structure
             img = Image.open(io.BytesIO(content))
             img.verify()  # Checks for corruption
@@ -282,12 +282,12 @@ def get_file_info(content: bytes, filename: str) -> dict:
     }
 
     try:
-        if mime_type == MimeType.PDF:
+        if mime_type == MimeType.application_pdf:
             pdf = pikepdf.open(io.BytesIO(content))
             info['page_count'] = len(pdf.pages)
             pdf.close()
 
-        elif mime_type in (MimeType.JPEG, MimeType.PNG, MimeType.TIFF):
+        elif mime_type in (MimeType.image_jpeg, MimeType.image_png, MimeType.image_tiff):
             img = Image.open(io.BytesIO(content))
             info['page_count'] = 1
             info['dimensions'] = img.size

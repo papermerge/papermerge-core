@@ -62,7 +62,7 @@ class DocumentVersion(Base, AuditColumns):
     size: Mapped[int] = mapped_column(default=0)
     mime_type: Mapped[MimeType] = mapped_column(
         Enum(MimeType, name="document_version_mime_type"),
-        nullable=True
+        nullable=False
     )
     checksum: Mapped[str] = mapped_column(nullable=True)
     checksum_algorithm: Mapped[str] = mapped_column(nullable=True)

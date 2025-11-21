@@ -33,7 +33,7 @@ from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.db.engine import get_db
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 from .schema import DocumentParams
-from mime_detection import (
+from .mime_detection import (
     UnsupportedFileTypeError,
     InvalidFileError,
     detect_and_validate_mime_type,
@@ -227,8 +227,6 @@ async def upload_document(
     # Read file content
     content = await file.read()
     client_content_type=file.headers.get("content-type")
-    # Reset stream position for potential reuse
-    content.seek(0)
 
     # Detect and validate mime type
     try:

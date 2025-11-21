@@ -275,7 +275,7 @@ async def upload_document(
         username=user.username
     ):
         # Step 1: Create document node
-        created_node, error = await doc_dbapi.create_document(db_session, new_document)
+        created_node, error = await doc_dbapi.create_document(db_session, new_document, mime_type=mime_type)
 
         if error:
             raise HTTPException(status_code=400, detail=error.model_dump())

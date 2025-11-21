@@ -465,7 +465,9 @@ async def get_documents_by_type_paginated(
 
 
 async def create_document(
-    db_session: AsyncSession, attrs: schema.NewDocument
+    db_session: AsyncSession,
+    attrs: schema.NewDocument,
+    mime_type: MimeType
 ) -> Tuple[schema.Document | None, schema.Error | None]:
 
     error = None
@@ -522,6 +524,7 @@ async def create_document(
         size=0,
         page_count=0,
         lang=attrs.lang,
+        mime_type=mime_type,
         short_description="Original",
     )
 

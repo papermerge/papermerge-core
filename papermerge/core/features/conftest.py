@@ -16,6 +16,7 @@ from sqlalchemy import select, text, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from papermerge.core.types import MimeType
 from papermerge.core import schema
 from papermerge.core.utils.tz import utc_now
 from papermerge.core.tests.resource_file import ResourceFile
@@ -129,7 +130,7 @@ def make_document(db_session: AsyncSession):
         attrs = doc_schema.NewDocument(
             title=title, parent_id=parent.id, ocr_status=ocr_status, lang=lang
         )
-        doc, _ = await doc_dbapi.create_document(db_session, attrs)
+        doc, _ = await doc_dbapi.create_document(db_session, attrs, mime_type=MimeType.application_pdf)
 
         if doc is None:
             raise Exception("Document was not created")

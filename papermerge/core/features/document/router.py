@@ -33,6 +33,11 @@ from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.db.engine import get_db
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 from .schema import DocumentParams
+from mime_detection import (
+    UnsupportedFileTypeError,
+    InvalidFileError,
+    detect_and_validate_mime_type,
+)
 
 router = APIRouter(
     prefix="/documents",
@@ -221,6 +226,31 @@ async def upload_document(
 
     # Read file content
     content = await file.read()
+    client_content_type=file.headers.get("content-type")
+    # Reset stream position for potential reuse
+    content.seek(0)
+
+    # Detect and validate mime type
+    try:
+        mime_type = detect_and_validate_mime_type(
+            content,
+            file.filename,
+            client_content_type=client_content_type,
+            validate_structure=True  # Always validate for uploads
+        )
+    except UnsupportedFileTypeError as e:
+        logger.warning(f"Unsupported file type for '{file.filename}': {e}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type: {e}"
+        )
+
+    except InvalidFileError as e:
+        logger.warning(f"Invalid file structure for '{file.filename}': {e}")
+        raise HTTPException(
+            status_code=400,  # Payload Too Large
+            detail=f"File is corrupted or invalid: {e}"
+        )
 
     max_file_size = config.papermerge__main__max_file_size_mb * 1024 * 1024
     if len(content) > max_file_size:
@@ -259,7 +289,7 @@ async def upload_document(
             size=file.size or 0,
             content=io.BytesIO(content),
             file_name=file.filename or title,
-            content_type=file.headers.get("content-type"),
+            content_type=mime_type,
         )
 
         if upload_error:

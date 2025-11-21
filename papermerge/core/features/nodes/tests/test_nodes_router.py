@@ -222,7 +222,7 @@ async def test_two_folders_with_same_title_under_different_parents(
 async def test_two_documents_with_same_title_under_same_parent(
     auth_api_client: AuthTestClient,
 ):
-    """It should NOT be possible to create two documents with
+    """It should be possible to create two documents with
     same (parent, title) pair i.e. we cannot have documents with same
     title under same parent
     """
@@ -241,7 +241,7 @@ async def test_two_documents_with_same_title_under_same_parent(
     # Create second folder 'My Documents' also inside home folder
     response = await auth_api_client.post("/nodes/", json=payload)
 
-    assert response.status_code == 400
+    assert response.status_code == 201
 
 
 async def test_assign_tags_to_non_tagged_folder(

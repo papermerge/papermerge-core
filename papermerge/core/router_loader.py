@@ -1,9 +1,12 @@
+import logging
 import importlib
 import pkgutil
 from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter
+
+logger = logging.getLogger(__name__)
 
 
 def discover_routers(features_path: Path) -> List[tuple[APIRouter, str]]:
@@ -19,6 +22,7 @@ def discover_routers(features_path: Path) -> List[tuple[APIRouter, str]]:
     for feature_module in pkgutil.iter_modules([str(features_dir)]):
         if feature_module.ispkg:
             feature_name = feature_module.name
+            logger.debug(f"searching for router for {feature_name}")
 
             # Try to import router from the feature module
             try:
@@ -28,9 +32,7 @@ def discover_routers(features_path: Path) -> List[tuple[APIRouter, str]]:
                 if hasattr(module, 'router'):
                     routers.append((module.router, feature_name))
             except (ImportError, AttributeError) as e:
-                # Skip if no router exists
-                print(f"{feature_name} has no router {e}")
-                pass
+                logger.debug(f"{feature_name} has no router {e}")
 
 
             # Also check for additional routers with suffixes
@@ -45,6 +47,6 @@ def discover_routers(features_path: Path) -> List[tuple[APIRouter, str]]:
                     if hasattr(module, 'router'):
                         routers.append((module.router, f"{feature_name}_{router_module_name}"))
             except (ImportError, AttributeError):
-                pass
+                logger.debug(f"No additional routers found for {feature_name} either {e}")
 
     return routers

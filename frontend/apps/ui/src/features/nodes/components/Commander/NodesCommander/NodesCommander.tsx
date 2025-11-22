@@ -1,8 +1,11 @@
+import {apiSlice} from "@/features/api/slice"
+import {uploadFile} from "@/features/files/storage/thunks"
+import type {UploadFileOutput} from "@/features/nodes/types"
+import {setPanelComponent} from "@/features/ui/panelRegistry"
 import {Box, Group, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {useContext, useState} from "react"
 import {createRoot} from "react-dom/client"
-import {setPanelComponent} from "@/features/ui/panelRegistry"
 
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
@@ -35,6 +38,8 @@ import {
   useGetFolderQuery,
   useGetPaginatedNodesQuery
 } from "@/features/nodes/apiSlice"
+import {generateThumbnail} from "@/features/nodes/thumbnailObjectsSlice"
+import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import {
   commanderLastPageSizeUpdated,
   currentDocVerUpdated,
@@ -64,6 +69,7 @@ import SupportedFilesInfoModal from "./SupportedFilesInfoModal"
 
 export default function Commander() {
   const {t} = useTranslation()
+  const userPreferences = useAppSelector(selectMyPreferences)
   const [
     supportedFilesInfoOpened,
     {open: supportedFilesInfoOpen, close: supportedFilesInfoClose}
@@ -192,7 +198,7 @@ export default function Commander() {
     setDragOver(false)
   }
 
-  const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
+  const onDrop = async (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
     const payloadThumbnailData = event.dataTransfer.getData(APP_THUMBNAIL_KEY)
     const payloadNodeData = event.dataTransfer.getData(APP_NODE_KEY)
@@ -224,8 +230,25 @@ export default function Commander() {
           return
         }
 
-        setUploadFiles(validFiles)
-        dropFilesOpen()
+        for (let i = 0; i < validFiles.length; i++) {
+          const result = await dispatch(
+            uploadFile({
+              file: validFiles[i],
+              lang: userPreferences.uploaded_document_lang,
+              ocr: false,
+              target_id: currentNodeID
+            })
+          )
+          const newlyCreatedNode = result.payload as UploadFileOutput
+
+          if (newlyCreatedNode && newlyCreatedNode.source?.id) {
+            const newNodeID = newlyCreatedNode.source?.id
+            dispatch(
+              generateThumbnail({node_id: newNodeID, file: validFiles[i]})
+            )
+          }
+        }
+        dispatch(apiSlice.util.invalidateTags(["Node"]))
         return
       }
     }

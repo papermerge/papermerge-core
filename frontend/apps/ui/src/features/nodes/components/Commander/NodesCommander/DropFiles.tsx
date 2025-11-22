@@ -50,7 +50,6 @@ export const DropFilesModal = ({
       const result = await dispatch(
         uploadFile({
           file: source_files[i],
-          refreshTarget: true,
           ocr: scheduleOCR,
           lang: lang,
           target

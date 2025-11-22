@@ -55,12 +55,6 @@ export default function UploadButton() {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const files = event.target.files
-    console.log(
-      "File input changed, files:",
-      files,
-      "destination:",
-      selectedDestinationID
-    )
 
     if (!files || files.length === 0 || !selectedDestinationID) {
       console.error("No files selected or no destination")
@@ -83,7 +77,6 @@ export default function UploadButton() {
       const result = await dispatch(
         uploadFile({
           file: validFiles[i],
-          refreshTarget: true,
           lang: userPreferences.uploaded_document_lang,
           ocr: false,
           target_id: selectedDestinationID

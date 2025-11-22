@@ -1,142 +1,141 @@
 import {fileManager} from "@/features/files/fileManager"
-import {filesAdded} from "@/features/files/storage/files"
-import {UploadFileOutput} from "@/features/nodes/types"
-import {uploaderFileItemUpdated} from "@/features/ui/uiSlice"
+import {
+  fileAdded,
+  uploadFailed,
+  uploadProgressUpdated,
+  uploadStarted,
+  uploadSucceeded
+} from "@/features/files/storage/files"
 import type {NodeType} from "@/types"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
 import {createAsyncThunk} from "@reduxjs/toolkit"
-import axios from "axios"
-
-type FilesAddedType = {
-  nodeID: string
-  objectURL: string
-  fileName: string
-  type: string
-  size: number
-}
+import axios, {AxiosError} from "axios"
 
 type UploadFileInput = {
   file: File
-  refreshTarget: boolean
   target_id: string
   ocr: boolean
   lang: string
 }
 
+type UploadFileOutput = {
+  success: boolean
+  node?: NodeType
+  error?: string
+}
+
 export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
-  "upload/file",
-  async (args: UploadFileInput, thunkApi) => {
+  "files/upload",
+  async (args: UploadFileInput, {dispatch, rejectWithValue}) => {
+    const {file, target_id, ocr, lang} = args
     const baseUrl = getBaseURL()
-    let defaultHeaders = getDefaultHeaders()
-    const buffer = await args.file.arrayBuffer()
+    const defaultHeaders = getDefaultHeaders()
 
-    thunkApi.dispatch(
-      uploaderFileItemUpdated({
-        item: {
-          source: null,
-          target_id: args.target_id,
-          file_name: args.file.name
-        },
-        status: "uploading",
-        error: null
-      })
-    )
+    // Start upload tracking
+    dispatch(uploadStarted({targetId: target_id, fileName: file.name}))
 
-    // Prepare FormData with all required fields
+    // Prepare FormData
     const formData = new FormData()
-    formData.append("file", args.file)
-    formData.append("title", args.file.name)
-    formData.append("parent_id", args.target_id)
-    if (args.lang) {
-      formData.append("lang", args.lang)
+    formData.append("file", file)
+    formData.append("title", file.name)
+    formData.append("parent_id", target_id)
+    if (lang) {
+      formData.append("lang", lang)
     }
-    formData.append("ocr", args.ocr.toString())
+    formData.append("ocr", ocr.toString())
 
-    defaultHeaders["Content-Type"] = "multipart/form-data"
-
-    let response
     const uploadURL = `${baseUrl}/api/documents/upload`
 
     try {
-      response = await axios.post(uploadURL, formData, {
-        headers: defaultHeaders,
-        validateStatus: () => true
-      })
-    } catch (error: unknown) {
-      /* Will happen when uploadURL points to invalid location */
-      console.error(`Error while uploading file to uploadURL=${uploadURL}`)
-      console.error(error)
-      thunkApi.dispatch(
-        uploaderFileItemUpdated({
-          item: {
-            source: null,
-            target_id: args.target_id,
-            file_name: args.file.name
-          },
-          status: "failure",
-          error: "Upload file error. See console for details"
-        })
-      )
-      return {
-        file_name: args.file.name,
-        source: null,
-        target_id: args.target_id
-      }
-    }
-
-    if (response.status >= 400) {
-      thunkApi.dispatch(
-        uploaderFileItemUpdated({
-          item: {
-            source: null,
-            target_id: args.target_id,
-            file_name: args.file.name
-          },
-          status: "failure",
-          error: `${response.status} ${response.statusText}: ${response.data?.detail}`
-        })
-      )
-      return {
-        file_name: args.file.name,
-        source: null,
-        target_id: args.target_id
-      }
-    }
-
-    // Success - response contains the created document
-    const createdNode = response.data as NodeType
-
-    fileManager.store({
-      nodeID: createdNode.id,
-      buffer: buffer
-    })
-
-    thunkApi.dispatch(
-      filesAdded({
-        nodeID: createdNode.id,
-        objectURL: URL.createObjectURL(args.file),
-        fileName: args.file.name,
-        size: args.file.size,
-        type: args.file.type
-      })
-    )
-
-    thunkApi.dispatch(
-      uploaderFileItemUpdated({
-        item: {
-          source: createdNode,
-          target_id: args.target_id,
-          file_name: args.file.name
+      // Upload with progress tracking
+      const response = await axios.post<NodeType>(uploadURL, formData, {
+        headers: {
+          ...defaultHeaders,
+          "Content-Type": "multipart/form-data"
         },
-        status: "success",
-        error: null
+        onUploadProgress: progressEvent => {
+          if (progressEvent.total) {
+            const progress = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            )
+            dispatch(
+              uploadProgressUpdated({
+                targetId: target_id,
+                fileName: file.name,
+                progress
+              })
+            )
+          }
+        }
       })
-    )
 
-    return {
-      file_name: args.file.name,
-      source: createdNode,
-      target_id: args.target_id
+      // Check for HTTP errors
+      if (response.status >= 400) {
+        const errorMsg = `${response.status} ${response.statusText}: ${
+          (response.data as any)?.detail || "Upload failed"
+        }`
+
+        dispatch(
+          uploadFailed({
+            targetId: target_id,
+            fileName: file.name,
+            error: errorMsg
+          })
+        )
+
+        return rejectWithValue(errorMsg)
+      }
+
+      // Success - store file in memory and update state
+      const createdNode = response.data
+      const buffer = await file.arrayBuffer()
+
+      fileManager.store({
+        nodeID: createdNode.id,
+        buffer: buffer
+      })
+
+      dispatch(
+        fileAdded({
+          nodeID: createdNode.id,
+          objectURL: URL.createObjectURL(file),
+          fileName: file.name,
+          size: file.size,
+          type: file.type
+        })
+      )
+
+      dispatch(
+        uploadSucceeded({
+          targetId: target_id,
+          fileName: file.name,
+          node: createdNode
+        })
+      )
+
+      return {success: true, node: createdNode}
+    } catch (error: unknown) {
+      // Handle network errors or other exceptions
+      let errorMsg = "Upload failed. Network error or invalid URL."
+
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<{detail?: string}>
+        errorMsg = axiosError.response?.data?.detail || axiosError.message
+      } else if (error instanceof Error) {
+        errorMsg = error.message
+      }
+
+      console.error(`Error uploading file to ${uploadURL}:`, error)
+
+      dispatch(
+        uploadFailed({
+          targetId: target_id,
+          fileName: file.name,
+          error: errorMsg
+        })
+      )
+
+      return rejectWithValue(errorMsg)
     }
   }
 )

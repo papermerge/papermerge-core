@@ -578,6 +578,10 @@
     "showAllFilters": "Alle Filter anzeigen",
     "showOnlySummary": "Nur Zusammenfassung anzeigen"
   },
+  "uploader": {
+    "uploadedSuccessfully": "Erfolgreich hochgeladen",
+    "uploads": "Hochgeladene Dateien ({{count}})"
+  },
   "currency": {
     "all": "ALL - Albanischer Lek",
     "amd": "AMD - Armenischer Dram",

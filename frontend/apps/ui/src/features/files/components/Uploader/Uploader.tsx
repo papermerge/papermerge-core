@@ -17,8 +17,10 @@ import {
   Text
 } from "@mantine/core"
 import {IconAlertCircle, IconCheck, IconX} from "@tabler/icons-react"
+import {useTranslation} from "react-i18next"
 
 export default function Uploader() {
+  const {t} = useTranslation()
   const dispatch = useAppDispatch()
   const opened = useAppSelector(selectUploaderOpened)
   const uploads = useAppSelector(selectUploadsList)
@@ -56,7 +58,12 @@ export default function Uploader() {
       }}
     >
       <Group justify="space-between" mb="md">
-        <Text fw={600}>Uploads ({uploads.length})</Text>
+        <Text fw={600}>
+          {t("uploader.uploads", {
+            count: uploads.length,
+            defaultValue: "Uploads ({{count}})"
+          })}
+        </Text>
         <ActionIcon variant="subtle" onClick={handleClose}>
           <IconX size={16} />
         </ActionIcon>
@@ -81,6 +88,8 @@ interface UploadItemProps {
 }
 
 function UploadItem({upload, onRemove}: UploadItemProps) {
+  const {t} = useTranslation()
+
   const getStatusIcon = () => {
     switch (upload.status) {
       case "success":
@@ -108,7 +117,7 @@ function UploadItem({upload, onRemove}: UploadItemProps) {
   }
 
   return (
-    <Paper p="xs" withBorder>
+    <Box>
       <Group justify="space-between" wrap="nowrap">
         <Box style={{flex: 1, minWidth: 0}}>
           <Group gap="xs" wrap="nowrap">
@@ -135,7 +144,9 @@ function UploadItem({upload, onRemove}: UploadItemProps) {
 
           {upload.status === "success" && (
             <Text size="xs" c="dimmed" mt="xs">
-              Uploaded successfully
+              {t("uploader.uploadedSuccessfully", {
+                defaultValue: "Uploaded successfully"
+              })}
             </Text>
           )}
         </Box>
@@ -146,6 +157,6 @@ function UploadItem({upload, onRemove}: UploadItemProps) {
           </ActionIcon>
         )}
       </Group>
-    </Paper>
+    </Box>
   )
 }

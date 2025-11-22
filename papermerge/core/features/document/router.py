@@ -179,9 +179,7 @@ async def upload_document(
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.Document:
     """
-    Upload a document with metadata in a single request.
-
-    This is a convenience endpoint that combines node creation and file upload.
+    Creates a document model and uploads file in same time.
 
     Usage with cURL:
 
@@ -306,6 +304,7 @@ async def upload_document(
 
 @router.post(
     "/{document_id}/upload",
+    deprecated=True,
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": f"No `{scopes.DOCUMENT_UPLOAD}` permission on the node",
@@ -320,6 +319,9 @@ async def upload_file(
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.Document:
     """
+
+    **DEPRECATED** use `POST /api/documents/upload` instead
+
     Uploads document's file.
 
     Document model must be created beforehand via `POST /nodes` endpoint

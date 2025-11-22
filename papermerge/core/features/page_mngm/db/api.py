@@ -11,6 +11,7 @@ from sqlalchemy import select, delete, ScalarResult
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from papermerge.core.types import MimeType
 from papermerge.core import tasks
 from papermerge.core import constants as const
 from papermerge.core.features.document.schema import DocumentVersion
@@ -539,6 +540,7 @@ async def extract_to_single_paged_docs(
         new_doc, error = await doc_dbapi.create_document(
             db_session,
             attrs=attrs,
+            mime_type=MimeType.application_pdf
         )
         result.append(new_doc)
         # create new document version with one page
@@ -596,6 +598,7 @@ async def extract_to_multi_paged_doc(
     new_doc, error = await doc_dbapi.create_document(
         db_session,
         attrs=attrs,
+        mime_type=MimeType.application_pdf
     )
 
     dst_version, error = await doc_dbapi.version_bump_from_pages(

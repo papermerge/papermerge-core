@@ -26,7 +26,8 @@ from sqlalchemy.orm import joinedload, selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.features.ownership.db import api as ownership_api
-from papermerge.core.types import OwnerType, ResourceType, ImagePreviewStatus
+from papermerge.core.types import OwnerType, ResourceType, ImagePreviewStatus, \
+    MimeType
 from papermerge.core.features.document import s3
 from papermerge.core.utils.misc import copy_file
 from papermerge.core import schema, orm, constants, tasks
@@ -40,7 +41,6 @@ from papermerge.core.pathlib import (
     abs_docver_path,
 )
 from papermerge.core import config
-
 
 settings = config.get_settings()
 logger = logging.getLogger(__name__)
@@ -465,7 +465,9 @@ async def get_documents_by_type_paginated(
 
 
 async def create_document(
-    db_session: AsyncSession, attrs: schema.NewDocument
+    db_session: AsyncSession,
+    attrs: schema.NewDocument,
+    mime_type: MimeType
 ) -> Tuple[schema.Document | None, schema.Error | None]:
 
     error = None
@@ -491,7 +493,8 @@ async def create_document(
         owner_type=owner_type,
         owner_id=owner_id,
         name=attrs.title,
-        parent_id=attrs.parent_id
+        parent_id=attrs.parent_id,
+        ctype="folder"
     )
 
     if not is_unique:
@@ -521,6 +524,7 @@ async def create_document(
         size=0,
         page_count=0,
         lang=attrs.lang,
+        mime_type=mime_type,
         short_description="Original",
     )
 
@@ -614,6 +618,7 @@ async def version_bump(
         page_count=page_count,
         short_description=short_description,
         lang=last_ver.lang,
+        mime_type=MimeType.application_pdf
     )
 
     db_session.add(db_new_doc_ver)
@@ -785,6 +790,7 @@ async def create_next_version(
     doc: orm.Document,
     file_name,
     file_size,
+    content_type: MimeType,
     short_description=None,
 ) -> orm.DocumentVersion:
     stmt = (
@@ -808,6 +814,7 @@ async def create_next_version(
     document_version.file_name = file_name
     document_version.size = file_size
     document_version.page_count = 0
+    document_version.mime_type = content_type
 
     if short_description:
         document_version.short_description = short_description
@@ -823,13 +830,13 @@ async def upload(
     content: io.BytesIO,
     size: int,
     file_name: str,
-    content_type: str | None = None,
+    content_type: MimeType,
 ) -> Tuple[schema.Document | None, schema.Error | None]:
 
     doc = await db_session.get(orm.Document, document_id)
     orig_ver = None
 
-    if content_type != constants.ContentType.APPLICATION_PDF:
+    if content_type != MimeType.application_pdf:
         try:
             with tempfile.TemporaryDirectory() as tmpdirname:
                 tmp_file_path = Path(tmpdirname) / f"{file_name}.pdf"
@@ -841,7 +848,11 @@ async def upload(
             return None, error
 
         orig_ver = await create_next_version(
-            db_session, doc=doc, file_name=file_name, file_size=size
+            db_session,
+            doc=doc,
+            file_name=file_name,
+            file_size=size,
+            content_type=content_type
         )
 
         pdf_ver = await create_next_version(
@@ -850,6 +861,7 @@ async def upload(
             file_name=f"{file_name}.pdf",
             file_size=len(pdf_content),
             short_description=f"{file_type(content_type)} -> pdf",
+            content_type=content_type
         )
         await copy_file(src=content, dst=abs_docver_path(orig_ver.id, orig_ver.file_name))
 
@@ -876,7 +888,11 @@ async def upload(
 
     else:
         pdf_ver = await create_next_version(
-            db_session, doc=doc, file_name=file_name, file_size=size
+            db_session,
+            doc=doc,
+            file_name=file_name,
+            file_size=size,
+            content_type=content_type
         )
         await copy_file(src=content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
 
@@ -920,24 +936,11 @@ async def upload(
             route_name="s3",
         )
 
-    # PDF document
     tasks.send_task(
         constants.S3_WORKER_ADD_DOC_VER,
         kwargs={"doc_ver_ids": [str(pdf_ver.id)]},
         route_name="s3",
     )
-
-    if not settings.papermerge__ocr__automatic:
-        if doc.ocr is True:
-            # user chose "schedule OCR" when uploading document
-            tasks.send_task(
-                constants.WORKER_OCR_DOCUMENT,
-                kwargs={
-                    "document_id": str(doc.id),
-                    "lang": doc.lang,
-                },
-                route_name="ocr",
-            )
 
     return validated_model, None
 

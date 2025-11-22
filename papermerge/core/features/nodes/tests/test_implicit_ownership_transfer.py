@@ -5,9 +5,16 @@ from core.types import OwnerType
 from papermerge.core.types import ResourceType
 from papermerge.core import orm, schema
 from papermerge.core.features.ownership.db import api as ownership_api
+from papermerge.core.tests.types import DocumentTestFileType
 
 
-async def test_upload_document_to_group_home(db_session: AsyncSession, make_user, make_group, login_as):
+async def test_upload_document_to_group_home(
+    db_session: AsyncSession,
+    make_user,
+    make_group,
+    login_as,
+    pdf_file: DocumentTestFileType
+):
     """
     Documents uploaded in group's home will be automatically owned by the group
     """
@@ -17,15 +24,18 @@ async def test_upload_document_to_group_home(db_session: AsyncSession, make_user
     db_session.add(user_group)
     await db_session.commit()
 
-    payload = dict(
-        ctype="document",
-        title="cv.pdf",
-        parent_id=str(group.home_folder.id),
-    )
-
     client = await login_as(user)
 
-    response = await client.post("/nodes/", json=payload)
+    response = await client.post(
+        "/documents/upload", files={
+            "file": pdf_file.as_upload_tuple(),
+        },
+        data={
+            "title": "cv.pdf",
+            "parent_id": str(group.home_folder.id)
+        }
+    )
+
     assert response.status_code == 201, response.json()
 
     doc = (await db_session.scalars(

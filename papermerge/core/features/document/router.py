@@ -33,6 +33,11 @@ from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.db.engine import get_db
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 from .schema import DocumentParams
+from .mime_detection import (
+    UnsupportedFileTypeError,
+    InvalidFileError,
+    detect_and_validate_mime_type,
+)
 
 router = APIRouter(
     prefix="/documents",
@@ -168,14 +173,13 @@ async def upload_document(
     file: UploadFile,
     title: str | None = Form(None),
     parent_id: uuid.UUID | None = Form(None),
+    document_id: uuid.UUID | None = Form(None),
     ocr: bool = Form(False),
     lang: str | None = Form(None),
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.Document:
     """
-    Upload a document with metadata in a single request.
-
-    This is a convenience endpoint that combines node creation and file upload.
+    Creates a document model and uploads file in same time.
 
     Usage with cURL:
 
@@ -221,8 +225,31 @@ async def upload_document(
 
     # Read file content
     content = await file.read()
+    client_content_type=file.headers.get("content-type")
 
-    max_file_size = config.papermerge__main__max_file_size * 1024 * 1024
+    # Detect and validate mime type
+    try:
+        mime_type = detect_and_validate_mime_type(
+            content,
+            file.filename,
+            client_content_type=client_content_type,
+            validate_structure=True  # Always validate for uploads
+        )
+    except UnsupportedFileTypeError as e:
+        logger.warning(f"Unsupported file type for '{file.filename}': {e}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type: {e}"
+        )
+
+    except InvalidFileError as e:
+        logger.warning(f"Invalid file structure for '{file.filename}': {e}")
+        raise HTTPException(
+            status_code=400,  # Payload Too Large
+            detail=f"File is corrupted or invalid: {e}"
+        )
+
+    max_file_size = config.papermerge__main__max_file_size_mb * 1024 * 1024
     if len(content) > max_file_size:
         raise HTTPException(
             status_code=413,  # Payload Too Large
@@ -241,13 +268,17 @@ async def upload_document(
         ctype="document",
     )
 
+    if document_id is not None:
+        # custom document ID
+        new_document.id = document_id
+
     async with AsyncAuditContext(
         db_session,
         user_id=user.id,
         username=user.username
     ):
         # Step 1: Create document node
-        created_node, error = await doc_dbapi.create_document(db_session, new_document)
+        created_node, error = await doc_dbapi.create_document(db_session, new_document, mime_type=mime_type)
 
         if error:
             raise HTTPException(status_code=400, detail=error.model_dump())
@@ -259,7 +290,7 @@ async def upload_document(
             size=file.size or 0,
             content=io.BytesIO(content),
             file_name=file.filename or title,
-            content_type=file.headers.get("content-type"),
+            content_type=mime_type,
         )
 
         if upload_error:
@@ -273,6 +304,7 @@ async def upload_document(
 
 @router.post(
     "/{document_id}/upload",
+    deprecated=True,
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": f"No `{scopes.DOCUMENT_UPLOAD}` permission on the node",
@@ -287,6 +319,9 @@ async def upload_file(
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.Document:
     """
+
+    **DEPRECATED** use `POST /api/documents/upload` instead
+
     Uploads document's file.
 
     Document model must be created beforehand via `POST /nodes` endpoint

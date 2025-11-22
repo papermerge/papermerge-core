@@ -16,6 +16,7 @@ from sqlalchemy import select, text, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from papermerge.core.types import MimeType
 from papermerge.core import schema
 from papermerge.core.utils.tz import utc_now
 from papermerge.core.tests.resource_file import ResourceFile
@@ -129,7 +130,7 @@ def make_document(db_session: AsyncSession):
         attrs = doc_schema.NewDocument(
             title=title, parent_id=parent.id, ocr_status=ocr_status, lang=lang
         )
-        doc, _ = await doc_dbapi.create_document(db_session, attrs)
+        doc, _ = await doc_dbapi.create_document(db_session, attrs, mime_type=MimeType.application_pdf)
 
         if doc is None:
             raise Exception("Document was not created")
@@ -198,7 +199,7 @@ def make_document_with_pages(db_session: AsyncSession):
             title=title,
             parent_id=parent.id,
         )
-        doc, _ = await doc_dbapi.create_document(db_session, attrs)
+        doc, _ = await doc_dbapi.create_document(db_session, attrs, mime_type=MimeType.application_pdf)
         PDF_PATH = RESOURCES / "three-pages.pdf"
 
         with open(PDF_PATH, "rb") as file:
@@ -224,6 +225,7 @@ def make_document_version(db_session: AsyncSession):
         user: orm.User,
         lang: str | None = None,
         pages_text: list[str] | None = None,
+        mime_type: MimeType = MimeType.application_pdf
     ):
         db_pages = []
         if lang is None:
@@ -258,7 +260,12 @@ def make_document_version(db_session: AsyncSession):
             owner_id=user.id
         )
 
-        db_doc_ver = orm.DocumentVersion(pages=db_pages, document=db_doc, lang=lang)
+        db_doc_ver = orm.DocumentVersion(
+            pages=db_pages,
+            document=db_doc,
+            lang=lang,
+            mime_type=mime_type
+        )
         db_session.add(db_doc_ver)
         await db_session.commit()
 

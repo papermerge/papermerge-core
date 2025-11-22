@@ -10,6 +10,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from papermerge.core.types import MimeType
 from papermerge.core.constants import ContentType
 from papermerge.core.features.custom_fields.db import orm as cf_orm
 from papermerge.core.features.document import schema
@@ -546,7 +547,7 @@ async def test_basic_document_creation(db_session: AsyncSession, user):
     attrs = schema.NewDocument(
         title="New Document", parent_id=user.home_folder.id, ocr=False, lang="deu"
     )
-    doc, error = await dbapi.create_document(db_session, attrs=attrs)
+    doc, error = await dbapi.create_document(db_session, attrs=attrs, mime_type=MimeType.application_pdf)
     doc: schema.Document
 
     assert error is None

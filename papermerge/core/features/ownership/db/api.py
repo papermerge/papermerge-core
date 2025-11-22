@@ -269,7 +269,8 @@ async def check_name_unique_for_owner(
     owner_id: UUID,
     name: str,
     exclude_id: UUID | None = None,
-    parent_id: UUID | None = None  # For nodes - unique per parent
+    parent_id: UUID | None = None,
+    ctype: str | None = None
 ) -> bool:
     """
     Check if a name is unique for a given owner.
@@ -282,6 +283,7 @@ async def check_name_unique_for_owner(
         name: Name to check
         exclude_id: ID to exclude (for updates)
         parent_id: For nodes - check uniqueness within parent folder
+        ctype: For nodes - check only specific ctype ('folder' or 'document')
 
     Returns:
         True if name is unique, False if it already exists
@@ -320,6 +322,9 @@ async def check_name_unique_for_owner(
     # For nodes, check uniqueness within parent
     if resource_type == ResourceType.NODE and parent_id is not None:
         stmt = stmt.where(resource_table.parent_id == parent_id)
+
+    if resource_type == ResourceType.NODE and ctype is not None:
+        stmt = stmt.where(resource_table.ctype == ctype)
 
     # Exclude current resource (for updates)
     if exclude_id:
@@ -416,6 +421,10 @@ async def create_node_with_owner(
     from papermerge.core.features.nodes.db import orm as node_orm
     from papermerge.core.features.ownership.db import api as ownership_api
 
+    check_ctype = None
+    if ctype == "folder":
+        check_ctype = "folder"
+
     # Check name uniqueness
     is_unique = await ownership_api.check_name_unique_for_owner(
         session=session,
@@ -423,7 +432,8 @@ async def create_node_with_owner(
         owner_type=owner_type,
         owner_id=owner_id,
         name=title,
-        parent_id=parent_id
+        parent_id=parent_id,
+        ctype=check_ctype
     )
 
     if not is_unique:

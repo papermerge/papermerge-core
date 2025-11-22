@@ -33,7 +33,7 @@ export const apiSliceWithPreferences = apiSlice.injectEndpoints({
     updateMyPreferences: builder.mutation<Preferences, Partial<Preferences>>({
       query: preferences => ({
         url: "/preferences/me",
-        method: "PUT",
+        method: "PATCH",
         body: preferences
       })
     })

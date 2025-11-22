@@ -1,13 +1,14 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Security, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from papermerge.core import schema, utils
+from papermerge.core import schema
 from papermerge.core.features.auth import scopes
-from papermerge.core.features.preferences.db import api as pref_dbapi
 from papermerge.core.features.auth import get_current_user
+from papermerge.core.features.preferences.db import api as pref_dbapi
 from papermerge.core.db.engine import get_db
+from papermerge.core.features.auth.dependencies import require_scopes
 from .schema import Preferences, PreferencesUpdate, SystemPreferencesResponse, \
     TimezonesResponse, UILanguageResponse, DateFormatResponse, \
     TimestampFormatResponse, NumberFormatResponse
@@ -25,9 +26,7 @@ router = APIRouter(
 
 @router.get("/me", response_model=Preferences)
 async def get_my_preferences(
-    current_user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.USER_ME])
-    ],
+    current_user: Annotated[schema.User, Depends(get_current_user)],
     db: AsyncSession = Depends(get_db)
 ):
     """Get current user's merged preferences (user + system + defaults)"""
@@ -37,9 +36,7 @@ async def get_my_preferences(
 @router.patch("/me", response_model=Preferences)
 async def update_my_preferences(
     preferences: PreferencesUpdate,
-    current_user: Annotated[
-      schema.User, Security(get_current_user, scopes=[scopes.USER_ME])
-    ],
+    current_user: Annotated[schema.User, Depends(get_current_user)],
     db_session: AsyncSession = Depends(get_db)
 ) -> Preferences:
     """Update current user's preferences"""
@@ -58,19 +55,12 @@ async def update_my_preferences(
     return ret
 
 
-# Admin endpoints
 @router.get("/system", response_model=SystemPreferencesResponse)
-@utils.docstring_parameter(scope=scopes.SYSTEM_PREFERENCE_VIEW)
 async def get_system_preferences(
-    current_admin: Annotated[
-      schema.User, Security(get_current_user, scopes=[scopes.SYSTEM_PREFERENCE_VIEW])
-    ],
+    current_admin: require_scopes(scopes.SYSTEM_PREFERENCE_VIEW),
     db_session: AsyncSession = Depends(get_db),
 ):
-    """Get system-wide default preferences (admin only)
-
-    Required scope: `{scope}`
-    """
+    """Get system-wide default preferences (admin only)"""
     from sqlalchemy import select
     from papermerge.core.features.preferences.db.orm import SystemPreferences
 
@@ -88,18 +78,12 @@ async def get_system_preferences(
 
 
 @router.patch("/system", response_model=SystemPreferencesResponse)
-@utils.docstring_parameter(scope=scopes.SYSTEM_PREFERENCE_UPDATE)
 async def update_system_preferences(
-    current_admin: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.SYSTEM_PREFERENCE_UPDATE])
-    ],
+    current_admin: require_scopes(scopes.SYSTEM_PREFERENCE_UPDATE),
     preferences: PreferencesUpdate,
     db_session: AsyncSession = Depends(get_db),
 ):
-    """Update system-wide default preferences (admin only)
-
-    Required scope: `{scope}`
-    """
+    """Update system-wide default preferences (admin only)"""
     from sqlalchemy import select
     from papermerge.core.features.preferences.db.orm import SystemPreferences
 

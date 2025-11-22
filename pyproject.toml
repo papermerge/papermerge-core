@@ -87,7 +87,7 @@ server = "fastapi dev papermerge/app.py"
 migrate = "alembic upgrade head"
 
 [project.scripts]
-paper-cli = "papermerge.cli:main"
+papermerge-cli = "papermerge.cli:main"
 docs = 'papermerge.core.cli.docs:app'
 sign_url = 'papermerge.core.cli.cf_sign_url:app'
 

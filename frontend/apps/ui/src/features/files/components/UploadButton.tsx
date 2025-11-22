@@ -1,6 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {apiSlice} from "@/features/api/slice"
-import {uploadFile} from "@/features/files/filesSlice"
+import {uploadFile} from "@/features/files/storage/thunks"
 import {generateThumbnail} from "@/features/nodes/thumbnailObjectsSlice"
 import type {UploadFileOutput} from "@/features/nodes/types"
 import {Button, Menu} from "@mantine/core"
@@ -19,7 +19,7 @@ import {selectCurrentUser} from "@/slices/currentUser"
 import {IconChevronDown, IconFolder} from "@tabler/icons-react"
 import {useRef, useState} from "react"
 import {useTranslation} from "react-i18next"
-import SupportedFilesInfoModal from "../features/nodes/components/Commander/NodesCommander/SupportedFilesInfoModal"
+import SupportedFilesInfoModal from "../../nodes/components/Commander/NodesCommander/SupportedFilesInfoModal"
 
 const MIME_TYPES = [...SUPPORTED_EXTENSIONS, ...SUPPORTED_MIME_TYPES].join(",")
 

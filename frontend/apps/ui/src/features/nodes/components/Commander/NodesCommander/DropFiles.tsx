@@ -3,7 +3,7 @@ import {useState} from "react"
 
 import {useAppDispatch} from "@/app/hooks"
 import {apiSlice} from "@/features/api/slice"
-import {uploadFile} from "@/features/files/filesSlice"
+import {uploadFile} from "@/features/files/storage/thunks"
 
 import Error from "@/components/Error"
 import ScheduleOCRProcessCheckbox from "@/components/ScheduleOCRProcessCheckbox/ScheduleOCRProcessCheckbox"

@@ -6,7 +6,7 @@ import classes from "./Header.module.css"
 
 import {ClearNotificationsButton} from "@/features/notifications/components/ClearButton"
 import Search from "@/features/search/components/Search"
-import UploadButton from "../UploadButton"
+import UploadButton from "../../features/files/components/UploadButton"
 import SidebarToggle from "./SidebarToggle"
 import UserMenu from "./UserMenu"
 

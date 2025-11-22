@@ -5,7 +5,7 @@ import {Outlet} from "react-router-dom"
 
 import Header from "@/components/Header/Header"
 import NavBar from "@/components/NavBar"
-import Uploader from "@/components/Uploader"
+import Uploader from "@/features/files/components/Uploader"
 import {
   selectCurrentUserError,
   selectCurrentUserStatus

@@ -83,7 +83,6 @@ export default function UploadButton() {
       const result = await dispatch(
         uploadFile({
           file: validFiles[i],
-          refreshTarget: true,
           lang: userPreferences.uploaded_document_lang,
           ocr: false,
           target_id: selectedDestinationID

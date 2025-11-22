@@ -17,13 +17,7 @@ import type {PanelComponent} from "@/types.d/ui"
 import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 import Cookies from "js-cookie"
 
-import type {
-  FileItemStatus,
-  FileItemType,
-  NodeType,
-  SortMenuColumn,
-  SortMenuDirection
-} from "@/types"
+import type {NodeType, SortMenuColumn, SortMenuDirection} from "@/types"
 
 import type {AuditOperation, TimestampFilterType} from "@/features/audit/types"
 import type {CategoryColumn} from "@/features/nodes/components/Commander/____DocumentsByTypeCommander/types"
@@ -100,34 +94,9 @@ type DocumentTypeIDArgs = {
   documentTypeID?: string
 }
 
-export interface UploaderFileItemArgs {
-  item: {
-    source: NodeType | null
-    target_id: string
-    file_name: string
-  }
-  status: FileItemStatus
-  error: string | null
-}
-
 interface NavBarState {
   collapsed: boolean
   width: number
-}
-
-interface UploaderState {
-  opened: boolean
-  files: Array<FileItemType>
-}
-
-interface SearchPanelSizes {
-  actionPanelHeight: number
-}
-
-// i.e Commander's panel, viewer's panel
-interface PanelSizes {
-  actionPanelHeight: number
-  breadcrumbHeight: number
 }
 
 interface CurrentNodeArgs {
@@ -243,7 +212,6 @@ interface RolePanelDetails {
 }
 
 export interface UIState {
-  uploader: UploaderState
   navbar: NavBarState
   search?: SearchState
   searchLastPageSize?: number
@@ -310,10 +278,6 @@ export interface UIState {
 }
 
 const initialState: UIState = {
-  uploader: {
-    opened: false,
-    files: []
-  },
   navbar: {
     collapsed: initial_collapse_value(),
     width: initial_width_value()
@@ -331,45 +295,6 @@ const uiSlice = createSlice({
   name: "ui",
   initialState,
   reducers: {
-    closeUploader: state => {
-      state.uploader.opened = false
-      state.uploader.files = []
-    },
-    uploaderFileItemUpdated: (
-      state,
-      action: PayloadAction<UploaderFileItemArgs>
-    ) => {
-      const file_name = action.payload.item.file_name
-      const target_id = action.payload.item.target_id
-      const itemToAdd = {
-        status: action.payload.status,
-        error: action.payload.error,
-        file_name: action.payload.item.file_name,
-        source: action.payload.item.source,
-        target: action.payload.item.target
-      }
-
-      const found = state.uploader.files.find(
-        i => i.file_name == file_name && i.target.id == target_id
-      )
-
-      if (!found) {
-        state.uploader.files.push(itemToAdd)
-        state.uploader.opened = true
-        return
-      }
-
-      const newItems = state.uploader.files.map(i => {
-        if (i.file_name == file_name && i.target.id == target_id) {
-          return itemToAdd
-        } else {
-          return i
-        }
-      })
-
-      state.uploader.files = newItems
-      state.uploader.opened = true
-    }, // end of uploaderFileItemUpdated
     // ---------------------------------------------------------
     toggleNavBar(state) {
       if (state.navbar.collapsed) {
@@ -386,15 +311,6 @@ const uiSlice = createSlice({
     },
     searchResultsLastPageSizeUpdated(state, action: PayloadAction<number>) {
       state.searchLastPageSize = action.payload
-    },
-    mainPanelSwitchedToSearchResults(state, action: PayloadAction<string>) {
-      const query = action.payload
-      state.mainPanelComponent = "searchResults"
-      state.search = {
-        query: query,
-        openResultItemInOtherPanel: true
-      }
-      state.currentNodeMain = undefined
     },
     searchResultItemTargetUpdated(state, action: PayloadAction<boolean>) {
       if (state.search) {
@@ -885,8 +801,6 @@ const uiSlice = createSlice({
 })
 
 export const {
-  closeUploader,
-  uploaderFileItemUpdated,
   toggleNavBar,
   currentNodeChanged,
   currentSharedNodeChanged,
@@ -895,10 +809,6 @@ export const {
   secondaryPanelComponentUpdated,
   searchResultsLastPageSizeUpdated,
   mainPanelRoleDetailsUpdated,
-  /* Main panel switched to show search results.
-  This happens when user clicks enter in search field
-  in the header */
-  mainPanelSwitchedToSearchResults,
   searchResultItemTargetUpdated,
   secondaryPanelClosed,
   secondaryPanelOpened,
@@ -932,12 +842,6 @@ export const {
   viewerPageHaveChangedDialogVisibilityChanged
 } = uiSlice.actions
 export default uiSlice.reducer
-
-export const selectOpened = (state: RootState): boolean =>
-  state.ui.uploader.opened
-
-export const selectFiles = (state: RootState): Array<FileItemType> =>
-  state.ui.uploader.files
 
 export const selectNavBarCollapsed = (state: RootState) =>
   state.ui.navbar.collapsed

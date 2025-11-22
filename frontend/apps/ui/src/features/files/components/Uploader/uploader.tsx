@@ -1,35 +1,151 @@
-import {closeUploader, selectFiles, selectOpened} from "@/features/ui/uiSlice"
-import {Container, Dialog, List} from "@mantine/core"
-import {useDispatch, useSelector} from "react-redux"
-import UploaderItem from "./uploaderItem"
+// ui/features/files/components/Uploader.tsx
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import type {UploadingFile} from "@/features/files/storage/files"
+import {
+  selectUploaderOpened,
+  selectUploadsList,
+  uploaderClosed,
+  uploadRemoved
+} from "@/features/files/storage/files"
+import {
+  ActionIcon,
+  Box,
+  Group,
+  Paper,
+  Progress,
+  Stack,
+  Text
+} from "@mantine/core"
+import {IconAlertCircle, IconCheck, IconX} from "@tabler/icons-react"
 
 export default function Uploader() {
-  const opened = useSelector(selectOpened)
-  const files = useSelector(selectFiles)
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
+  const opened = useAppSelector(selectUploaderOpened)
+  const uploads = useAppSelector(selectUploadsList)
 
-  const fileItems = files.map((item, index) => (
-    <UploaderItem key={index} fileItem={item} />
-  ))
+  if (!opened || uploads.length === 0) {
+    return null
+  }
 
-  const onClose = () => {
-    dispatch(closeUploader())
+  const handleClose = () => {
+    dispatch(uploaderClosed())
+  }
+
+  const handleRemove = (upload: UploadingFile) => {
+    dispatch(
+      uploadRemoved({
+        targetId: upload.targetId,
+        fileName: upload.fileName
+      })
+    )
   }
 
   return (
-    <Dialog
-      opened={opened}
-      withBorder
-      withCloseButton
-      onClose={onClose}
-      size="xl"
+    <Paper
+      shadow="lg"
+      p="md"
       radius="md"
+      style={{
+        position: "fixed",
+        bottom: 20,
+        right: 20,
+        width: 400,
+        maxHeight: 500,
+        overflow: "auto",
+        zIndex: 1000
+      }}
     >
-      <Container>
-        <List size="lg" spacing="xs">
-          {fileItems}
-        </List>
-      </Container>
-    </Dialog>
+      <Group justify="space-between" mb="md">
+        <Text fw={600}>Uploads ({uploads.length})</Text>
+        <ActionIcon variant="subtle" onClick={handleClose}>
+          <IconX size={16} />
+        </ActionIcon>
+      </Group>
+
+      <Stack gap="sm">
+        {uploads.map(upload => (
+          <UploadItem
+            key={`${upload.targetId}-${upload.fileName}`}
+            upload={upload}
+            onRemove={() => handleRemove(upload)}
+          />
+        ))}
+      </Stack>
+    </Paper>
+  )
+}
+
+interface UploadItemProps {
+  upload: UploadingFile
+  onRemove: () => void
+}
+
+function UploadItem({upload, onRemove}: UploadItemProps) {
+  const getStatusIcon = () => {
+    switch (upload.status) {
+      case "success":
+        return <IconCheck size={16} color="green" />
+      case "error":
+        return <IconAlertCircle size={16} color="red" />
+      case "uploading":
+        return null
+      default:
+        return null
+    }
+  }
+
+  const getStatusColor = () => {
+    switch (upload.status) {
+      case "success":
+        return "green"
+      case "error":
+        return "red"
+      case "uploading":
+        return "blue"
+      default:
+        return "gray"
+    }
+  }
+
+  return (
+    <Paper p="xs" withBorder>
+      <Group justify="space-between" wrap="nowrap">
+        <Box style={{flex: 1, minWidth: 0}}>
+          <Group gap="xs" wrap="nowrap">
+            {getStatusIcon()}
+            <Text size="sm" truncate style={{flex: 1}}>
+              {upload.fileName}
+            </Text>
+          </Group>
+
+          {upload.status === "uploading" && (
+            <Progress
+              value={upload.progress || 0}
+              size="xs"
+              mt="xs"
+              color={getStatusColor()}
+            />
+          )}
+
+          {upload.error && (
+            <Text size="xs" c="red" mt="xs">
+              {upload.error}
+            </Text>
+          )}
+
+          {upload.status === "success" && (
+            <Text size="xs" c="dimmed" mt="xs">
+              Uploaded successfully
+            </Text>
+          )}
+        </Box>
+
+        {(upload.status === "success" || upload.status === "error") && (
+          <ActionIcon variant="subtle" size="sm" onClick={onRemove}>
+            <IconX size={14} />
+          </ActionIcon>
+        )}
+      </Group>
+    </Paper>
   )
 }

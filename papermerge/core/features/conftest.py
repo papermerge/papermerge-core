@@ -225,6 +225,7 @@ def make_document_version(db_session: AsyncSession):
         user: orm.User,
         lang: str | None = None,
         pages_text: list[str] | None = None,
+        mime_type: MimeType = MimeType.application_pdf
     ):
         db_pages = []
         if lang is None:
@@ -259,7 +260,12 @@ def make_document_version(db_session: AsyncSession):
             owner_id=user.id
         )
 
-        db_doc_ver = orm.DocumentVersion(pages=db_pages, document=db_doc, lang=lang)
+        db_doc_ver = orm.DocumentVersion(
+            pages=db_pages,
+            document=db_doc,
+            lang=lang,
+            mime_type=mime_type
+        )
         db_session.add(db_doc_ver)
         await db_session.commit()
 

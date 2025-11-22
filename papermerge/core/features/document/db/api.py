@@ -618,6 +618,7 @@ async def version_bump(
         page_count=page_count,
         short_description=short_description,
         lang=last_ver.lang,
+        mime_type=MimeType.application_pdf
     )
 
     db_session.add(db_new_doc_ver)

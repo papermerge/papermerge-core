@@ -60,7 +60,6 @@ import {
 import {APP_NODE_KEY, APP_NODE_VALUE} from "@/features/nodes/constants"
 import {useTranslation} from "react-i18next"
 import DraggingIcon from "./DraggingIcon"
-import {DropFilesModal} from "./DropFiles"
 import DropNodesModal from "./DropNodesDialog"
 import ExtractPagesModal from "./ExtractPagesModal"
 import FolderNodeActions from "./FolderNodeActions"
@@ -333,15 +332,6 @@ export default function Commander() {
           {commanderContent}
         </Stack>
       </Box>
-      {currentFolder && uploadFiles && uploadFiles.length > 0 && (
-        <DropFilesModal
-          opened={dropFilesOpened}
-          source_files={uploadFiles}
-          target={currentFolder}
-          onSubmit={dropFilesClose}
-          onCancel={dropFilesClose}
-        />
-      )}
       {draggedPagesDocParentID &&
         draggedPagesDocID &&
         currentFolder &&

@@ -34,7 +34,7 @@ async def get_my_preferences(
     return await pref_dbapi.get_merged_preferences_as_model(db, current_user.id)
 
 
-@router.put("/me", response_model=Preferences)
+@router.patch("/me", response_model=Preferences)
 async def update_my_preferences(
     preferences: PreferencesUpdate,
     current_user: Annotated[
@@ -43,7 +43,6 @@ async def update_my_preferences(
     db_session: AsyncSession = Depends(get_db)
 ) -> Preferences:
     """Update current user's preferences"""
-
     await pref_dbapi.update_user_preferences(
         db_session=db_session,
         user_id=current_user.id,
@@ -88,7 +87,7 @@ async def get_system_preferences(
     return SystemPreferencesResponse.model_validate(system_prefs)
 
 
-@router.put("/system", response_model=SystemPreferencesResponse)
+@router.patch("/system", response_model=SystemPreferencesResponse)
 @utils.docstring_parameter(scope=scopes.SYSTEM_PREFERENCE_UPDATE)
 async def update_system_preferences(
     current_admin: Annotated[

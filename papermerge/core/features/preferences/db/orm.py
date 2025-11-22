@@ -73,3 +73,6 @@ class UserPreferences(Base):
         onupdate=func.now(),
         nullable=False
     )
+
+    def __repr__(self):
+        return f"UserPreferences(preferences={self.preferences})"

@@ -92,6 +92,7 @@ async def update_user_preferences(
     result = await db_session.execute(stmt)
     user_prefs = result.scalar_one_or_none()
     new_pref_dict = preferences.model_dump(exclude_none=True)
+
     if user_prefs:
         previous_prefs = user_prefs.preferences or {}
         # SqlAlchemy detects change (and saves it) only
@@ -102,7 +103,7 @@ async def update_user_preferences(
         # Create new user preferences
         user_prefs = UserPreferences(
             user_id=user_id,
-            preferences=preferences
+            preferences=new_pref_dict
         )
         db_session.add(user_prefs)
 

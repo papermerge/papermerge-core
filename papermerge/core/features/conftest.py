@@ -199,7 +199,7 @@ def make_document_with_pages(db_session: AsyncSession):
             title=title,
             parent_id=parent.id,
         )
-        doc, _ = await doc_dbapi.create_document(db_session, attrs)
+        doc, _ = await doc_dbapi.create_document(db_session, attrs, mime_type=MimeType.application_pdf)
         PDF_PATH = RESOURCES / "three-pages.pdf"
 
         with open(PDF_PATH, "rb") as file:

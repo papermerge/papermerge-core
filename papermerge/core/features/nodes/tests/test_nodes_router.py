@@ -6,7 +6,7 @@ from sqlalchemy import select, func
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core import orm, schema
-from papermerge.core.tests.types import AuthTestClient
+from papermerge.core.tests.types import AuthTestClient, DocumentTestFileType
 
 
 async def test_get_node_details(auth_api_client: AuthTestClient, make_document):
@@ -97,26 +97,33 @@ async def test_nodes_move_when_some_source_id_does_not_exist(
     assert response.status_code == 403, response.json()
 
 
-async def test_create_document_with_custom_id(auth_api_client: AuthTestClient, db_session: AsyncSession):
+async def test_create_document_with_custom_id(
+    auth_api_client: AuthTestClient,
+    db_session: AsyncSession,
+    pdf_file: DocumentTestFileType
+):
     """
     Allow custom ID attribute: if ID attribute is set, then node will set it
     as its ID.
     """
     assert await doc_dbapi.count_docs(db_session) == 0
 
-    user = auth_api_client.user
-
     custom_id = uuid.uuid4()
 
-    payload = dict(
-        id=str(custom_id),
-        ctype="document",
-        # "lang" attribute is not set
-        title="doc1.pdf",
-        parent_id=str(user.home_folder.id),
+    files = {
+        "file": pdf_file.as_upload_tuple()
+    }
+    data = {
+        "document_id": str(custom_id),
+        "title": "doc1.pdf",
+    }
+
+    response = await auth_api_client.post(
+        "/documents/upload",
+        files=files,
+        data=data
     )
 
-    response = await auth_api_client.post("/nodes/", json=payload)
     assert response.status_code == 201, response.json()
     assert await doc_dbapi.count_docs(db_session) == 1
     doc = (await db_session.scalars(select(orm.Document).limit(1))).one()
@@ -147,27 +154,6 @@ async def test_create_folder_with_custom_id(auth_api_client: AuthTestClient, db_
     assert response.status_code == 201, response.json()
     assert folder.id == custom_id
 
-
-async def test_create_document(auth_api_client: AuthTestClient, db_session: AsyncSession):
-    """
-    When 'lang' attribute is not specified during document creation
-    it is set from user preferences['ocr_language']
-    """
-    assert await doc_dbapi.count_docs(db_session) == 0
-
-    user = auth_api_client.user
-
-    payload = {
-        "ctype": "document",
-        # "lang" attribute is not set
-        "title": "doc1.pdf",
-        "parent_id": str(user.home_folder.id),
-    }
-
-    response = await auth_api_client.post("/nodes/", json=payload)
-
-    assert response.status_code == 201, response.json()
-    assert await doc_dbapi.count_docs(db_session) == 1
 
 
 async def test_two_folders_with_same_title_under_same_parent(auth_api_client: AuthTestClient):
@@ -217,31 +203,6 @@ async def test_two_folders_with_same_title_under_different_parents(
     # create folder 'My Documents' in Inbox
     response = await auth_api_client.post("/nodes/", json=payload2)
     assert response.status_code == 201, response.json()
-
-
-async def test_two_documents_with_same_title_under_same_parent(
-    auth_api_client: AuthTestClient,
-):
-    """It should be possible to create two documents with
-    same (parent, title) pair i.e. we cannot have documents with same
-    title under same parent
-    """
-    user = auth_api_client.user
-    payload = {
-        "ctype": "document",
-        "title": "My Documents",
-        "parent_id": str(user.home_folder.id),
-    }
-
-    # Create first folder 'My documents' (inside home folder)
-    response = await auth_api_client.post("/nodes/", json=payload)
-
-    assert response.status_code == 201
-
-    # Create second folder 'My Documents' also inside home folder
-    response = await auth_api_client.post("/nodes/", json=payload)
-
-    assert response.status_code == 201
 
 
 async def test_assign_tags_to_non_tagged_folder(

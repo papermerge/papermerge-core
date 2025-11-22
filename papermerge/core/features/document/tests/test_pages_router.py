@@ -1,6 +1,6 @@
 import pytest
-
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from papermerge.core import schema, dbapi
 from papermerge.core.tests.resource_file import ResourceFile
 
@@ -39,7 +39,11 @@ async def test_router_extract_all_pages(
     src = await make_document_from_resource(
         resource=ResourceFile.LIVING_THINGS, user=user, parent=user.home_folder
     )
-    folder = await make_folder(title="Target folder", user=user, parent=user.home_folder)
+    folder = await make_folder(
+        title="Target folder",
+        user=user,
+        parent=user.home_folder
+    )
 
     src_ver = await dbapi.get_last_doc_ver(db_session, doc_id=src.id)
     src_page_ids = [str(p.id) for p in src_ver.pages]

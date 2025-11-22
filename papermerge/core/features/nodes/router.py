@@ -1,17 +1,17 @@
 import logging
 import uuid
-from typing import Annotated, Iterable, Union
+from typing import Iterable, Union
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Security, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.exceptions import HTTP404NotFound, EntityNotFound
-from papermerge.core import utils, schema, config
-from papermerge.core.features.auth import scopes, get_current_user
-from papermerge.core.features.document.db import api as doc_dbapi
+from papermerge.core import schema, config
+from papermerge.core.features.auth import scopes
 from papermerge.core.features.nodes.db import api as nodes_dbapi
+from papermerge.core.features.auth.dependencies import require_scopes
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.types import PaginatedResponse
@@ -35,16 +35,13 @@ settings = config.get_settings()
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def get_node(
     parent_id: UUID,
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    user: require_scopes(scopes.NODE_VIEW),
     params: CommonQueryParams = Depends(),
     db_session: AsyncSession = Depends(get_db),
 ) -> PaginatedResponse[Union[schema.DocumentShort, schema.FolderShort]]:
     """Returns list of *paginated* direct descendants of `parent_id` node
-
-    Required scope: `{scope}`
     """
     order_by = ["ctype", "title", "created_at", "updated_at"]
 
@@ -81,21 +78,14 @@ async def get_node(
         }
     },
 )
-@utils.docstring_parameter(
-    scope=scopes.NODE_CREATE,
-)
-async def create_node(
-    pynode: schema.NewFolder | schema.NewDocument,
-    user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.NODE_CREATE])
-    ],
+async def create_folder(
+    pynode: schema.NewFolder,
+    user: require_scopes(scopes.NODE_CREATE),
     db_session: AsyncSession = Depends(get_db),
-) -> schema.FolderShort | schema.Document | None:
-    """Creates a node
+) -> schema.FolderShort:
+    """Creates a folder
 
-    Required scope: `{scope}`
-
-    Node's `ctype` may be either `folder` or `document`.
+    Node's `ctype` must be `folder`.
     Optionally you may pass ID attribute. If ID is present and has
     non-emtpy UUID value, then newly create node will be assigned this
     custom ID.
@@ -104,6 +94,7 @@ async def create_node(
     like Home and Inbox.
     """
 
+    error = None
     if not await dbapi_common.has_node_perm(
             db_session,
             node_id=pynode.parent_id,
@@ -112,49 +103,21 @@ async def create_node(
     ):
         raise exc.HTTP403Forbidden()
 
-    if pynode.ctype == "folder":
-        attrs = dict(
-            title=pynode.title,
-            ctype="folder",
-            parent_id=pynode.parent_id,
-        )
-        if pynode.id:
-            attrs["id"] = pynode.id
-        new_folder = schema.NewFolder(**attrs)
+    attrs = dict(
+        title=pynode.title,
+        ctype="folder",
+        parent_id=pynode.parent_id,
+    )
+    if pynode.id:
+        attrs["id"] = pynode.id
+    new_folder = schema.NewFolder(**attrs)
 
-        async with AsyncAuditContext(
-            db_session,
-            user_id=user.id,
-            username=user.username
-        ):
-            created_node, error = await nodes_dbapi.create_folder(db_session, new_folder)
-    else:
-        # if user does not specify document's language, get that
-        # value from user preferences
-        if pynode.lang is None:
-            pynode.lang = settings.papermerge__ocr__default_lang_code
-
-        attrs = dict(
-            title=pynode.title,
-            lang=pynode.lang,
-            parent_id=pynode.parent_id,
-            size=0,
-            page_count=0,
-            ocr=pynode.ocr,
-            file_name=pynode.title,
-            ctype="document",
-        )
-        if pynode.id:
-            attrs["id"] = pynode.id
-
-        new_document = schema.NewDocument(**attrs)
-
-        async with AsyncAuditContext(
-            db_session,
-            user_id=user.id,
-            username=user.username
-        ):
-            created_node, error = await doc_dbapi.create_document(db_session, new_document)
+    async with AsyncAuditContext(
+        db_session,
+        user_id=user.id,
+        username=user.username
+    ):
+        created_node, error = await nodes_dbapi.create_folder(db_session, new_folder)
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())
@@ -171,18 +134,13 @@ async def create_node(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 async def update_node(
     node_id: UUID,
     node: schema.UpdateNode,
-    user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
-    ],
+    user: require_scopes(scopes.NODE_UPDATE),
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.NodeShort:
     """Updates node
-
-    Required scope: `{scope}`
 
     parent_id is optional field. However, when present, parent_id
     should be not empty string (UUID).
@@ -218,17 +176,12 @@ async def update_node(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_DELETE)
 async def delete_nodes(
     list_of_uuids: list[UUID],
-    user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.NODE_DELETE])
-    ],
+    user: require_scopes(scopes.NODE_DELETE),
     db_session: AsyncSession = Depends(get_db),
 ):
     """Deletes nodes with specified UUIDs
-
-    Required scope: `{scope}`
 
     Returns a list of UUIDs of actually deleted nodes.
     In case nothing was deleted (e.g. no nodes with specified UUIDs
@@ -283,10 +236,9 @@ async def delete_nodes(
         },
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_MOVE)
 async def move_nodes(
     params: schema.MoveNode,
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_MOVE])],
+    user: require_scopes(scopes.NODE_MOVE),
     db_session: AsyncSession = Depends(get_db),
 ) -> list[UUID]:
     """Move source nodes into the target node.
@@ -295,8 +247,6 @@ async def move_nodes(
 
         * `node.update` permission for the target node
         * `node.move` permission for each source node
-
-    Required scope: `{scope}`
 
     In other words, after successful completion of this action
     all source nodes will have target node as their parent.
@@ -374,19 +324,14 @@ async def move_nodes(
         },
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 async def assign_node_tags(
     node_id: UUID,
     tags: list[str],
-    user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
-    ],
+    user: require_scopes(scopes.NODE_UPDATE),
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.DocumentShort | schema.FolderShort:
     """
     Assigns given list of tag names to the node.
-
-    Required scope: `{scope}`
 
     All tags not present in given list of tags names
     will be disassociated from the node; in other words upon
@@ -438,9 +383,8 @@ async def assign_node_tags(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def get_nodes_details(
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    user: require_scopes(scopes.NODE_VIEW),
     node_ids: list[uuid.UUID] | None = Query(default=None),
     db_session: AsyncSession = Depends(get_db),
 ) -> list[schema.Folder | schema.Document]:
@@ -449,8 +393,6 @@ async def get_nodes_details(
 
     Dev note: this API endpoint is used by UI to fetch tags and breadcrumbs
     for the *search results*, as search index does not store these attributes.
-
-    Required scope: `{scope}`
     """
     if node_ids is None:
         return []
@@ -481,19 +423,14 @@ async def get_nodes_details(
         },
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 async def update_node_tags(
     node_id: UUID,
     tags: list[str],
-    user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
-    ],
+    user: require_scopes(scopes.NODE_UPDATE),
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.DocumentShort | schema.FolderShort:
     """
     Appends given list of tag names to the node.
-
-    Required scope: `{scope}`
 
     Retains all previously associated node tags.
     Yet another way of thinking about http PATCH method is as it
@@ -555,17 +492,12 @@ async def update_node_tags(
         },
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def get_node_tags(
     node_id: UUID,
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    user: require_scopes(scopes.NODE_VIEW),
     db_session=Depends(get_db),
 ) -> Iterable[schema.Tag]:
-    """
-    Retrieves nodes tags
-
-    Required scope: `{scope}`
-    """
+    """Retrieves nodes tags"""
     try:
         if not await dbapi_common.has_node_perm(
             db_session,
@@ -596,19 +528,14 @@ async def get_node_tags(
         },
     },
 )
-@utils.docstring_parameter(scope=scopes.NODE_UPDATE)
 async def remove_node_tags(
     node_id: UUID,
     tags: list[str],
-    user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.NODE_UPDATE])
-    ],
+    user: require_scopes(scopes.NODE_VIEW),
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.DocumentShort | schema.FolderShort:
     """
     Dissociate given tags the node.
-
-    Required scope: `{scope}`
 
     Tags models are not deleted - just dissociated from the node.
     """

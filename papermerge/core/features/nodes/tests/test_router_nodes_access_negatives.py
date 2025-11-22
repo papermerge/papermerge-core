@@ -21,7 +21,12 @@ async def test_get_node(
     assert response.status_code == 403
 
 
-async def test_post_node(login_as, make_user, make_folder):
+async def test_post_node(
+    login_as,
+    make_user,
+    make_folder,
+    pdf_file
+):
     """
     User B should not be able to create nodes in User A's private folders
     """
@@ -32,15 +37,22 @@ async def test_post_node(login_as, make_user, make_folder):
         "folder_a", parent=user_a.home_folder, user=user_a
     )
 
-    payload = {
-        "ctype": "document",
+    files = {
+        "file": pdf_file.as_upload_tuple()
+    }
+
+    data = {
         "title": "doc_user_b.pdf",
         "parent_id": str(user_a_private_folder.id),
     }
 
     user_b_api_client = await login_as(user_b)
 
-    response = await user_b_api_client.post("/nodes/", json=payload)
+    response = await user_b_api_client.post(
+        "/documents/upload",
+        data=data,
+        files=files
+    )
 
     assert response.status_code == 403
 

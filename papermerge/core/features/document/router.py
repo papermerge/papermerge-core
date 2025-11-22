@@ -173,6 +173,7 @@ async def upload_document(
     file: UploadFile,
     title: str | None = Form(None),
     parent_id: uuid.UUID | None = Form(None),
+    document_id: uuid.UUID | None = Form(None),
     ocr: bool = Form(False),
     lang: str | None = Form(None),
     db_session: AsyncSession = Depends(get_db),
@@ -268,6 +269,10 @@ async def upload_document(
         file_name=file.filename or title,
         ctype="document",
     )
+
+    if document_id is not None:
+        # custom document ID
+        new_document.id = document_id
 
     async with AsyncAuditContext(
         db_session,

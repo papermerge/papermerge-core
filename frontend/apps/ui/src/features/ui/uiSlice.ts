@@ -231,8 +231,7 @@ const initialState: UIState = {
   secondaryViewerThumbnailsPanelOpen: secondaryThumbnailsPanelInitialState(),
   mainViewerDocumentDetailsPanelOpen: mainDocumentDetailsPanelInitialState(),
   secondaryViewerDocumentDetailsPanelOpen:
-    secondaryDocumentDetailsPanelInitialState(),
-  secondaryDocumentsByTypeCommanderColumns: {}
+    secondaryDocumentDetailsPanelInitialState()
 }
 
 const uiSlice = createSlice({

@@ -1,22 +1,21 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {Checkbox, Stack} from "@mantine/core"
 import {IconUsers} from "@tabler/icons-react"
-import {useContext} from "react"
 
+import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
 import {
   commanderSelectionNodeAdded,
   commanderSelectionNodeRemoved,
   dragNodesStarted,
-  selectCurrentNodeID,
   selectSelectedNodeIds
 } from "@/features/ui/uiSlice"
 
 import Thumbnail from "@/components/NodeThumbnail/Thumbnail"
 import Tags from "@/features/nodes/components/Commander/NodesCommander/Node/Tags"
-import type {NodeType, PanelMode} from "@/types"
+import type {NodeType} from "@/types"
 import classes from "./Document.module.scss"
 
-import PanelContext from "@/contexts/PanelContext"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 
 type Args = {
   node: NodeType
@@ -33,20 +32,21 @@ export default function Document({
   onDragStart,
   cssClassNames
 }: Args) {
-  const mode: PanelMode = useContext(PanelContext)
+  const {panelId} = usePanel()
   const selectedIds = useAppSelector(s =>
-    selectSelectedNodeIds(s, mode)
+    selectSelectedNodeIds(s, panelId)
   ) as Array<string>
-  const currentFolderID = useAppSelector(s => selectCurrentNodeID(s, mode))
+
+  const currentFolderID = useAppSelector(s => selectCurrentNodeID(s, panelId))
 
   const dispatch = useAppDispatch()
   const tagNames = node.tags.map(t => t.name)
 
   const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.currentTarget.checked) {
-      dispatch(commanderSelectionNodeAdded({itemID: node.id, mode}))
+      dispatch(commanderSelectionNodeAdded({itemID: node.id, mode: panelId}))
     } else {
-      dispatch(commanderSelectionNodeRemoved({itemID: node.id, mode}))
+      dispatch(commanderSelectionNodeRemoved({itemID: node.id, mode: panelId}))
     }
   }
 

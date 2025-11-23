@@ -9,8 +9,8 @@ import {createRoot} from "react-dom/client"
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
 
+import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
 import {
-  selectCurrentNodeID,
   selectDraggedPagesDocID,
   selectDraggedPagesDocParentID
 } from "@/features/ui/uiSlice"

@@ -1,18 +1,15 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import type {PanelMode} from "@/types"
+import {
+  selectCurrentNodeID,
+  selectPanelComponent,
+  updatePanelCurrentNode
+} from "@/features/ui/panelRegistry"
 import {ActionIcon} from "@mantine/core"
 import {IconArrowBarLeft, IconArrowBarRight} from "@tabler/icons-react"
-import {useContext} from "react"
 import {useNavigate} from "react-router-dom"
 
-import PanelContext from "@/contexts/PanelContext"
-import {
-  currentNodeChanged,
-  selectCurrentNodeCType,
-  selectCurrentNodeID,
-  selectLastPageSize,
-  selectPanelComponent
-} from "@/features/ui/uiSlice"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectLastPageSize} from "@/features/ui/uiSlice"
 
 export default function DuplicatePanelButton() {
   /* Make both panels show same content
@@ -22,15 +19,15 @@ export default function DuplicatePanelButton() {
   Node is identified by unique ID.
   This component switches content (i.e. displayed node) in target panel to be the
   same as in source panel */
-  const mode: PanelMode = useContext(PanelContext)
+  const {panelId} = usePanel()
   const dispatch = useAppDispatch()
-  const nodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const nodeID = useAppSelector(s => selectCurrentNodeID(s, panelId))
   const nodeIDMain = useAppSelector(s => selectCurrentNodeID(s, "main"))
   const nodeIDSecondary = useAppSelector(s =>
     selectCurrentNodeID(s, "secondary")
   )
   const lastPageSize = useAppSelector(s => selectLastPageSize(s, "main"))
-  const ctype = useAppSelector(s => selectCurrentNodeCType(s, mode))
+  const component = useAppSelector(s => selectPanelComponent(s, panelId))
   const secondaryPanel = useAppSelector(s =>
     selectPanelComponent(s, "secondary")
   )
@@ -43,7 +40,11 @@ export default function DuplicatePanelButton() {
       target is "secondary panel"
       and the operation is "target := source" */
     dispatch(
-      currentNodeChanged({id: nodeID!, ctype: ctype!, panel: "secondary"})
+      updatePanelCurrentNode({
+        entityID: nodeID!,
+        component: component!,
+        panelID: "secondary"
+      })
     )
   }
 
@@ -57,14 +58,14 @@ export default function DuplicatePanelButton() {
       This way, when user refreshes browser, he/she will
       land on same node
     */
-    if (ctype == "folder") {
+    if (component == "commander") {
       navigate(`/folder/${nodeID}?page_size=${lastPageSize}`)
-    } else {
+    } else if (component == "viewer") {
       navigate(`/document/${nodeID}`)
     }
   }
 
-  if (mode == "main") {
+  if (panelId == "main") {
     if (secondaryPanel && panelsHaveDifferentNodes) {
       /* Show <DuplicatePanelButton /> in main panel if and only if secondary panel
       is visible and panels show different nodes.

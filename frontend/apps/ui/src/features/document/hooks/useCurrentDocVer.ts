@@ -5,10 +5,8 @@ import {
   addDocVersion,
   selectDocVerByID
 } from "@/features/document/store/documentVersSlice"
-import {
-  currentDocVerUpdated,
-  selectCurrentDocumentID
-} from "@/features/ui/uiSlice"
+import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
+import {currentDocVerUpdated} from "@/features/ui/uiSlice"
 import {usePanelMode} from "@/hooks"
 import {ClientDocumentVersion} from "@/types"
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query"
@@ -32,9 +30,7 @@ interface ReturnState {
 export default function useCurrentDocVer(): ReturnState {
   const dispatch = useAppDispatch()
   const mode = usePanelMode()
-  const currentDocumentID = useAppSelector(s =>
-    selectCurrentDocumentID(s, mode)
-  )
+  const currentDocumentID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const latestDocVerID = useAppSelector(s =>
     selectLatestDocVerByDocID(s, currentDocumentID)
   )

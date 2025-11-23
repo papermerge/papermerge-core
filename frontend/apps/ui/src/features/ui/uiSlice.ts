@@ -19,8 +19,6 @@ import Cookies from "js-cookie"
 
 import type {NodeType, SortMenuColumn, SortMenuDirection} from "@/types"
 
-import type {AuditOperation, TimestampFilterType} from "@/features/audit/types"
-import type {CategoryColumn} from "@/features/nodes/components/Commander/____DocumentsByTypeCommander/types"
 import {DialogVisiblity} from "@/types.d/common"
 import {SortState} from "kommon"
 
@@ -35,13 +33,6 @@ const MAIN_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE =
   "main_document_details_panel_opened"
 const SECONDARY_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE =
   "secondary_document_details_panel_opened"
-
-const SMALL_BOTTOM_MARGIN = 13 /* pixles */
-
-type DualArg = {
-  mode: PanelMode
-  value: number
-}
 
 type UpdateFilterType = {
   mode: PanelMode
@@ -137,27 +128,6 @@ interface DragNDropState {
   sourceFolderID?: string
 }
 
-interface SearchState {
-  /* Query string as entered by user i.e exactly what user sees
-  in search box when he/she submits search query */
-  query: string
-  /* when clicking on result item, should it open
-  clicked item (document or folder) in main panel or in secondary one? */
-  openResultItemInOtherPanel: boolean
-}
-
-interface DocumentsByTypeColumnsArg {
-  mode: PanelMode
-  document_type_id: string
-  columns: Array<string>
-}
-
-interface DocumentsByTypeCommanderColumnToggledArg {
-  mode: PanelMode
-  name: string
-  visibility: boolean
-}
-
 export type LastHome = {
   label: string
   home_id: string
@@ -181,28 +151,12 @@ interface LastInboxArg {
   last_inbox: LastInbox
 }
 
-interface Pagination {
-  pageNumber?: number
-  pageSize?: number
-}
-
 interface PanelListBase {
   freeTextFilterValue?: string
   pageNumber?: number
   pageSize?: number
   sorting?: SortState
   visibleColumns?: Array<string>
-}
-
-interface AuditLogPanelList extends PanelListBase {
-  timestampFilterValue?: TimestampFilterType
-  operationFilterValue?: Array<AuditOperation>
-  tableNameFilterValue?: Array<string>
-  usernameFilterValue?: Array<string>
-}
-
-interface AuditLogPanelDetails {
-  id: string
 }
 
 interface RolePanelList extends PanelListBase {}
@@ -213,11 +167,7 @@ interface RolePanelDetails {
 
 export interface UIState {
   navbar: NavBarState
-  search?: SearchState
-  searchLastPageSize?: number
   dragndrop?: DragNDropState
-  currentNodeMain?: CurrentNode
-  currentNodeSecondary?: CurrentNode
   mainViewer?: ViewerState
   secondaryViewer?: ViewerState
   currentSharedNode?: CurrentNode
@@ -233,7 +183,6 @@ export interface UIState {
    this field indicates his/her last selection */
   mainCommanderLastHome?: LastHome
   mainCommanderLastInbox?: LastInbox
-  mainDocumentsByTypeCommanderColumns?: Record<string, Array<CategoryColumn>>
   secondaryCommanderSelectedIDs?: Array<String>
   secondaryCommanderFilter?: string
   secondaryCommanderLastPageSize?: number
@@ -245,10 +194,6 @@ export interface UIState {
    this field indicates his/her last selection */
   secondaryCommanderLastHome?: LastHome
   secondaryCommanderLastInbox?: LastInbox
-  secondaryDocumentsByTypeCommanderColumns: Record<
-    string,
-    Array<CategoryColumn>
-  >
   /* Which component should main panel display:
     commander, viewer or search results? */
   mainPanelComponent?: PanelComponent
@@ -287,7 +232,6 @@ const initialState: UIState = {
   mainViewerDocumentDetailsPanelOpen: mainDocumentDetailsPanelInitialState(),
   secondaryViewerDocumentDetailsPanelOpen:
     secondaryDocumentDetailsPanelInitialState(),
-  mainDocumentsByTypeCommanderColumns: {},
   secondaryDocumentsByTypeCommanderColumns: {}
 }
 
@@ -309,15 +253,7 @@ const uiSlice = createSlice({
         Cookies.set(NAVBAR_WIDTH_COOKIE, `${COLLAPSED_WIDTH}`)
       }
     },
-    searchResultsLastPageSizeUpdated(state, action: PayloadAction<number>) {
-      state.searchLastPageSize = action.payload
-    },
-    searchResultItemTargetUpdated(state, action: PayloadAction<boolean>) {
-      if (state.search) {
-        /* in which panel will search result item open ? */
-        state.search.openResultItemInOtherPanel = action.payload
-      }
-    },
+
     mainPanelComponentUpdated(state, action: PayloadAction<PanelComponent>) {
       state.mainPanelComponent = action.payload
     },
@@ -491,77 +427,6 @@ const uiSlice = createSlice({
         state.mainCommanderLastInbox = last_inbox
       } else {
         state.secondaryCommanderLastInbox = last_inbox
-      }
-    },
-    documentsByTypeCommanderColumnsUpdated(
-      state,
-      action: PayloadAction<DocumentsByTypeColumnsArg>
-    ) {
-      const mode = action.payload.mode
-      const document_type_id = action.payload.document_type_id
-      const columns = action.payload.columns
-
-      if (mode == "main") {
-        if (!state.mainDocumentsByTypeCommanderColumns) {
-          state.mainDocumentsByTypeCommanderColumns = {}
-        }
-        state.mainDocumentsByTypeCommanderColumns[document_type_id] =
-          columns.map(c => {
-            return {name: c, visible: true}
-          })
-      } else {
-        if (!state.secondaryDocumentsByTypeCommanderColumns) {
-          state.secondaryDocumentsByTypeCommanderColumns = {}
-        }
-        state.secondaryDocumentsByTypeCommanderColumns[document_type_id] =
-          columns.map(c => {
-            return {name: c, visible: true}
-          })
-      }
-    },
-    documentsByTypeCommanderColumnVisibilityToggled(
-      state,
-      action: PayloadAction<DocumentsByTypeCommanderColumnToggledArg>
-    ) {
-      const mode = action.payload.mode
-      const name = action.payload.name
-      const visibility = action.payload.visibility
-
-      if (mode == "main") {
-        const document_type_id = state.mainCommanderDocumentTypeID
-        if (!document_type_id) {
-          return
-        }
-        if (!state.mainDocumentsByTypeCommanderColumns) {
-          return
-        }
-        const curState =
-          state.mainDocumentsByTypeCommanderColumns[document_type_id]
-        const newState = curState.map(col => {
-          if (col.name == name) {
-            return {name, visible: visibility}
-          }
-          return col
-        })
-        state.mainDocumentsByTypeCommanderColumns[document_type_id] = newState
-      } else {
-        const document_type_id = state.secondaryCommanderDocumentTypeID
-        if (!document_type_id) {
-          return
-        }
-        if (!state.secondaryDocumentsByTypeCommanderColumns) {
-          return
-        }
-        const curState =
-          state.secondaryDocumentsByTypeCommanderColumns[document_type_id]
-        const newState = curState.map(col => {
-          if (col.name == name) {
-            return {name, visible: visibility}
-          }
-          return col
-        })
-        state.secondaryDocumentsByTypeCommanderColumns[document_type_id] =
-          newState
       }
     },
     viewerThumbnailsPanelToggled(state, action: PayloadAction<PanelMode>) {
@@ -763,16 +628,12 @@ const uiSlice = createSlice({
 
 export const {
   toggleNavBar,
-  currentNodeChanged,
+
   currentSharedNodeChanged,
   currentSharedNodeRootChanged,
   mainPanelComponentUpdated,
   secondaryPanelComponentUpdated,
-  searchResultsLastPageSizeUpdated,
   mainPanelRoleDetailsUpdated,
-  searchResultItemTargetUpdated,
-  secondaryPanelClosed,
-  secondaryPanelOpened,
   commanderSelectionNodeAdded,
   commanderSelectionNodeRemoved,
   commanderSelectionCleared,
@@ -796,8 +657,6 @@ export const {
   dragPagesStarted,
   dragNodesStarted,
   dragEnded,
-  documentsByTypeCommanderColumnsUpdated,
-  documentsByTypeCommanderColumnVisibilityToggled,
   lastHomeUpdated,
   lastInboxUpdated,
   viewerPageHaveChangedDialogVisibilityChanged
@@ -807,25 +666,6 @@ export default uiSlice.reducer
 export const selectNavBarCollapsed = (state: RootState) =>
   state.ui.navbar.collapsed
 export const selectNavBarWidth = (state: RootState) => state.ui.navbar.width
-
-export const selectCurrentNode = (
-  state: RootState,
-  mode: PanelMode
-): CurrentNode | undefined => {
-  if (mode == "main") {
-    return state.ui.currentNodeMain
-  }
-
-  return state.ui.currentNodeSecondary
-}
-
-export const selectCurrentNodeID = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.currentNodeMain?.id
-  }
-
-  return state.ui.currentNodeSecondary?.id
-}
 
 export const selectCurrentSharedNodeID = (state: RootState) => {
   return state.ui.currentSharedNode?.id
@@ -837,28 +677,6 @@ export const selectSharedNode = (state: RootState, nodeID: string) => {
 
 export const selectCurrentSharedRootID = (state: RootState) => {
   return state.ui.currentSharedRootID
-}
-
-export const selectCurrentNodeCType = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.currentNodeMain?.ctype
-  }
-
-  return state.ui.currentNodeSecondary?.ctype
-}
-
-export const selectCurrentDocumentID = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    const node = state.ui.currentNodeMain
-    if (node?.ctype == "document") {
-      return node.id
-    }
-  }
-
-  const node = state.ui.currentNodeSecondary
-  if (node?.ctype == "document") {
-    return node.id
-  }
 }
 
 export const selectPanelComponent = (state: RootState, mode: PanelMode) => {
@@ -1089,14 +907,6 @@ export const selectDraggedNodesSourceFolderID = (state: RootState) => {
   return state.ui.dragndrop?.sourceFolderID
 }
 
-export const selectSearchQuery = (state: RootState) => state.ui.search?.query
-
-export const selectSearchLastPageSize = (state: RootState): number =>
-  state.ui.searchLastPageSize || PAGINATION_DEFAULT_ITEMS_PER_PAGES
-
-export const selectOpenResultItemInOtherPanel = (state: RootState) =>
-  state.ui.search?.openResultItemInOtherPanel
-
 export const selectDocumentCurrentPage = (
   state: RootState,
   mode: PanelMode
@@ -1107,37 +917,6 @@ export const selectDocumentCurrentPage = (
 
   return state.ui.secondaryViewerCurrentPageNumber
 }
-
-export const selectDocumentsByTypeCommanderColumns = (
-  state: RootState,
-  mode: PanelMode
-): Array<CategoryColumn> => {
-  if (mode == "main") {
-    const document_type_id = state.ui.mainCommanderDocumentTypeID
-    if (state.ui.mainDocumentsByTypeCommanderColumns && document_type_id) {
-      return (
-        state.ui.mainDocumentsByTypeCommanderColumns[document_type_id] || []
-      )
-    }
-
-    return []
-  }
-
-  const document_type_id = state.ui.secondaryCommanderDocumentTypeID
-  if (state.ui.mainDocumentsByTypeCommanderColumns && document_type_id) {
-    return state.ui.mainDocumentsByTypeCommanderColumns[document_type_id] || []
-  }
-
-  return []
-}
-
-export const selectDocumentsByTypeCommanderVisibleColumns = createSelector(
-  selectDocumentsByTypeCommanderColumns,
-  columns => {
-    const visibleColumnNames = columns.filter(c => c.visible).map(c => c.name)
-    return visibleColumnNames
-  }
-)
 
 export const selectLastHome = (state: RootState, mode: PanelMode) => {
   if (mode == "main") {

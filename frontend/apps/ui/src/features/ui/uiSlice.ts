@@ -332,36 +332,6 @@ const uiSlice = createSlice({
       state.mainPanelComponent = "roleDetails"
       state.mainRoleDetails = {id: roleID}
     },
-    currentNodeChanged(state, action: PayloadAction<CurrentNodeArgs>) {
-      const payload = action.payload
-      if (payload.panel == "main") {
-        state.currentNodeMain = {
-          id: payload.id,
-          ctype: payload.ctype
-        }
-        if (payload.ctype == "folder") {
-          state.mainPanelComponent = "commander"
-        }
-        if (payload.ctype == "document") {
-          state.mainPanelComponent = "viewer"
-        }
-        state.mainCommanderSelectedIDs = []
-        return
-      }
-
-      // mode == secondary
-      state.currentNodeSecondary = {
-        id: payload.id,
-        ctype: payload.ctype
-      }
-      if (payload.ctype == "folder") {
-        state.secondaryPanelComponent = "commander"
-      }
-      if (payload.ctype == "document") {
-        state.secondaryPanelComponent = "viewer"
-      }
-      state.secondaryCommanderSelectedIDs = []
-    }, // end of currentNodeChanged
     currentSharedNodeChanged(state, action: PayloadAction<CurrentNodeArgs>) {
       const payload = action.payload
 
@@ -382,15 +352,6 @@ const uiSlice = createSlice({
     ) {
       state.currentSharedRootID = action.payload
     },
-    //------------------------------------------------------------------
-    secondaryPanelOpened(state, action: PayloadAction<PanelComponent>) {
-      state.secondaryPanelComponent = action.payload
-    },
-
-    secondaryPanelClosed(state) {
-      state.secondaryPanelComponent = undefined
-    },
-
     commanderSelectionNodeAdded(
       state,
       action: PayloadAction<PanelSelectionArg>

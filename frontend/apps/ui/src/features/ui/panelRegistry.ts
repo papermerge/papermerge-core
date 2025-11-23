@@ -17,6 +17,8 @@ export interface PanelListState {
   visibleColumns?: string[]
   selectedIDs?: string[]
   filters?: Record<string, any>
+  entityID?: string // used by commander/document list in secondary panel
+  // entityID = current nodeID of viewer | commander in secondary panel
 }
 
 export interface PanelDetailsState {
@@ -157,6 +159,40 @@ const panelRegistrySlice = createSlice({
         ...filters
       }
     },
+    updatePanelCurrentNode: (
+      state,
+      action: PayloadAction<{
+        panelID: string
+        component: PanelComponent
+        entityID: string
+      }>
+    ) => {
+      const {entityID, panelID, component} = action.payload
+      const panel = state.panels[panelID]
+
+      if (!state.panels[panelID]) {
+        state.panels[panelID] = {
+          type: "list",
+          componentStates: {}
+        }
+      }
+      state.panels[panelID].component = component
+
+      // Initialize component state if it doesn't exist
+      if (component && !state.panels[panelID].componentStates[component]) {
+        state.panels[panelID].componentStates[component] = {}
+      }
+
+      if (!panel.componentStates[component]) {
+        panel.componentStates[component] = {}
+      }
+
+      if (!panel.componentStates[component].list) {
+        panel.componentStates[component].list = {}
+      }
+
+      panel.componentStates[component].list!.entityID = entityID
+    },
 
     // Set details state for current component
     setPanelDetails: (
@@ -288,7 +324,8 @@ export const {
   clearPanelSelection,
   resetPanelComponentState,
   resetPanel,
-  closePanel
+  closePanel,
+  updatePanelCurrentNode
 } = panelRegistrySlice.actions
 
 export default panelRegistrySlice.reducer
@@ -381,3 +418,6 @@ export const selectPanelAllCustom = createSelector(
   ],
   custom => custom ?? EMPTY_OBJECT
 )
+
+export const selectCurrentNodeID = (state: RootState, panelId: string) =>
+  selectPanelList(state, panelId)?.entityID

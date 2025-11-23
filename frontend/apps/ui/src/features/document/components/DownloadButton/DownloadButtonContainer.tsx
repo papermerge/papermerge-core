@@ -1,14 +1,16 @@
-import {useAppDispatch} from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {fetchAndDownloadDocument} from "@/features/document/store/documentDownloadsSlice"
-import {useCurrentNode} from "@/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
 import {UUID} from "@/types.d/common"
 import {useState} from "react"
 import {DownloadButton} from "viewer"
 import useDownloadButton from "./useDownloadButton"
 
 export default function DownloadButtonContainer() {
+  const {panelId} = usePanel()
   const [wasOpened, setWasOpened] = useState<boolean>(false)
-  const {currentNodeID} = useCurrentNode()
+  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, panelId))
   const {versions, txt, isError, isLoading, i18nIsReady} = useDownloadButton({
     initiateListDownload: wasOpened,
     nodeID: currentNodeID

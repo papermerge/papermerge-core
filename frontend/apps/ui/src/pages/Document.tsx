@@ -1,10 +1,12 @@
-import {LoaderFunctionArgs} from "react-router"
 import DualPanel from "@/components/DualPanel"
+import {LoaderFunctionArgs} from "react-router"
 
 import {store} from "@/app/store"
-import {currentNodeChanged} from "@/features/ui/uiSlice"
 
-import {setPanelComponent} from "@/features/ui/panelRegistry"
+import {
+  setPanelComponent,
+  updatePanelCurrentNode
+} from "@/features/ui/panelRegistry"
 
 export default function Document() {
   return <DualPanel />
@@ -22,10 +24,10 @@ export async function loader({params, request}: LoaderFunctionArgs) {
   )
 
   store.dispatch(
-    currentNodeChanged({
-      id: params.documentId!,
-      ctype: "document",
-      panel: "main"
+    updatePanelCurrentNode({
+      entityID: documentId!,
+      component: "viewer",
+      panelID: "main"
     })
   )
 

@@ -1,4 +1,3 @@
-// features/ui/hooks/usePanel.ts
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
 import {useContext, useMemo} from "react"

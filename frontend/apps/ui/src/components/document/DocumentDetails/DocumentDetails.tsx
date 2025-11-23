@@ -22,10 +22,8 @@ import {OWNER_ME} from "@/cconstants"
 import CopyButton from "@/components/CopyButton"
 import {EditNodeTagsModal} from "@/components/EditNodeTags"
 import type {DocumentType} from "@/features/document/types"
-import {
-  selectCurrentNodeID,
-  selectDocumentDetailsPanelOpen
-} from "@/features/ui/uiSlice"
+import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
+import {selectDocumentDetailsPanelOpen} from "@/features/ui/uiSlice"
 import type {ClientDocumentVersion, PanelMode} from "@/types"
 import DocumentDetailsToggle from "../DocumentDetailsToggle"
 import CustomFields from "./CustomFields"

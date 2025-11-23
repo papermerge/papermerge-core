@@ -2,13 +2,13 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {Checkbox, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconUsers} from "@tabler/icons-react"
-import {useContext, useState} from "react"
+import {useState} from "react"
 
+import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
 import {
   commanderSelectionNodeAdded,
   commanderSelectionNodeRemoved,
   dragNodesStarted,
-  selectCurrentNodeID,
   selectDraggedNodes,
   selectDraggedNodesSourceFolderID,
   selectSelectedNodeIds
@@ -16,10 +16,10 @@ import {
 
 import DropNodesModal from "@/features/nodes/components/Commander/NodesCommander/DropNodesDialog"
 import Tags from "@/features/nodes/components/Commander/NodesCommander/Node/Tags"
-import type {NodeType, PanelMode} from "@/types"
+import type {NodeType} from "@/types"
 import classes from "./Folder.module.scss"
 
-import PanelContext from "@/contexts/PanelContext"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 
 type Args = {
   node: NodeType
@@ -39,11 +39,11 @@ export default function Folder({
   const [dropNodesOpened, {open: dropNodesOpen, close: dropNodesClose}] =
     useDisclosure(false)
   const [dragOver, setDragOver] = useState<boolean>(false)
-  const mode: PanelMode = useContext(PanelContext)
+  const {panelId} = usePanel()
   const selectedIds = useAppSelector(s =>
-    selectSelectedNodeIds(s, mode)
+    selectSelectedNodeIds(s, panelId)
   ) as Array<string>
-  const currentFolderID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const currentFolderID = useAppSelector(s => selectCurrentNodeID(s, panelId))
   const dispatch = useAppDispatch()
   const tagNames = node.tags.map(t => t.name)
   const draggedNodes = useAppSelector(selectDraggedNodes)
@@ -53,9 +53,9 @@ export default function Folder({
 
   const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.currentTarget.checked) {
-      dispatch(commanderSelectionNodeAdded({itemID: node.id, mode}))
+      dispatch(commanderSelectionNodeAdded({itemID: node.id, mode: panelId}))
     } else {
-      dispatch(commanderSelectionNodeRemoved({itemID: node.id, mode}))
+      dispatch(commanderSelectionNodeRemoved({itemID: node.id, mode: panelId}))
     }
   }
 

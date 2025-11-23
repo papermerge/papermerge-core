@@ -1,5 +1,5 @@
 import {useGetDocumentQuery} from "@/features/document/store/apiSlice"
-import {selectCurrentDocumentID} from "@/features/ui/uiSlice"
+import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query"
 import {skipToken} from "@reduxjs/toolkit/query"
 
@@ -23,9 +23,7 @@ export interface ReturnState {
 export default function useCurrentDoc(): ReturnState {
   const mode = usePanelMode()
 
-  const currentDocumentID = useAppSelector(s =>
-    selectCurrentDocumentID(s, mode)
-  )
+  const currentDocumentID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const {
     // should be `currentData` here not `data`, otherwise there will
     // be a flicker previous document when user opens viewer

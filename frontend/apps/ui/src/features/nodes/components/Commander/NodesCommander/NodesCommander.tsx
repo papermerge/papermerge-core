@@ -1,21 +1,18 @@
 import {apiSlice} from "@/features/api/slice"
 import {uploadFile} from "@/features/files/storage/thunks"
 import type {UploadFileOutput} from "@/features/files/types"
-import {setPanelComponent} from "@/features/ui/panelRegistry"
 import {Box, Group, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
-import {useContext, useState} from "react"
+import {useState} from "react"
 import {createRoot} from "react-dom/client"
 
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
 
+import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
 import {
-  currentNodeChanged,
-  selectCurrentNodeID,
   selectDraggedPagesDocID,
-  selectDraggedPagesDocParentID,
-  selectFilterText
+  selectDraggedPagesDocParentID
 } from "@/features/ui/uiSlice"
 
 import {
@@ -33,24 +30,15 @@ import {isSupportedFile} from "@/features/nodes/utils"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
 import Pagination from "@/components/Pagination"
-import PanelContext from "@/contexts/PanelContext"
-import {
-  useGetFolderQuery,
-  useGetPaginatedNodesQuery
-} from "@/features/nodes/storage/api"
+
 import {generateThumbnail} from "@/features/nodes/storage/thumbnailObjectsSlice"
 import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import {
-  commanderLastPageSizeUpdated,
-  currentDocVerUpdated,
-  selectCommanderSortMenuColumn,
-  selectCommanderSortMenuDir,
   selectDraggedNodes,
   selectDraggedNodesSourceFolderID,
-  selectDraggedPages,
-  selectLastPageSize
+  selectDraggedPages
 } from "@/features/ui/uiSlice"
-import type {NType, PanelMode} from "@/types"
+import type {NType} from "@/types"
 import classes from "./Commander.module.scss"
 
 import {
@@ -58,6 +46,9 @@ import {
   APP_THUMBNAIL_VALUE
 } from "@/features/document/constants"
 import {APP_NODE_KEY, APP_NODE_VALUE} from "@/features/nodes/constants"
+import useNodes from "@/features/nodes/hooks/useNodes"
+
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {useTranslation} from "react-i18next"
 import DraggingIcon from "./DraggingIcon"
 import DropNodesModal from "./DropNodesDialog"
@@ -68,14 +59,12 @@ import SupportedFilesInfoModal from "./SupportedFilesInfoModal"
 
 export default function Commander() {
   const {t} = useTranslation()
+  const {panelId} = usePanel()
   const userPreferences = useAppSelector(selectMyPreferences)
   const [
     supportedFilesInfoOpened,
     {open: supportedFilesInfoOpen, close: supportedFilesInfoClose}
   ] = useDisclosure(false)
-  // dialog for dropped files from local file system (i.e. from outside of browser)
-  const [dropFilesOpened, {open: dropFilesOpen, close: dropFilesClose}] =
-    useDisclosure(false)
   // dialog for extracting document pages (i.e. doc -> commander)
   const [
     extractPagesOpened,
@@ -85,11 +74,11 @@ export default function Commander() {
   const [dropNodesOpened, {open: dropNodesOpen, close: dropNodesClose}] =
     useDisclosure(false)
   const [dragOver, setDragOver] = useState<boolean>(false)
-  const mode: PanelMode = useContext(PanelContext)
+
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
+
+  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, panelId))
   const draggedPages = useAppSelector(selectDraggedPages)
   const draggedNodes = useAppSelector(selectDraggedNodes)
   const draggedNodesSourceFolderID = useAppSelector(
@@ -99,30 +88,21 @@ export default function Commander() {
   const draggedPagesDocID = useAppSelector(selectDraggedPagesDocID)
   // needed to invalidate document's parent node tag
   const draggedPagesDocParentID = useAppSelector(selectDraggedPagesDocParentID)
-  const [pageSize, setPageSize] = useState<number>(lastPageSize)
-  const [page, setPage] = useState<number>(1)
-  const filter = useAppSelector(s => selectFilterText(s, mode))
-  const sortDir = useAppSelector(s => selectCommanderSortMenuDir(s, mode))
-  const sortColumn = useAppSelector(s => selectCommanderSortMenuColumn(s, mode))
 
-  const {data, isLoading, isFetching, isError, refetch, error} =
-    useGetPaginatedNodesQuery({
-      nodeID: currentNodeID!,
-      page_number: page,
-      page_size: pageSize,
-      filter: filter,
-      sortDir: sortDir,
-      sortColumn: sortColumn
-    })
+  const {
+    data,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+    error,
+    actions,
+    currentFolder
+  } = useNodes()
+
   const [uploadFiles, setUploadFiles] = useState<File[] | FileList>()
 
-  if (!currentNodeID) {
-    return <div>Loading...</div>
-  }
-
-  const {data: currentFolder} = useGetFolderQuery(currentNodeID)
-
-  if (isLoading && !data) {
+  if (isLoading) {
     return <div>Loading...</div>
   }
 
@@ -147,6 +127,8 @@ export default function Commander() {
   }
 
   const onClick = (node: NType) => {
+    actions.updateCurrentNode(node)
+    /*
     if (mode == "secondary") {
       dispatch(
         setPanelComponent({
@@ -168,20 +150,22 @@ export default function Commander() {
         navigate(`/document/${node.id}`)
         break
     }
+        */
   }
 
   const onPageNumberChange = (page: number) => {
-    setPage(page)
+    actions.updatePagination({
+      pageNumber: page
+    })
   }
 
   const onPageSizeChange = (value: string | null) => {
     if (value) {
       const pSize = parseInt(value)
-      setPageSize(pSize)
-      // reset current page
-      setPage(1)
-      // remember last page size
-      dispatch(commanderLastPageSizeUpdated({pageSize: pSize, mode}))
+      actions.updatePagination({
+        pageNumber: 1,
+        pageSize: pSize
+      })
     }
   }
   const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -235,7 +219,7 @@ export default function Commander() {
               file: validFiles[i],
               lang: userPreferences.uploaded_document_lang,
               ocr: false,
-              target_id: currentNodeID
+              target_id: currentNodeID!
             })
           )
           const newlyCreatedNode = result.payload as UploadFileOutput
@@ -303,13 +287,13 @@ export default function Commander() {
         </Group>
         <Pagination
           pagination={{
-            pageNumber: page,
-            pageSize: pageSize!,
+            pageNumber: data.page_number,
+            pageSize: data.page_size,
             numPages: data.num_pages
           }}
           onPageNumberChange={onPageNumberChange}
           onPageSizeChange={onPageSizeChange}
-          lastPageSize={lastPageSize}
+          lastPageSize={data.page_size}
         />
       </>
     )

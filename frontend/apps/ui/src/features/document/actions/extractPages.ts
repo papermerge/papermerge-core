@@ -4,9 +4,9 @@ import {DocSliceEntity, upsertDoc} from "@/features/document/store/docsSlice"
 import {addClientDocVersion} from "@/features/document/store/documentVersSlice"
 import {addImageObjects} from "@/features/document/store/imageObjectsSlice"
 import {clientDVFromDV} from "@/features/document/utils"
+import {closePanel} from "@/features/ui/panelRegistry"
 import {
   currentDocVerUpdated,
-  secondaryPanelClosed,
   viewerSelectionCleared
 } from "@/features/ui/uiSlice"
 import type {ExtractPagesType, PanelMode} from "@/types"
@@ -103,7 +103,7 @@ export const extractPages = createAsyncThunk<
       // page dropped in "main" panel.
       // Because in secondary panel there is a document which just got deleted,
       // thus we just close this panel
-      dispatch(secondaryPanelClosed())
+      dispatch(closePanel({panelId: "secondary"}))
     } else {
       // Pages extracted in "secondary" panel
       // In this we change to main panel whatever was in secondary
@@ -114,7 +114,7 @@ export const extractPages = createAsyncThunk<
       )
       // and because secondary panel contains a document which just got deleted,
       // we close it
-      dispatch(secondaryPanelClosed())
+      dispatch(closePanel({panelId: "secondary"}))
     }
 
     dispatch(

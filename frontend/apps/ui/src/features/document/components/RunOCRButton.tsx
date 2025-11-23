@@ -1,13 +1,12 @@
 import {useAppSelector} from "@/app/hooks"
 
-import PanelContext from "@/contexts/PanelContext"
-import {selectCurrentNodeID} from "@/features/ui/uiSlice"
+import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
 import {ActionIcon, Box, Tooltip} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconEye} from "@tabler/icons-react"
-import {forwardRef, useContext} from "react"
+import {forwardRef} from "react"
 
-import type {PanelMode} from "@/types"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {useTranslation} from "react-i18next"
 import {RunOCRModal} from "./RunOCRModal"
 
@@ -19,8 +18,8 @@ const RunOCRButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
   const {t} = useTranslation()
   const {hidden} = props
   const [opened, {open, close}] = useDisclosure(false)
-  const mode: PanelMode = useContext(PanelContext)
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const {panelId} = usePanel()
+  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, panelId))
 
   return (
     <Box>

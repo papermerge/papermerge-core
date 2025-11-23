@@ -5,8 +5,10 @@ import DualPanel from "@/components/DualPanel"
 import {store} from "@/app/store"
 import {getCurrentUser} from "@/utils"
 
-import {setPanelComponent} from "@/features/ui/panelRegistry"
-import {currentNodeChanged} from "@/features/ui/uiSlice"
+import {
+  setPanelComponent,
+  updatePanelCurrentNode
+} from "@/features/ui/panelRegistry"
 import type {User} from "@/types"
 
 export default function Home() {
@@ -32,10 +34,10 @@ export async function loader({params, request}: LoaderFunctionArgs) {
   )
 
   store.dispatch(
-    currentNodeChanged({
-      id: folderId,
-      ctype: "folder",
-      panel: "main"
+    updatePanelCurrentNode({
+      entityID: folderId,
+      component: "commander",
+      panelID: "main"
     })
   )
 

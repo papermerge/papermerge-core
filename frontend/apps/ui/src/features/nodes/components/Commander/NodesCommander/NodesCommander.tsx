@@ -37,8 +37,8 @@ import PanelContext from "@/contexts/PanelContext"
 import {
   useGetFolderQuery,
   useGetPaginatedNodesQuery
-} from "@/features/nodes/apiSlice"
-import {generateThumbnail} from "@/features/nodes/thumbnailObjectsSlice"
+} from "@/features/nodes/storage/api"
+import {generateThumbnail} from "@/features/nodes/storage/thumbnailObjectsSlice"
 import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import {
   commanderLastPageSizeUpdated,

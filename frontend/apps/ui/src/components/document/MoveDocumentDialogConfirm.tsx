@@ -5,7 +5,7 @@ import {useGetDocumentQuery} from "@/features/document/store/apiSlice"
 import {
   useGetFolderQuery,
   useMoveNodesMutation
-} from "@/features/nodes/apiSlice"
+} from "@/features/nodes/storage/api"
 import {selectCurrentNode, selectCurrentNodeID} from "@/features/ui/uiSlice"
 import {otherPanel} from "@/utils"
 import {Button, Group, Loader, Modal, Text} from "@mantine/core"

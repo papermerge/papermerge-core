@@ -1,12 +1,12 @@
-import { NodeType, NType } from "@/types"
-import { useEffect, useMemo } from "react"
+import {NodeType, NType} from "@/types"
+import {useEffect, useMemo} from "react"
 import Node from "./Node"
 
-import { useAppDispatch, useAppSelector } from "@/app/hooks"
-import { selectNodesWithoutExistingThumbnails } from "@/features/nodes/selectors"
-import { loadThumbnail } from "@/features/nodes/thumbnailObjectsSlice"
-import { getBaseURL, getDefaultHeaders } from "@/utils"
-import { useDocumentThumbnailPolling } from "hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {selectNodesWithoutExistingThumbnails} from "@/features/nodes/storage/selectors"
+import {loadThumbnail} from "@/features/nodes/storage/thumbnailObjectsSlice"
+import {getBaseURL, getDefaultHeaders} from "@/utils"
+import {useDocumentThumbnailPolling} from "hooks"
 
 interface Args {
   items: NodeType[]
@@ -26,7 +26,8 @@ export default function NodesList({
     () => items.filter(n => n.ctype == "document").map(n => n.id),
     [items]
   )
-  const thumbnailSelector = useMemo(() => selectNodesWithoutExistingThumbnails(documentIds),
+  const thumbnailSelector = useMemo(
+    () => selectNodesWithoutExistingThumbnails(documentIds),
     [documentIds.join(",")]
   )
   const nodesWithoutThumbnails = useAppSelector(thumbnailSelector)
@@ -50,9 +51,8 @@ export default function NodesList({
           })
         )
       })
-   }
+    }
   }, [previews])
-
 
   return items.map((n: NodeType) => (
     <Node

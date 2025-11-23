@@ -14,7 +14,7 @@ import {
   createSelector,
   createSlice
 } from "@reduxjs/toolkit"
-import {apiSliceWithNodes} from "./apiSlice"
+import {apiSliceWithNodes} from "./api"
 
 const nodeAdapter = createEntityAdapter<NodeType>()
 const initialState = nodeAdapter.getInitialState()

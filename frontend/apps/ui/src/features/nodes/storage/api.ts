@@ -12,10 +12,7 @@ import type {
   SortMenuDirection
 } from "@/types"
 import {getRemoteUserID, getWSURL} from "@/utils"
-import {
-  documentMovedNotifReceived,
-  documentsMovedNotifReceived
-} from "./nodesSlice"
+import {documentMovedNotifReceived, documentsMovedNotifReceived} from "./nodes"
 
 type CreateFolderType = {
   title: string

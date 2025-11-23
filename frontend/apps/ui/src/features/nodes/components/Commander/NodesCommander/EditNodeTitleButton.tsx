@@ -12,7 +12,7 @@ import type {RootState} from "@/app/types"
 import type {NodeType, PanelMode} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
-import {selectNodesByIds} from "@/features/nodes/nodesSlice"
+import {selectNodesByIds} from "@/features/nodes/storage/nodes"
 import {
   commanderSelectionCleared,
   selectSelectedNodeIds

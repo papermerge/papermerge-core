@@ -1,6 +1,6 @@
 import {useAppSelector} from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {useDeleteNodesMutation} from "@/features/nodes/apiSlice"
+import {useDeleteNodesMutation} from "@/features/nodes/storage/api"
 import {selectCurrentNodeID} from "@/features/ui/uiSlice"
 import {useContext, useEffect, useState} from "react"
 import type {I18NDeleteEntireDocumentConfirmDialog} from "viewer"

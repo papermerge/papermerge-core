@@ -1,6 +1,6 @@
 import {useState} from "react"
 
-import {useDeleteNodesMutation} from "@/features/nodes/apiSlice"
+import {useDeleteNodesMutation} from "@/features/nodes/storage/api"
 import {Button, Container, Group, Loader, Modal, Space} from "@mantine/core"
 
 import type {NodeType} from "@/types"

@@ -1,5 +1,5 @@
-import { useAppSelector } from "@/app/hooks"
-import { selectThumbnailByNodeId } from "@/features/nodes/selectors"
+import {useAppSelector} from "@/app/hooks"
+import {selectThumbnailByNodeId} from "@/features/nodes/storage/selectors"
 import ThumbnailPlaceholder from "./ThumbnailPlaceholder"
 
 interface Args {

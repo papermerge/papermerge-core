@@ -13,7 +13,7 @@ import {
 } from "@/features/ui/uiSlice"
 
 import PanelContext from "@/contexts/PanelContext"
-import {selectNodesByIds} from "@/features/nodes/nodesSlice"
+import {selectNodesByIds} from "@/features/nodes/storage/nodes"
 
 export default function DeleteButton() {
   const [opened, {open, close}] = useDisclosure(false)

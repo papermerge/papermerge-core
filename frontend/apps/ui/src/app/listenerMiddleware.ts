@@ -1,6 +1,6 @@
 import {customFieldCRUDListeners} from "@/features/custom-fields/storage/custom_field"
 import {documentTypeCRUDListeners} from "@/features/document-types/storage/documentType"
-import {moveNodesListeners} from "@/features/nodes/nodesSlice"
+import {moveNodesListeners} from "@/features/nodes/storage/nodes"
 import {roleCRUDListeners} from "@/features/roles/storage/role"
 import {userCRUDListeners} from "@/features/users/storage/user"
 

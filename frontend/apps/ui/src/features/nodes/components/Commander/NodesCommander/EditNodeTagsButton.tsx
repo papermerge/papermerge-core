@@ -15,7 +15,7 @@ import {EditNodeTagsModal} from "@/components/EditNodeTags"
 import type {NodeType, PanelMode} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
-import {selectNodesByIds} from "@/features/nodes/nodesSlice"
+import {selectNodesByIds} from "@/features/nodes/storage/nodes"
 
 export default function EditNodeTagsButton() {
   const [opened, {open, close}] = useDisclosure(false)

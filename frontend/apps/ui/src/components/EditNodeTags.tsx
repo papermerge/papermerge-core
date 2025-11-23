@@ -6,8 +6,8 @@ import Error from "@/components/Error"
 import {
   useGetNodeTagsQuery,
   useUpdateNodeTagsMutation
-} from "@/features/nodes/apiSlice"
-import {selectNodeById} from "@/features/nodes/nodesSlice"
+} from "@/features/nodes/storage/api"
+import {selectNodeById} from "@/features/nodes/storage/nodes"
 import {useGetTagsQuery} from "@/features/tags/storage/api"
 import type {EntityWithTags} from "@/types"
 import {useTranslation} from "react-i18next"

@@ -1,8 +1,11 @@
-import type { UUID } from "@/types.d/common";
-import type { GenerateThumbnailInputType, LoadThumbnailInputType } from "@/types.d/node_thumbnail";
-import { getBaseURL, getDefaultHeaders } from "@/utils";
-import { generatePreview as util_pdf_generateThumbnail } from "@/utils/pdf";
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import type {UUID} from "@/types.d/common"
+import type {
+  GenerateThumbnailInputType,
+  LoadThumbnailInputType
+} from "@/types.d/node_thumbnail"
+import {getBaseURL, getDefaultHeaders} from "@/utils"
+import {generatePreview as util_pdf_generateThumbnail} from "@/utils/pdf"
+import {createAsyncThunk, createSlice} from "@reduxjs/toolkit"
 
 export interface ThumbnailState {
   [node_id: UUID]: {
@@ -23,8 +26,11 @@ export const generateThumbnail = createAsyncThunk<
   PayloadType,
   GenerateThumbnailInputType
 >("images/generateNodeThumbnail", async item => {
-
-  const objectURL = await util_pdf_generateThumbnail({ file: item.file, width: 300, pageNumber: 1 })
+  const objectURL = await util_pdf_generateThumbnail({
+    file: item.file,
+    width: 300,
+    pageNumber: 1
+  })
   if (objectURL) {
     return {
       node_id: item.node_id,
@@ -56,15 +62,15 @@ export const loadThumbnail = createAsyncThunk<
   }
 
   if (item.status == "pending") {
-    return { node_id: item.node_id, objectURL: null, error: null }
+    return {node_id: item.node_id, objectURL: null, error: null}
   }
 
   if (!item.status) {
-    return { node_id: item.node_id, objectURL: null, error: null }
+    return {node_id: item.node_id, objectURL: null, error: null}
   }
 
   if (!item.url) {
-    return { node_id: item.node_id, objectURL: null, error: null }
+    return {node_id: item.node_id, objectURL: null, error: null}
   }
 
   if (item.url && !item.url.startsWith("/api/")) {
@@ -75,7 +81,7 @@ export const loadThumbnail = createAsyncThunk<
     url = `${getBaseURL(true)}${item.url}`
   }
 
-  const response = await fetch(url, { headers: headers })
+  const response = await fetch(url, {headers: headers})
 
   if (response.ok) {
     const blob = await response.blob()
@@ -177,5 +183,5 @@ const thumbnailObjectsSlice = createSlice({
   }
 })
 
-export const { clearImages } = thumbnailObjectsSlice.actions
+export const {clearImages} = thumbnailObjectsSlice.actions
 export default thumbnailObjectsSlice.reducer

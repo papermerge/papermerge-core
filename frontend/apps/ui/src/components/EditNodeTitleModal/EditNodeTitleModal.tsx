@@ -1,4 +1,4 @@
-import {useRenameFolderMutation} from "@/features/nodes/apiSlice"
+import {useRenameFolderMutation} from "@/features/nodes/storage/api"
 import type {EditEntityTitle} from "@/types"
 import type {I18NEditNodeTitleModal} from "kommon"
 import {EditNodeTitleModal} from "kommon"

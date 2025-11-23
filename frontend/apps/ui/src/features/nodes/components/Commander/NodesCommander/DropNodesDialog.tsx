@@ -12,7 +12,7 @@ import {
   Text
 } from "@mantine/core"
 
-import {useMoveNodesMutation} from "@/features/nodes/apiSlice"
+import {useMoveNodesMutation} from "@/features/nodes/storage/api"
 import {commanderAllSelectionsCleared, dragEnded} from "@/features/ui/uiSlice"
 import {useTranslation} from "react-i18next"
 

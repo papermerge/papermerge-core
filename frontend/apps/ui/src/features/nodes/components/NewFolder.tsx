@@ -1,4 +1,4 @@
-import {useAddNewFolderMutation} from "@/features/nodes/apiSlice"
+import {useAddNewFolderMutation} from "@/features/nodes/storage/api"
 import {Button, Group, Loader, Modal, TextInput} from "@mantine/core"
 import {ChangeEvent, useEffect, useRef, useState} from "react"
 import {useTranslation} from "react-i18next"

@@ -1,21 +1,18 @@
 import {useAppSelector} from "@/app/hooks"
-import {selectCurrentNodeID} from "@/features/ui/uiSlice"
+import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
 import {ActionIcon, Tooltip} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconFolderPlus} from "@tabler/icons-react"
-import {useContext} from "react"
 
-import type {PanelMode} from "@/types"
-
-import PanelContext from "@/contexts/PanelContext"
-import {NewFolderModal} from "../../NewFolder"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {useTranslation} from "react-i18next"
+import {NewFolderModal} from "../../NewFolder"
 
 export default function NewFolderButton() {
   const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
-  const mode: PanelMode = useContext(PanelContext)
-  const currentFolderId = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const {panelId} = usePanel()
+  const currentFolderId = useAppSelector(s => selectCurrentNodeID(s, panelId))
 
   return (
     <>

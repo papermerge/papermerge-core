@@ -4,7 +4,8 @@ import {DocSliceEntity, upsertDoc} from "@/features/document/store/docsSlice"
 import {addClientDocVersion} from "@/features/document/store/documentVersSlice"
 import {addImageObjects} from "@/features/document/store/imageObjectsSlice"
 import {clientDVFromDV} from "@/features/document/utils"
-import {currentDocVerUpdated, secondaryPanelClosed} from "@/features/ui/uiSlice"
+import {closePanel} from "@/features/ui/panelRegistry"
+import {currentDocVerUpdated} from "@/features/ui/uiSlice"
 import type {MovePagesType, PanelMode} from "@/types"
 import {TransferStrategyType} from "@/types"
 import {UUID} from "@/types.d/common"
@@ -102,7 +103,7 @@ export const transferPages = createAsyncThunk<
       // page dropped in "main" panel.
       // Because in secondary panel there is a document which just got deleted,
       // thus we just close this panel
-      dispatch(secondaryPanelClosed())
+      dispatch(closePanel({panelId: "secondary"}))
     } else {
       // Page dropped in "secondary" panel
       // In this we change to main panel whatever was in secondary
@@ -111,7 +112,7 @@ export const transferPages = createAsyncThunk<
       inputArgs.navigate(`/document/${inputArgs.movePagesData.targetDocID}`)
       // and because secondary panel contains a document which just got deleted,
       // we close it
-      dispatch(secondaryPanelClosed())
+      dispatch(closePanel({panelId: "secondary"}))
     }
 
     dispatch(

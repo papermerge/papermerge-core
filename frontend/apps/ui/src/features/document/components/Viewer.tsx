@@ -1,10 +1,10 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useCurrentDoc} from "@/features/document/hooks"
+import {setPanelComponent} from "@/features/ui/panelRegistry"
 import {Flex, Group, Loader} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {useContext} from "react"
 import {useNavigate} from "react-router-dom"
-import {setPanelComponent} from "@/features/ui/panelRegistry"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
@@ -26,9 +26,9 @@ import {
   pagesRotated,
   selectAllPages
 } from "@/features/document/store/documentVersSlice"
+import {updatePanelCurrentNode} from "@/features/ui/panelRegistry"
 import {
   currentDocVerUpdated,
-  currentNodeChanged,
   selectThumbnailsPanelOpen
 } from "@/features/ui/uiSlice"
 import {selectCurrentUser} from "@/slices/currentUser"
@@ -97,7 +97,11 @@ export function Viewer({doc, docVer}: Args) {
   const onClick = (node: NType) => {
     if (mode == "secondary" && node.ctype == "folder") {
       dispatch(
-        currentNodeChanged({id: node.id, ctype: "folder", panel: "secondary"})
+        updatePanelCurrentNode({
+          entityID: node.id,
+          component: "commander",
+          panelID: "secondary"
+        })
       )
       dispatch(
         setPanelComponent({

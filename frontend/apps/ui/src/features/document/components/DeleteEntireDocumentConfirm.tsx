@@ -1,12 +1,11 @@
 import {useAppSelector} from "@/app/hooks"
-import PanelContext from "@/contexts/PanelContext"
 import {useDeleteNodesMutation} from "@/features/nodes/storage/api"
-import {selectCurrentNodeID} from "@/features/ui/uiSlice"
-import {useContext, useEffect, useState} from "react"
+import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
+import {useEffect, useState} from "react"
 import type {I18NDeleteEntireDocumentConfirmDialog} from "viewer"
 import {DeleteEntireDocumentConfirmDialog} from "viewer"
 
-import type {PanelMode} from "@/types"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {useTranslation} from "react-i18next"
 
 interface Args {
@@ -23,8 +22,8 @@ export default function DeleteEntireDocumentConfirmDialogContainer({
 }: Args) {
   const txt = useI18nText()
   const [error, setError] = useState("")
-  const mode: PanelMode = useContext(PanelContext)
-  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const {panelId} = usePanel()
+  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, panelId))
   const [deletedDocumentNode, {isLoading}] = useDeleteNodesMutation()
 
   const onDeleteDocument = async () => {

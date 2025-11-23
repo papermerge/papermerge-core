@@ -1,8 +1,8 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {apiSlice} from "@/features/api/slice"
 import {uploadFile} from "@/features/files/storage/thunks"
+import type {UploadFileOutput} from "@/features/files/types"
 import {generateThumbnail} from "@/features/nodes/thumbnailObjectsSlice"
-import type {UploadFileOutput} from "@/features/nodes/types"
 import {Button, Menu} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconUpload} from "@tabler/icons-react"
@@ -84,8 +84,12 @@ export default function UploadButton() {
       )
       const newlyCreatedNode = result.payload as UploadFileOutput
 
-      if (newlyCreatedNode && newlyCreatedNode.source?.id) {
-        const newNodeID = newlyCreatedNode.source?.id
+      if (
+        newlyCreatedNode &&
+        newlyCreatedNode.node &&
+        newlyCreatedNode.success
+      ) {
+        const newNodeID = newlyCreatedNode.node?.id
         dispatch(generateThumbnail({node_id: newNodeID, file: validFiles[i]}))
       }
     }

@@ -1,6 +1,6 @@
 import {apiSlice} from "@/features/api/slice"
 import {uploadFile} from "@/features/files/storage/thunks"
-import type {UploadFileOutput} from "@/features/nodes/types"
+import type {UploadFileOutput} from "@/features/files/types"
 import {setPanelComponent} from "@/features/ui/panelRegistry"
 import {Box, Group, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
@@ -240,8 +240,12 @@ export default function Commander() {
           )
           const newlyCreatedNode = result.payload as UploadFileOutput
 
-          if (newlyCreatedNode && newlyCreatedNode.source?.id) {
-            const newNodeID = newlyCreatedNode.source?.id
+          if (
+            newlyCreatedNode &&
+            newlyCreatedNode.node &&
+            newlyCreatedNode.success
+          ) {
+            const newNodeID = newlyCreatedNode.node.id
             dispatch(
               generateThumbnail({node_id: newNodeID, file: validFiles[i]})
             )

@@ -10,19 +10,7 @@ import type {NodeType} from "@/types"
 import {getBaseURL, getDefaultHeaders} from "@/utils"
 import {createAsyncThunk} from "@reduxjs/toolkit"
 import axios, {AxiosError} from "axios"
-
-type UploadFileInput = {
-  file: File
-  target_id: string
-  ocr: boolean
-  lang: string
-}
-
-type UploadFileOutput = {
-  success: boolean
-  node?: NodeType
-  error?: string
-}
+import type {UploadFileInput, UploadFileOutput} from "../types"
 
 export const uploadFile = createAsyncThunk<UploadFileOutput, UploadFileInput>(
   "files/upload",

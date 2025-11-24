@@ -1,12 +1,6 @@
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {useAppDispatch} from "@/app/hooks"
 import {Checkbox, Stack} from "@mantine/core"
 import {useContext} from "react"
-
-import {
-  commanderSelectionNodeAdded,
-  commanderSelectionNodeRemoved,
-  selectSelectedNodeIds
-} from "@/features/ui/uiSlice"
 
 import Tags from "@/features/nodes/components/Commander/NodesCommander/Node/Tags"
 import type {NodeType, PanelMode} from "@/types"
@@ -23,26 +17,18 @@ type Args = {
 
 export default function Document({node, onClick, cssClassNames}: Args) {
   const mode: PanelMode = useContext(PanelContext)
-  const selectedIds = useAppSelector(s =>
-    selectSelectedNodeIds(s, mode)
-  ) as Array<string>
+
   const dispatch = useAppDispatch()
   const tagNames = node.tags.map(t => t.name)
 
-  const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.currentTarget.checked) {
-      dispatch(commanderSelectionNodeAdded({itemID: node.id, mode}))
-    } else {
-      dispatch(commanderSelectionNodeRemoved({itemID: node.id, mode}))
-    }
-  }
+  const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {}
 
   return (
     <Stack
       className={`${classes.document} ${cssClassNames.join(" ")}`}
       draggable
     >
-      <Checkbox onChange={onCheck} checked={selectedIds.includes(node.id)} />
+      <Checkbox onChange={onCheck} checked={false} />
       <a onClick={() => onClick(node)}>
         <Thumbnail nodeID={node.id} />
         <Tags names={tagNames} />

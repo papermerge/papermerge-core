@@ -3,13 +3,16 @@ import {uploadFile} from "@/features/files/storage/thunks"
 import type {UploadFileOutput} from "@/features/files/types"
 import {Box, Group, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
-import {useState} from "react"
+import {useMemo, useState} from "react"
 import {createRoot} from "react-dom/client"
 
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useNavigate} from "react-router-dom"
 
-import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
+import {
+  selectCurrentNodeID,
+  selectPanelSelectedIDs
+} from "@/features/ui/panelRegistry"
 import {
   selectDraggedPagesDocID,
   selectDraggedPagesDocParentID
@@ -77,6 +80,10 @@ export default function Commander() {
 
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const selectedItemIDs = useAppSelector(s =>
+    selectPanelSelectedIDs(s, panelId)
+  )
+  const selectedItemsSet = new Set(selectedItemIDs || [])
 
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, panelId))
   const draggedPages = useAppSelector(selectDraggedPages)
@@ -99,6 +106,13 @@ export default function Commander() {
     actions,
     currentFolder
   } = useNodes()
+
+  const selectedNodes = useMemo(() => {
+    if (!data?.items || !selectedItemIDs) {
+      return []
+    }
+    return data.items.filter(node => selectedItemIDs.includes(node.id))
+  }, [data?.items, selectedItemIDs])
 
   const [uploadFiles, setUploadFiles] = useState<File[] | FileList>()
 
@@ -128,29 +142,6 @@ export default function Commander() {
 
   const onClick = (node: NType) => {
     actions.updateCurrentNode(node)
-    /*
-    if (mode == "secondary") {
-      dispatch(
-        setPanelComponent({
-          panelId: "secondary",
-          component: node.ctype == "folder" ? "commander" : "viewer"
-        })
-      )
-      return dispatch(
-        currentNodeChanged({id: node.id, ctype: node.ctype, panel: "secondary"})
-      )
-    }
-    // mode == "main"
-    switch (node.ctype) {
-      case "folder":
-        dispatch(currentDocVerUpdated({mode: mode, docVerID: undefined}))
-        navigate(`/folder/${node.id}?page_size=${lastPageSize}`)
-        break
-      case "document":
-        navigate(`/document/${node.id}`)
-        break
-    }
-        */
   }
 
   const onPageNumberChange = (page: number) => {
@@ -168,6 +159,12 @@ export default function Commander() {
       })
     }
   }
+
+  const handleSelectionChange = (newSelection: Set<string>) => {
+    const arr = Array.from(newSelection)
+    actions.setSelection(arr)
+  }
+
   const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
     setDragOver(true)
@@ -281,6 +278,8 @@ export default function Commander() {
           <NodesList
             items={data.items}
             onClick={onClick}
+            onSelectionChange={handleSelectionChange}
+            selectedItems={selectedItemsSet}
             onNodeDrag={onNodeDrag}
             onNodeDragStart={onNodeDragStart}
           />
@@ -310,7 +309,7 @@ export default function Commander() {
         onDrop={onDrop}
         className={dragOver ? classes.accept_files : classes.commander}
       >
-        <FolderNodeActions />
+        <FolderNodeActions selectedNodes={selectedNodes} />
         <Breadcrumbs
           breadcrumb={currentFolder?.breadcrumb}
           onClick={onClick}

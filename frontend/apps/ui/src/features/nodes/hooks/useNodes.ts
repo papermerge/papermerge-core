@@ -31,7 +31,6 @@ export default function useNodes() {
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, panelId))
   const {data: currentFolder} = useGetFolderQuery(currentNodeID ?? skipToken)
 
-  console.log(`currentNodeID=${currentNodeID}`)
   const column = sorting?.column as SortBy | undefined
 
   const {data, isLoading, isFetching, isError, refetch, error} =
@@ -76,11 +75,16 @@ export default function useNodes() {
         console.log(url)
         navigate(url)
       },
+
       updatePagination: (pagination: {
         pageNumber?: number
         pageSize?: number
       }) => {
         dispatch(setPanelList({panelId, list: pagination}))
+      },
+
+      setSelection: (ids: string[]) => {
+        dispatch(setPanelList({panelId, list: {selectedIDs: ids}}))
       }
     }),
     [panelId, dispatch]

@@ -6,12 +6,9 @@ import {useState} from "react"
 
 import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
 import {
-  commanderSelectionNodeAdded,
-  commanderSelectionNodeRemoved,
   dragNodesStarted,
   selectDraggedNodes,
-  selectDraggedNodesSourceFolderID,
-  selectSelectedNodeIds
+  selectDraggedNodesSourceFolderID
 } from "@/features/ui/uiSlice"
 
 import DropNodesModal from "@/features/nodes/components/Commander/NodesCommander/DropNodesDialog"
@@ -26,7 +23,9 @@ type Args = {
   onClick: (node: NodeType) => void
   onDragStart: (nodeID: string, event: React.DragEvent) => void
   onDrag: (nodeID: string, event: React.DragEvent) => void
+  onSelect: (nodeID: string, checked: boolean) => void
   cssClassNames: string[]
+  selectedItems?: Set<string>
 }
 
 export default function Folder({
@@ -34,15 +33,14 @@ export default function Folder({
   onClick,
   onDrag,
   onDragStart,
-  cssClassNames
+  onSelect,
+  cssClassNames,
+  selectedItems = new Set()
 }: Args) {
   const [dropNodesOpened, {open: dropNodesOpen, close: dropNodesClose}] =
     useDisclosure(false)
   const [dragOver, setDragOver] = useState<boolean>(false)
   const {panelId} = usePanel()
-  const selectedIds = useAppSelector(s =>
-    selectSelectedNodeIds(s, panelId)
-  ) as Array<string>
   const currentFolderID = useAppSelector(s => selectCurrentNodeID(s, panelId))
   const dispatch = useAppDispatch()
   const tagNames = node.tags.map(t => t.name)
@@ -51,17 +49,9 @@ export default function Folder({
     selectDraggedNodesSourceFolderID
   )
 
-  const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.currentTarget.checked) {
-      dispatch(commanderSelectionNodeAdded({itemID: node.id, mode: panelId}))
-    } else {
-      dispatch(commanderSelectionNodeRemoved({itemID: node.id, mode: panelId}))
-    }
-  }
-
   const onDragStartLocal = (e: React.DragEvent) => {
     const data = {
-      nodes: [node.id, ...selectedIds],
+      nodes: [node.id, ...selectedItems],
       sourceFolderID: currentFolderID!
     }
     dispatch(dragNodesStarted(data))
@@ -107,7 +97,10 @@ export default function Folder({
         onDragEnter={onLocalDragEnter}
         onDrop={onLocalDrop}
       >
-        <Checkbox onChange={onCheck} checked={selectedIds.includes(node.id)} />
+        <Checkbox
+          onChange={event => onSelect(node.id, event.currentTarget.checked)}
+          checked={selectedItems.has(node.id)}
+        />
         <a onClick={() => onClick(node)}>
           <div className={classes.folderIcon}></div>
           {node.is_shared && <IconUsers className={classes.iconUsers} />}

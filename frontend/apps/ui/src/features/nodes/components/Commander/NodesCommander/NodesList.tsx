@@ -13,13 +13,17 @@ interface Args {
   onClick: (node: NType) => void
   onNodeDrag: () => void
   onNodeDragStart: (nodeID: string, event: React.DragEvent) => void
+  onSelectionChange: (ids: Set<string>) => void
+  selectedItems?: Set<string>
 }
 
 export default function NodesList({
   items,
   onClick,
+  onSelectionChange,
   onNodeDrag,
-  onNodeDragStart
+  onNodeDragStart,
+  selectedItems = new Set()
 }: Args) {
   const dispatch = useAppDispatch()
   const documentIds = useMemo(
@@ -40,6 +44,20 @@ export default function NodesList({
     maxRetries: 6
   })
 
+  const handleItemSelect = (nodeID: string, checked: boolean) => {
+    if (!onSelectionChange) {
+      return
+    }
+
+    const newSelection = new Set(selectedItems)
+    if (checked) {
+      newSelection.add(nodeID)
+    } else {
+      newSelection.delete(nodeID)
+    }
+    onSelectionChange(newSelection)
+  }
+
   useEffect(() => {
     if (previews && previews.length > 0) {
       previews.forEach(p => {
@@ -59,6 +77,8 @@ export default function NodesList({
       onClick={onClick}
       key={n.id}
       node={n}
+      onSelect={handleItemSelect}
+      selectedItems={selectedItems}
       onDrag={onNodeDrag}
       onDragStart={onNodeDragStart}
     />

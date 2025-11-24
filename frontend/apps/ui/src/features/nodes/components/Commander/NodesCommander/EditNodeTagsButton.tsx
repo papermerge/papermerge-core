@@ -1,30 +1,23 @@
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {ActionIcon, Tooltip} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconTag} from "@tabler/icons-react"
-import {useContext} from "react"
 
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
-
-import {
-  commanderSelectionCleared,
-  selectSelectedNodeIds
-} from "@/features/ui/uiSlice"
+import {useAppDispatch} from "@/app/hooks"
 
 import {EditNodeTagsModal} from "@/components/EditNodeTags"
 
-import type {NodeType, PanelMode} from "@/types"
+import {clearPanelSelection} from "@/features/ui/panelRegistry"
+import type {NodeType} from "@/types"
 
-import PanelContext from "@/contexts/PanelContext"
-import {selectNodesByIds} from "@/features/nodes/storage/nodes"
+interface Args {
+  selectedNodes: NodeType[]
+}
 
-export default function EditNodeTagsButton() {
+export default function EditNodeTagsButton({selectedNodes = []}: Args) {
   const [opened, {open, close}] = useDisclosure(false)
-  const mode: PanelMode = useContext(PanelContext)
+  const {panelId} = usePanel()
   const dispatch = useAppDispatch()
-  const selectedIds = useAppSelector(s => selectSelectedNodeIds(s, mode))
-  const selectedNodes = useAppSelector(s =>
-    selectNodesByIds(s, selectedIds as string[])
-  )
   let node: NodeType = selectedNodes[0]
 
   const onClick = () => {
@@ -38,12 +31,12 @@ export default function EditNodeTagsButton() {
   }
 
   const onSubmit = () => {
-    dispatch(commanderSelectionCleared(mode))
+    dispatch(clearPanelSelection({panelId}))
     close()
   }
 
   const onCancel = () => {
-    dispatch(commanderSelectionCleared(mode))
+    dispatch(clearPanelSelection({panelId}))
     close()
   }
 

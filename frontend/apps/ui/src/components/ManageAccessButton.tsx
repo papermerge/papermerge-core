@@ -3,7 +3,6 @@ import {Box, Button, Tooltip, useModalsStack} from "@mantine/core"
 import {forwardRef} from "react"
 
 import {ManageAccessModal} from "@/features/shared_nodes/components/ManageAccessModal/ManageAccessModal"
-import {commanderAllSelectionsCleared} from "@/features/ui/uiSlice"
 
 interface Args {
   hidden?: boolean
@@ -21,7 +20,7 @@ const ManageAccessButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
 
   const onClose = () => {
     stack.closeAll()
-    dispatch(commanderAllSelectionsCleared())
+    //dispatch(commanderAllSelectionsCleared())
   }
 
   return (

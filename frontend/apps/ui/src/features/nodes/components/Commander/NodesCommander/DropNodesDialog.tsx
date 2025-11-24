@@ -13,7 +13,7 @@ import {
 } from "@mantine/core"
 
 import {useMoveNodesMutation} from "@/features/nodes/storage/api"
-import {commanderAllSelectionsCleared, dragEnded} from "@/features/ui/uiSlice"
+import {dragEnded} from "@/features/ui/uiSlice"
 import {useTranslation} from "react-i18next"
 
 type DropNodesModalArgs = {
@@ -50,7 +50,7 @@ export default function DropNodesModal({
     await moveNodes(data)
     dispatch(dragEnded())
     onSubmit()
-    dispatch(commanderAllSelectionsCleared())
+    //dispatch(commanderAllSelectionsCleared())
   }
   const localCancel = () => {
     setErrorMessage("")

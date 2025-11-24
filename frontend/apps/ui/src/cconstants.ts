@@ -95,3 +95,5 @@ export const IMAGE_SIZE_MAP = {
   lg: 1000,
   xl: 1200
 }
+
+export const DEBOUNCE_SEARCH_WAIT_TIME_MS = 600 // miliseconds

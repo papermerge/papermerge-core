@@ -1,10 +1,9 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {DEBOUNCE_SEARCH_WAIT_TIME_MS} from "@/cconstants"
 import {useSearchDocumentsMutation} from "@/features/documentsList/storage/api"
 import {documentCategoryIDUpdated} from "@/features/documentsList/storage/documentsByCategory"
-import {
-  buildSearchQueryParams,
-  uniqueSearchString
-} from "@/features/documentsList/utils/searchHelper"
+import {buildSearchQueryParams} from "@/features/documentsList/utils/searchHelper"
+import useDebouncedSearchParamsString from "@/features/search/hooks/useDebouncedSearchParamsString"
 import type {SearchQueryParams} from "@/features/search/types"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
@@ -14,8 +13,6 @@ import {
 } from "@/features/ui/panelRegistry"
 import {useDebouncedValue} from "@mantine/hooks"
 import {useEffect} from "react"
-
-const DEBOUNCE_WAIT_TIME_MS = 600 // miliseconds
 
 export default function useDocumentsListTable() {
   const {panelId, actions} = usePanel()
@@ -35,10 +32,10 @@ export default function useDocumentsListTable() {
 
   const [debouncedSearchTokens] = useDebouncedValue(
     searchTokens,
-    DEBOUNCE_WAIT_TIME_MS,
+    DEBOUNCE_SEARCH_WAIT_TIME_MS,
     {leading: true}
   )
-  const relevantParamsString = uniqueSearchString(debouncedSearchTokens)
+  const {relevantParamsString} = useDebouncedSearchParamsString()
 
   // Trigger search when tokens change or pagination changes
   useEffect(() => {

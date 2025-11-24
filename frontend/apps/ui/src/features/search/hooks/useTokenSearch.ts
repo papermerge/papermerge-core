@@ -1,20 +1,12 @@
 import {FILTERS} from "@/features/search/microcomp/const"
 import {parse} from "@/features/search/microcomp/scanner"
-import type {Filter, SearchSuggestion} from "@/features/search/microcomp/types"
+import type {SearchSuggestion} from "@/features/search/microcomp/types"
 import {autocompleteText} from "@/features/search/microcomp/utils"
 import {useCombobox} from "@mantine/core"
 import {useCallback, useRef, useState} from "react"
 import {useFilters} from "./useFilters"
 
-interface UseFilterSearchProps {
-  onSearch?: (tokens: Filter[]) => void
-  onFocusChange?: (isFocused: boolean) => void
-}
-
-export const useFilterSearch = ({
-  onSearch,
-  onFocusChange
-}: UseFilterSearchProps) => {
+export const useFilterSearch = () => {
   const [inputValue, setInputValue] = useState("")
   const {
     filters: filterList,
@@ -149,10 +141,7 @@ export const useFilterSearch = ({
 
     // Keep focus on the search (don't collapse)
     inputRef.current?.focus()
-
-    // Trigger search callback with empty tokens
-    onSearch?.([])
-  }, [onSearch])
+  }, [filterList.length])
 
   const hasAutocomplete = () => {
     if (!autocomplete) {

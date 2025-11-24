@@ -1,3 +1,4 @@
+import {Box} from "@mantine/core"
 import "@mantine/core/styles.css"
 import "@mantine/dates/styles.css"
 import {useSelector} from "react-redux"
@@ -27,18 +28,18 @@ function App() {
 
   return (
     <>
-      <div className="header">
+      <Box className="header">
         <Header />
-      </div>
-      <div className="container">
-        <div className="nav-sidebar">
+      </Box>
+      <Box className="container">
+        <Box className="nav-sidebar">
           <NavBar />
-        </div>
+        </Box>
         <main className="main-content">
           <Outlet />
         </main>
         <Uploader />
-      </div>
+      </Box>
     </>
   )
 }

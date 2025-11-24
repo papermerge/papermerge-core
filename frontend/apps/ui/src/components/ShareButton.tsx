@@ -6,15 +6,16 @@ import {IconUserShare} from "@tabler/icons-react"
 import {forwardRef} from "react"
 
 import ShareNodesModal from "@/features/shared_nodes/components/ShareNodesModal"
+import {NodeType} from "@/types"
 
 interface Args {
   hidden?: boolean
-  node_ids: string[]
+  selectedNodes: NodeType[]
 }
 
 const ShareButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
   const dispatch = useAppDispatch()
-  const {hidden, node_ids} = props
+  const {hidden, selectedNodes} = props
   const [opened, {open, close}] = useDisclosure(false)
 
   const onLocalClose = () => {
@@ -37,7 +38,7 @@ const ShareButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
       </Tooltip>
       <ShareNodesModal
         opened={opened}
-        node_ids={node_ids}
+        selectedNodes={selectedNodes}
         onSubmit={onLocalClose}
         onCancel={onLocalClose}
       />

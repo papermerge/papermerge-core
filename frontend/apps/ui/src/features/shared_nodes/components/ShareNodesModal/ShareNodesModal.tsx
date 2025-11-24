@@ -2,6 +2,7 @@ import {useGetGroupsQuery} from "@/features/groups/storage/api"
 import {useGetRolesQuery} from "@/features/roles/storage/api"
 import {useAddNewSharedNodeMutation} from "@/features/shared_nodes/store/apiSlice"
 import {useGetUsersQuery} from "@/features/users/storage/api"
+import {NodeType} from "@/types"
 import {Button, Container, Group, Loader, Modal} from "@mantine/core"
 import {useState} from "react"
 import SelectGroups from "./SelectGroups"
@@ -10,15 +11,15 @@ import SelectUsers from "./SelectUsers"
 
 type Args = {
   opened: boolean
-  node_ids: Array<string>
   onSubmit: () => void
   onCancel: () => void
+  selectedNodes: NodeType[]
 }
 
 export const ShareNodesModal = ({
-  node_ids,
   onSubmit,
   onCancel,
+  selectedNodes,
   opened
 }: Args) => {
   const [users, setUsers] = useState<string[]>([])
@@ -52,7 +53,7 @@ export const ShareNodesModal = ({
       user_ids,
       group_ids,
       role_ids,
-      node_ids
+      node_ids: selectedNodes.map(i => i.id)
     }
     try {
       await addNewSharedNode(newSharedNodeData).unwrap()

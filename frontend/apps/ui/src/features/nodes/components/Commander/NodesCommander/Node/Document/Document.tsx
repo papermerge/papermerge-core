@@ -3,12 +3,7 @@ import {Checkbox, Stack} from "@mantine/core"
 import {IconUsers} from "@tabler/icons-react"
 
 import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
-import {
-  commanderSelectionNodeAdded,
-  commanderSelectionNodeRemoved,
-  dragNodesStarted,
-  selectSelectedNodeIds
-} from "@/features/ui/uiSlice"
+import {dragNodesStarted} from "@/features/ui/uiSlice"
 
 import Thumbnail from "@/components/NodeThumbnail/Thumbnail"
 import Tags from "@/features/nodes/components/Commander/NodesCommander/Node/Tags"
@@ -22,7 +17,9 @@ type Args = {
   onClick: (node: NodeType) => void
   onDragStart: (nodeID: string, event: React.DragEvent) => void
   onDrag: (nodeID: string, event: React.DragEvent) => void
+  onSelect: (nodeID: string, checked: boolean) => void
   cssClassNames: string[]
+  selectedItems?: Set<string>
 }
 
 export default function Document({
@@ -30,29 +27,20 @@ export default function Document({
   onClick,
   onDrag,
   onDragStart,
-  cssClassNames
+  onSelect,
+  cssClassNames,
+  selectedItems = new Set()
 }: Args) {
   const {panelId} = usePanel()
-  const selectedIds = useAppSelector(s =>
-    selectSelectedNodeIds(s, panelId)
-  ) as Array<string>
 
   const currentFolderID = useAppSelector(s => selectCurrentNodeID(s, panelId))
 
   const dispatch = useAppDispatch()
   const tagNames = node.tags.map(t => t.name)
 
-  const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.currentTarget.checked) {
-      dispatch(commanderSelectionNodeAdded({itemID: node.id, mode: panelId}))
-    } else {
-      dispatch(commanderSelectionNodeRemoved({itemID: node.id, mode: panelId}))
-    }
-  }
-
   const onDragStartLocal = (e: React.DragEvent) => {
     const data = {
-      nodes: [node.id, ...selectedIds],
+      nodes: [node.id, ...selectedItems],
       sourceFolderID: currentFolderID!
     }
     dispatch(dragNodesStarted(data))
@@ -73,7 +61,10 @@ export default function Document({
       onDrag={onDragLocal}
       onDragEnd={onDragEnd}
     >
-      <Checkbox onChange={onCheck} checked={selectedIds.includes(node.id)} />
+      <Checkbox
+        onChange={event => onSelect(node.id, event.currentTarget.checked)}
+        checked={selectedItems.has(node.id)}
+      />
       <a onClick={() => onClick(node)}>
         {node.is_shared && <IconUsers className={classes.iconUsers} />}
         <Thumbnail nodeID={node.id} />

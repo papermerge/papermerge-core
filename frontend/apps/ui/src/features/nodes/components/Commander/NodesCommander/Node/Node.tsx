@@ -9,11 +9,20 @@ import Folder from "./Folder/Folder"
 type Args = {
   node: NodeType
   onClick: (node: NodeType) => void
+  onSelect: (nodeID: string, checked: boolean) => void
   onDragStart: (nodeID: string, event: React.DragEvent) => void
   onDrag: (nodeID: string, event: React.DragEvent) => void
+  selectedItems?: Set<string>
 }
 
-export default function Node({node, onClick, onDrag, onDragStart}: Args) {
+export default function Node({
+  node,
+  onClick,
+  onDrag,
+  onDragStart,
+  onSelect,
+  selectedItems
+}: Args) {
   const [cssClassNames, setCssClassNames] = useState<Array<string>>([])
   const draggedNodesIDs = useAppSelector(selectDraggedNodeIDs)
 
@@ -36,7 +45,9 @@ export default function Node({node, onClick, onDrag, onDragStart}: Args) {
       <Folder
         onClick={onClick}
         node={node}
+        selectedItems={selectedItems}
         onDrag={onDrag}
+        onSelect={onSelect}
         onDragStart={onDragStart}
         cssClassNames={cssClassNames}
       />
@@ -47,6 +58,8 @@ export default function Node({node, onClick, onDrag, onDragStart}: Args) {
     <Document
       onClick={onClick}
       node={node}
+      onSelect={onSelect}
+      selectedItems={selectedItems}
       onDrag={onDrag}
       onDragStart={onDragStart}
       cssClassNames={cssClassNames}

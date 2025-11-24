@@ -1,16 +1,11 @@
+import {useAppDispatch} from "@/app/hooks"
+import EditNodeTitleModal from "@/components/EditNodeTitleModal"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {clearPanelSelection} from "@/features/ui/panelRegistry"
+import type {NodeType} from "@/types"
 import {ActionIcon, Tooltip} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconEdit} from "@tabler/icons-react"
-import {useContext} from "react"
-
-import {useAppDispatch} from "@/app/hooks"
-
-import EditNodeTitleModal from "@/components/EditNodeTitleModal"
-
-import type {NodeType, PanelMode} from "@/types"
-
-import PanelContext from "@/contexts/PanelContext"
-import {commanderSelectionCleared} from "@/features/ui/uiSlice"
 import {useTranslation} from "react-i18next"
 
 interface Args {
@@ -20,7 +15,7 @@ interface Args {
 export default function EditNodeTitleButton({selectedNodes}: Args) {
   const {t} = useTranslation()
   const [opened, {open, close}] = useDisclosure(false)
-  const mode: PanelMode = useContext(PanelContext)
+  const {panelId} = usePanel()
 
   const dispatch = useAppDispatch()
   let node: NodeType = selectedNodes[0]
@@ -35,12 +30,12 @@ export default function EditNodeTitleButton({selectedNodes}: Args) {
   }
 
   const onSubmit = () => {
-    dispatch(commanderSelectionCleared(mode))
+    dispatch(clearPanelSelection({panelId}))
     close()
   }
 
   const onCancel = () => {
-    dispatch(commanderSelectionCleared(mode))
+    dispatch(clearPanelSelection({panelId}))
     close()
   }
 

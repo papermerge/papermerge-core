@@ -4,11 +4,8 @@ import {useDisclosure} from "@mantine/hooks"
 import {useContext, useState} from "react"
 
 import {
-  commanderSelectionNodeAdded,
-  commanderSelectionNodeRemoved,
   selectDraggedNodes,
-  selectDraggedNodesSourceFolderID,
-  selectSelectedNodeIds
+  selectDraggedNodesSourceFolderID
 } from "@/features/ui/uiSlice"
 
 import DropNodesModal from "@/features/nodes/components/Commander/NodesCommander/DropNodesDialog"
@@ -29,9 +26,6 @@ export default function Folder({node, onClick, cssClassNames}: Args) {
     useDisclosure(false)
   const [dragOver, setDragOver] = useState<boolean>(false)
   const mode: PanelMode = useContext(PanelContext)
-  const selectedIds = useAppSelector(s =>
-    selectSelectedNodeIds(s, mode)
-  ) as Array<string>
   const dispatch = useAppDispatch()
   const tagNames = node.tags.map(t => t.name)
   const draggedNodes = useAppSelector(selectDraggedNodes)
@@ -39,13 +33,7 @@ export default function Folder({node, onClick, cssClassNames}: Args) {
     selectDraggedNodesSourceFolderID
   )
 
-  const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.currentTarget.checked) {
-      dispatch(commanderSelectionNodeAdded({itemID: node.id, mode}))
-    } else {
-      dispatch(commanderSelectionNodeRemoved({itemID: node.id, mode}))
-    }
-  }
+  const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {}
 
   const onLocalDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -77,7 +65,7 @@ export default function Folder({node, onClick, cssClassNames}: Args) {
         onDragEnter={onLocalDragEnter}
         onDrop={onLocalDrop}
       >
-        <Checkbox onChange={onCheck} checked={selectedIds.includes(node.id)} />
+        <Checkbox onChange={onCheck} checked={false} />
         <a onClick={() => onClick(node)}>
           <div className={classes.folderIcon}></div>
           <Tags names={tagNames} node={node} />

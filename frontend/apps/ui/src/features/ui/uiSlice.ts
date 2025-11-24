@@ -172,7 +172,6 @@ export interface UIState {
   secondaryViewer?: ViewerState
   currentSharedNode?: CurrentNode
   currentSharedRootID?: string
-  mainCommanderSelectedIDs?: Array<string>
   mainCommanderFilter?: string
   mainCommanderLastPageSize?: number
   mainCommanderSortMenuColumn?: SortMenuColumn
@@ -183,7 +182,6 @@ export interface UIState {
    this field indicates his/her last selection */
   mainCommanderLastHome?: LastHome
   mainCommanderLastInbox?: LastInbox
-  secondaryCommanderSelectedIDs?: Array<String>
   secondaryCommanderFilter?: string
   secondaryCommanderLastPageSize?: number
   secondaryCommanderSortMenuColumn?: SortMenuColumn
@@ -216,10 +214,6 @@ export interface UIState {
   /* current page (number) in secondary viewer */
   secondaryViewerCurrentPageNumber?: number
   viewerPageHaveChangedDialogVisibility?: DialogVisiblity
-  mainRoleList?: RolePanelList
-  secondaryRoleList?: RolePanelList
-  mainRoleDetails?: RolePanelDetails
-  secondaryRoleDetails?: RolePanelDetails
 }
 
 const initialState: UIState = {
@@ -262,11 +256,7 @@ const uiSlice = createSlice({
     ) {
       state.secondaryPanelComponent = action.payload
     },
-    mainPanelRoleDetailsUpdated(state, action: PayloadAction<string>) {
-      const roleID = action.payload
-      state.mainPanelComponent = "roleDetails"
-      state.mainRoleDetails = {id: roleID}
-    },
+
     currentSharedNodeChanged(state, action: PayloadAction<CurrentNodeArgs>) {
       const payload = action.payload
 
@@ -287,65 +277,6 @@ const uiSlice = createSlice({
     ) {
       state.currentSharedRootID = action.payload
     },
-    commanderSelectionNodeAdded(
-      state,
-      action: PayloadAction<PanelSelectionArg>
-    ) {
-      const mode = action.payload.mode
-      const itemID = action.payload.itemID
-      if (mode == "main") {
-        if (state.mainCommanderSelectedIDs) {
-          state.mainCommanderSelectedIDs.push(itemID)
-        } else {
-          state.mainCommanderSelectedIDs = [itemID]
-        }
-        return
-      }
-
-      // mode == secondary
-      if (state.secondaryCommanderSelectedIDs) {
-        state.secondaryCommanderSelectedIDs.push(itemID)
-      } else {
-        state.secondaryCommanderSelectedIDs = [itemID]
-      }
-    }, // end of commanderSelectionNodeAdded
-    //------------------------------------------------------------------
-    commanderSelectionNodeRemoved(
-      state,
-      action: PayloadAction<PanelSelectionArg>
-    ) {
-      const mode = action.payload.mode
-      const itemID = action.payload.itemID
-      if (mode == "main") {
-        if (state.mainCommanderSelectedIDs) {
-          const newValues = state.mainCommanderSelectedIDs.filter(
-            i => i != itemID
-          )
-          state.mainCommanderSelectedIDs = newValues
-        }
-
-        return
-      }
-      // secondary
-      if (state.secondaryCommanderSelectedIDs) {
-        const newValues = state.secondaryCommanderSelectedIDs.filter(
-          i => i != itemID
-        )
-        state.secondaryCommanderSelectedIDs = newValues
-      }
-    }, // commanderSelectionNodeRemoved
-    //------------------------------------------------------------------
-    commanderSelectionCleared(state, action: PayloadAction<PanelMode>) {
-      const mode = action.payload
-
-      if (mode == "main") {
-        state.mainCommanderSelectedIDs = []
-        return
-      }
-      // secondary
-      state.secondaryCommanderSelectedIDs = []
-    }, // end of commanderSelectionCleared
-    //-------------------------------------------
     filterUpdated: (state, action: PayloadAction<UpdateFilterType>) => {
       const {mode, filter} = action.payload
       if (mode == "main") {
@@ -354,10 +285,6 @@ const uiSlice = createSlice({
       }
 
       state.secondaryCommanderFilter = filter
-    },
-    commanderAllSelectionsCleared(state) {
-      state.mainCommanderSelectedIDs = []
-      state.secondaryCommanderSelectedIDs = []
     },
     commanderLastPageSizeUpdated(
       state,
@@ -630,13 +557,6 @@ export const {
 
   currentSharedNodeChanged,
   currentSharedNodeRootChanged,
-  mainPanelComponentUpdated,
-  secondaryPanelComponentUpdated,
-  mainPanelRoleDetailsUpdated,
-  commanderSelectionNodeAdded,
-  commanderSelectionNodeRemoved,
-  commanderSelectionCleared,
-  commanderAllSelectionsCleared,
   filterUpdated,
   commanderLastPageSizeUpdated,
   commanderSortMenuColumnUpdated,
@@ -699,62 +619,6 @@ export const selectOtherPanelComponent = (
   }
 
   return state.ui.mainPanelComponent
-}
-
-export const selectSelectedNodeIds = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainCommanderSelectedIDs || []
-  }
-
-  return state.ui.secondaryCommanderSelectedIDs || []
-}
-
-export const selectSelectedNodesCount = createSelector(
-  selectSelectedNodeIds,
-  selectedIds => {
-    if (!selectedIds) {
-      return 0
-    }
-
-    return selectedIds.length
-  }
-)
-
-export const selectOneSelectedSharedNode = (
-  state: RootState,
-  mode: PanelMode
-): undefined | NodeType => {
-  if (mode == "main") {
-    if (
-      state.ui.mainCommanderSelectedIDs &&
-      state.ui.mainCommanderSelectedIDs.length == 1
-    ) {
-      const sel_id = state.ui.mainCommanderSelectedIDs[0]
-      if (
-        state.nodes.entities[sel_id] &&
-        state.nodes.entities[sel_id].is_shared
-      ) {
-        return state.nodes.entities[sel_id]
-      }
-    }
-    return undefined
-  } // main
-
-  if (
-    state.ui.secondaryCommanderSelectedIDs &&
-    state.ui.secondaryCommanderSelectedIDs.length == 1
-  ) {
-    const sel_id2 = state.ui.secondaryCommanderSelectedIDs[0] as string
-    if (
-      state.nodes.entities &&
-      state.nodes.entities[sel_id2] &&
-      state.nodes.entities[sel_id2].is_shared
-    ) {
-      return state.nodes.entities[sel_id2]
-    }
-  }
-
-  return undefined
 }
 
 export const selectFilterText = (state: RootState, mode: PanelMode) => {

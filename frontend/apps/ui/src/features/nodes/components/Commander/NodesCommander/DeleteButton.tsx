@@ -1,15 +1,12 @@
 import {useDisclosure} from "@mantine/hooks"
-import {useContext} from "react"
 
 import {useAppDispatch} from "@/app/hooks"
-import {NodeType, PanelMode} from "@/types"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {clearPanelSelection} from "@/features/ui/panelRegistry"
+import {NodeType} from "@/types"
 import {ActionIcon, Tooltip} from "@mantine/core"
 import {IconTrash} from "@tabler/icons-react"
 import DeleteNodesModal from "./DeleteModal"
-
-import {commanderSelectionCleared} from "@/features/ui/uiSlice"
-
-import PanelContext from "@/contexts/PanelContext"
 
 interface Args {
   selectedNodes: NodeType[]
@@ -17,16 +14,16 @@ interface Args {
 
 export default function DeleteButton({selectedNodes}: Args) {
   const [opened, {open, close}] = useDisclosure(false)
-  const mode: PanelMode = useContext(PanelContext)
+  const {panelId} = usePanel()
   const dispatch = useAppDispatch()
 
   const onSubmit = () => {
-    dispatch(commanderSelectionCleared(mode))
+    dispatch(clearPanelSelection({panelId}))
     close()
   }
 
   const onCancel = () => {
-    dispatch(commanderSelectionCleared(mode))
+    dispatch(clearPanelSelection({panelId}))
     close()
   }
 

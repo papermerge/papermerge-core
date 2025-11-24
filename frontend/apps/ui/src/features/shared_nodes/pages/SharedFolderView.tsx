@@ -1,9 +1,6 @@
 import {store} from "@/app/store"
 import DualPanel from "@/components/DualPanel"
-import {
-  currentSharedNodeChanged,
-  mainPanelComponentUpdated
-} from "@/features/ui/uiSlice"
+import {currentSharedNodeChanged} from "@/features/ui/uiSlice"
 import {LoaderFunctionArgs} from "react-router"
 
 export default function SharedFolderView() {
@@ -18,7 +15,7 @@ export async function loader({params, request}: LoaderFunctionArgs) {
     folderId = params.folderId
   }
 
-  store.dispatch(mainPanelComponentUpdated("sharedCommander"))
+  //store.dispatch(mainPanelComponentUpdated("sharedCommander"))
 
   store.dispatch(
     currentSharedNodeChanged({id: folderId, ctype: "folder", panel: "main"})

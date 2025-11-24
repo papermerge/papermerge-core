@@ -1,5 +1,5 @@
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import {selectOneSelectedSharedNode} from "@/features/ui/uiSlice"
+import {useAppDispatch} from "@/app/hooks"
+
 import {Group} from "@mantine/core"
 import {useContext, useRef, useState} from "react"
 
@@ -9,7 +9,6 @@ import type {PanelMode} from "@/types"
 import PanelContext from "@/contexts/PanelContext"
 
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
-import ManageAccessButton from "@/components/ManageAccessButton"
 import QuickFilter from "@/components/QuickFilter"
 import SharedButton from "@/components/ShareButton"
 import ViewOptionsMenu from "@/features/nodes/components/Commander/ViewOptionsMenu"
@@ -32,10 +31,6 @@ export default function FolderNodeActions({selectedNodes = []}: Args) {
   const mode: PanelMode = useContext(PanelContext)
   const selectedCount = selectedNodes.length
 
-  const oneSelectedSharedNode = useAppSelector(s =>
-    selectOneSelectedSharedNode(s, mode)
-  )
-
   const onQuickFilterClear = () => {
     selectFilterText(undefined)
     dispatch(filterUpdated({mode, filter: undefined}))
@@ -57,9 +52,7 @@ export default function FolderNodeActions({selectedNodes = []}: Args) {
           <EditNodeTagsButton selectedNodes={selectedNodes} />
         )}
         {selectedCount > 0 && <SharedButton selectedNodes={selectedNodes} />}
-        {oneSelectedSharedNode && (
-          <ManageAccessButton node_id={oneSelectedSharedNode.id} />
-        )}
+
         {selectedCount > 0 && <DeleteButton selectedNodes={selectedNodes} />}
       </Group>
       <Group grow preventGrowOverflow={false} wrap="nowrap">

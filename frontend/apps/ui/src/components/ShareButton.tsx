@@ -1,5 +1,5 @@
 import {useAppDispatch} from "@/app/hooks"
-import {commanderAllSelectionsCleared} from "@/features/ui/uiSlice"
+
 import {ActionIcon, Box, Tooltip} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconUserShare} from "@tabler/icons-react"
@@ -19,8 +19,8 @@ const ShareButton = forwardRef<HTMLButtonElement, Args>((props, ref) => {
   const [opened, {open, close}] = useDisclosure(false)
 
   const onLocalClose = () => {
-    dispatch(commanderAllSelectionsCleared())
-    close()
+    //dispatch(commanderAllSelectionsCleared())
+    //close()
   }
 
   return (

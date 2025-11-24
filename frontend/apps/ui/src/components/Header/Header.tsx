@@ -3,25 +3,19 @@ import logoURL from "/logo_transparent_bg.svg"
 
 import classes from "./Header.module.css"
 
-import {useAppDispatch} from "@/app/hooks"
 import {ClearNotificationsButton} from "@/features/notifications/components/ClearButton"
 import Search from "@/features/search/components/Search"
-import {setPanelComponent} from "@/features/ui/panelRegistry"
+import {useNavigate} from "react-router"
 import UploadButton from "../../features/files/components/UploadButton"
 import SidebarToggle from "./SidebarToggle"
 import UserMenu from "./UserMenu"
 
 function Header() {
   const theme = useMantineTheme()
-  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
 
   const onSearch = () => {
-    dispatch(
-      setPanelComponent({
-        panelId: "main",
-        component: "documentsListByCategory"
-      })
-    )
+    navigate("/documents")
   }
 
   return (

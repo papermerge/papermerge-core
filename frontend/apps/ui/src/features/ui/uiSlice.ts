@@ -246,7 +246,6 @@ const uiSlice = createSlice({
         Cookies.set(NAVBAR_WIDTH_COOKIE, `${COLLAPSED_WIDTH}`)
       }
     },
-
     mainPanelComponentUpdated(state, action: PayloadAction<PanelComponent>) {
       state.mainPanelComponent = action.payload
     },
@@ -557,6 +556,8 @@ export const {
 
   currentSharedNodeChanged,
   currentSharedNodeRootChanged,
+  mainPanelComponentUpdated,
+  secondaryPanelComponentUpdated,
   filterUpdated,
   commanderLastPageSizeUpdated,
   commanderSortMenuColumnUpdated,

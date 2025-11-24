@@ -49,18 +49,20 @@ export default function useNodes() {
   const actions = useMemo(
     () => ({
       updateCurrentNode: (node: NType) => {
+        const component = node.ctype == "folder" ? "commander" : "viewer"
+
         if (panelId == "secondary") {
           dispatch(
             setPanelComponent({
               panelId: "secondary",
-              component: node.ctype == "folder" ? "commander" : "viewer"
+              component
             })
           )
           return dispatch(
             updatePanelCurrentNode({
               entityID: node.id,
               panelID: "secondary",
-              component: "commander"
+              component
             })
           )
         }
@@ -72,7 +74,7 @@ export default function useNodes() {
         } else {
           url = `/document/${node.id}`
         }
-        console.log(url)
+
         navigate(url)
       },
 

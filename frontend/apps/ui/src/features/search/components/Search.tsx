@@ -1,23 +1,23 @@
 import {useAppSelector} from "@/app/hooks"
 import {useFilterSearch} from "@/features/search/hooks/useTokenSearch"
-import type {Filter} from "@/features/search/microcomp/types"
 import {Box, Combobox} from "@mantine/core"
 
 import SearchFiltersCompactSummary from "./SearchFiltersCompactSummary"
 import ClearButton from "./SearchFiltersCompactSummary/ClearButon"
 import ToggleCompactModeButton from "./ToggleCompactModeButton"
 
+import {useEffect} from "react"
+import useDebouncedSearchParamsString from "../hooks/useDebouncedSearchParamsString"
 import AutocompleteOptions from "./AutocompleteOptions"
 import styles from "./Search.module.css"
 import SearchFilters from "./SearchFilters"
 import SearchInput from "./SearchInput"
 
 interface Args {
-  onSearch?: (tokens: Filter[]) => void
-  onFocusChange?: (isFocused: boolean) => void
+  onSearch?: () => void
 }
 
-export default function Search({onSearch, onFocusChange}: Args) {
+export default function Search({onSearch}: Args) {
   const filters = useAppSelector(state => state.search.filters)
 
   const {
@@ -36,7 +36,8 @@ export default function Search({onSearch, onFocusChange}: Args) {
     handleKeyDown,
     validationError,
     isInputValid
-  } = useFilterSearch({onSearch, onFocusChange})
+  } = useFilterSearch()
+  const {relevantParamsString, filtersCount} = useDebouncedSearchParamsString()
 
   const suggestions = <AutocompleteOptions suggestions={autocomplete} />
 
@@ -65,6 +66,12 @@ export default function Search({onSearch, onFocusChange}: Args) {
       inputRef.current.dispatchEvent(enterEvent)
     }
   }
+
+  useEffect(() => {
+    if (filtersCount > 0) {
+      onSearch?.()
+    }
+  }, [relevantParamsString])
 
   return (
     <Combobox store={combobox} onOptionSubmit={handleOptionSubmit}>

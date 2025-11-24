@@ -70,7 +70,7 @@ cloud = ["botocore (>=1.40.70)", "boto3 (>=1.40.70)", "cryptography (>=46.0.3)"]
 optional = true
 
 [tool.poetry.group.test.dependencies]
-pytest = "^9.0.0"
+pytest = "^9.0.1"
 pytest-asyncio = "^1.2.0"
 
 [tool.taskipy.settings]

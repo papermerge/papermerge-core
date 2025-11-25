@@ -1,16 +1,12 @@
-%base {
-  padding: 0.25rem;
-}
-
 .content {
   overflow: auto;
 }
 
 .accept_files {
-  @extend %base;
+  padding: 0.25rem;
   outline: 2px dashed blue;
 }
 
 .commander {
-  @extend %base;
+  padding: 0.25rem;
 }

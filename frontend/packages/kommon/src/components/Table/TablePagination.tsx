@@ -1,4 +1,3 @@
-// components/TablePagination/TablePagination.tsx
 import {Group, Pagination, Select, Text} from "@mantine/core"
 import {TFunction} from "i18next"
 

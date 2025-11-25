@@ -12,9 +12,9 @@ import {
   selectCurrentSharedRootID,
   selectFilterText
 } from "@/features/ui/uiSlice"
+import {TablePagination} from "kommon"
 
 import {store} from "@/app/store"
-import Pagination from "@/components/Pagination"
 import SharedBreadcrumb from "@/components/SharedBreadcrumb"
 import PanelContext from "@/contexts/PanelContext"
 import {
@@ -118,14 +118,13 @@ export default function SharedCommander() {
     setPage(page)
   }
 
-  const onPageSizeChange = (value: string | null) => {
+  const onPageSizeChange = (value: number) => {
     if (value) {
-      const pSize = parseInt(value)
-      setPageSize(pSize)
+      setPageSize(value)
       // reset current page
       setPage(1)
       // remember last page size
-      dispatch(commanderLastPageSizeUpdated({pageSize: pSize, mode}))
+      dispatch(commanderLastPageSizeUpdated({pageSize: value, mode}))
     }
   }
 
@@ -137,16 +136,6 @@ export default function SharedCommander() {
         <Group>
           <NodesList items={data.items} onClick={onClick} />
         </Group>
-        <Pagination
-          pagination={{
-            pageNumber: page,
-            pageSize: pageSize!,
-            numPages: data.num_pages
-          }}
-          onPageNumberChange={onPageNumberChange}
-          onPageSizeChange={onPageSizeChange}
-          lastPageSize={lastPageSize}
-        />
       </>
     )
   } else {
@@ -168,6 +157,15 @@ export default function SharedCommander() {
         <Stack className={classes.content} justify={"space-between"}>
           {commanderContent}
         </Stack>
+        <TablePagination
+          currentPage={data?.page_number || 1}
+          totalPages={data?.num_pages || 0}
+          pageSize={data?.page_size || 15}
+          onPageChange={onPageNumberChange}
+          onPageSizeChange={onPageSizeChange}
+          totalItems={data?.total_items}
+          t={t}
+        />
       </Box>
     </>
   )

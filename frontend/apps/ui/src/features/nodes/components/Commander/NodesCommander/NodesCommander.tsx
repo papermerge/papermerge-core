@@ -3,6 +3,7 @@ import {uploadFile} from "@/features/files/storage/thunks"
 import type {UploadFileOutput} from "@/features/files/types"
 import {Box, Group, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
+import {TablePagination} from "kommon"
 import {useMemo, useState} from "react"
 import {createRoot} from "react-dom/client"
 
@@ -32,7 +33,6 @@ import {
 import {isSupportedFile} from "@/features/nodes/utils"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
-import Pagination from "@/components/Pagination"
 
 import {generateThumbnail} from "@/features/nodes/storage/thumbnailObjectsSlice"
 import {selectMyPreferences} from "@/features/preferences/storage/preference"
@@ -42,7 +42,7 @@ import {
   selectDraggedPages
 } from "@/features/ui/uiSlice"
 import type {NType} from "@/types"
-import classes from "./Commander.module.scss"
+import classes from "./Commander.module.css"
 
 import {
   APP_THUMBNAIL_KEY,
@@ -150,9 +150,9 @@ export default function Commander() {
     })
   }
 
-  const onPageSizeChange = (value: string | null) => {
+  const onPageSizeChange = (value: number) => {
     if (value) {
-      const pSize = parseInt(value)
+      const pSize = value
       actions.updatePagination({
         pageNumber: 1,
         pageSize: pSize
@@ -273,7 +273,13 @@ export default function Commander() {
 
   if (data.items.length > 0) {
     commanderContent = (
-      <>
+      <Box
+        style={{
+          height: "100%",
+          overflow: "auto",
+          position: "relative"
+        }}
+      >
         <Group>
           <NodesList
             items={data.items}
@@ -284,17 +290,7 @@ export default function Commander() {
             onNodeDragStart={onNodeDragStart}
           />
         </Group>
-        <Pagination
-          pagination={{
-            pageNumber: data.page_number,
-            pageSize: data.page_size,
-            numPages: data.num_pages
-          }}
-          onPageNumberChange={onPageNumberChange}
-          onPageSizeChange={onPageSizeChange}
-          lastPageSize={data.page_size}
-        />
-      </>
+      </Box>
     )
   } else {
     commanderContent = <Group>{t("common.empty")}</Group>
@@ -302,7 +298,10 @@ export default function Commander() {
 
   return (
     <>
-      <Box
+      <Stack
+        style={{
+          height: "100%"
+        }}
         onDragEnter={onDragEnter}
         onDragLeave={onDragLeave}
         onDragOver={onDragOver}
@@ -315,10 +314,17 @@ export default function Commander() {
           onClick={onClick}
           isFetching={isFetching}
         />
-        <Stack className={classes.content} justify={"space-between"}>
-          {commanderContent}
-        </Stack>
-      </Box>
+        {commanderContent}
+        <TablePagination
+          currentPage={data?.page_number || 1}
+          totalPages={data?.num_pages || 0}
+          pageSize={data?.page_size || 15}
+          onPageChange={onPageNumberChange}
+          onPageSizeChange={onPageSizeChange}
+          totalItems={data?.total_items}
+          t={t}
+        />
+      </Stack>
       {draggedPagesDocParentID &&
         draggedPagesDocID &&
         currentFolder &&

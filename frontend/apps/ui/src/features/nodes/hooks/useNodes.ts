@@ -1,5 +1,4 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import PanelContext from "@/contexts/PanelContext"
 import {useGetFolderQuery} from "@/features/nodes/storage/api"
 import type {SortBy} from "@/features/tags/types"
 import {usePanel} from "@/features/ui/hooks/usePanel"
@@ -17,14 +16,13 @@ import {useMemo} from "react"
 import {useNavigate} from "react-router-dom"
 
 import {useGetPaginatedNodesQuery} from "@/features/nodes/storage/api"
-import type {NType, PanelMode} from "@/types"
-import {useContext} from "react"
+import type {NType} from "@/types"
 
 export default function useNodes() {
   const {panelId} = usePanel()
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const mode: PanelMode = useContext(PanelContext)
+
   const pageSize = useAppSelector(s => selectPanelPageSize(s, panelId)) || 10
   const pageNumber = useAppSelector(s => selectPanelPageNumber(s, panelId)) || 1
   const sorting = useAppSelector(s => selectPanelSorting(s, panelId))
@@ -76,18 +74,18 @@ export default function useNodes() {
         }
 
         navigate(url)
-      },
+      }, // updateCurrentNode
 
       updatePagination: (pagination: {
         pageNumber?: number
         pageSize?: number
       }) => {
         dispatch(setPanelList({panelId, list: pagination}))
-      },
+      }, // updatePagination
 
       setSelection: (ids: string[]) => {
         dispatch(setPanelList({panelId, list: {selectedIDs: ids}}))
-      }
+      } // setSelection
     }),
     [panelId, dispatch]
   )

@@ -1,9 +1,10 @@
 import {apiSlice} from "@/features/api/slice"
 import {uploadFile} from "@/features/files/storage/thunks"
 import type {UploadFileOutput} from "@/features/files/types"
+import useVisibleColumns from "@/features/nodes/hooks/useVisibleColumns"
 import {Box, Group, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
-import {TablePagination} from "kommon"
+import {DataTable, TablePagination} from "kommon"
 import {useMemo, useState} from "react"
 import {createRoot} from "react-dom/client"
 
@@ -33,6 +34,7 @@ import {
 import {isSupportedFile} from "@/features/nodes/utils"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
+import {selectPanelAllCustom} from "@/features/ui/panelRegistry"
 
 import {generateThumbnail} from "@/features/nodes/storage/thumbnailObjectsSlice"
 import {selectMyPreferences} from "@/features/preferences/storage/preference"
@@ -41,8 +43,10 @@ import {
   selectDraggedNodesSourceFolderID,
   selectDraggedPages
 } from "@/features/ui/uiSlice"
-import type {NType} from "@/types"
+import type {NType, NodeType, Paginated, ViewOption} from "@/types"
+import {TFunction} from "i18next"
 import classes from "./Commander.module.css"
+import nodeColumns from "./columns"
 
 import {
   APP_THUMBNAIL_KEY,
@@ -165,6 +169,18 @@ export default function Commander() {
     actions.setSelection(arr)
   }
 
+  const onTableRowClick = (row: NodeType, openInSecondaryPanel: boolean) => {
+    if (openInSecondaryPanel) {
+      //dispatch(showTagDetailsInSecondaryPanel(row.id))
+    } else {
+      if (row.ctype == "folder") {
+        navigate(`/folder/${row.id}`)
+      } else {
+        navigate(`/document/${row.id}`)
+      }
+    }
+  }
+
   const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
     setDragOver(true)
@@ -269,33 +285,6 @@ export default function Commander() {
     root.render(image)
   }
 
-  let commanderContent
-
-  if (data.items.length > 0) {
-    commanderContent = (
-      <Box
-        style={{
-          height: "100%",
-          overflow: "auto",
-          position: "relative"
-        }}
-      >
-        <Group>
-          <NodesList
-            items={data.items}
-            onClick={onClick}
-            onSelectionChange={handleSelectionChange}
-            selectedItems={selectedItemsSet}
-            onNodeDrag={onNodeDrag}
-            onNodeDragStart={onNodeDragStart}
-          />
-        </Group>
-      </Box>
-    )
-  } else {
-    commanderContent = <Group>{t("common.empty")}</Group>
-  }
-
   return (
     <>
       <Stack
@@ -314,7 +303,15 @@ export default function Commander() {
           onClick={onClick}
           isFetching={isFetching}
         />
-        {commanderContent}
+        <DataItems
+          data={data}
+          onClick={onClick}
+          handleSelectionChange={handleSelectionChange}
+          onTableRowClick={onTableRowClick}
+          selectedItemsSet={selectedItemsSet}
+          onNodeDrag={onNodeDrag}
+          onNodeDragStart={onNodeDragStart}
+        />
         <TablePagination
           currentPage={data?.page_number || 1}
           totalPages={data?.num_pages || 0}
@@ -360,5 +357,78 @@ export default function Commander() {
         />
       )}
     </>
+  )
+}
+
+interface DataItemsArgs {
+  data: Paginated<NodeType>
+  onClick: (node: NType) => void
+  handleSelectionChange: (newSelection: Set<string>) => void
+  selectedItemsSet: Set<string>
+  onNodeDrag: () => void
+  onNodeDragStart: (nodeID: string, event: React.DragEvent) => void
+  onTableRowClick: (row: NodeType, openInSecondaryPanel: boolean) => void
+  t?: TFunction
+}
+
+function DataItems({
+  data,
+  onClick,
+  handleSelectionChange,
+  selectedItemsSet,
+  onNodeDrag,
+  onNodeDragStart,
+  onTableRowClick,
+  t
+}: DataItemsArgs) {
+  const {panelId} = usePanel()
+  const {viewOption} = useAppSelector(s => selectPanelAllCustom(s, panelId))
+  const viewOptionValue = viewOption as ViewOption
+  const visibleColumns = useVisibleColumns(nodeColumns(t))
+  const getRowId = (row: NodeType) => row.id
+
+  if (data.items.length == 0) {
+    return (
+      <Group>{t?.("common.empty", {defaultValue: "No items found"})}</Group>
+    )
+  }
+
+  if (viewOptionValue == "tile") {
+    return (
+      <Box
+        style={{
+          height: "100%",
+          overflow: "auto",
+          position: "relative"
+        }}
+      >
+        <Group>
+          <NodesList
+            items={data.items}
+            onClick={onClick}
+            onSelectionChange={handleSelectionChange}
+            selectedItems={selectedItemsSet}
+            onNodeDrag={onNodeDrag}
+            onNodeDragStart={onNodeDragStart}
+          />
+        </Group>
+      </Box>
+    )
+  }
+
+  return (
+    <DataTable<NodeType>
+      data={data?.items || []}
+      columns={visibleColumns}
+      sorting={{
+        column: "title",
+        direction: "asc"
+      }}
+      selectedRows={selectedItemsSet}
+      onSelectionChange={handleSelectionChange}
+      onRowClick={onTableRowClick}
+      withCheckbox={true}
+      getRowId={getRowId}
+    />
   )
 }

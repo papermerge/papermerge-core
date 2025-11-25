@@ -1,23 +1,25 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import PanelContext from "@/contexts/PanelContext"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
-  commanderViewOptionUpdated,
-  selectCommanderViewOption
-} from "@/features/ui/uiSlice"
+  selectPanelAllCustom,
+  setPanelCustomState
+} from "@/features/ui/panelRegistry"
 import type {ViewOption} from "@/types"
 import {ActionIcon, Menu} from "@mantine/core"
 import {IconCheck, IconListDetails} from "@tabler/icons-react"
-import {useContext} from "react"
 import {useTranslation} from "react-i18next"
+
+const VIEW_OPTION = "viewOption"
 
 export default function ViewOptionsMenu() {
   const {t} = useTranslation()
+  const {panelId} = usePanel()
   const dispatch = useAppDispatch()
-  const mode = useContext(PanelContext)
-  const viewOption = useAppSelector(s => selectCommanderViewOption(s, mode))
+
+  const {viewOption} = useAppSelector(s => selectPanelAllCustom(s, panelId))
 
   const onViewOptionsChanged = (value: ViewOption) => {
-    dispatch(commanderViewOptionUpdated({mode, viewOption: value}))
+    dispatch(setPanelCustomState({panelId, key: VIEW_OPTION, value}))
   }
 
   return (

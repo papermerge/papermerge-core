@@ -7,7 +7,7 @@ from typing import Optional, Literal, Annotated, Any
 
 from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, \
-    field_validator, model_validator
+    field_validator
 
 from papermerge.core.features.nodes.schema import NodeShort
 from papermerge.core.schemas.common import ByUser, OwnedBy, Category, Tag
@@ -518,3 +518,15 @@ class DocumentsByTypeParams(BaseModel):
                 "direction": self.sort_direction
             }
         return None
+
+
+class DocumentEx(DocumentBase):
+    """Extended document with audit columns for paginated listing"""
+    # Audit columns
+    owned_by: OwnedBy
+    created_at: datetime
+    created_by: ByUser | None = None
+    updated_at: datetime
+    updated_by: ByUser | None = None
+    ocr: bool = True
+    ocr_status: OCRStatusEnum = OCRStatusEnum.unknown

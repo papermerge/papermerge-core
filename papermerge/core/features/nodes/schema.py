@@ -1,12 +1,13 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, Dict, Any
 from datetime import datetime
 from typing import List, Literal, Tuple
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
+from fastapi import Query
 
-from papermerge.core.schemas.common import OwnedBy
+from papermerge.core.schemas.common import OwnedBy, ByUser
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core.types import OwnerType
 
@@ -179,3 +180,109 @@ class DeleteDocumentsData(BaseModel):
     document_ids: list[UUID]
     document_version_ids: list[UUID]
     page_ids: list[UUID]
+
+
+class FolderEx(BaseModel):
+    """Extended folder with audit columns for paginated listing"""
+    id: UUID
+    title: str
+    ctype: Literal["folder"]
+    tags: List[Tag] = []
+    parent_id: UUID | None
+    is_shared: bool = False
+
+    # Audit columns
+    owned_by: OwnedBy
+    created_at: datetime
+    created_by: ByUser | None = None
+    updated_at: datetime
+    updated_by: ByUser | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class NodeParams(BaseModel):
+    # Pagination parameters
+    page_size: int = Query(
+        15,
+        ge=1,
+        le=100,
+        description="Number of items per page"
+    )
+    page_number: int = Query(
+        1,
+        ge=1,
+        description="Page number (1-based)"
+    )
+
+    # Sorting parameters
+    sort_by: Optional[str] = Query(
+        None,
+        pattern="^(id|title|ctype|created_at|updated_at|created_by|updated_by|owned_by)$",
+        description="Column to sort by: id, title, ctype, created_at, updated_at, created_by, updated_by, owned_by"
+    )
+    sort_direction: Optional[Literal["asc", "desc"]] = Query(
+        None,
+        description="Sort direction: asc or desc"
+    )
+
+    # Filter parameters
+    filter_free_text: Optional[str] = Query(
+        None,
+        description="Filter by free text (searches in title)"
+    )
+
+    filter_ctype: Optional[str] = Query(
+        None,
+        description="Filter by content type: folder, document"
+    )
+
+    filter_created_by_username: Optional[str] = Query(
+        None,
+        description="Comma-separated list of usernames who created the node"
+    )
+
+    filter_updated_by_username: Optional[str] = Query(
+        None,
+        description="Comma-separated list of usernames who updated the node"
+    )
+
+    filter_owner_name: Optional[str] = Query(
+        None,
+        description="Filter by owner name (user or group)"
+    )
+
+    def to_filters(self) -> Optional[Dict[str, Dict[str, Any]]]:
+        filters = {}
+
+        if self.filter_free_text:
+            filters["free_text"] = {
+                "value": self.filter_free_text,
+                "operator": "free_text"
+            }
+
+        if self.filter_ctype:
+            filters["ctype"] = {
+                "value": self.filter_ctype,
+                "operator": "eq"
+            }
+
+        if self.filter_created_by_username:
+            filters["created_by_username"] = {
+                "value": self.filter_created_by_username,
+                "operator": "in"
+            }
+
+        if self.filter_updated_by_username:
+            filters["updated_by_username"] = {
+                "value": self.filter_updated_by_username,
+                "operator": "in"
+            }
+
+        if self.filter_owner_name:
+            filters["owner_name"] = {
+                "value": self.filter_owner_name,
+                "operator": "like"
+            }
+
+        return filters if filters else None

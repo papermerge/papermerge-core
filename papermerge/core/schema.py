@@ -1,5 +1,5 @@
 from .features.nodes.schema import (
-    Folder, NewFolder, Node, NodeShort, UpdateNode, MoveNode, FolderShort
+    Folder, NewFolder, Node, NodeShort, UpdateNode, MoveNode, FolderShort, FolderEx
 )
 from .features.shared_nodes.schema import (
     CreateSharedNode,
@@ -35,7 +35,8 @@ from .features.document.schema import (
     Pagination,
     DocVerListItem,
     DownloadURL,
-    DocumentsByTypeParams
+    DocumentsByTypeParams,
+    DocumentEx
 )
 from .features.users.schema import User, UserSimple, UserEx, CreateUser, UserDetails, UpdateUser, ChangeUserPassword, UserHomes, UserInboxes, UserHome, UserInbox
 from .features.custom_fields.schema import (
@@ -64,6 +65,7 @@ from .features.ownership.schema import Owner
 
 __all__ = [
     'Folder',
+    'FolderEx',
     'FolderShort',
     'NewFolder',
     'Node',
@@ -131,6 +133,7 @@ __all__ = [
     'DocumentTypeShort',
     'DocumentTypeEx',
     'DocumentTypeDetails',
+    'DocumentEx',
     'CreateDocumentType',
     'UpdateDocumentType',
     'Group',

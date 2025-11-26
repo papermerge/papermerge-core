@@ -2,6 +2,7 @@ import {apiSlice} from "@/features/api/slice"
 import {uploadFile} from "@/features/files/storage/thunks"
 import type {UploadFileOutput} from "@/features/files/types"
 import useVisibleColumns from "@/features/nodes/hooks/useVisibleColumns"
+import {updatePanelCurrentNode} from "@/features/ui/panelRegistry"
 import {Box, Group, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {DataTable, TablePagination} from "kommon"
@@ -171,7 +172,14 @@ export default function Commander() {
 
   const onTableRowClick = (row: NodeType, openInSecondaryPanel: boolean) => {
     if (openInSecondaryPanel) {
-      //dispatch(showTagDetailsInSecondaryPanel(row.id))
+      const component = row.ctype == "document" ? "viewer" : "commander"
+      dispatch(
+        updatePanelCurrentNode({
+          panelID: "secondary",
+          entityID: row.id,
+          component
+        })
+      )
     } else {
       if (row.ctype == "folder") {
         navigate(`/folder/${row.id}`)

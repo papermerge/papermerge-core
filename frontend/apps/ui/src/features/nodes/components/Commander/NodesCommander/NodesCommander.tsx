@@ -177,8 +177,10 @@ export default function Commander() {
   }
 
   const onTableRowClick = (row: NodeType, openInSecondaryPanel: boolean) => {
-    if (openInSecondaryPanel) {
-      const component = row.ctype == "document" ? "viewer" : "commander"
+    const component = row.ctype === "document" ? "viewer" : "commander"
+
+    // Secondary panel always uses dispatch
+    if (openInSecondaryPanel || panelId == "secondary") {
       dispatch(
         updatePanelCurrentNode({
           panelID: "secondary",
@@ -186,13 +188,12 @@ export default function Commander() {
           component
         })
       )
-    } else {
-      if (row.ctype == "folder") {
-        navigate(`/folder/${row.id}`)
-      } else {
-        navigate(`/document/${row.id}`)
-      }
+      return
     }
+
+    // Main panel navigates
+    const path = row.ctype === "folder" ? "folder" : "document"
+    navigate(`/${path}/${row.id}`)
   }
 
   const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -448,6 +449,7 @@ function DataItems({
       onSelectionChange={handleSelectionChange}
       onRowClick={onTableRowClick}
       withCheckbox={true}
+      withSecondaryPanelTriggerColumn={panelId == "main"}
       getRowId={getRowId}
     />
   )

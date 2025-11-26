@@ -7,6 +7,7 @@ interface LeadColumnBodyArgs<T> {
   isSelected: boolean
   row: T
   withCheckbox: boolean
+  withSecondaryPanelTriggerColumn?: boolean
   onRowClick?: (row: T, otherPanel: boolean) => void
   onRowSelect?: (rowId: string, checked: boolean) => void
 }
@@ -16,6 +17,7 @@ export default function LeadColumnBody<T>({
   rowId,
   row,
   withCheckbox,
+  withSecondaryPanelTriggerColumn = true,
   onRowClick,
   onRowSelect
 }: LeadColumnBodyArgs<T>) {
@@ -42,6 +44,21 @@ export default function LeadColumnBody<T>({
           aria-label={`Select row ${rowId}`}
         />
 
+        {withSecondaryPanelTriggerColumn && (
+          <IconColumns2
+            size={14}
+            onClick={() => onRowClick?.(row, true)}
+            style={iconStyle}
+            className="hover-icon"
+          />
+        )}
+      </Table.Td>
+    )
+  }
+
+  if (withSecondaryPanelTriggerColumn) {
+    return (
+      <Table.Td style={style}>
         <IconColumns2
           size={14}
           onClick={() => onRowClick?.(row, true)}
@@ -52,14 +69,5 @@ export default function LeadColumnBody<T>({
     )
   }
 
-  return (
-    <Table.Td style={style}>
-      <IconColumns2
-        size={14}
-        onClick={() => onRowClick?.(row, true)}
-        style={iconStyle}
-        className="hover-icon"
-      />
-    </Table.Td>
-  )
+  return <></>
 }

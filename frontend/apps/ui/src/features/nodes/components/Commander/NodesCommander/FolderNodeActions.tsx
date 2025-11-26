@@ -26,7 +26,8 @@ export default function FolderNodeActions({selectedNodes = []}: Args) {
   const {panelId} = usePanel()
   const {viewOption} = useAppSelector(s => selectPanelAllCustom(s, panelId))
   const viewOptionValue = viewOption as ViewOption
-  const showColumnSelector = viewOptionValue == "list"
+  const showColumnSelector =
+    viewOptionValue == "list" || viewOptionValue === undefined
   const showSortMenu = viewOptionValue == "tile"
 
   const selectedCount = selectedNodes.length

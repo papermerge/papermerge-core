@@ -186,6 +186,11 @@ export type NodeType = NType & {
   // i.e. for current user it looks like root
   // this flag is used to determine the root of breadcrumb of the browsed shared nodes
   is_shared_root?: boolean
+  owned_by: OwnedBy
+  created_at: string
+  updated_at: string
+  created_by: ByUser
+  updated_by: ByUser
 }
 
 export type EntityWithTags = {

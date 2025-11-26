@@ -1,4 +1,3 @@
-// features/roles/hooks/useRoleTable.ts
 import {useAppSelector} from "@/app/hooks"
 import type {RoleQueryParams, SortBy} from "@/features/roles/types"
 import {usePanel} from "@/features/ui/hooks/usePanel"

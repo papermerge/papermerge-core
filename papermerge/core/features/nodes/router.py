@@ -13,12 +13,12 @@ from papermerge.core.features.auth import scopes
 from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.features.auth.dependencies import require_scopes
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
-from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.types import PaginatedResponse
 from papermerge.core.db import common as dbapi_common
 from papermerge.core import exceptions as exc
 from papermerge.core.db.engine import get_db
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
+from .schema import NodeParams
 
 router = APIRouter(prefix="/nodes", tags=["nodes"])
 
@@ -28,6 +28,7 @@ settings = config.get_settings()
 
 @router.get(
     "/{parent_id}",
+    response_model=PaginatedResponse[Union[schema.DocumentEx, schema.FolderEx]],
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": f"No `{scopes.NODE_VIEW}` permission on the node",
@@ -38,16 +39,13 @@ settings = config.get_settings()
 async def get_node(
     parent_id: UUID,
     user: require_scopes(scopes.NODE_VIEW),
-    params: CommonQueryParams = Depends(),
+    params: NodeParams = Depends(),
     db_session: AsyncSession = Depends(get_db),
-) -> PaginatedResponse[Union[schema.DocumentShort, schema.FolderShort]]:
+) -> PaginatedResponse[Union[schema.DocumentEx, schema.FolderEx]]:
     """Returns list of *paginated* direct descendants of `parent_id` node
+
+    Required scope: `node.view`
     """
-    order_by = ["ctype", "title", "created_at", "updated_at"]
-
-    if params.order_by:
-        order_by = [item.strip() for item in params.order_by.split(",")]
-
     if not await dbapi_common.has_node_perm(
         db_session,
         node_id=parent_id,
@@ -56,14 +54,25 @@ async def get_node(
     ):
         raise exc.HTTP403Forbidden()
 
-    result = await nodes_dbapi.get_paginated_nodes(
-        db_session=db_session,
-        parent_id=parent_id,
-        page_size=params.page_size,
-        page_number=params.page_number,
-        order_by=order_by,
-        filter=params.filter,
-    )
+    try:
+        filters = params.to_filters()
+        result = await nodes_dbapi.get_paginated_nodes(
+            db_session=db_session,
+            parent_id=parent_id,
+            page_size=params.page_size,
+            page_number=params.page_number,
+            sort_by=params.sort_by,
+            sort_direction=params.sort_direction,
+            filters=filters,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid parameters: {str(e)}")
+    except Exception as e:
+        logger.error(
+            f"Error fetching nodes for parent {parent_id} by user {user.id}: {e}",
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail="Internal server error")
 
     return result
 

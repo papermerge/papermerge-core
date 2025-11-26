@@ -2,8 +2,10 @@ import {apiSlice} from "@/features/api/slice"
 import {uploadFile} from "@/features/files/storage/thunks"
 import type {UploadFileOutput} from "@/features/files/types"
 import useVisibleColumns from "@/features/nodes/hooks/useVisibleColumns"
+import {updatePanelCurrentNode} from "@/features/ui/panelRegistry"
 import {Box, Group, Stack} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
+import type {SortState} from "kommon"
 import {DataTable, TablePagination} from "kommon"
 import {useMemo, useState} from "react"
 import {createRoot} from "react-dom/client"
@@ -44,7 +46,6 @@ import {
   selectDraggedPages
 } from "@/features/ui/uiSlice"
 import type {NType, NodeType, Paginated, ViewOption} from "@/types"
-import {TFunction} from "i18next"
 import classes from "./Commander.module.css"
 import nodeColumns from "./columns"
 
@@ -55,6 +56,7 @@ import {
 import {APP_NODE_KEY, APP_NODE_VALUE} from "@/features/nodes/constants"
 import useNodes from "@/features/nodes/hooks/useNodes"
 
+import {NodeQueryParams} from "@/features/nodes/types"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {useTranslation} from "react-i18next"
 import DraggingIcon from "./DraggingIcon"
@@ -108,7 +110,8 @@ export default function Commander() {
     refetch,
     error,
     actions,
-    currentFolder
+    currentFolder,
+    queryParams
   } = useNodes()
 
   const selectedNodes = useMemo(() => {
@@ -148,6 +151,10 @@ export default function Commander() {
     actions.updateCurrentNode(node)
   }
 
+  const handleSortChange = (value: SortState) => {
+    actions.updateSorting(value)
+  }
+
   const onPageNumberChange = (page: number) => {
     actions.updatePagination({
       pageNumber: page
@@ -170,15 +177,23 @@ export default function Commander() {
   }
 
   const onTableRowClick = (row: NodeType, openInSecondaryPanel: boolean) => {
-    if (openInSecondaryPanel) {
-      //dispatch(showTagDetailsInSecondaryPanel(row.id))
-    } else {
-      if (row.ctype == "folder") {
-        navigate(`/folder/${row.id}`)
-      } else {
-        navigate(`/document/${row.id}`)
-      }
+    const component = row.ctype === "document" ? "viewer" : "commander"
+
+    // Secondary panel always uses dispatch
+    if (openInSecondaryPanel || panelId == "secondary") {
+      dispatch(
+        updatePanelCurrentNode({
+          panelID: "secondary",
+          entityID: row.id,
+          component
+        })
+      )
+      return
     }
+
+    // Main panel navigates
+    const path = row.ctype === "folder" ? "folder" : "document"
+    navigate(`/${path}/${row.id}`)
   }
 
   const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -307,7 +322,9 @@ export default function Commander() {
           data={data}
           onClick={onClick}
           handleSelectionChange={handleSelectionChange}
+          handleSortChange={handleSortChange}
           onTableRowClick={onTableRowClick}
+          queryParams={queryParams}
           selectedItemsSet={selectedItemsSet}
           onNodeDrag={onNodeDrag}
           onNodeDragStart={onNodeDragStart}
@@ -364,23 +381,26 @@ interface DataItemsArgs {
   data: Paginated<NodeType>
   onClick: (node: NType) => void
   handleSelectionChange: (newSelection: Set<string>) => void
+  handleSortChange: (value: SortState) => void
   selectedItemsSet: Set<string>
   onNodeDrag: () => void
   onNodeDragStart: (nodeID: string, event: React.DragEvent) => void
   onTableRowClick: (row: NodeType, openInSecondaryPanel: boolean) => void
-  t?: TFunction
+  queryParams: NodeQueryParams
 }
 
 function DataItems({
   data,
+  queryParams,
   onClick,
   handleSelectionChange,
+  handleSortChange,
   selectedItemsSet,
   onNodeDrag,
   onNodeDragStart,
-  onTableRowClick,
-  t
+  onTableRowClick
 }: DataItemsArgs) {
+  const {t} = useTranslation()
   const {panelId} = usePanel()
   const {viewOption} = useAppSelector(s => selectPanelAllCustom(s, panelId))
   const viewOptionValue = viewOption as ViewOption
@@ -421,13 +441,15 @@ function DataItems({
       data={data?.items || []}
       columns={visibleColumns}
       sorting={{
-        column: "title",
-        direction: "asc"
+        column: queryParams.sort_by,
+        direction: queryParams.sort_direction || null
       }}
       selectedRows={selectedItemsSet}
+      onSortChange={handleSortChange}
       onSelectionChange={handleSelectionChange}
       onRowClick={onTableRowClick}
       withCheckbox={true}
+      withSecondaryPanelTriggerColumn={panelId == "main"}
       getRowId={getRowId}
     />
   )

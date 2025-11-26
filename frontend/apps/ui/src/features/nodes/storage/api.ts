@@ -7,9 +7,7 @@ import type {
   ServerNotifDocumentMoved,
   ServerNotifDocumentsMoved,
   ServerNotifPayload,
-  ServerNotifType,
-  SortMenuColumn,
-  SortMenuDirection
+  ServerNotifType
 } from "@/types"
 import {getRemoteUserID, getWSURL} from "@/utils"
 import {documentMovedNotifReceived, documentsMovedNotifReceived} from "./nodes"
@@ -41,36 +39,27 @@ type MoveNodesType = {
 
 export type PaginatedArgs = {
   nodeID: string
-  page_number?: number
-  page_size?: number
-  filter?: string | null
-  sortDir: SortMenuDirection
-  sortColumn: SortMenuColumn
+  queryParams: NodeQueryParams
 }
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
+import {NodeQueryParams} from "@/features/nodes/types"
 
 export const apiSliceWithNodes = apiSlice.injectEndpoints({
   endpoints: builder => ({
     getPaginatedNodes: builder.query<Paginated<NodeType>, PaginatedArgs>({
-      query: ({
-        nodeID,
-        page_number = 1,
-        page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES,
-        sortDir,
-        sortColumn,
-        filter = undefined
-      }: PaginatedArgs) => {
-        const orderBy = sortDir == "az" ? sortColumn : `-${sortColumn}`
-
-        if (!filter) {
-          return `/nodes/${nodeID}?page_number=${page_number}&page_size=${page_size}&order_by=${orderBy}`
-        }
-
-        return `/nodes/${nodeID}?page_size=${page_size}&filter=${filter}&order=${orderBy}`
+      query: ({nodeID, queryParams}: PaginatedArgs) => {
+        const queryString = buildQueryString(queryParams || {})
+        return `/nodes/${nodeID}?${queryString}`
       },
       providesTags: (
-        result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
+        result = {
+          page_number: 1,
+          page_size: 1,
+          num_pages: 1,
+          items: [],
+          total_items: 1
+        },
         _error,
         arg
       ) => [
@@ -236,3 +225,28 @@ export const {
   useDeleteNodesMutation,
   useMoveNodesMutation
 } = apiSliceWithNodes
+
+function buildQueryString(params: NodeQueryParams = {}): string {
+  const searchParams = new URLSearchParams()
+
+  // Always include pagination with defaults
+  searchParams.append("page_number", String(params.page_number || 1))
+  searchParams.append(
+    "page_size",
+    String(params.page_size || PAGINATION_DEFAULT_ITEMS_PER_PAGES)
+  )
+
+  // Add sorting if provided
+  if (params.sort_by) {
+    searchParams.append("sort_by", params.sort_by)
+  }
+  if (params.sort_direction) {
+    searchParams.append("sort_direction", params.sort_direction)
+  }
+
+  if (params.filter_free_text) {
+    searchParams.append("filter_free_text", params.filter_free_text)
+  }
+
+  return searchParams.toString()
+}

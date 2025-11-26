@@ -1,19 +1,16 @@
-import {useAppDispatch} from "@/app/hooks"
-
+import {useAppSelector} from "@/app/hooks"
 import {Group} from "@mantine/core"
-import {useContext, useRef, useState} from "react"
+import {useRef} from "react"
 
 import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
-import type {PanelMode} from "@/types"
-
-import PanelContext from "@/contexts/PanelContext"
+import {selectPanelAllCustom} from "@/features/ui/panelRegistry"
 
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
-import QuickFilter from "@/components/QuickFilter"
 import SharedButton from "@/components/ShareButton"
 import ViewOptionsMenu from "@/features/nodes/components/Commander/ViewOptionsMenu"
-import {filterUpdated} from "@/features/ui/uiSlice"
-import type {NodeType} from "@/types"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import type {NodeType, ViewOption} from "@/types"
+import ColumnSelector from "./ColumnSelector"
 import DeleteButton from "./DeleteButton"
 import EditNodeTagsButton from "./EditNodeTagsButton"
 import EditNodeTitleButton from "./EditNodeTitleButton"
@@ -25,21 +22,15 @@ interface Args {
 }
 
 export default function FolderNodeActions({selectedNodes = []}: Args) {
-  const [filterText, selectFilterText] = useState<string>()
-  const dispatch = useAppDispatch()
   const ref = useRef<HTMLDivElement>(null)
-  const mode: PanelMode = useContext(PanelContext)
+  const {panelId} = usePanel()
+  const {viewOption} = useAppSelector(s => selectPanelAllCustom(s, panelId))
+  const viewOptionValue = viewOption as ViewOption
+  const showColumnSelector =
+    viewOptionValue == "list" || viewOptionValue === undefined
+  const showSortMenu = viewOptionValue == "tile"
+
   const selectedCount = selectedNodes.length
-
-  const onQuickFilterClear = () => {
-    selectFilterText(undefined)
-    dispatch(filterUpdated({mode, filter: undefined}))
-  }
-
-  const onQuickFilterChange = (value: string) => {
-    selectFilterText(value)
-    dispatch(filterUpdated({mode, filter: value}))
-  }
 
   return (
     <Group ref={ref} justify="space-between">
@@ -57,12 +48,8 @@ export default function FolderNodeActions({selectedNodes = []}: Args) {
       </Group>
       <Group grow preventGrowOverflow={false} wrap="nowrap">
         <ViewOptionsMenu />
-        <SortMenu />
-        <QuickFilter
-          onChange={onQuickFilterChange}
-          onClear={onQuickFilterClear}
-          filterText={filterText}
-        />
+        {showSortMenu && <SortMenu />}
+        {showColumnSelector && <ColumnSelector />}
         <DuplicatePanelButton />
         <ToggleSecondaryPanel />
       </Group>

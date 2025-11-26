@@ -32,6 +32,7 @@ interface Args<T> {
   highlightRowID?: string
   // Checkbox functionality
   withCheckbox?: boolean
+  withSecondaryPanelTriggerColumn?: boolean
   selectedRows?: Set<string>
   onSelectionChange?: (selectedRows: Set<string>) => void
   getRowId?: (row: T) => string
@@ -47,6 +48,7 @@ export default function DataTable<T>({
   onRowClick,
   highlightRowID,
   withCheckbox = false,
+  withSecondaryPanelTriggerColumn = true,
   selectedRows = new Set(),
   onSelectionChange,
   getRowId = (row: T) => String((row as any).id)
@@ -137,6 +139,7 @@ export default function DataTable<T>({
           sorting={sorting}
           handleSort={handleSort}
           withCheckbox={withCheckbox}
+          withSecondaryPanelTriggerColumn={withSecondaryPanelTriggerColumn}
           isAllSelected={isAllSelected}
           isIndeterminate={isIndeterminate}
           onSelectAll={handleSelectAll}
@@ -152,6 +155,7 @@ export default function DataTable<T>({
           colorScheme={colorScheme}
           highlightColors={highlightColors}
           withCheckbox={withCheckbox}
+          withSecondaryPanelTriggerColumn={withSecondaryPanelTriggerColumn}
           selectedRows={selectedRows}
           onRowSelect={handleRowSelect}
           getRowId={getRowId}
@@ -201,6 +205,7 @@ interface RowArgs<T> {
   onRowClick?: (row: T, otherPanel: boolean) => void
   highlightColors: {backgroundColor: string; borderColor: string}
   withCheckbox?: boolean
+  withSecondaryPanelTriggerColumn?: boolean
   selectedRows?: Set<string>
   onRowSelect?: (rowId: string, checked: boolean) => void
   getRowId?: (row: T) => string
@@ -213,6 +218,7 @@ const TableRow = <T,>({
   highlightRowID,
   highlightColors,
   withCheckbox = false,
+  withSecondaryPanelTriggerColumn = true,
   selectedRows = new Set(),
   onRowSelect,
   getRowId = (row: T) => String((row as any).id)
@@ -265,6 +271,7 @@ const TableRow = <T,>({
         isSelected={isSelected}
         row={row}
         withCheckbox={withCheckbox}
+        withSecondaryPanelTriggerColumn={withSecondaryPanelTriggerColumn}
         onRowClick={onRowClick}
         onRowSelect={onRowSelect}
       />
@@ -283,6 +290,7 @@ interface TBodyArgs<T> {
   colorScheme: MantineColorScheme
   highlightColors: {backgroundColor: string; borderColor: string}
   withCheckbox?: boolean
+  withSecondaryPanelTriggerColumn?: boolean
   selectedRows?: Set<string>
   onRowSelect?: (rowId: string, checked: boolean) => void
   getRowId?: (row: T) => string
@@ -296,6 +304,7 @@ function TableBody<T>({
   onRowClick,
   highlightColors,
   withCheckbox = false,
+  withSecondaryPanelTriggerColumn = true,
   selectedRows = new Set(),
   onRowSelect,
   getRowId = (row: T) => String((row as any).id)
@@ -318,6 +327,7 @@ function TableBody<T>({
       onRowClick={onRowClick}
       highlightColors={highlightColors}
       withCheckbox={withCheckbox}
+      withSecondaryPanelTriggerColumn={withSecondaryPanelTriggerColumn}
       selectedRows={selectedRows}
       onRowSelect={onRowSelect}
       getRowId={getRowId}
@@ -395,6 +405,7 @@ interface TableHeaderArgs<T> {
   sorting: SortState
   handleSort: (columnKey: string) => void
   withCheckbox?: boolean
+  withSecondaryPanelTriggerColumn?: boolean
   isAllSelected?: boolean
   isIndeterminate?: boolean
   onSelectAll?: (checked: boolean) => void
@@ -405,6 +416,7 @@ const TableHeader = function TableHeader<T>({
   sorting,
   handleSort,
   withCheckbox = false,
+  withSecondaryPanelTriggerColumn = true,
   isAllSelected = false,
   isIndeterminate = false,
   onSelectAll
@@ -429,6 +441,7 @@ const TableHeader = function TableHeader<T>({
       >
         <LeadColumnHeader
           withCheckbox={withCheckbox}
+          withSecondaryPanelTriggerColumn={withSecondaryPanelTriggerColumn}
           isAllSelected={isAllSelected}
           isIndeterminate={isIndeterminate}
           onSelectAll={onSelectAll}

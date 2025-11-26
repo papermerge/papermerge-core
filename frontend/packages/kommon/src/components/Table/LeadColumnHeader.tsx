@@ -5,6 +5,7 @@ interface Args {
   withCheckbox: boolean
   isAllSelected: boolean
   isIndeterminate: boolean
+  withSecondaryPanelTriggerColumn?: boolean
   onSelectAll?: (checked: boolean) => void
 }
 
@@ -12,6 +13,7 @@ export default function LeadColumnHeader({
   withCheckbox,
   isAllSelected,
   isIndeterminate,
+  withSecondaryPanelTriggerColumn = true,
   onSelectAll
 }: Args) {
   const style: MantineStyleProp = {
@@ -33,14 +35,20 @@ export default function LeadColumnHeader({
           aria-label="Select all rows"
         />
 
+        {withSecondaryPanelTriggerColumn && (
+          <IconColumns2 size={14} style={{opacity: 0.5, cursor: "pointer"}} />
+        )}
+      </Table.Th>
+    )
+  }
+
+  if (withSecondaryPanelTriggerColumn) {
+    return (
+      <Table.Th style={style}>
         <IconColumns2 size={14} style={{opacity: 0.5, cursor: "pointer"}} />
       </Table.Th>
     )
   }
 
-  return (
-    <Table.Th style={style}>
-      <IconColumns2 size={14} style={{opacity: 0.5, cursor: "pointer"}} />
-    </Table.Th>
-  )
+  return <></>
 }

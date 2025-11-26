@@ -215,6 +215,18 @@
   "common.table.columns.type": "Typ",
   "common.table.columns.pinned": "Angeheftet",
   "common.table.columns.description": "Beschreibung",
+  "commonColumns": {
+    "name": "Name",
+    "title": "Titel",
+    "tags": "Stichwörter",
+    "id": "ID",
+    "type": "Typ",
+    "created_at": "Erstellt am",
+    "created_by": "Erstellt von",
+    "updated_at": "Aktualisiert am",
+    "updated_by": "Aktualisiert von",
+    "owned_by": "Besitzer"
+  },
   "folder.new.title": "Neuer Ordner",
   "folder.form.name": "Ordner Titel",
   "tags.name": "Tags",

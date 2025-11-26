@@ -46,7 +46,6 @@ import {
   selectDraggedPages
 } from "@/features/ui/uiSlice"
 import type {NType, NodeType, Paginated, ViewOption} from "@/types"
-import {TFunction} from "i18next"
 import classes from "./Commander.module.css"
 import nodeColumns from "./columns"
 
@@ -387,7 +386,6 @@ interface DataItemsArgs {
   onNodeDragStart: (nodeID: string, event: React.DragEvent) => void
   onTableRowClick: (row: NodeType, openInSecondaryPanel: boolean) => void
   queryParams: NodeQueryParams
-  t?: TFunction
 }
 
 function DataItems({
@@ -399,9 +397,9 @@ function DataItems({
   selectedItemsSet,
   onNodeDrag,
   onNodeDragStart,
-  onTableRowClick,
-  t
+  onTableRowClick
 }: DataItemsArgs) {
+  const {t} = useTranslation()
   const {panelId} = usePanel()
   const {viewOption} = useAppSelector(s => selectPanelAllCustom(s, panelId))
   const viewOptionValue = viewOption as ViewOption

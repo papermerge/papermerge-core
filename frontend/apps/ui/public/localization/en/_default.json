@@ -215,6 +215,18 @@
   "common.table.columns.type": "Type",
   "common.table.columns.pinned": "Pinned",
   "common.table.columns.description": "Description",
+  "commonColumns": {
+    "name": "Name",
+    "title": "Title",
+    "tags": "Tags",
+    "id": "ID",
+    "type": "Type",
+    "created_at": "Created At",
+    "created_by": "Created By",
+    "updated_at": "Updated At",
+    "updated_by": "Updated By",
+    "owned_by": "Owned By"
+  },
   "folder.new.title": "New Folder",
   "folder.form.name": "Folder Title",
   "tags.name": "Tags",

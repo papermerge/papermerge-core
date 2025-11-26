@@ -14,7 +14,7 @@ export default function nodeColumns(t?: TFunction) {
   const columns: ColumnConfig<NodeType>[] = [
     {
       key: "title",
-      label: t?.("node.title") || "Title",
+      label: t?.("commonColumns.title") || "Title",
       sortable: true,
       filterable: true,
       width: 390,
@@ -41,7 +41,7 @@ export default function nodeColumns(t?: TFunction) {
     },
     {
       key: "id",
-      label: t?.("node.id") || "ID",
+      label: t?.("commonColumns.id") || "ID",
       sortable: true,
       filterable: true,
       visible: true,
@@ -51,7 +51,7 @@ export default function nodeColumns(t?: TFunction) {
     },
     {
       key: "tags",
-      label: t?.("node.tags") || "Tags",
+      label: t?.("commonColumns.tags") || "Tags",
       sortable: true,
       filterable: true,
       visible: true,
@@ -60,8 +60,18 @@ export default function nodeColumns(t?: TFunction) {
       render: value => <Tags items={value as TagType[]} />
     },
     {
+      key: "ctype",
+      label: t?.("commonColumns.type") || "Kind",
+      sortable: true,
+      filterable: true,
+      visible: true,
+      width: 150,
+      minWidth: 120,
+      render: value => <Text>{value as string}</Text>
+    },
+    {
       key: "owned_by",
-      label: t?.("nodes.owned_by") || "Owned By",
+      label: t?.("commonColumns.owned_by") || "Owned By",
       sortable: true,
       filterable: true,
       visible: true,
@@ -73,7 +83,7 @@ export default function nodeColumns(t?: TFunction) {
     },
     {
       key: "created_at",
-      label: t?.("nodes.created_at") || "Created At",
+      label: t?.("commonColumns.created_at") || "Created At",
       sortable: true,
       filterable: true,
       visible: true,
@@ -83,7 +93,7 @@ export default function nodeColumns(t?: TFunction) {
     },
     {
       key: "created_by",
-      label: t?.("nodes.created_by") || "Created By",
+      label: t?.("commonColumns.created_by") || "Created By",
       sortable: true,
       filterable: true,
       visible: true,
@@ -95,7 +105,7 @@ export default function nodeColumns(t?: TFunction) {
     },
     {
       key: "updated_at",
-      label: t?.("nodes.updated_at") || "Updated At",
+      label: t?.("commonColumns.updated_at") || "Updated At",
       sortable: true,
       filterable: true,
       visible: true,
@@ -105,7 +115,7 @@ export default function nodeColumns(t?: TFunction) {
     },
     {
       key: "updated_by",
-      label: t?.("nodes.updated_by") || "updated By",
+      label: t?.("commonColumns.updated_by") || "updated By",
       sortable: true,
       filterable: true,
       visible: true,

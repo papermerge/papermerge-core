@@ -17,6 +17,7 @@ export default function ViewOptionsMenu() {
   const dispatch = useAppDispatch()
 
   const {viewOption} = useAppSelector(s => selectPanelAllCustom(s, panelId))
+  const viewOptionValue = (viewOption as ViewOption) || "list"
 
   const onViewOptionsChanged = (value: ViewOption) => {
     dispatch(setPanelCustomState({panelId, key: VIEW_OPTION, value}))
@@ -33,13 +34,13 @@ export default function ViewOptionsMenu() {
       <Menu.Dropdown>
         <Menu.Item
           onClick={() => onViewOptionsChanged("tile")}
-          rightSection={viewOption == "tile" && <IconCheck />}
+          rightSection={viewOptionValue == "tile" && <IconCheck />}
         >
           {t("common.sort.tiles")}
         </Menu.Item>
         <Menu.Item
           onClick={() => onViewOptionsChanged("list")}
-          rightSection={viewOption == "list" && <IconCheck />}
+          rightSection={viewOptionValue == "list" && <IconCheck />}
         >
           {t("common.sort.list")}
         </Menu.Item>

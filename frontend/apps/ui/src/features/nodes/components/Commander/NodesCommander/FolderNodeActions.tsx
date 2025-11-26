@@ -14,6 +14,7 @@ import SharedButton from "@/components/ShareButton"
 import ViewOptionsMenu from "@/features/nodes/components/Commander/ViewOptionsMenu"
 import {filterUpdated} from "@/features/ui/uiSlice"
 import type {NodeType} from "@/types"
+import ColumnSelector from "./ColumnSelector"
 import DeleteButton from "./DeleteButton"
 import EditNodeTagsButton from "./EditNodeTagsButton"
 import EditNodeTitleButton from "./EditNodeTitleButton"
@@ -63,6 +64,7 @@ export default function FolderNodeActions({selectedNodes = []}: Args) {
           onClear={onQuickFilterClear}
           filterText={filterText}
         />
+        <ColumnSelector />
         <DuplicatePanelButton />
         <ToggleSecondaryPanel />
       </Group>

@@ -61,7 +61,7 @@ export default function nodeColumns(t?: TFunction) {
     },
     {
       key: "owned_by",
-      label: t?.("customFieldColumns.owned_by") || "Owned By",
+      label: t?.("nodes.owned_by") || "Owned By",
       sortable: true,
       filterable: true,
       visible: true,
@@ -73,7 +73,7 @@ export default function nodeColumns(t?: TFunction) {
     },
     {
       key: "created_at",
-      label: t?.("tagColumns.created_at") || "Created At",
+      label: t?.("nodes.created_at") || "Created At",
       sortable: true,
       filterable: true,
       visible: true,
@@ -83,7 +83,7 @@ export default function nodeColumns(t?: TFunction) {
     },
     {
       key: "created_by",
-      label: t?.("tagColumns.created_by") || "Created By",
+      label: t?.("nodes.created_by") || "Created By",
       sortable: true,
       filterable: true,
       visible: true,
@@ -95,7 +95,7 @@ export default function nodeColumns(t?: TFunction) {
     },
     {
       key: "updated_at",
-      label: t?.("tagColumns.updated_at") || "Updated At",
+      label: t?.("nodes.updated_at") || "Updated At",
       sortable: true,
       filterable: true,
       visible: true,
@@ -105,7 +105,7 @@ export default function nodeColumns(t?: TFunction) {
     },
     {
       key: "updated_by",
-      label: t?.("tagColumns.updated_by") || "updated By",
+      label: t?.("nodes.updated_by") || "updated By",
       sortable: true,
       filterable: true,
       visible: true,

@@ -11,17 +11,19 @@ interface Args {
 export const PageList = forwardRef<HTMLDivElement, Args>(
   ({zoom, pageItems, paginationInProgress}, ref) => {
     return (
-      <Stack
-        ref={ref}
-        justify="center"
-        className={`${classes.pages} page-list`}
-      >
-        {pageItems}
-        {zoom}
-        {paginationInProgress && (
-          <Loader className={classes.pageListLoader} type="oval" />
-        )}
-      </Stack>
+      <div className={classes.pageListContainer}>
+        <Stack
+          ref={ref}
+          justify="center"
+          className={`${classes.pages} page-list`}
+        >
+          {pageItems}
+          {paginationInProgress && (
+            <Loader className={classes.pageListLoader} type="oval" />
+          )}
+        </Stack>
+        <div className={classes.zoomFooter}>{zoom}</div>
+      </div>
     )
   }
 )

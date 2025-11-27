@@ -57,11 +57,6 @@ type SortMenuDirectionUpdatedArgs = {
   direction: SortMenuDirection
 }
 
-type DocumentTypeIDArgs = {
-  mode: PanelMode
-  documentTypeID?: string
-}
-
 interface NavBarState {
   collapsed: boolean
   width: number
@@ -137,14 +132,12 @@ export interface UIState {
   currentSharedRootID?: string
   mainCommanderSortMenuColumn?: SortMenuColumn
   mainCommanderSortMenuDir?: SortMenuDirection
-  mainCommanderDocumentTypeID?: string
   /* User may choose between own and group homes
    this field indicates his/her last selection */
   mainCommanderLastHome?: LastHome
   mainCommanderLastInbox?: LastInbox
   secondaryCommanderSortMenuColumn?: SortMenuColumn
   secondaryCommanderSortMenuDir?: SortMenuDirection
-  secondaryCommanderDocumentTypeID?: string
   /* User may choose between own and group homes
    this field indicates his/her last selection */
   secondaryCommanderLastHome?: LastHome
@@ -254,17 +247,6 @@ const uiSlice = createSlice({
         state.mainCommanderSortMenuDir = direction
       } else {
         state.secondaryCommanderSortMenuDir = direction
-      }
-    },
-    commanderDocumentTypeIDUpdated(
-      state,
-      action: PayloadAction<DocumentTypeIDArgs>
-    ) {
-      const {mode, documentTypeID} = action.payload
-      if (mode == "main") {
-        state.mainCommanderDocumentTypeID = documentTypeID
-      } else {
-        state.secondaryCommanderDocumentTypeID = documentTypeID
       }
     },
     lastHomeUpdated(state, action: PayloadAction<LastHomeArg>) {
@@ -488,7 +470,6 @@ export const {
   secondaryPanelComponentUpdated,
   commanderSortMenuColumnUpdated,
   commanderSortMenuDirectionUpdated,
-  commanderDocumentTypeIDUpdated,
   viewerThumbnailsPanelToggled,
   viewerDocumentDetailsPanelToggled,
   zoomFactorIncremented,
@@ -589,17 +570,6 @@ export const selectCommanderSortMenuDir = (
   }
 
   return state.ui.secondaryCommanderSortMenuDir || "az"
-}
-
-export const selectCommanderDocumentTypeID = (
-  state: RootState,
-  mode: PanelMode
-): string | undefined => {
-  if (mode == "main") {
-    return state.ui.mainCommanderDocumentTypeID
-  }
-
-  return state.ui.secondaryCommanderDocumentTypeID
 }
 
 export const selectZoomFactor = (state: RootState, mode: PanelMode) => {

@@ -1,9 +1,6 @@
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {useAppSelector} from "@/app/hooks"
 import {useAuth} from "@/app/hooks/useAuth"
-import PanelContext from "@/contexts/PanelContext"
 import {
-  commanderViewOptionUpdated,
-  selectCommanderViewOption,
   selectLastHome,
   selectLastInbox,
   selectNavBarCollapsed
@@ -37,7 +34,7 @@ import {
   IconUsersGroup,
   IconUserShare
 } from "@tabler/icons-react"
-import {useContext} from "react"
+
 import {useSelector} from "react-redux"
 import {NavLink} from "react-router-dom"
 
@@ -63,11 +60,8 @@ interface Args {
  */
 function NavBarContent({renderLink, withVersion}: Args) {
   const {t} = useTranslation()
-  const mode = useContext(PanelContext)
   const {user, hasPermission} = useAuth()
-  const dispatch = useAppDispatch()
   const {data, isLoading} = useGetVersionQuery()
-  const viewOption = useAppSelector(s => selectCommanderViewOption(s, mode))
   const lastHome = useAppSelector(s => selectLastHome(s, "main"))
   const lastInbox = useAppSelector(s => selectLastInbox(s, "main"))
 
@@ -75,28 +69,17 @@ function NavBarContent({renderLink, withVersion}: Args) {
   const error = useSelector(selectCurrentUserError)
 
   const onClick = () => {
-    if (viewOption == "document-type") {
-      /*
-        Handle situation when user is in "document-type" view mode in commander
-        and he/she clicks on "home" or "inbox" folders. In such case
-        it is obvious that user intends to switch to "tiles" view
-
-        TODO: instead of switching to tiles, switch to last view options mode
-      */
-      dispatch(commanderViewOptionUpdated({mode, viewOption: "tile"}))
+    if (status == "loading" || isLoading) {
+      return <Loader />
     }
-  }
 
-  if (status == "loading" || isLoading) {
-    return <Loader />
-  }
+    if (status == "failed") {
+      return <>{error}</>
+    }
 
-  if (status == "failed") {
-    return <>{error}</>
-  }
-
-  if (!user) {
-    return <Loader />
+    if (!user) {
+      return <Loader />
+    }
   }
 
   return (

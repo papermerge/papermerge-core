@@ -7,8 +7,7 @@ import {useNavigate} from "react-router-dom"
 import {
   currentDocVerUpdated,
   currentSharedNodeRootChanged,
-  selectCurrentSharedNodeID,
-  selectLastPageSize
+  selectCurrentSharedNodeID
 } from "@/features/ui/uiSlice"
 
 import SharedBreadcrumbs from "@/components/SharedBreadcrumb"
@@ -50,7 +49,6 @@ export default function SharedViewer() {
     imageSize: "md"
   })
 
-  const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
   const currentNodeID = useAppSelector(selectCurrentSharedNodeID)
 
   const onClick = (node: NType) => {
@@ -69,7 +67,7 @@ export default function SharedViewer() {
         dispatch(currentSharedNodeRootChanged(node.id))
       }
       dispatch(currentDocVerUpdated({mode: mode, docVerID: undefined}))
-      navigate(`/shared/folder/${node.id}?page_size=${lastPageSize}`)
+      navigate(`/shared/folder/${node.id}`)
     }
   }
   /*

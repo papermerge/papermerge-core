@@ -2,17 +2,10 @@ import type {RootState} from "@/app/types"
 import {
   MAX_ZOOM_FACTOR,
   MIN_ZOOM_FACTOR,
-  PAGINATION_DEFAULT_ITEMS_PER_PAGES,
   ZOOM_FACTOR_INIT,
   ZOOM_FACTOR_STEP
 } from "@/cconstants"
-import type {
-  BooleanString,
-  CType,
-  ClientPage,
-  PanelMode,
-  ViewOption
-} from "@/types"
+import type {BooleanString, CType, ClientPage, PanelMode} from "@/types"
 import type {PanelComponent} from "@/types.d/ui"
 import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 import Cookies from "js-cookie"
@@ -20,7 +13,6 @@ import Cookies from "js-cookie"
 import type {NodeType, SortMenuColumn, SortMenuDirection} from "@/types"
 
 import {DialogVisiblity} from "@/types.d/common"
-import {SortState} from "kommon"
 
 const COLLAPSED_WIDTH = 55
 const FULL_WIDTH = 200
@@ -33,16 +25,6 @@ const MAIN_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE =
   "main_document_details_panel_opened"
 const SECONDARY_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE =
   "secondary_document_details_panel_opened"
-
-type UpdateFilterType = {
-  mode: PanelMode
-  filter?: string
-}
-
-type LastPageSizeArg = {
-  mode: PanelMode
-  pageSize: number
-}
 
 type CurrentDocVerUpdateArg = {
   mode: PanelMode
@@ -73,11 +55,6 @@ type SortMenuColumnUpdatedArgs = {
 type SortMenuDirectionUpdatedArgs = {
   mode: PanelMode
   direction: SortMenuDirection
-}
-
-type ViewOptionArgs = {
-  mode: PanelMode
-  viewOption: ViewOption
 }
 
 type DocumentTypeIDArgs = {
@@ -151,20 +128,6 @@ interface LastInboxArg {
   last_inbox: LastInbox
 }
 
-interface PanelListBase {
-  freeTextFilterValue?: string
-  pageNumber?: number
-  pageSize?: number
-  sorting?: SortState
-  visibleColumns?: Array<string>
-}
-
-interface RolePanelList extends PanelListBase {}
-
-interface RolePanelDetails {
-  id: string
-}
-
 export interface UIState {
   navbar: NavBarState
   dragndrop?: DragNDropState
@@ -172,21 +135,15 @@ export interface UIState {
   secondaryViewer?: ViewerState
   currentSharedNode?: CurrentNode
   currentSharedRootID?: string
-  mainCommanderFilter?: string
-  mainCommanderLastPageSize?: number
   mainCommanderSortMenuColumn?: SortMenuColumn
   mainCommanderSortMenuDir?: SortMenuDirection
-  mainCommanderViewOption?: ViewOption
   mainCommanderDocumentTypeID?: string
   /* User may choose between own and group homes
    this field indicates his/her last selection */
   mainCommanderLastHome?: LastHome
   mainCommanderLastInbox?: LastInbox
-  secondaryCommanderFilter?: string
-  secondaryCommanderLastPageSize?: number
   secondaryCommanderSortMenuColumn?: SortMenuColumn
   secondaryCommanderSortMenuDir?: SortMenuDirection
-  secondaryCommanderViewOption?: ViewOption
   secondaryCommanderDocumentTypeID?: string
   /* User may choose between own and group homes
    this field indicates his/her last selection */
@@ -276,27 +233,7 @@ const uiSlice = createSlice({
     ) {
       state.currentSharedRootID = action.payload
     },
-    filterUpdated: (state, action: PayloadAction<UpdateFilterType>) => {
-      const {mode, filter} = action.payload
-      if (mode == "main") {
-        state.mainCommanderFilter = filter
-        return
-      }
 
-      state.secondaryCommanderFilter = filter
-    },
-    commanderLastPageSizeUpdated(
-      state,
-      action: PayloadAction<LastPageSizeArg>
-    ) {
-      const {mode, pageSize} = action.payload
-      if (mode == "main") {
-        state.mainCommanderLastPageSize = pageSize
-        return
-      }
-
-      state.secondaryCommanderLastPageSize = pageSize
-    },
     commanderSortMenuColumnUpdated(
       state,
       action: PayloadAction<SortMenuColumnUpdatedArgs>
@@ -317,14 +254,6 @@ const uiSlice = createSlice({
         state.mainCommanderSortMenuDir = direction
       } else {
         state.secondaryCommanderSortMenuDir = direction
-      }
-    },
-    commanderViewOptionUpdated(state, action: PayloadAction<ViewOptionArgs>) {
-      const {mode, viewOption} = action.payload
-      if (mode == "main") {
-        state.mainCommanderViewOption = viewOption
-      } else {
-        state.secondaryCommanderViewOption = viewOption
       }
     },
     commanderDocumentTypeIDUpdated(
@@ -553,16 +482,12 @@ const uiSlice = createSlice({
 
 export const {
   toggleNavBar,
-
   currentSharedNodeChanged,
   currentSharedNodeRootChanged,
   mainPanelComponentUpdated,
   secondaryPanelComponentUpdated,
-  filterUpdated,
-  commanderLastPageSizeUpdated,
   commanderSortMenuColumnUpdated,
   commanderSortMenuDirectionUpdated,
-  commanderViewOptionUpdated,
   commanderDocumentTypeIDUpdated,
   viewerThumbnailsPanelToggled,
   viewerDocumentDetailsPanelToggled,
@@ -622,14 +547,6 @@ export const selectOtherPanelComponent = (
   return state.ui.mainPanelComponent
 }
 
-export const selectFilterText = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainCommanderFilter
-  }
-
-  return state.ui.secondaryCommanderFilter
-}
-
 export const selectThumbnailsPanelOpen = (
   state: RootState,
   mode: PanelMode
@@ -652,22 +569,6 @@ export const selectDocumentDetailsPanelOpen = (
   return Boolean(state.ui.secondaryViewerDocumentDetailsPanelOpen)
 }
 
-export const selectLastPageSize = (
-  state: RootState,
-  mode: PanelMode
-): number => {
-  if (mode == "main") {
-    return (
-      state.ui.mainCommanderLastPageSize || PAGINATION_DEFAULT_ITEMS_PER_PAGES
-    )
-  }
-
-  return (
-    state.ui.secondaryCommanderLastPageSize ||
-    PAGINATION_DEFAULT_ITEMS_PER_PAGES
-  )
-}
-
 export const selectCommanderSortMenuColumn = (
   state: RootState,
   mode: PanelMode
@@ -688,17 +589,6 @@ export const selectCommanderSortMenuDir = (
   }
 
   return state.ui.secondaryCommanderSortMenuDir || "az"
-}
-
-export const selectCommanderViewOption = (
-  state: RootState,
-  mode: PanelMode
-): ViewOption => {
-  if (mode == "main") {
-    return state.ui.mainCommanderViewOption || "tile"
-  }
-
-  return state.ui.secondaryCommanderViewOption || "tile"
 }
 
 export const selectCommanderDocumentTypeID = (

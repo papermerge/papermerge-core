@@ -9,8 +9,7 @@ import {
   currentSharedNodeChanged,
   currentSharedNodeRootChanged,
   selectCurrentSharedNodeID,
-  selectCurrentSharedRootID,
-  selectFilterText
+  selectCurrentSharedRootID
 } from "@/features/ui/uiSlice"
 import {TablePagination} from "kommon"
 
@@ -22,11 +21,9 @@ import {
   useGetSharedFolderQuery
 } from "@/features/shared_nodes/store/apiSlice"
 import {
-  commanderLastPageSizeUpdated,
   currentDocVerUpdated,
   selectCommanderSortMenuColumn,
-  selectCommanderSortMenuDir,
-  selectLastPageSize
+  selectCommanderSortMenuDir
 } from "@/features/ui/uiSlice"
 import classes from "./Commander.module.scss"
 import NodesList from "./NodesList"
@@ -39,13 +36,12 @@ export default function SharedCommander() {
   const mode: PanelMode = useContext(PanelContext)
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
-  const lastPageSize = useAppSelector(s => selectLastPageSize(s, mode))
+
   const currentNodeID = useAppSelector(selectCurrentSharedNodeID)
   const currentSharedRootID = useAppSelector(selectCurrentSharedRootID)
 
-  const [pageSize, setPageSize] = useState<number>(lastPageSize)
   const [page, setPage] = useState<number>(1)
-  const filter = useAppSelector(s => selectFilterText(s, mode))
+
   const sortDir = useAppSelector(s => selectCommanderSortMenuDir(s, mode))
   const sortColumn = useAppSelector(s => selectCommanderSortMenuColumn(s, mode))
 
@@ -53,8 +49,7 @@ export default function SharedCommander() {
     useGetPaginatedSharedNodesQuery({
       nodeID: currentNodeID || SHARED_FOLDER_ROOT_ID,
       page_number: page,
-      page_size: pageSize,
-      filter: filter,
+      page_size: 5,
       sortDir: sortDir,
       sortColumn: sortColumn
     })
@@ -106,7 +101,7 @@ export default function SharedCommander() {
           dispatch(currentSharedNodeRootChanged(node.id))
         }
         dispatch(currentDocVerUpdated({mode: mode, docVerID: undefined}))
-        navigate(`/shared/folder/${node.id}?page_size=${lastPageSize}`)
+        navigate(`/shared/folder/${node.id}`)
         break
       case "document":
         navigate(`/shared/document/${node.id}`)
@@ -118,15 +113,7 @@ export default function SharedCommander() {
     setPage(page)
   }
 
-  const onPageSizeChange = (value: number) => {
-    if (value) {
-      setPageSize(value)
-      // reset current page
-      setPage(1)
-      // remember last page size
-      dispatch(commanderLastPageSizeUpdated({pageSize: value, mode}))
-    }
-  }
+  const onPageSizeChange = (value: number) => {}
 
   let commanderContent
 

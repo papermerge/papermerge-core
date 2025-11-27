@@ -9,7 +9,6 @@ import {IconArrowBarLeft, IconArrowBarRight} from "@tabler/icons-react"
 import {useNavigate} from "react-router-dom"
 
 import {usePanel} from "@/features/ui/hooks/usePanel"
-import {selectLastPageSize} from "@/features/ui/uiSlice"
 
 export default function DuplicatePanelButton() {
   /* Make both panels show same content
@@ -26,7 +25,6 @@ export default function DuplicatePanelButton() {
   const nodeIDSecondary = useAppSelector(s =>
     selectCurrentNodeID(s, "secondary")
   )
-  const lastPageSize = useAppSelector(s => selectLastPageSize(s, "main"))
   const component = useAppSelector(s => selectPanelComponent(s, panelId))
   const secondaryPanel = useAppSelector(s =>
     selectPanelComponent(s, "secondary")
@@ -59,7 +57,7 @@ export default function DuplicatePanelButton() {
       land on same node
     */
     if (component == "commander") {
-      navigate(`/folder/${nodeID}?page_size=${lastPageSize}`)
+      navigate(`/folder/${nodeID}`)
     } else if (component == "viewer") {
       navigate(`/document/${nodeID}`)
     }

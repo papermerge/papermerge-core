@@ -74,8 +74,8 @@ export default function Search() {
       onClear={onClear}
       onSearch={onSearch}
       t={t}
-      placeholder={t?.("documentTypes.searchLabel", {
-        defaultValue: "Search categories..."
+      placeholder={t?.("filterPlaceholder", {
+        defaultValue: "filter..."
       })}
     ></SearchContainer>
   )

@@ -52,7 +52,7 @@ export default function nodeColumns(t?: TFunction) {
     {
       key: "tags",
       label: t?.("commonColumns.tags") || "Tags",
-      sortable: true,
+      sortable: false,
       filterable: true,
       visible: true,
       width: 200,
@@ -67,7 +67,7 @@ export default function nodeColumns(t?: TFunction) {
       visible: true,
       width: 150,
       minWidth: 120,
-      render: value => <Text>{value as string}</Text>
+      render: value => <Text>{t?.(value as string)}</Text>
     },
     {
       key: "owned_by",

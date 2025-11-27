@@ -1,18 +1,18 @@
 import {useAppSelector} from "@/app/hooks"
+import {useAuth} from "@/app/hooks/useAuth"
+import Search from "@/components/Search"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {selectPanelSelectedIDs} from "@/features/ui/panelRegistry"
-import {Group} from "@mantine/core"
-import ColumnSelector from "./ColumnSelector"
-import {DeleteDocumentTypesButton} from "./DeleteButton"
-import EditButton from "./EditButton"
-import NewButton from "./NewButton"
-import Search from "./Search"
-import {useAuth} from "@/app/hooks/useAuth"
 import {
   DOCUMENT_TYPE_CREATE,
   DOCUMENT_TYPE_DELETE,
   DOCUMENT_TYPE_UPDATE
 } from "@/scopes"
+import {Group} from "@mantine/core"
+import ColumnSelector from "./ColumnSelector"
+import {DeleteDocumentTypesButton} from "./DeleteButton"
+import EditButton from "./EditButton"
+import NewButton from "./NewButton"
 
 export default function ActionButtons() {
   const {panelId} = usePanel()

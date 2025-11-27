@@ -202,18 +202,20 @@ export function Viewer({doc, docVer}: Args) {
   }
 
   return (
-    <div ref={ref} style={{height: "100%"}}>
-      <ActionButtons
-        onEditNodeTitleClicked={onEditNodeTitleItem}
-        onRotateCWClicked={onRotateCWItemClicked}
-        onRotateCCClicked={onRotateCCItemClicked}
-        onDeletePagesClicked={onDeletePagesItemClicked}
-      />
-      <Group justify="space-between">
-        <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
-        <DocumentDetailsToggle />
-      </Group>
-      <Flex className={classes.inner} style={{height: "100%"}}>
+    <div ref={ref} className={classes.viewer}>
+      <div className={classes.header}>
+        <ActionButtons
+          onEditNodeTitleClicked={onEditNodeTitleItem}
+          onRotateCWClicked={onRotateCWItemClicked}
+          onRotateCCClicked={onRotateCCItemClicked}
+          onDeletePagesClicked={onDeletePagesItemClicked}
+        />
+        <Group justify="space-between">
+          <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
+          <DocumentDetailsToggle />
+        </Group>
+      </div>
+      <Flex className={classes.inner}>
         {thumbnailsIsOpen && <ThumbnailList docVer={docVer} />}
         <ThumbnailsToggle />
         <PageList docVer={docVer} />

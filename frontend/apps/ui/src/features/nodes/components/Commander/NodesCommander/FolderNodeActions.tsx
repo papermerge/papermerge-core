@@ -6,6 +6,7 @@ import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
 import {selectPanelAllCustom} from "@/features/ui/panelRegistry"
 
 import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
+import Search from "@/components/Search"
 import SharedButton from "@/components/ShareButton"
 import ViewOptionsMenu from "@/features/nodes/components/Commander/ViewOptionsMenu"
 import {usePanel} from "@/features/ui/hooks/usePanel"
@@ -50,6 +51,7 @@ export default function FolderNodeActions({selectedNodes = []}: Args) {
         <ViewOptionsMenu />
         {showSortMenu && <SortMenu />}
         {showColumnSelector && <ColumnSelector />}
+        <Search />
         <DuplicatePanelButton />
         <ToggleSecondaryPanel />
       </Group>

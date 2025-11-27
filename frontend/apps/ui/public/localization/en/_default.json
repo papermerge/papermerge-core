@@ -594,6 +594,9 @@
     "uploadedSuccessfully": "Uploaded successfully",
     "uploads": "Uploads ({{count}})"
   },
+  "filterPlaceholder": "Filter...",
+  "document": "Document",
+  "folder": "Folder",
   "currency": {
     "all": "ALL - Albanian Lek",
     "amd": "AMD - Armenian Dram",

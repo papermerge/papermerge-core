@@ -1,29 +1,42 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import PanelContext from "@/contexts/PanelContext"
-import {
-  commanderSortMenuColumnUpdated,
-  commanderSortMenuDirectionUpdated,
-  selectCommanderSortMenuColumn,
-  selectCommanderSortMenuDir
-} from "@/features/ui/uiSlice"
-import type {SortMenuColumn, SortMenuDirection} from "@/types"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectPanelSorting, setPanelList} from "@/features/ui/panelRegistry"
 import {ActionIcon, Menu} from "@mantine/core"
 import {IconCheck, IconSortAscendingLetters} from "@tabler/icons-react"
-import {useContext} from "react"
+import type {SortDirection} from "kommon"
 import {useTranslation} from "react-i18next"
 
 export default function SortMenu() {
+  const {panelId} = usePanel()
+  const sorting = useAppSelector(s => selectPanelSorting(s, panelId))
   const {t} = useTranslation()
   const dispatch = useAppDispatch()
-  const mode = useContext(PanelContext)
-  const sortDir = useAppSelector(s => selectCommanderSortMenuDir(s, mode))
-  const sortColumn = useAppSelector(s => selectCommanderSortMenuColumn(s, mode))
 
-  const onSortColumnChanged = (column: SortMenuColumn) => {
-    dispatch(commanderSortMenuColumnUpdated({mode, column}))
+  const onSortColumnChanged = (column: string) => {
+    dispatch(
+      setPanelList({
+        panelId,
+        list: {
+          sorting: {
+            direction: sorting?.direction,
+            column
+          }
+        }
+      })
+    )
   }
-  const onSortDirChanged = (direction: SortMenuDirection) => {
-    dispatch(commanderSortMenuDirectionUpdated({mode, direction}))
+  const onSortDirChanged = (direction: SortDirection) => {
+    dispatch(
+      setPanelList({
+        panelId,
+        list: {
+          sorting: {
+            direction,
+            column: sorting?.column
+          }
+        }
+      })
+    )
   }
 
   return (
@@ -37,38 +50,38 @@ export default function SortMenu() {
       <Menu.Dropdown>
         <Menu.Item
           onClick={() => onSortColumnChanged("title")}
-          rightSection={sortColumn == "title" && <IconCheck />}
+          rightSection={sorting?.column == "title" && <IconCheck />}
         >
           {t("common.sort.title")}
         </Menu.Item>
         <Menu.Item
           onClick={() => onSortColumnChanged("ctype")}
-          rightSection={sortColumn == "ctype" && <IconCheck />}
+          rightSection={sorting?.column == "ctype" && <IconCheck />}
         >
           {t("common.sort.type")}
         </Menu.Item>
         <Menu.Item
           onClick={() => onSortColumnChanged("updated_at")}
-          rightSection={sortColumn == "updated_at" && <IconCheck />}
+          rightSection={sorting?.column == "updated_at" && <IconCheck />}
         >
           {t("common.sort.modified")}
         </Menu.Item>
         <Menu.Item
           onClick={() => onSortColumnChanged("created_at")}
-          rightSection={sortColumn == "created_at" && <IconCheck />}
+          rightSection={sorting?.column == "created_at" && <IconCheck />}
         >
           {t("common.sort.created")}
         </Menu.Item>
         <Menu.Divider />
         <Menu.Item
-          onClick={() => onSortDirChanged("az")}
-          rightSection={sortDir == "az" && <IconCheck />}
+          onClick={() => onSortDirChanged("asc")}
+          rightSection={sorting?.direction == "asc" && <IconCheck />}
         >
           A-Z
         </Menu.Item>
         <Menu.Item
-          onClick={() => onSortDirChanged("za")}
-          rightSection={sortDir == "za" && <IconCheck />}
+          onClick={() => onSortDirChanged("desc")}
+          rightSection={sorting?.direction == "desc" && <IconCheck />}
         >
           Z-A
         </Menu.Item>

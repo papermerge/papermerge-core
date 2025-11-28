@@ -474,7 +474,6 @@ export interface ExtractPagesResponse {
 }
 
 export type SortMenuColumn = "title" | "ctype" | "created_at" | "updated_at"
-export type SortMenuDirection = "az" | "za"
 export type ViewOption = "tile" | "list"
 
 export interface CustomFieldValueType {

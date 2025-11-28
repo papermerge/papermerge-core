@@ -18,9 +18,6 @@ const COLLAPSED_WIDTH = 55
 const FULL_WIDTH = 200
 const NAVBAR_COLLAPSED_COOKIE = "navbar_collapsed"
 const NAVBAR_WIDTH_COOKIE = "navbar_width"
-const MAIN_THUMBNAILS_PANEL_OPENED_COOKIE = "main_thumbnails_panel_opened"
-const SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE =
-  "secondary_thumbnails_panel_opened"
 const MAIN_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE =
   "main_document_details_panel_opened"
 const SECONDARY_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE =
@@ -157,8 +154,6 @@ const initialState: UIState = {
     collapsed: initial_collapse_value(),
     width: initial_width_value()
   },
-  mainViewerThumbnailsPanelOpen: mainThumbnailsPanelInitialState(),
-  secondaryViewerThumbnailsPanelOpen: secondaryThumbnailsPanelInitialState(),
   mainViewerDocumentDetailsPanelOpen: mainDocumentDetailsPanelInitialState(),
   secondaryViewerDocumentDetailsPanelOpen:
     secondaryDocumentDetailsPanelInitialState()
@@ -226,27 +221,6 @@ const uiSlice = createSlice({
         state.mainCommanderLastInbox = last_inbox
       } else {
         state.secondaryCommanderLastInbox = last_inbox
-      }
-    },
-    viewerThumbnailsPanelToggled(state, action: PayloadAction<PanelMode>) {
-      const mode = action.payload
-
-      if (mode == "main") {
-        const new_value = !Boolean(state.mainViewerThumbnailsPanelOpen)
-        state.mainViewerThumbnailsPanelOpen = new_value
-        if (new_value) {
-          Cookies.set(MAIN_THUMBNAILS_PANEL_OPENED_COOKIE, "true")
-        } else {
-          Cookies.set(MAIN_THUMBNAILS_PANEL_OPENED_COOKIE, "false")
-        }
-        return
-      }
-      const new_value = !Boolean(state.secondaryViewerThumbnailsPanelOpen)
-      state.secondaryViewerThumbnailsPanelOpen = new_value
-      if (new_value) {
-        Cookies.set(SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE, "true")
-      } else {
-        Cookies.set(SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE, "false")
       }
     },
     viewerDocumentDetailsPanelToggled(state, action: PayloadAction<PanelMode>) {
@@ -431,7 +405,6 @@ export const {
   currentSharedNodeRootChanged,
   mainPanelComponentUpdated,
   secondaryPanelComponentUpdated,
-  viewerThumbnailsPanelToggled,
   viewerDocumentDetailsPanelToggled,
   zoomFactorIncremented,
   zoomFactorDecremented,
@@ -628,30 +601,6 @@ function initial_width_value(): number {
   }
 
   return FULL_WIDTH
-}
-
-function mainThumbnailsPanelInitialState(): boolean {
-  const is_opened = Cookies.get(
-    MAIN_THUMBNAILS_PANEL_OPENED_COOKIE
-  ) as BooleanString
-
-  if (is_opened == "true") {
-    return true
-  }
-
-  return false
-}
-
-function secondaryThumbnailsPanelInitialState(): boolean {
-  const is_opened = Cookies.get(
-    SECONDARY_THUMBNAILS_PANEL_OPENED_COOKIE
-  ) as BooleanString
-
-  if (is_opened == "true") {
-    return true
-  }
-
-  return false
 }
 
 function mainDocumentDetailsPanelInitialState(): boolean {

@@ -1,3 +1,5 @@
+import {STORAGE_KEY, STORE_PERSIST_DEBOUNCE_TIME_MS} from "./constants"
+
 import {apiSlice} from "@/features/api/slice"
 import auditLogsReducer from "@/features/audit/storage/audit"
 import authSliceReducer from "@/features/auth/slice"
@@ -27,39 +29,61 @@ import currentUserReducer from "@/slices/currentUser"
 import {configureStore} from "@reduxjs/toolkit"
 import {rtkQueryErrorLogger} from "./globalErrorMiddleware"
 import {listenerMiddleware} from "./listenerMiddleware"
+import {loadPersistedState, selectStateToPersist} from "./persistStore"
+
+const rootReducer = {
+  auth: authSliceReducer,
+  currentUser: currentUserReducer,
+  panelRegistry: panelRegistryReducer,
+  tags: tagsReducer,
+  groups: groupsReducer,
+  roles: rolesReducer,
+  search: searchReducer,
+  auditLogs: auditLogsReducer,
+  customFields: customFieldsReducer,
+  documentTypes: documentTypesReducer,
+  users: usersReducer,
+  nodes: nodesReducer,
+  sharedNodes: sharedNodesReducer,
+  pages: pagesReducer,
+  imageObjects: imageObjects,
+  thumbnailObjects: thumbnailObjects,
+  documentDownloads: documentDownloadsReducer,
+  ui: uiReducer,
+  notifications: notificationsReducer,
+  docVers: docVersReducer,
+  docs: docsReducer,
+  files: filesReducer,
+  preferences: preferencesReducer,
+  documentsByCategory: documentsByCategoryReducer,
+  [apiSlice.reducerPath]: apiSlice.reducer
+}
 
 export const store = configureStore({
-  reducer: {
-    auth: authSliceReducer,
-    currentUser: currentUserReducer,
-    panelRegistry: panelRegistryReducer,
-    tags: tagsReducer,
-    groups: groupsReducer,
-    roles: rolesReducer,
-    search: searchReducer,
-    auditLogs: auditLogsReducer,
-    customFields: customFieldsReducer,
-    documentTypes: documentTypesReducer,
-    users: usersReducer,
-    nodes: nodesReducer,
-    sharedNodes: sharedNodesReducer,
-    pages: pagesReducer,
-    imageObjects: imageObjects,
-    thumbnailObjects: thumbnailObjects,
-    documentDownloads: documentDownloadsReducer,
-    ui: uiReducer,
-    notifications: notificationsReducer,
-    docVers: docVersReducer,
-    docs: docsReducer,
-    files: filesReducer,
-    preferences: preferencesReducer,
-    documentsByCategory: documentsByCategoryReducer,
-    [apiSlice.reducerPath]: apiSlice.reducer
-  },
+  reducer: rootReducer as any,
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware()
       .prepend(listenerMiddleware.middleware)
       .prepend(docsListenerMiddleware.middleware)
       .concat(apiSlice.middleware)
-      .concat(rtkQueryErrorLogger)
+      .concat(rtkQueryErrorLogger),
+  preloadedState: loadPersistedState()
 })
+
+/**
+ * Persist/Store/Save REDUX state between page reloads
+ */
+let timeoutId: number
+store.subscribe(() => {
+  clearTimeout(timeoutId)
+  timeoutId = window.setTimeout(() => {
+    try {
+      const stateToPersist = selectStateToPersist(store.getState())
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToPersist))
+    } catch (e) {
+      console.warn("Failed to persist state:", e)
+    }
+  }, STORE_PERSIST_DEBOUNCE_TIME_MS) // debounce writes
+})
+
+export {rootReducer}

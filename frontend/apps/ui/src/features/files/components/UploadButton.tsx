@@ -40,6 +40,7 @@ export default function UploadButton() {
   let destinations = useUploadDestinationFolder()
 
   if (
+    currentUser &&
     folderID &&
     folderID != currentUser.home_folder_id &&
     folderID != currentUser.inbox_folder_id

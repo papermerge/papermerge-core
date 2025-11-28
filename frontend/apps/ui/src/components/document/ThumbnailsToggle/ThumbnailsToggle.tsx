@@ -1,25 +1,34 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import PanelContext from "@/contexts/PanelContext"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
-  selectThumbnailsPanelOpen,
-  viewerThumbnailsPanelToggled
-} from "@/features/ui/uiSlice"
-import {PanelMode} from "@/types"
+  selectPanelAllCustom,
+  setPanelCustomState
+} from "@/features/ui/panelRegistry"
 import {Flex, UnstyledButton} from "@mantine/core"
 import {
   IconLayoutSidebarRightCollapse,
   IconLayoutSidebarRightExpand
 } from "@tabler/icons-react"
-import {useContext} from "react"
 import classes from "./ThumbnailsToggle.module.css"
 
 export default function ThumbnailsToggle() {
   const dispatch = useAppDispatch()
-  const mode: PanelMode = useContext(PanelContext)
-  const isOpen = useAppSelector(s => selectThumbnailsPanelOpen(s, mode))
+  const {panelId} = usePanel()
+
+  //const isOpen = useAppSelector(s => selectThumbnailsPanelOpen(s, mode))
+  const {thumbnailPanelIsOpen: isOpen} = useAppSelector(s =>
+    selectPanelAllCustom(s, panelId)
+  )
 
   const onClick = () => {
-    dispatch(viewerThumbnailsPanelToggled(mode))
+    //dispatch(viewerThumbnailsPanelToggled(mode))
+    dispatch(
+      setPanelCustomState({
+        panelId,
+        key: "thumbnailPanelIsOpen",
+        value: !isOpen
+      })
+    )
   }
 
   const toggleElement = (

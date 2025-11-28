@@ -20,11 +20,7 @@ import {
   useGetPaginatedSharedNodesQuery,
   useGetSharedFolderQuery
 } from "@/features/shared_nodes/store/apiSlice"
-import {
-  currentDocVerUpdated,
-  selectCommanderSortMenuColumn,
-  selectCommanderSortMenuDir
-} from "@/features/ui/uiSlice"
+import {currentDocVerUpdated} from "@/features/ui/uiSlice"
 import classes from "./Commander.module.scss"
 import NodesList from "./NodesList"
 
@@ -42,16 +38,13 @@ export default function SharedCommander() {
 
   const [page, setPage] = useState<number>(1)
 
-  const sortDir = useAppSelector(s => selectCommanderSortMenuDir(s, mode))
-  const sortColumn = useAppSelector(s => selectCommanderSortMenuColumn(s, mode))
-
   const {data, isLoading, isFetching, isError} =
     useGetPaginatedSharedNodesQuery({
       nodeID: currentNodeID || SHARED_FOLDER_ROOT_ID,
       page_number: page,
       page_size: 5,
-      sortDir: sortDir,
-      sortColumn: sortColumn
+      sortDir: "asc",
+      sortColumn: "title"
     })
 
   const skipFolderQuery =

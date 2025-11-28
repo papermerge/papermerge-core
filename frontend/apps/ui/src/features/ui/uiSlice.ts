@@ -10,7 +10,7 @@ import type {PanelComponent} from "@/types.d/ui"
 import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 import Cookies from "js-cookie"
 
-import type {NodeType, SortMenuColumn, SortMenuDirection} from "@/types"
+import type {NodeType} from "@/types"
 
 import {DialogVisiblity} from "@/types.d/common"
 
@@ -45,16 +45,6 @@ type DragPageStartedArg = {
 type DragNodeStartedArg = {
   nodes: string[]
   sourceFolderID: string
-}
-
-type SortMenuColumnUpdatedArgs = {
-  mode: PanelMode
-  column: SortMenuColumn
-}
-
-type SortMenuDirectionUpdatedArgs = {
-  mode: PanelMode
-  direction: SortMenuDirection
 }
 
 interface NavBarState {
@@ -130,14 +120,10 @@ export interface UIState {
   secondaryViewer?: ViewerState
   currentSharedNode?: CurrentNode
   currentSharedRootID?: string
-  mainCommanderSortMenuColumn?: SortMenuColumn
-  mainCommanderSortMenuDir?: SortMenuDirection
   /* User may choose between own and group homes
    this field indicates his/her last selection */
   mainCommanderLastHome?: LastHome
   mainCommanderLastInbox?: LastInbox
-  secondaryCommanderSortMenuColumn?: SortMenuColumn
-  secondaryCommanderSortMenuDir?: SortMenuDirection
   /* User may choose between own and group homes
    this field indicates his/her last selection */
   secondaryCommanderLastHome?: LastHome
@@ -225,29 +211,6 @@ const uiSlice = createSlice({
       action: PayloadAction<string | undefined>
     ) {
       state.currentSharedRootID = action.payload
-    },
-
-    commanderSortMenuColumnUpdated(
-      state,
-      action: PayloadAction<SortMenuColumnUpdatedArgs>
-    ) {
-      const {mode, column} = action.payload
-      if (mode == "main") {
-        state.mainCommanderSortMenuColumn = column
-      } else {
-        state.secondaryCommanderSortMenuColumn = column
-      }
-    },
-    commanderSortMenuDirectionUpdated(
-      state,
-      action: PayloadAction<SortMenuDirectionUpdatedArgs>
-    ) {
-      const {mode, direction} = action.payload
-      if (mode == "main") {
-        state.mainCommanderSortMenuDir = direction
-      } else {
-        state.secondaryCommanderSortMenuDir = direction
-      }
     },
     lastHomeUpdated(state, action: PayloadAction<LastHomeArg>) {
       const {mode, last_home} = action.payload
@@ -468,8 +431,6 @@ export const {
   currentSharedNodeRootChanged,
   mainPanelComponentUpdated,
   secondaryPanelComponentUpdated,
-  commanderSortMenuColumnUpdated,
-  commanderSortMenuDirectionUpdated,
   viewerThumbnailsPanelToggled,
   viewerDocumentDetailsPanelToggled,
   zoomFactorIncremented,
@@ -548,28 +509,6 @@ export const selectDocumentDetailsPanelOpen = (
   }
 
   return Boolean(state.ui.secondaryViewerDocumentDetailsPanelOpen)
-}
-
-export const selectCommanderSortMenuColumn = (
-  state: RootState,
-  mode: PanelMode
-): SortMenuColumn => {
-  if (mode == "main") {
-    return state.ui.mainCommanderSortMenuColumn || "updated_at"
-  }
-
-  return state.ui.secondaryCommanderSortMenuColumn || "updated_at"
-}
-
-export const selectCommanderSortMenuDir = (
-  state: RootState,
-  mode: PanelMode
-): SortMenuDirection => {
-  if (mode == "main") {
-    return state.ui.mainCommanderSortMenuDir || "az"
-  }
-
-  return state.ui.secondaryCommanderSortMenuDir || "az"
 }
 
 export const selectZoomFactor = (state: RootState, mode: PanelMode) => {

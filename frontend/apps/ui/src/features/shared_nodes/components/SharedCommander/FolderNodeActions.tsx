@@ -4,8 +4,6 @@ import {useState} from "react"
 import QuickFilter from "@/components/QuickFilter"
 import ViewOptionsMenu from "@/features/nodes/components/Commander/ViewOptionsMenu"
 
-import SortMenu from "./SortMenu"
-
 export default function FolderNodeActions() {
   const [filterText, selectFilterText] = useState<string>()
 
@@ -24,7 +22,6 @@ export default function FolderNodeActions() {
       <Group></Group>
       <Group grow preventGrowOverflow={false} wrap="nowrap">
         <ViewOptionsMenu />
-        <SortMenu />
         <QuickFilter
           onChange={onQuickFilterChange}
           onClear={onQuickFilterClear}

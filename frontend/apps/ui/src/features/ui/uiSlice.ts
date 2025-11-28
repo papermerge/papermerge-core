@@ -129,7 +129,6 @@ export interface UIState {
     commander, viewer or search results? */
   mainPanelComponent?: PanelComponent
   secondaryPanelComponent?: PanelComponent
-  mainViewerThumbnailsPanelOpen?: boolean
   mainViewerDocumentDetailsPanelOpen?: boolean
   // zoom factor is expressed as percentage.
   // 5 -> means 5%
@@ -139,7 +138,6 @@ export interface UIState {
   mainViewerCurrentDocVerID?: string
   /* current page (number) in main viewer */
   mainViewerCurrentPageNumber?: number
-  secondaryViewerThumbnailsPanelOpen?: boolean
   secondaryViewerDocumentDetailsPanelOpen?: boolean
   secondaryViewerZoomFactor?: number
   secondaryViewerSelectedIDs?: Array<string>
@@ -460,17 +458,6 @@ export const selectOtherPanelComponent = (
   }
 
   return state.ui.mainPanelComponent
-}
-
-export const selectThumbnailsPanelOpen = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return Boolean(state.ui.mainViewerThumbnailsPanelOpen)
-  }
-
-  return Boolean(state.ui.secondaryViewerThumbnailsPanelOpen)
 }
 
 export const selectDocumentDetailsPanelOpen = (

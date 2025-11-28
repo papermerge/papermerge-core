@@ -26,11 +26,12 @@ import {
   pagesRotated,
   selectAllPages
 } from "@/features/document/store/documentVersSlice"
-import {updatePanelCurrentNode} from "@/features/ui/panelRegistry"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
-  currentDocVerUpdated,
-  selectThumbnailsPanelOpen
-} from "@/features/ui/uiSlice"
+  selectPanelAllCustom,
+  updatePanelCurrentNode
+} from "@/features/ui/panelRegistry"
+import {currentDocVerUpdated} from "@/features/ui/uiSlice"
 import {selectCurrentUser} from "@/slices/currentUser"
 import type {NType, PanelMode} from "@/types"
 import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "../constants"
@@ -58,6 +59,7 @@ interface Args {
 
 export function Viewer({doc, docVer}: Args) {
   const user = useAppSelector(selectCurrentUser)
+  const {panelId} = usePanel()
 
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
@@ -89,8 +91,11 @@ export function Viewer({doc, docVer}: Args) {
     }
   ] = useDisclosure(false)
 
-  const thumbnailsIsOpen = useAppSelector(s =>
-    selectThumbnailsPanelOpen(s, mode)
+  //const thumbnailsIsOpen = useAppSelector(s =>
+  //  selectThumbnailsPanelOpen(s, mode)
+  // )
+  const {thumbnailPanelIsOpen: thumbnailsIsOpen} = useAppSelector(s =>
+    selectPanelAllCustom(s, panelId)
   )
   const pages = useAppSelector(s => selectAllPages(s, docVer?.id)) || []
 

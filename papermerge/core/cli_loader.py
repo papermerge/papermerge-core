@@ -182,7 +182,7 @@ def _try_load_cli_module(
         logger.debug(f"Error accessing app in {module_name}: {e}")
         return None
     except Exception as e:
-        logger.error(f"Unexpected error loading {module_name}: {e}", exc_info=True)
+        logger.error(f"Unexpected error loading {module_name}: {e}")
         return None
 
 

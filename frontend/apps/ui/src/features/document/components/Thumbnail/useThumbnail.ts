@@ -1,8 +1,8 @@
 import {useAppSelector} from "@/app/hooks"
-import {selectSelectedPageIDs} from "@/features/document/store/documentVersSlice"
 import {selectSmallImageByPageId} from "@/features/document/store/selectors"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectPanelSelectedIDs} from "@/features/ui/panelRegistry"
 import {selectDraggedPages} from "@/features/ui/uiSlice"
-import {usePanelMode} from "@/hooks"
 import type {UUID} from "@/types.d/common"
 import {RefObject, useEffect, useRef, useState} from "react"
 
@@ -22,14 +22,14 @@ interface ThumbnailState {
 }
 
 export default function useThumbnail(pageID: UUID): ThumbnailState {
-  const mode = usePanelMode()
+  const {panelId} = usePanel()
   const [isDragged, setIsDragged] = useState<boolean>(false)
   const [checked, setChecked] = useState<boolean>(false)
   const [withBorderBottom, setWithBorderBottom] = useState<boolean>(false)
   const [withBorderTop, setWithBorderTop] = useState<boolean>(false)
   const ref = useRef<HTMLImageElement>(null)
   const draggedPages = useAppSelector(selectDraggedPages)
-  const selectedIds = useAppSelector(s => selectSelectedPageIDs(s, mode))
+  const selectedIds = useAppSelector(s => selectPanelSelectedIDs(s, panelId))
   const draggedPagesIDs = draggedPages?.map(p => p.id)
   const imageURL = useAppSelector(s => selectSmallImageByPageId(s, pageID))
 

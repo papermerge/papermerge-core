@@ -1,5 +1,6 @@
 import {RootState} from "@/app/types"
 import {apiSliceWithSharedNodes} from "@/features/shared_nodes/store/apiSlice"
+import {selectPanelSelectedIDs} from "@/features/ui/panelRegistry"
 import type {
   ClientDocumentVersion,
   ClientPage,
@@ -320,21 +321,11 @@ export const selectDocumentVersionID = (state: RootState, mode: PanelMode) => {
   }
 }
 
-export const selectSelectedPageIDs = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainViewerSelectedIDs
-  }
-
-  if (mode == "secondary") {
-    return state.ui.secondaryViewerSelectedIDs
-  }
-}
-
 export const makeSelectSelectedPages = (mode: PanelMode, docVerID?: UUID) =>
   createSelector(
     [
       (state: RootState) => selectAllPages(state, docVerID),
-      (state: RootState) => selectSelectedPageIDs(state, mode)
+      (state: RootState) => selectPanelSelectedIDs(state, mode)
     ],
     (pages, pageIDs) => {
       return pages.filter(p => pageIDs?.includes(p.id))

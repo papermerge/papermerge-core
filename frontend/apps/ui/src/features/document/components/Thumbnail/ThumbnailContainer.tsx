@@ -14,6 +14,8 @@ import {
   selectCurrentPages,
   selectDocVerClientPage
 } from "@/features/document/store/documentVersSlice"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectPanelSelectedIDs, setPanelList} from "@/features/ui/panelRegistry"
 import {
   dragEnded,
   dragPagesStarted,
@@ -27,10 +29,6 @@ import type {UUID} from "@/types.d/common"
 import {useDisclosure} from "@mantine/hooks"
 import {Thumbnail} from "viewer"
 
-import {
-  viewerSelectionPageAdded,
-  viewerSelectionPageRemoved
-} from "@/features/ui/uiSlice"
 import type {DroppedThumbnailPosition} from "@/types"
 
 import TransferPagesModal from "@/features/document/components/TransferPagesModal"
@@ -46,6 +44,11 @@ interface Args {
 export default function ThumbnailContainer({pageNumber, angle, pageID}: Args) {
   const dispatch = useAppDispatch()
   const mode = usePanelMode()
+  const {panelId} = usePanel()
+  const selectedPageIDs = useAppSelector(s =>
+    selectPanelSelectedIDs(s, panelId)
+  )
+  const selectedPageIDSet = new Set(selectedPageIDs || [])
 
   const [
     trPagesDialogOpened,
@@ -74,7 +77,7 @@ export default function ThumbnailContainer({pageNumber, angle, pageID}: Args) {
   const {doc} = useCurrentDoc()
   const {docVer} = useCurrentDocVer()
   const docVerPages = useAppSelector(s => selectCurrentPages(s, docVer?.id))
-  const selectedPages = useSelectedPages({mode, docVerID: docVer?.id})
+  const selectedPages = useSelectedPages({mode: panelId, docVerID: docVer?.id})
   const page = useAppSelector(s =>
     selectDocVerClientPage(s, {docVerID: docVer?.id, pageID})
   )
@@ -166,10 +169,13 @@ export default function ThumbnailContainer({pageNumber, angle, pageID}: Args) {
 
   const onCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.currentTarget.checked) {
-      dispatch(viewerSelectionPageAdded({itemID: pageID, mode}))
+      selectedPageIDSet.add(pageID)
     } else {
-      dispatch(viewerSelectionPageRemoved({itemID: pageID, mode}))
+      selectedPageIDSet.delete(pageID)
     }
+    const ids = Array.from(selectedPageIDSet)
+
+    dispatch(setPanelList({panelId, list: {selectedIDs: ids}}))
   }
 
   return (

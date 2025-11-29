@@ -15,13 +15,11 @@ export default function ThumbnailsToggle() {
   const dispatch = useAppDispatch()
   const {panelId} = usePanel()
 
-  //const isOpen = useAppSelector(s => selectThumbnailsPanelOpen(s, mode))
   const {thumbnailPanelIsOpen: isOpen} = useAppSelector(s =>
     selectPanelAllCustom(s, panelId)
   )
 
   const onClick = () => {
-    //dispatch(viewerThumbnailsPanelToggled(mode))
     dispatch(
       setPanelCustomState({
         panelId,

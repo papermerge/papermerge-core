@@ -1,25 +1,31 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import PanelContext from "@/contexts/PanelContext"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
-  selectDocumentDetailsPanelOpen,
-  viewerDocumentDetailsPanelToggled
-} from "@/features/ui/uiSlice"
-import {PanelMode} from "@/types"
+  selectPanelAllCustom,
+  setPanelCustomState
+} from "@/features/ui/panelRegistry"
 import {Flex, UnstyledButton} from "@mantine/core"
 import {
   IconLayoutSidebarRight,
   IconLayoutSidebarRightFilled
 } from "@tabler/icons-react"
-import {useContext} from "react"
 import classes from "./DocumentDetailsToggle.module.css"
 
 export default function DocumentDetailssToggle() {
   const dispatch = useAppDispatch()
-  const mode: PanelMode = useContext(PanelContext)
-  const isOpen = useAppSelector(s => selectDocumentDetailsPanelOpen(s, mode))
+  const {panelId} = usePanel()
+  const {documentDetailsPanelIsOpen: isOpen} = useAppSelector(s =>
+    selectPanelAllCustom(s, panelId)
+  )
 
   const onClick = () => {
-    dispatch(viewerDocumentDetailsPanelToggled(mode))
+    dispatch(
+      setPanelCustomState({
+        panelId,
+        key: "documentDetailsPanelIsOpen",
+        value: !isOpen
+      })
+    )
   }
 
   const toggleElement = (

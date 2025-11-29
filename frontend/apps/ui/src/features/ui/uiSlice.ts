@@ -24,11 +24,6 @@ type CurrentDocVerUpdateArg = {
   docVerID: string | undefined
 }
 
-interface PanelSelectionArg {
-  itemID: string
-  mode: PanelMode
-}
-
 type DragPageStartedArg = {
   pages: Array<ClientPage>
   docID: string
@@ -129,12 +124,10 @@ export interface UIState {
   // 5 -> means 5%
   // 100 -> means 100% i.e exact fit
   mainViewerZoomFactor?: number
-  mainViewerSelectedIDs?: Array<string>
   mainViewerCurrentDocVerID?: string
   /* current page (number) in main viewer */
   mainViewerCurrentPageNumber?: number
   secondaryViewerZoomFactor?: number
-  secondaryViewerSelectedIDs?: Array<string>
   secondaryViewerCurrentDocVerID?: string
   /* current page (number) in secondary viewer */
   secondaryViewerCurrentPageNumber?: number
@@ -251,57 +244,6 @@ const uiSlice = createSlice({
         state.secondaryViewerZoomFactor = ZOOM_FACTOR_INIT
       }
     },
-    viewerSelectionPageAdded(state, action: PayloadAction<PanelSelectionArg>) {
-      const mode = action.payload.mode
-      const itemID = action.payload.itemID
-      if (mode == "main") {
-        if (state.mainViewerSelectedIDs) {
-          state.mainViewerSelectedIDs.push(itemID)
-        } else {
-          state.mainViewerSelectedIDs = [itemID]
-        }
-        return
-      }
-
-      // mode == secondary
-      if (state.secondaryViewerSelectedIDs) {
-        state.secondaryViewerSelectedIDs.push(itemID)
-      } else {
-        state.secondaryViewerSelectedIDs = [itemID]
-      }
-    },
-    viewerSelectionPageRemoved(
-      state,
-      action: PayloadAction<PanelSelectionArg>
-    ) {
-      const mode = action.payload.mode
-      const itemID = action.payload.itemID
-      if (mode == "main") {
-        if (state.mainViewerSelectedIDs) {
-          const newValues = state.mainViewerSelectedIDs.filter(i => i != itemID)
-          state.mainViewerSelectedIDs = newValues
-        }
-
-        return
-      }
-      // secondary
-      if (state.secondaryViewerSelectedIDs) {
-        const newValues = state.secondaryViewerSelectedIDs.filter(
-          i => i != itemID
-        )
-        state.secondaryViewerSelectedIDs = newValues
-      }
-    },
-    viewerSelectionCleared(state, action: PayloadAction<PanelMode>) {
-      const mode = action.payload
-
-      if (mode == "main") {
-        state.mainViewerSelectedIDs = []
-        return
-      }
-      // secondary
-      state.secondaryViewerSelectedIDs = []
-    },
     viewerCurrentPageUpdated(
       state,
       action: PayloadAction<CurrentPageUpdatedArgs>
@@ -376,9 +318,6 @@ export const {
   zoomFactorIncremented,
   zoomFactorDecremented,
   zoomFactorReseted,
-  viewerSelectionPageAdded,
-  viewerSelectionPageRemoved,
-  viewerSelectionCleared,
   viewerCurrentPageUpdated,
   currentDocVerUpdated,
   dragPagesStarted,

@@ -4,11 +4,8 @@ import {DocSliceEntity, upsertDoc} from "@/features/document/store/docsSlice"
 import {addClientDocVersion} from "@/features/document/store/documentVersSlice"
 import {addImageObjects} from "@/features/document/store/imageObjectsSlice"
 import {clientDVFromDV} from "@/features/document/utils"
-import {closePanel} from "@/features/ui/panelRegistry"
-import {
-  currentDocVerUpdated,
-  viewerSelectionCleared
-} from "@/features/ui/uiSlice"
+import {clearPanelSelection, closePanel} from "@/features/ui/panelRegistry"
+import {currentDocVerUpdated} from "@/features/ui/uiSlice"
 import type {ExtractPagesType, PanelMode} from "@/types"
 
 import {t} from "@/utils/i18nHelper"
@@ -87,7 +84,7 @@ export const extractPages = createAsyncThunk<
       ])
     )
 
-    dispatch(viewerSelectionCleared(otherMode(inputArgs.sourceMode)))
+    dispatch(clearPanelSelection({panelId: otherMode(inputArgs.sourceMode)}))
 
     notifications.show({
       withBorder: true,

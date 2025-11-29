@@ -1,11 +1,15 @@
-import PanelContext from "@/contexts/PanelContext"
+import {useAppSelector} from "@/app/hooks"
 import {
-  zoomFactorDecremented,
-  zoomFactorIncremented,
-  zoomFactorReseted
-} from "@/features/ui/uiSlice"
-import type {PanelMode} from "@/types"
-import {useContext} from "react"
+  MAX_ZOOM_FACTOR,
+  MIN_ZOOM_FACTOR,
+  ZOOM_FACTOR_INIT,
+  ZOOM_FACTOR_STEP
+} from "@/cconstants"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {
+  selectPanelAllCustom,
+  setPanelCustomState
+} from "@/features/ui/panelRegistry"
 import {useDispatch} from "react-redux"
 import {Zoom} from "viewer"
 
@@ -14,19 +18,41 @@ interface Args {
   pageTotal: number
 }
 
+const ZOOM_FACTOR_KEY = "zoomFactor"
+
 export default function ZoomContainer({pageNumber, pageTotal}: Args) {
-  const mode: PanelMode = useContext(PanelContext)
+  const {panelId} = usePanel()
+  const {zoomFactor} = useAppSelector(s => selectPanelAllCustom(s, panelId))
+
   const dispatch = useDispatch()
 
   const incZoom = () => {
-    dispatch(zoomFactorIncremented(mode))
+    const zoom = zoomFactor || ZOOM_FACTOR_INIT
+    const newValue = zoom + ZOOM_FACTOR_STEP
+    if (newValue < MAX_ZOOM_FACTOR) {
+      dispatch(
+        setPanelCustomState({panelId, key: ZOOM_FACTOR_KEY, value: newValue})
+      )
+    }
   }
   const decZoom = () => {
-    dispatch(zoomFactorDecremented(mode))
+    const zoom = zoomFactor || ZOOM_FACTOR_INIT
+    const newValue = zoom - ZOOM_FACTOR_STEP
+    if (newValue > MIN_ZOOM_FACTOR) {
+      dispatch(
+        setPanelCustomState({panelId, key: ZOOM_FACTOR_KEY, value: newValue})
+      )
+    }
   }
 
   const fitZoom = () => {
-    dispatch(zoomFactorReseted(mode))
+    dispatch(
+      setPanelCustomState({
+        panelId,
+        key: ZOOM_FACTOR_KEY,
+        value: ZOOM_FACTOR_INIT
+      })
+    )
   }
 
   return (

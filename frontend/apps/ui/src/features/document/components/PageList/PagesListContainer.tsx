@@ -1,5 +1,4 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import PanelContext from "@/contexts/PanelContext"
 import {selectDocVerPaginationPageNumber} from "@/features/document/store/documentVersSlice"
 import {selectIsGeneratingPreviews} from "@/features/document/store/imageObjectsSlice"
 
@@ -8,9 +7,9 @@ import {generateNextPreviews} from "@/features/document/actions"
 import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "@/features/document/constants"
 import useAreAllPreviewsAvailable from "@/features/document/hooks/useAreAllPreviewsAvailable"
 import useCurrentDocVer from "@/features/document/hooks/useCurrentDocVer"
-import {selectZoomFactor} from "@/features/ui/uiSlice"
-import type {PanelMode} from "@/types"
-import {useContext, useEffect, useRef} from "react"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectPanelAllCustom} from "@/features/ui/panelRegistry"
+import {useEffect, useRef} from "react"
 import {PageList} from "viewer"
 import Page from "../Page"
 import usePageList from "./usePageList"
@@ -21,8 +20,10 @@ interface Args {
 
 export default function PageListContainer({docVer}: Args) {
   const dispatch = useAppDispatch()
-  const mode: PanelMode = useContext(PanelContext)
-  const zoomFactor = useAppSelector(s => selectZoomFactor(s, mode))
+
+  const {panelId} = usePanel()
+  const {zoomFactor} = useAppSelector(s => selectPanelAllCustom(s, panelId))
+
   const pageNumber = useAppSelector(s =>
     selectDocVerPaginationPageNumber(s, docVer?.id)
   )

@@ -9,7 +9,6 @@ This module automatically discovers and registers CLI commands from:
 Commands are discovered Django-style: any module with an 'app' attribute
 containing a typer.Typer instance will be automatically registered.
 """
-
 import logging
 from pathlib import Path
 
@@ -79,11 +78,16 @@ def register_cli_commands():
 
 
 def main():
-    """Main entry point for the CLI."""
-    # Register all CLI commands via auto-discovery
-    register_cli_commands()
+    import sys
+    from pydantic import ValidationError
+    try:
+        from papermerge.core.config import get_settings
+        get_settings()
+    except ValidationError as e:
+        logger.error(e)
+        sys.exit(1)
 
-    # Run the CLI app
+    register_cli_commands()
     app()
 
 

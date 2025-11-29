@@ -18,10 +18,6 @@ const COLLAPSED_WIDTH = 55
 const FULL_WIDTH = 200
 const NAVBAR_COLLAPSED_COOKIE = "navbar_collapsed"
 const NAVBAR_WIDTH_COOKIE = "navbar_width"
-const MAIN_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE =
-  "main_document_details_panel_opened"
-const SECONDARY_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE =
-  "secondary_document_details_panel_opened"
 
 type CurrentDocVerUpdateArg = {
   mode: PanelMode
@@ -129,7 +125,6 @@ export interface UIState {
     commander, viewer or search results? */
   mainPanelComponent?: PanelComponent
   secondaryPanelComponent?: PanelComponent
-  mainViewerDocumentDetailsPanelOpen?: boolean
   // zoom factor is expressed as percentage.
   // 5 -> means 5%
   // 100 -> means 100% i.e exact fit
@@ -138,7 +133,6 @@ export interface UIState {
   mainViewerCurrentDocVerID?: string
   /* current page (number) in main viewer */
   mainViewerCurrentPageNumber?: number
-  secondaryViewerDocumentDetailsPanelOpen?: boolean
   secondaryViewerZoomFactor?: number
   secondaryViewerSelectedIDs?: Array<string>
   secondaryViewerCurrentDocVerID?: string
@@ -151,10 +145,7 @@ const initialState: UIState = {
   navbar: {
     collapsed: initial_collapse_value(),
     width: initial_width_value()
-  },
-  mainViewerDocumentDetailsPanelOpen: mainDocumentDetailsPanelInitialState(),
-  secondaryViewerDocumentDetailsPanelOpen:
-    secondaryDocumentDetailsPanelInitialState()
+  }
 }
 
 const uiSlice = createSlice({
@@ -219,27 +210,6 @@ const uiSlice = createSlice({
         state.mainCommanderLastInbox = last_inbox
       } else {
         state.secondaryCommanderLastInbox = last_inbox
-      }
-    },
-    viewerDocumentDetailsPanelToggled(state, action: PayloadAction<PanelMode>) {
-      const mode = action.payload
-
-      if (mode == "main") {
-        const new_value = !Boolean(state.mainViewerDocumentDetailsPanelOpen)
-        state.mainViewerDocumentDetailsPanelOpen = new_value
-        if (new_value) {
-          Cookies.set(MAIN_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE, "true")
-        } else {
-          Cookies.set(MAIN_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE, "false")
-        }
-        return
-      }
-      const new_value = !Boolean(state.secondaryViewerDocumentDetailsPanelOpen)
-      state.secondaryViewerDocumentDetailsPanelOpen = new_value
-      if (new_value) {
-        Cookies.set(SECONDARY_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE, "true")
-      } else {
-        Cookies.set(SECONDARY_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE, "false")
       }
     },
     zoomFactorIncremented(state, action: PayloadAction<PanelMode>) {
@@ -403,7 +373,6 @@ export const {
   currentSharedNodeRootChanged,
   mainPanelComponentUpdated,
   secondaryPanelComponentUpdated,
-  viewerDocumentDetailsPanelToggled,
   zoomFactorIncremented,
   zoomFactorDecremented,
   zoomFactorReseted,
@@ -458,17 +427,6 @@ export const selectOtherPanelComponent = (
   }
 
   return state.ui.mainPanelComponent
-}
-
-export const selectDocumentDetailsPanelOpen = (
-  state: RootState,
-  mode: PanelMode
-) => {
-  if (mode == "main") {
-    return Boolean(state.ui.mainViewerDocumentDetailsPanelOpen)
-  }
-
-  return Boolean(state.ui.secondaryViewerDocumentDetailsPanelOpen)
 }
 
 export const selectZoomFactor = (state: RootState, mode: PanelMode) => {
@@ -588,28 +546,4 @@ function initial_width_value(): number {
   }
 
   return FULL_WIDTH
-}
-
-function mainDocumentDetailsPanelInitialState(): boolean {
-  const is_opened = Cookies.get(
-    MAIN_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE
-  ) as BooleanString
-
-  if (is_opened == "true") {
-    return true
-  }
-
-  return false
-}
-
-function secondaryDocumentDetailsPanelInitialState(): boolean {
-  const is_opened = Cookies.get(
-    SECONDARY_DOCUMENT_DETAILS_PANEL_OPENED_COOKIE
-  ) as BooleanString
-
-  if (is_opened == "true") {
-    return true
-  }
-
-  return false
 }

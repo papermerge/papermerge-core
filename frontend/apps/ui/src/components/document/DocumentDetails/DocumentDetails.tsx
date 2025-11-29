@@ -22,8 +22,11 @@ import {OWNER_ME} from "@/cconstants"
 import CopyButton from "@/components/CopyButton"
 import {EditNodeTagsModal} from "@/components/EditNodeTags"
 import type {DocumentType} from "@/features/document/types"
-import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
-import {selectDocumentDetailsPanelOpen} from "@/features/ui/uiSlice"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {
+  selectCurrentNodeID,
+  selectPanelAllCustom
+} from "@/features/ui/panelRegistry"
 import type {ClientDocumentVersion, PanelMode} from "@/types"
 import DocumentDetailsToggle from "../DocumentDetailsToggle"
 import CustomFields from "./CustomFields"
@@ -38,11 +41,12 @@ interface Args {
 export default function DocumentDetails({doc, docVer, docID, isLoading}: Args) {
   const {t} = useTranslation()
 
-  const mode: PanelMode = useContext(PanelContext)
-  const documentDetailsIsOpen = useAppSelector(s =>
-    selectDocumentDetailsPanelOpen(s, mode)
+  const {panelId} = usePanel()
+
+  const {documentDetailsPanelIsOpen: isOpen} = useAppSelector(s =>
+    selectPanelAllCustom(s, panelId)
   )
-  const ocrLang = useAppSelector(s => selectDocumentVersionOCRLang(s, mode))
+  const ocrLang = useAppSelector(s => selectDocumentVersionOCRLang(s, panelId))
 
   if (!docID || isLoading) {
     return (
@@ -57,7 +61,7 @@ export default function DocumentDetails({doc, docVer, docID, isLoading}: Args) {
     )
   }
 
-  if (documentDetailsIsOpen) {
+  if (isOpen) {
     return (
       <div className={classes.documentDetailsOpened}>
         <Stack className={classes.documentDetailsContent} justify="flex-start">

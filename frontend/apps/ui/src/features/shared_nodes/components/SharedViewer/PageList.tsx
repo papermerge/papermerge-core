@@ -1,25 +1,27 @@
-import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import PanelContext from "@/contexts/PanelContext"
-import {selectDocVerPaginationPageNumber} from "@/features/document/store/documentVersSlice"
-import {selectIsGeneratingPreviews} from "@/features/document/store/imageObjectsSlice"
+import { useAppDispatch, useAppSelector } from "@/app/hooks"
+import { selectDocVerPaginationPageNumber } from "@/features/document/store/documentVersSlice"
+import { selectIsGeneratingPreviews } from "@/features/document/store/imageObjectsSlice"
 
 import Zoom from "@/components/document/Zoom"
-import {generateNextPreviews} from "@/features/document/actions"
+import { generateNextPreviews } from "@/features/document/actions"
 import Page from "@/features/document/components/Page"
 import usePageList from "@/features/document/components/PageList/usePageList"
-import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "@/features/document/constants"
+import { DOC_VER_PAGINATION_PAGE_BATCH_SIZE } from "@/features/document/constants"
 import useAreAllPreviewsAvailable from "@/features/document/hooks/useAreAllPreviewsAvailable"
 import useCurrentSharedDocVer from "@/features/shared_nodes/hooks/useCurrentSharedDocVer"
-import {selectZoomFactor} from "@/features/ui/uiSlice"
-import type {PanelMode} from "@/types"
-import {useContext, useEffect, useRef} from "react"
-import {PageList} from "viewer"
+import { usePanel } from "@/features/ui/hooks/usePanel"
+import {
+  selectPanelAllCustom
+} from "@/features/ui/panelRegistry"
+import { useEffect, useRef } from "react"
+import { PageList } from "viewer"
 
 export default function PageListContainer() {
   const {docVer} = useCurrentSharedDocVer()
   const dispatch = useAppDispatch()
-  const mode: PanelMode = useContext(PanelContext)
-  const zoomFactor = useAppSelector(s => selectZoomFactor(s, mode))
+  const {panelId} = usePanel()
+  const {zoomFactor} = useAppSelector(s => selectPanelAllCustom(s, panelId))
+
   const pageNumber = useAppSelector(s =>
     selectDocVerPaginationPageNumber(s, docVer?.id)
   )

@@ -1,12 +1,11 @@
-import {useAppSelector} from "@/app/hooks"
+import { useAppSelector } from "@/app/hooks"
 import PanelContext from "@/contexts/PanelContext"
-import {selectBestImageByPageId} from "@/features/document/store/selectors"
+import { selectBestImageByPageId } from "@/features/document/store/selectors"
 import {
-  selectDocumentCurrentPage,
-  selectZoomFactor
+  selectDocumentCurrentPage
 } from "@/features/ui/uiSlice"
-import {PanelMode} from "@/types"
-import {RefObject, useContext, useEffect, useRef} from "react"
+import { PanelMode } from "@/types"
+import { RefObject, useContext, useEffect, useRef } from "react"
 
 interface Args {
   pageNumber: number
@@ -23,7 +22,7 @@ export default function usePage({pageNumber, pageID}: Args): PageState {
   const mode: PanelMode = useContext(PanelContext)
   const currentPage = useAppSelector(s => selectDocumentCurrentPage(s, mode))
   const targetRef = useRef<HTMLImageElement | null>(null)
-  const zoomFactor = useAppSelector(s => selectZoomFactor(s, mode))
+
   const bestImageURL = useAppSelector(s => selectBestImageByPageId(s, pageID))
 
   useEffect(() => {

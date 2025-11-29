@@ -1,10 +1,4 @@
 import type {RootState} from "@/app/types"
-import {
-  MAX_ZOOM_FACTOR,
-  MIN_ZOOM_FACTOR,
-  ZOOM_FACTOR_INIT,
-  ZOOM_FACTOR_STEP
-} from "@/cconstants"
 import type {BooleanString, CType, ClientPage, PanelMode} from "@/types"
 import type {PanelComponent} from "@/types.d/ui"
 import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
@@ -120,14 +114,9 @@ export interface UIState {
     commander, viewer or search results? */
   mainPanelComponent?: PanelComponent
   secondaryPanelComponent?: PanelComponent
-  // zoom factor is expressed as percentage.
-  // 5 -> means 5%
-  // 100 -> means 100% i.e exact fit
-  mainViewerZoomFactor?: number
   mainViewerCurrentDocVerID?: string
   /* current page (number) in main viewer */
   mainViewerCurrentPageNumber?: number
-  secondaryViewerZoomFactor?: number
   secondaryViewerCurrentDocVerID?: string
   /* current page (number) in secondary viewer */
   secondaryViewerCurrentPageNumber?: number
@@ -205,45 +194,6 @@ const uiSlice = createSlice({
         state.secondaryCommanderLastInbox = last_inbox
       }
     },
-    zoomFactorIncremented(state, action: PayloadAction<PanelMode>) {
-      const mode = action.payload
-      if (mode == "main") {
-        const zoom = state.mainViewerZoomFactor || ZOOM_FACTOR_INIT
-        if (zoom + ZOOM_FACTOR_STEP < MAX_ZOOM_FACTOR) {
-          state.mainViewerZoomFactor = zoom + ZOOM_FACTOR_STEP
-        }
-      }
-      if (mode == "secondary") {
-        const zoom = state.secondaryViewerZoomFactor || ZOOM_FACTOR_INIT
-        if (zoom + ZOOM_FACTOR_STEP < MAX_ZOOM_FACTOR) {
-          state.secondaryViewerZoomFactor = zoom + ZOOM_FACTOR_STEP
-        }
-      }
-    },
-    zoomFactorDecremented(state, action: PayloadAction<PanelMode>) {
-      const mode = action.payload
-      if (mode == "main") {
-        let zoom = state.mainViewerZoomFactor || ZOOM_FACTOR_INIT
-        if (zoom - ZOOM_FACTOR_STEP > MIN_ZOOM_FACTOR) {
-          state.mainViewerZoomFactor = zoom - ZOOM_FACTOR_STEP
-        }
-      }
-      if (mode == "secondary") {
-        let zoom = state.secondaryViewerZoomFactor || ZOOM_FACTOR_INIT
-        if (zoom && zoom - ZOOM_FACTOR_STEP > MIN_ZOOM_FACTOR) {
-          state.secondaryViewerZoomFactor = zoom - ZOOM_FACTOR_STEP
-        }
-      }
-    },
-    zoomFactorReseted(state, action: PayloadAction<PanelMode>) {
-      const mode = action.payload
-      if (mode == "main") {
-        state.mainViewerZoomFactor = ZOOM_FACTOR_INIT
-      }
-      if (mode == "secondary") {
-        state.secondaryViewerZoomFactor = ZOOM_FACTOR_INIT
-      }
-    },
     viewerCurrentPageUpdated(
       state,
       action: PayloadAction<CurrentPageUpdatedArgs>
@@ -315,9 +265,6 @@ export const {
   currentSharedNodeRootChanged,
   mainPanelComponentUpdated,
   secondaryPanelComponentUpdated,
-  zoomFactorIncremented,
-  zoomFactorDecremented,
-  zoomFactorReseted,
   viewerCurrentPageUpdated,
   currentDocVerUpdated,
   dragPagesStarted,
@@ -366,14 +313,6 @@ export const selectOtherPanelComponent = (
   }
 
   return state.ui.mainPanelComponent
-}
-
-export const selectZoomFactor = (state: RootState, mode: PanelMode) => {
-  if (mode == "main") {
-    return state.ui.mainViewerZoomFactor || ZOOM_FACTOR_INIT
-  }
-
-  return state.ui.secondaryViewerZoomFactor || ZOOM_FACTOR_INIT
 }
 
 export const selectCurrentDocVerID = (state: RootState, mode: PanelMode) => {

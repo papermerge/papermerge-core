@@ -122,7 +122,8 @@ async def test_upload_document(
         db_session,
         parent_id=inbox_folder_id,
         page_size=5, page_number=1,
-        order_by=["title"]
+        sort_by="title",
+        sort_direction="asc"
     )
 
     assert len(nodes.items) == 1
@@ -150,7 +151,8 @@ async def test_upload_multiple_files_with_same_name_document(
         db_session,
         parent_id=inbox_folder_id,
         page_size=5, page_number=1,
-        order_by=["title"]
+        sort_by="title",
+        sort_direction="asc"
     )
 
     assert len(nodes.items) == 3

@@ -33,7 +33,7 @@ export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
     getPaginatedSharedNodes: builder.query<Paginated<NodeType>, PaginatedArgs>({
       query: ({nodeID, queryParams}: PaginatedArgs) => {
         const queryString = buildQueryString(queryParams || {})
-        return `/shared-nodes/${nodeID}?${queryString}`
+        return `/shared-nodes/folder/${nodeID}?${queryString}`
       },
       providesTags: (
         result = {

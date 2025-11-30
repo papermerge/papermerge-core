@@ -22,6 +22,9 @@ import {useNavigate} from "react-router-dom"
 import type {NodeQueryParams, SortBy} from "@/features/nodes/types"
 import type {NType} from "@/types"
 
+/**
+ * Returns all shared nodes
+ */
 export default function useNodes() {
   const queryParams = useQueryParams()
   const {panelId} = usePanel()
@@ -119,6 +122,13 @@ function useQueryParams(): NodeQueryParams {
   return queryParams
 }
 
+/**
+ * Get all shared nodes
+ *
+ * If `nodeID` is empty -> query `/api/shared-nodes` to get top all level shared nodes
+ * If `nodeID` is not empty -> query `/api/shared-nodes/folder/<nodeID>` for
+ * all shared nodes whole parend is `nodeID`
+ */
 function useGetSharedNodes(queryParams: NodeQueryParams, nodeID?: string) {
   const isRootLevel = !nodeID
   const {

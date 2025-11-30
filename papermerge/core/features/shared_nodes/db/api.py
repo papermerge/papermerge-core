@@ -1,16 +1,24 @@
-import uuid
+from typing import Tuple, Sequence
 import math
-from typing import Union, Tuple, Sequence
+import uuid
+from typing import Union
+from uuid import UUID
 
+from sqlalchemy import delete, tuple_
+from sqlalchemy import select, func, and_, or_, desc, asc
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_, func, delete, tuple_
-from sqlalchemy.orm import aliased, selectin_polymorphic, selectinload
+from sqlalchemy.orm import selectinload, selectin_polymorphic, aliased
 
+from papermerge.core.features.nodes.db.orm import Folder
+from papermerge.core.features.ownership.db.orm import Ownership
 from papermerge.core.features.shared_nodes import schema as sn_schema
 from papermerge.core.features.shared_nodes.db import orm as sn_orm
 from papermerge.core.types import PaginatedResponse
-from papermerge.core import orm, schema, dbapi
+from papermerge.core import dbapi
 from papermerge.core.db import common as dbapi_common
+from papermerge.core import orm, schema
+from papermerge.core.schemas.common import PaginatedResponse
+from papermerge.core.types import ResourceType, OwnerType
 
 
 def str2colexpr(keys: list[str]):
@@ -79,87 +87,278 @@ async def create_shared_nodes(
 
 
 async def get_paginated_shared_nodes(
-        db_session: AsyncSession,
-        user_id: uuid.UUID,
-        page_size: int,
-        page_number: int,
-        order_by: list[str],
-        filter: str | None = None,
-) -> PaginatedResponse[schema.Document | schema.Folder]:
-    loader_opt = selectin_polymorphic(orm.Node, [orm.Folder, orm.Document])
+    db_session: AsyncSession,
+    user_id: UUID,
+    page_size: int,
+    page_number: int,
+    sort_by: str | None = None,
+    sort_direction: str | None = None,
+    filters: dict | None = None,
+    include_deleted: bool = False,
+) -> PaginatedResponse[Union[schema.DocumentEx, schema.FolderEx]]:
+    """
+    Get paginated shared nodes with filtering, sorting, and audit trail support.
 
-    subquery = select(orm.UserGroup.group_id).where(
+    Args:
+        db_session: Database session
+        user_id: Current user ID (to find nodes shared with this user)
+        page_size: Number of items per page
+        page_number: Page number (1-based)
+        sort_by: Column to sort by
+        sort_direction: Sort direction ('asc' or 'desc')
+        filters: Dictionary of filters with format:
+            {
+                "filter_name": {
+                    "value": filter_value,
+                    "operator": "free_text" | "in" | "eq" | etc.
+                }
+            }
+        include_deleted: Whether to include soft-deleted nodes
+
+    Returns:
+        Paginated response with shared nodes including full audit trail and ownership
+    """
+    loader_opt = selectin_polymorphic(orm.Node, [Folder, orm.Document])
+
+    # Create user aliases for all audit trail joins
+    created_user = aliased(orm.User, name='created_user')
+    updated_user = aliased(orm.User, name='updated_user')
+    owner_user = aliased(orm.User, name='owner_user')
+    owner_group = aliased(orm.Group, name='owner_group')
+
+    # Subquery for groups the user belongs to
+    user_groups_subquery = select(orm.UserGroup.group_id).where(
         orm.UserGroup.user_id == user_id
     )
 
+    # Permissions query for shared nodes
     perms_query = (
         select(orm.Node.id.label("node_id"), orm.Permission.codename)
         .select_from(orm.SharedNode)
         .join(orm.Node, orm.Node.id == orm.SharedNode.node_id)
         .join(orm.Role, orm.Role.id == orm.SharedNode.role_id)
-        .join(orm.roles_permissions_association, orm.roles_permissions_association.c.role_id == orm.Role.id)
-        .join(orm.Permission, orm.Permission.id == orm.roles_permissions_association.c.permission_id)
+        .join(
+            orm.roles_permissions_association,
+            orm.roles_permissions_association.c.role_id == orm.Role.id
+        )
+        .join(
+            orm.Permission,
+            orm.Permission.id == orm.roles_permissions_association.c.permission_id
+        )
         .where(
             or_(
                 orm.SharedNode.user_id == user_id,
-                orm.SharedNode.group_id.in_(subquery),
-                )
+                orm.SharedNode.group_id.in_(user_groups_subquery),
+            )
         )
     )
 
-    base_stmt = (
+    # Build base query with ownership and audit user joins
+    base_query = (
         select(orm.Node)
         .select_from(orm.SharedNode)
         .options(selectinload(orm.Node.tags))
         .join(orm.Node, orm.Node.id == orm.SharedNode.node_id)
+        .join(
+            Ownership,
+            and_(
+                Ownership.resource_type == ResourceType.NODE.value,
+                Ownership.resource_id == orm.Node.id
+            )
+        )
+        .join(created_user, orm.Node.created_by == created_user.id, isouter=True)
+        .join(updated_user, orm.Node.updated_by == updated_user.id, isouter=True)
+        .join(
+            owner_user,
+            and_(
+                Ownership.owner_type == OwnerType.USER.value,
+                Ownership.owner_id == owner_user.id
+            ),
+            isouter=True
+        )
+        .join(
+            owner_group,
+            and_(
+                Ownership.owner_type == OwnerType.GROUP.value,
+                Ownership.owner_id == owner_group.id
+            ),
+            isouter=True
+        )
         .where(
             or_(
                 orm.SharedNode.user_id == user_id,
-                orm.SharedNode.group_id.in_(subquery),
-                )
+                orm.SharedNode.group_id.in_(user_groups_subquery),
+            )
         )
     )
 
-    if filter:
-        stmt = base_stmt.where(
-            func.lower(orm.Node.title).contains(filter.strip().lower(), autoescape=True)
+    # Build where conditions
+    where_conditions = []
+
+    # Exclude deleted entries unless explicitly requested
+    if not include_deleted:
+        where_conditions.append(orm.Node.deleted_at.is_(None))
+
+    # Apply filters
+    if filters:
+        filter_conditions = _build_shared_node_filter_conditions(
+            filters, created_user, updated_user, owner_user, owner_group
+        )
+        where_conditions.extend(filter_conditions)
+
+    if where_conditions:
+        base_query = base_query.where(and_(*where_conditions))
+
+    # Count total items (with same filters)
+    count_where_conditions = [
+        or_(
+            orm.SharedNode.user_id == user_id,
+            orm.SharedNode.group_id.in_(user_groups_subquery),
+        )
+    ]
+    count_where_conditions.extend(where_conditions)
+
+    count_query = (
+        select(func.count(orm.Node.id))
+        .select_from(orm.SharedNode)
+        .join(orm.Node, orm.Node.id == orm.SharedNode.node_id)
+        .join(
+            Ownership,
+            and_(
+                Ownership.resource_type == ResourceType.NODE.value,
+                Ownership.resource_id == orm.Node.id
+            )
+        )
+        .join(created_user, orm.Node.created_by == created_user.id, isouter=True)
+        .join(updated_user, orm.Node.updated_by == updated_user.id, isouter=True)
+        .where(and_(*count_where_conditions))
+    )
+
+    total_nodes = await db_session.scalar(count_query)
+
+    # Apply sorting
+    if sort_by and sort_direction:
+        base_query = _apply_shared_node_sorting(
+            base_query, sort_by, sort_direction,
+            created_user=created_user,
+            updated_user=updated_user,
+            owner_user=owner_user,
+            owner_group=owner_group
         )
     else:
-        stmt = base_stmt
+        # Default sorting by ctype then title
+        base_query = base_query.order_by(orm.Node.ctype, orm.Node.title)
 
-    count_stmt = select(func.count()).select_from(stmt.subquery())
-    total_nodes = await db_session.scalar(count_stmt)
+    # Apply pagination
+    offset = page_size * (page_number - 1)
 
-    num_pages = math.ceil(total_nodes / page_size)
-
-    paginated_stmt = (
-        stmt.offset((page_number - 1) * page_size)
-        .order_by(*str2colexpr(order_by))
+    # Add columns for audit users and ownership
+    paginated_query = (
+        base_query
+        .add_columns(
+            Ownership.owner_type.label('owner_type'),
+            Ownership.owner_id.label('owner_id'),
+            owner_user.id.label('owner_user_id'),
+            owner_user.username.label('owner_username'),
+            owner_group.id.label('owner_group_id'),
+            owner_group.name.label('owner_group_name'),
+            created_user.id.label('created_by_id'),
+            created_user.username.label('created_by_username'),
+            updated_user.id.label('updated_by_id'),
+            updated_user.username.label('updated_by_username'),
+        )
         .limit(page_size)
+        .offset(offset)
         .options(loader_opt)
     )
 
+    # Execute permissions query and build permissions dict
     perms = {}
     for row in await db_session.execute(perms_query):
-
         if perms.get(row.node_id):
             perms[row.node_id].append(row.codename)
         else:
             perms[row.node_id] = [row.codename]
 
+    # Execute main query
+    results = (await db_session.execute(paginated_query)).all()
+
+    # Convert to schema models with complete audit trail
     items = []
+    num_pages = math.ceil(total_nodes / page_size) if total_nodes > 0 else 1
 
-    for row in await db_session.execute(paginated_stmt):
-        if row.Node.ctype == "folder":
-            new_item = schema.Folder.model_validate(row.Node)
+    for row in results:
+        node = row[0]
+
+        # Build audit user objects
+        created_by = None
+        if row.created_by_id:
+            created_by = schema.ByUser(
+                id=row.created_by_id,
+                username=row.created_by_username
+            )
+
+        updated_by = None
+        if row.updated_by_id:
+            updated_by = schema.ByUser(
+                id=row.updated_by_id,
+                username=row.updated_by_username
+            )
+
+        # Build owned_by from ownership data
+        if row.owner_type == OwnerType.USER.value:
+            owned_by = schema.OwnedBy(
+                id=row.owner_user_id,
+                name=row.owner_username,
+                type=OwnerType.USER
+            )
         else:
-            doc = await dbapi.load_doc(db_session, row.Node.id)
-            new_item = schema.Document.model_validate(doc)
+            owned_by = schema.OwnedBy(
+                id=row.owner_group_id,
+                name=row.owner_group_name,
+                type=OwnerType.GROUP
+            )
 
-        new_item.perms = perms[row.Node.id]
-        items.append(new_item)
+        # Get permissions for this node
+        node_perms = perms.get(node.id, [])
 
-    return PaginatedResponse[Union[schema.Document, schema.Folder]](
+        if node.ctype == "folder":
+            item = schema.FolderEx(
+                id=node.id,
+                title=node.title,
+                ctype=node.ctype,
+                tags=node.tags,
+                parent_id=node.parent_id,
+                is_shared=True,  # Always true for shared nodes
+                owned_by=owned_by,
+                created_at=node.created_at,
+                updated_at=node.updated_at,
+                created_by=created_by,
+                updated_by=updated_by,
+            )
+        else:
+            item = schema.DocumentEx(
+                id=node.id,
+                title=node.title,
+                ctype=node.ctype,
+                tags=node.tags,
+                parent_id=node.parent_id,
+                is_shared=True,  # Always true for shared nodes
+                owned_by=owned_by,
+                created_at=node.created_at,
+                updated_at=node.updated_at,
+                created_by=created_by,
+                updated_by=updated_by,
+                preview_status=node.preview_status,
+                ocr=node.ocr,
+                ocr_status=node.ocr_status,
+            )
+
+        # Attach permissions to item
+        item.perms = node_perms
+        items.append(item)
+
+    return PaginatedResponse[Union[schema.DocumentEx, schema.FolderEx]](
         page_size=page_size,
         page_number=page_number,
         num_pages=num_pages,
@@ -383,3 +582,80 @@ async def get_shared_doc(
     model_doc = schema.Document.model_validate(db_doc)
 
     return model_doc
+
+
+def _build_shared_node_filter_conditions(
+    filters: dict,
+    created_user,
+    updated_user,
+    owner_user,
+    owner_group
+) -> list:
+    """Build SQLAlchemy filter conditions from filter dict."""
+    conditions = []
+
+    for filter_name, filter_config in filters.items():
+        value = filter_config.get("value")
+        operator = filter_config.get("operator", "eq")
+
+        if filter_name == "free_text" and operator == "free_text":
+            # Search in title
+            conditions.append(
+                func.lower(orm.Node.title).contains(
+                    value.strip().lower(), autoescape=True
+                )
+            )
+        elif filter_name == "ctype":
+            if operator == "in":
+                ctypes = [c.strip() for c in value.split(",")]
+                conditions.append(orm.Node.ctype.in_(ctypes))
+            else:
+                conditions.append(orm.Node.ctype == value)
+        elif filter_name == "created_by_username":
+            if operator == "in":
+                usernames = [u.strip() for u in value.split(",")]
+                conditions.append(created_user.username.in_(usernames))
+            else:
+                conditions.append(created_user.username == value)
+        elif filter_name == "updated_by_username":
+            if operator == "in":
+                usernames = [u.strip() for u in value.split(",")]
+                conditions.append(updated_user.username.in_(usernames))
+            else:
+                conditions.append(updated_user.username == value)
+        elif filter_name == "owner_name":
+            conditions.append(
+                or_(
+                    owner_user.username.ilike(f"%{value}%"),
+                    owner_group.name.ilike(f"%{value}%")
+                )
+            )
+
+    return conditions
+
+
+def _apply_shared_node_sorting(
+    query,
+    sort_by: str,
+    sort_direction: str,
+    created_user,
+    updated_user,
+    owner_user,
+    owner_group
+):
+    """Apply sorting to the query."""
+    direction = desc if sort_direction == "desc" else asc
+
+    sort_columns = {
+        "id": orm.Node.id,
+        "title": orm.Node.title,
+        "ctype": orm.Node.ctype,
+        "created_at": orm.Node.created_at,
+        "updated_at": orm.Node.updated_at,
+        "created_by": created_user.username,
+        "updated_by": updated_user.username,
+        "owned_by": func.coalesce(owner_user.username, owner_group.name),
+    }
+
+    sort_column = sort_columns.get(sort_by, orm.Node.title)
+    return query.order_by(direction(sort_column))

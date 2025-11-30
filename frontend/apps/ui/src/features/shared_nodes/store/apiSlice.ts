@@ -1,16 +1,11 @@
 import {apiSlice} from "@/features/api/slice"
+import {NodeQueryParams} from "@/features/nodes/types"
 
 import {
   PAGINATION_DEFAULT_ITEMS_PER_PAGES,
   SHARED_FOLDER_ROOT_ID
 } from "@/cconstants"
-import type {
-  FolderType,
-  NodeType,
-  Paginated,
-  SortMenuColumn,
-  SortMenuDirection
-} from "@/types"
+import type {FolderType, NodeType, Paginated} from "@/types"
 import {
   NewSharedNodes,
   SharedNodeAccessDetails,
@@ -21,11 +16,11 @@ import type {DocumentType} from "@/features/document/types"
 
 export type PaginatedArgs = {
   nodeID: string
-  page_number?: number
-  page_size?: number
-  filter?: string | null
-  sortDir: SortMenuDirection
-  sortColumn: SortMenuColumn
+  queryParams: NodeQueryParams
+}
+
+export type PaginatedTopLevelArgs = {
+  queryParams: NodeQueryParams
 }
 
 interface GetSharedNodeArgs {
@@ -36,32 +31,51 @@ interface GetSharedNodeArgs {
 export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
   endpoints: builder => ({
     getPaginatedSharedNodes: builder.query<Paginated<NodeType>, PaginatedArgs>({
-      query: ({
-        nodeID,
-        page_number = 1,
-        page_size = PAGINATION_DEFAULT_ITEMS_PER_PAGES,
-        sortDir,
-        sortColumn,
-        filter = undefined
-      }: PaginatedArgs) => {
-        const orderBy = sortDir == "az" ? sortColumn : `-${sortColumn}`
-
-        if (!filter) {
-          if (nodeID == SHARED_FOLDER_ROOT_ID) {
-            return `/shared-nodes/?page_number=${page_number}&page_size=${page_size}&order_by=${orderBy}`
-          } else {
-            return `/shared-nodes/folder/${nodeID}?page_number=${page_number}&page_size=${page_size}&order_by=${orderBy}`
-          }
-        }
-
-        if (nodeID == SHARED_FOLDER_ROOT_ID) {
-          return `/shared-nodes/?page_size=${page_size}&filter=${filter}&order=${orderBy}`
-        }
-
-        return `/shared-nodes/folder/${nodeID}?page_size=${page_size}&filter=${filter}&order=${orderBy}`
+      query: ({nodeID, queryParams}: PaginatedArgs) => {
+        const queryString = buildQueryString(queryParams || {})
+        return `/shared-nodes/folder/${nodeID}?${queryString}`
       },
       providesTags: (
-        result = {page_number: 1, page_size: 1, num_pages: 1, items: []},
+        result = {
+          page_number: 1,
+          page_size: 1,
+          num_pages: 1,
+          items: [],
+          total_items: 1
+        },
+        _error,
+        arg
+      ) => [
+        "SharedNode", // generic SharedNode tag
+        {type: "SharedNode", id: arg.nodeID}, // "SharedNode" tag per parent ID
+        // "SharedNode" tag per each returned item
+        ...result.items.map(({id}) => ({type: "SharedNode", id}) as const)
+      ],
+      transformResponse(res: Paginated<NodeType>, _, arg) {
+        if (arg.nodeID == SHARED_FOLDER_ROOT_ID) {
+          for (let i = 0; i < res.items.length; i++) {
+            res.items[i].is_shared_root = true
+          }
+        }
+        return res
+      }
+    }),
+    getPaginatedSharedRootNodes: builder.query<
+      Paginated<NodeType>,
+      PaginatedTopLevelArgs
+    >({
+      query: ({queryParams}: PaginatedTopLevelArgs) => {
+        const queryString = buildQueryString(queryParams || {})
+        return `/shared-nodes?${queryString}`
+      },
+      providesTags: (
+        result = {
+          page_number: 1,
+          page_size: 1,
+          num_pages: 1,
+          items: [],
+          total_items: 1
+        },
         _error,
         arg
       ) => [
@@ -134,9 +148,35 @@ export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
 
 export const {
   useAddNewSharedNodeMutation,
-  useGetPaginatedSharedNodesQuery,
+  useGetPaginatedSharedNodesQuery, // get shared nodes with specific parent ID
+  useGetPaginatedSharedRootNodesQuery, // get top level shared nodes
   useGetSharedNodeAccessDetailsQuery,
   useUpdateSharedNodeAccessMutation,
   useGetSharedFolderQuery,
   useGetSharedDocumentQuery
 } = apiSliceWithSharedNodes
+
+function buildQueryString(params: NodeQueryParams = {}): string {
+  const searchParams = new URLSearchParams()
+
+  // Always include pagination with defaults
+  searchParams.append("page_number", String(params.page_number || 1))
+  searchParams.append(
+    "page_size",
+    String(params.page_size || PAGINATION_DEFAULT_ITEMS_PER_PAGES)
+  )
+
+  // Add sorting if provided
+  if (params.sort_by) {
+    searchParams.append("sort_by", params.sort_by)
+  }
+  if (params.sort_direction) {
+    searchParams.append("sort_direction", params.sort_direction)
+  }
+
+  if (params.filter_free_text) {
+    searchParams.append("filter_free_text", params.filter_free_text)
+  }
+
+  return searchParams.toString()
+}

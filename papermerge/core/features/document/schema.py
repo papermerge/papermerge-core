@@ -522,6 +522,8 @@ class DocumentsByTypeParams(BaseModel):
 
 class DocumentEx(DocumentBase):
     """Extended document with audit columns for paginated listing"""
+    perms: list[str] = Field(default_factory=list)
+
     # Audit columns
     owned_by: OwnedBy
     created_at: datetime

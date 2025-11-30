@@ -164,7 +164,7 @@ const panelRegistrySlice = createSlice({
       action: PayloadAction<{
         panelID: string
         component: PanelComponent
-        entityID: string
+        entityID?: string
       }>
     ) => {
       const {entityID, panelID, component} = action.payload

@@ -22,7 +22,7 @@ import {
 import {GroupDetails, GroupsList} from "@/features/groups/components"
 import Commander from "@/features/nodes/components/Commander"
 import {RoleDetails, RolesList} from "@/features/roles/components"
-import SharedCommander from "@/features/shared_nodes/components/SharedCommander"
+import SharedCommander from "@/features/shared_nodes/components/Commander"
 import SharedViewer from "@/features/shared_nodes/components/SharedViewer"
 import {TagDetails, TagsList} from "@/features/tags/components"
 import {UserDetails, UsersList} from "@/features/users/components"

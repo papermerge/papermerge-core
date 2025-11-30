@@ -4,7 +4,8 @@ from datetime import datetime
 from typing import List, Literal, Tuple
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, ValidationError, field_validator, \
+    Field
 from fastapi import Query
 
 from papermerge.core.schemas.common import OwnedBy, ByUser
@@ -190,6 +191,7 @@ class FolderEx(BaseModel):
     tags: List[Tag] = []
     parent_id: UUID | None
     is_shared: bool = False
+    perms: list[str] = Field(default_factory=list)
 
     # Audit columns
     owned_by: OwnedBy

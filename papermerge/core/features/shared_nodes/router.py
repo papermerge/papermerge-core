@@ -1,15 +1,18 @@
+import logging
 import uuid
 from typing import Annotated, Union
 
-from fastapi import APIRouter, Security, Depends, Response, status
+from fastapi import APIRouter, Security, Depends, Response, status, \
+    HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.db.engine import get_db
 from papermerge.core import utils, schema, dbapi
-from papermerge.core.routers.params import CommonQueryParams
 from papermerge.core.features.auth import scopes, get_current_user
 from papermerge.core.types import PaginatedResponse
-from papermerge.core.features.nodes.db import api as nodes_api
+from papermerge.core.features.shared_nodes.schema import SharedNodeParams
+from papermerge.core.features.nodes.db import api as nodes_dbapi
+from papermerge.core.auth import require_scopes
 
 router = APIRouter(
     prefix="/shared-nodes",
@@ -17,65 +20,74 @@ router = APIRouter(
 )
 
 
-@router.get("/")
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
+logger = logging.getLogger(__name__)
+
+
+@router.get("", response_model=PaginatedResponse[Union[schema.DocumentEx, schema.FolderEx]],
+)
 async def get_shared_nodes(
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
-    params: CommonQueryParams = Depends(),
-    db_session: AsyncSession=Depends(get_db),
-) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
-    """Returns a list of top level nodes shared with current user
+    user: require_scopes(scopes.NODE_VIEW),
+    params: SharedNodeParams = Depends(),
+    db_session: AsyncSession = Depends(get_db),
+) -> PaginatedResponse[Union[schema.DocumentEx, schema.FolderEx]]:
+    """Returns a list of top level nodes shared with current user"""
+    try:
+        filters = params.to_filters()
+        result = await dbapi.get_paginated_shared_nodes(
+            db_session=db_session,
+            user_id=user.id,
+            page_size=params.page_size,
+            page_number=params.page_number,
+            sort_by=params.sort_by,
+            sort_direction=params.sort_direction,
+            filters=filters,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid parameters: {str(e)}")
+    except Exception as e:
+        logger.error(
+            f"Error fetching shared nodes for user {user.id}: {e}",
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail="Internal server error")
 
-    Required scope: `{scope}`
-    """
-    order_by = ["ctype", "title", "created_at", "updated_at"]
-
-    if params.order_by:
-        order_by = [item.strip() for item in params.order_by.split(",")]
-
-    nodes = await dbapi.get_paginated_shared_nodes(
-        db_session=db_session,
-        page_size=params.page_size,
-        page_number=params.page_number,
-        order_by=order_by,
-        filter=params.filter,
-        user_id=user.id,
-    )
-
-    return nodes
-
-
-@router.get("/folder/{parent_id}")
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
-async def get_node(
-    parent_id,
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
-    params: CommonQueryParams = Depends(),
-    db_session: AsyncSession=Depends(get_db),
-) -> PaginatedResponse[Union[schema.Document, schema.Folder]]:
-    """Returns a list of top level nodes shared with current user
-
-    Required scope: `{scope}`
-    """
-    order_by = ["ctype", "title", "created_at", "updated_at"]
-
-    if params.order_by:
-        order_by = [item.strip() for item in params.order_by.split(",")]
-
-    nodes = await nodes_api.get_paginated_nodes(
-        db_session=db_session,
-        parent_id=uuid.UUID(parent_id),
-        user_id=user.id,
-        page_size=params.page_size,
-        page_number=params.page_number,
-        order_by=order_by,
-        filter=params.filter,
-    )
-
-    return nodes
+    return result
 
 
-@router.post("/", status_code=204)
+@router.get(
+    "/folder/{parent_id}",
+    response_model=PaginatedResponse[Union[schema.DocumentEx, schema.FolderEx]],
+)
+async def get_shared_node_children(
+    parent_id: uuid.UUID,
+    user: require_scopes(scopes.NODE_VIEW),
+    params: SharedNodeParams = Depends(),
+    db_session: AsyncSession = Depends(get_db),
+) -> PaginatedResponse[Union[schema.DocumentEx, schema.FolderEx]]:
+    """Returns children of a shared folder"""
+    try:
+        filters = params.to_filters()
+        result = await nodes_dbapi.get_paginated_nodes(
+            db_session=db_session,
+            parent_id=parent_id,
+            page_size=params.page_size,
+            page_number=params.page_number,
+            sort_by=params.sort_by,
+            sort_direction=params.sort_direction,
+            filters=filters,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid parameters: {str(e)}")
+    except Exception as e:
+        logger.error(
+            f"Error fetching nodes for parent {parent_id} by user {user.id}: {e}",
+            exc_info=True
+        )
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+    return result
+
+@router.post("", status_code=204)
 @utils.docstring_parameter(scope=scopes.SHARED_NODE_CREATE)
 async def create_shared_nodes(
     shared_node: schema.CreateSharedNode,

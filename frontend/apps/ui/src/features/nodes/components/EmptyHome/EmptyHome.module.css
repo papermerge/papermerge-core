@@ -1,0 +1,13 @@
+.container {
+  height: 100%;
+  width: 100%;
+}
+
+.icon {
+  color: var(--mantine-color-dimmed);
+}
+
+.message {
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-sm);
+}

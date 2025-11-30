@@ -89,33 +89,31 @@ export default function Commander() {
   }
 
   return (
-    <>
-      <Stack>
-        <DataTable<NodeType>
-          data={data?.items || []}
-          columns={visibleColumns}
-          sorting={{
-            column: queryParams.sort_by,
-            direction: queryParams.sort_direction || null
-          }}
-          selectedRows={selectedItemsSet}
-          onSortChange={handleSortChange}
-          onSelectionChange={handleSelectionChange}
-          onRowClick={onTableRowClick}
-          withCheckbox={true}
-          withSecondaryPanelTriggerColumn={panelId == "main"}
-          getRowId={getRowId}
-        />
-        <TablePagination
-          currentPage={data?.page_number || 1}
-          totalPages={data?.num_pages || 0}
-          pageSize={data?.page_size || 15}
-          onPageChange={onPageNumberChange}
-          onPageSizeChange={onPageSizeChange}
-          totalItems={data?.total_items}
-          t={t}
-        />
-      </Stack>
-    </>
+    <Stack style={{height: "100%"}}>
+      <DataTable<NodeType>
+        data={data?.items || []}
+        columns={visibleColumns}
+        sorting={{
+          column: queryParams.sort_by,
+          direction: queryParams.sort_direction || null
+        }}
+        selectedRows={selectedItemsSet}
+        onSortChange={handleSortChange}
+        onSelectionChange={handleSelectionChange}
+        onRowClick={onTableRowClick}
+        withCheckbox={true}
+        withSecondaryPanelTriggerColumn={panelId == "main"}
+        getRowId={getRowId}
+      />
+      <TablePagination
+        currentPage={data?.page_number || 1}
+        totalPages={data?.num_pages || 0}
+        pageSize={data?.page_size || 15}
+        onPageChange={onPageNumberChange}
+        onPageSizeChange={onPageSizeChange}
+        totalItems={data?.total_items}
+        t={t}
+      />
+    </Stack>
   )
 }

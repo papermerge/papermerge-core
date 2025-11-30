@@ -56,6 +56,7 @@ import {
 import {APP_NODE_KEY, APP_NODE_VALUE} from "@/features/nodes/constants"
 import useNodes from "@/features/nodes/hooks/useNodes"
 
+import EmptyState from "@/features/nodes/components/EmptyState"
 import {NodeQueryParams} from "@/features/nodes/types"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {useTranslation} from "react-i18next"
@@ -409,7 +410,15 @@ function DataItems({
 
   if (data.items.length == 0) {
     return (
-      <Group>{t?.("common.empty", {defaultValue: "No items found"})}</Group>
+      <Group
+        style={{
+          height: "100%",
+          overflow: "auto",
+          position: "relative"
+        }}
+      >
+        <EmptyState />
+      </Group>
     )
   }
 

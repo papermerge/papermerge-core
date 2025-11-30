@@ -594,6 +594,13 @@
     "uploadedSuccessfully": "Uploaded successfully",
     "uploads": "Uploads ({{count}})"
   },
+  "nodes": {
+    "emptyState": {
+      "home": "Your home folder is empty",
+      "inbox": "Your inbox folder is empty",
+      "folder": "Folder is empty"
+    }
+  },
   "filterPlaceholder": "Filter...",
   "document": "Document",
   "folder": "Folder",

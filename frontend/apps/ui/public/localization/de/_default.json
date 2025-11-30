@@ -594,6 +594,13 @@
     "uploadedSuccessfully": "Erfolgreich hochgeladen",
     "uploads": "Hochgeladene Dateien ({{count}})"
   },
+  "nodes": {
+    "emptyState": {
+      "home": "Dein Home-Ordner ist leer",
+      "inbox": "Dein Posteingang ist leer",
+      "folder": "Ordner ist leer"
+    }
+  },
   "filterPlaceholder": "Filtern...",
   "document": "Dokument",
   "folder": "Ordner",

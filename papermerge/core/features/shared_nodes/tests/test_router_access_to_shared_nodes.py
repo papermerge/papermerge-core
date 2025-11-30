@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.tests.types import AuthTestClient
-from papermerge.core.features.auth.scopes import NODE_VIEW, NODE_DELETE
 from papermerge.core import dbapi, schema
+from papermerge.core.scopes import Scopes
 
 
 async def test_1_get_basic_access_to_shared_nodes(
@@ -21,7 +21,7 @@ async def test_1_get_basic_access_to_shared_nodes(
     david = auth_api_client.user
     receipts = await make_folder("John's Receipts", user=john, parent=john.home_folder)
     role, err = await dbapi.create_role(
-        db_session, "ViewDelete Node Role", scopes=[NODE_VIEW, NODE_DELETE]
+        db_session, "ViewDelete Node Role", scopes=[Scopes.NODE_VIEW, Scopes.NODE_DELETE]
     )
 
     await db_session.commit()
@@ -37,7 +37,7 @@ async def test_1_get_basic_access_to_shared_nodes(
         owner_id=john.id,
     )
     # Act / David retrieves shared nodes
-    response = await auth_api_client.get(f"/shared-nodes/")
+    response = await auth_api_client.get(f"/shared-nodes")
 
     data = response.json()
     folder = schema.Folder(**data["items"][0])
@@ -45,7 +45,7 @@ async def test_1_get_basic_access_to_shared_nodes(
     assert response.status_code == 200, data
     assert len(data["items"]) == 1
     assert folder.title == "John's Receipts"
-    assert set(folder.perms) == {NODE_VIEW, NODE_DELETE}
+    assert set(folder.perms) == {Scopes.NODE_VIEW, Scopes.NODE_DELETE}
 
 
 async def test_2_retrieve_shared_nodes_with_filter(
@@ -63,7 +63,7 @@ async def test_2_retrieve_shared_nodes_with_filter(
     receipts = await make_folder("John's Receipts", user=john, parent=john.home_folder)
     accounting = await make_folder("John's Accounting", user=john, parent=john.home_folder)
     role, err = await dbapi.create_role(
-        db_session, "ViewDelete Node Role", scopes=[NODE_VIEW, NODE_DELETE]
+        db_session, "ViewDelete Node Role", scopes=[Scopes.NODE_VIEW, Scopes.NODE_DELETE]
     )
 
     await db_session.commit()
@@ -79,7 +79,7 @@ async def test_2_retrieve_shared_nodes_with_filter(
         owner_id=john.id,
     )
     # Act / David retrieves shared nodes with applied filter
-    response = await auth_api_client.get("/shared-nodes/?filter=receipts")
+    response = await auth_api_client.get("/shared-nodes?filter_free_text=receipts")
 
     data = response.json()
     folder = schema.Folder(**data["items"][0])
@@ -88,10 +88,10 @@ async def test_2_retrieve_shared_nodes_with_filter(
     # When filter is applied only one item should be retrieved
     assert len(data["items"]) == 1
     assert folder.title == "John's Receipts"
-    assert set(folder.perms) == {NODE_VIEW, NODE_DELETE}
+    assert set(folder.perms) == {Scopes.NODE_VIEW, Scopes.NODE_DELETE}
 
     # Without filter - both shared nodes are retrieved
-    response = await auth_api_client.get("/shared-nodes/")
+    response = await auth_api_client.get("/shared-nodes")
     data = response.json()
     assert response.status_code == 200, data
 
@@ -111,7 +111,7 @@ async def test_3_paginated_nodes_are_returned_with_is_shared_flag_set_correctly(
     david = await make_user("david", is_superuser=False)
     receipts = await make_folder("John's Receipts", user=john, parent=john.home_folder)
     role, err = await dbapi.create_role(
-        db_session, "ViewDelete Node Role", scopes=[NODE_VIEW, NODE_DELETE]
+        db_session, "ViewDelete Node Role", scopes=[Scopes.NODE_VIEW, Scopes.NODE_DELETE]
     )
 
     await db_session.commit()
@@ -173,9 +173,9 @@ async def test_5_paginated_for_nodes_shared_multiple_times(
 
     receipts = await make_folder("John's Receipts", user=john, parent=john.home_folder)
     role1, _ = await dbapi.create_role(
-        db_session, "ViewDelete Node Role", scopes=[NODE_VIEW, NODE_DELETE]
+        db_session, "ViewDelete Node Role", scopes=[Scopes.NODE_VIEW, Scopes.NODE_DELETE]
     )
-    role2, _ = await dbapi.create_role(db_session, "View Node Role", scopes=[NODE_VIEW])
+    role2, _ = await dbapi.create_role(db_session, "View Node Role", scopes=[Scopes.NODE_VIEW])
 
     await db_session.commit()
 

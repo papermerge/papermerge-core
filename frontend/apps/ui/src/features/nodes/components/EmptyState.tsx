@@ -12,19 +12,15 @@ export default function EmptyState() {
   const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, panelId))
   const user = useAppSelector(selectCurrentUser) as User | null
 
-  if (!user) {
-    return <></>
+  if (!user || !currentNodeID) {
+    return null
   }
 
-  if (!currentNodeID) {
-    return <></>
-  }
-
-  if (user.home_folder_id == currentNodeID) {
+  if (user.home_folder_id === currentNodeID) {
     return <EmptyHome />
   }
 
-  if (user.inbox_folder_id == currentNodeID) {
+  if (user.inbox_folder_id === currentNodeID) {
     return <EmptyInbox />
   }
 

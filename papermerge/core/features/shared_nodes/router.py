@@ -11,7 +11,6 @@ from papermerge.core import utils, schema, dbapi
 from papermerge.core.features.auth import scopes, get_current_user
 from papermerge.core.types import PaginatedResponse
 from papermerge.core.features.shared_nodes.schema import SharedNodeParams
-from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.auth import require_scopes
 
 router = APIRouter(
@@ -53,39 +52,6 @@ async def get_shared_nodes(
 
     return result
 
-
-@router.get(
-    "/folder/{parent_id}",
-    response_model=PaginatedResponse[Union[schema.DocumentEx, schema.FolderEx]],
-)
-async def get_shared_node_children(
-    parent_id: uuid.UUID,
-    user: require_scopes(scopes.NODE_VIEW),
-    params: SharedNodeParams = Depends(),
-    db_session: AsyncSession = Depends(get_db),
-) -> PaginatedResponse[Union[schema.DocumentEx, schema.FolderEx]]:
-    """Returns children of a shared folder"""
-    try:
-        filters = params.to_filters()
-        result = await nodes_dbapi.get_paginated_nodes(
-            db_session=db_session,
-            parent_id=parent_id,
-            page_size=params.page_size,
-            page_number=params.page_number,
-            sort_by=params.sort_by,
-            sort_direction=params.sort_direction,
-            filters=filters,
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid parameters: {str(e)}")
-    except Exception as e:
-        logger.error(
-            f"Error fetching nodes for parent {parent_id} by user {user.id}: {e}",
-            exc_info=True
-        )
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-    return result
 
 @router.post("", status_code=204)
 @utils.docstring_parameter(scope=scopes.SHARED_NODE_CREATE)

@@ -9,7 +9,6 @@ import {
   currentSharedNodeRootChanged
 } from "@/features/ui/uiSlice"
 
-import SharedBreadcrumbs from "@/components/SharedBreadcrumb"
 import PanelContext from "@/contexts/PanelContext"
 
 import {store} from "@/app/store"
@@ -84,12 +83,9 @@ export default function SharedViewer() {
 
   return (
     <div className={classes.viewer}>
-      <Group className={classes.header}>
+      <Group className={classes.header} pb={"md"} justify="space-between">
         <ActionButtons />
-        <Group justify="space-between">
-          <SharedBreadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
-          <DocumentDetailsToggle />
-        </Group>
+        <DocumentDetailsToggle />
       </Group>
       <Flex ref={ref} className={classes.inner}>
         {thumbnailsIsOpen && <ThumbnailList docVer={docVer} />}

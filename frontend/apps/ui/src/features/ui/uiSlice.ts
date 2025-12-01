@@ -1,5 +1,5 @@
 import type {RootState} from "@/app/types"
-import type {BooleanString, CType, ClientPage, PanelMode} from "@/types"
+import type {BooleanString, ClientPage, PanelMode} from "@/types"
 import type {PanelComponent} from "@/types.d/ui"
 import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 import Cookies from "js-cookie"
@@ -34,20 +34,9 @@ interface NavBarState {
   width: number
 }
 
-interface CurrentNodeArgs {
-  id: string
-  ctype: CType
-  panel: PanelMode
-}
-
 interface CurrentPageUpdatedArgs {
   pageNumber: number
   panel: PanelMode
-}
-
-interface CurrentNode {
-  id: string
-  ctype: CType
 }
 
 interface ViewerState {
@@ -100,7 +89,6 @@ export interface UIState {
   dragndrop?: DragNDropState
   mainViewer?: ViewerState
   secondaryViewer?: ViewerState
-  currentSharedNode?: CurrentNode
   currentSharedRootID?: string
   /* User may choose between own and group homes
    this field indicates his/her last selection */
@@ -158,20 +146,6 @@ const uiSlice = createSlice({
       state.secondaryPanelComponent = action.payload
     },
 
-    currentSharedNodeChanged(state, action: PayloadAction<CurrentNodeArgs>) {
-      const payload = action.payload
-
-      state.currentSharedNode = {
-        id: payload.id,
-        ctype: payload.ctype
-      }
-      if (payload.ctype == "folder") {
-        state.mainPanelComponent = "sharedCommander"
-      }
-      if (payload.ctype == "document") {
-        state.mainPanelComponent = "sharedViewer"
-      }
-    }, // end of currentSharedNodeChanged
     currentSharedNodeRootChanged(
       state,
       action: PayloadAction<string | undefined>
@@ -261,7 +235,6 @@ const uiSlice = createSlice({
 
 export const {
   toggleNavBar,
-  currentSharedNodeChanged,
   currentSharedNodeRootChanged,
   mainPanelComponentUpdated,
   secondaryPanelComponentUpdated,
@@ -279,10 +252,6 @@ export default uiSlice.reducer
 export const selectNavBarCollapsed = (state: RootState) =>
   state.ui.navbar.collapsed
 export const selectNavBarWidth = (state: RootState) => state.ui.navbar.width
-
-export const selectCurrentSharedNodeID = (state: RootState) => {
-  return state.ui.currentSharedNode?.id
-}
 
 export const selectSharedNode = (state: RootState, nodeID: string) => {
   return state.sharedNodes.entities[nodeID]

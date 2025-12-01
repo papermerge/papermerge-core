@@ -25,14 +25,14 @@ import {
   IconAlignJustified,
   IconFile,
   IconFolder,
+  IconFolderShare,
   IconInbox,
   IconLogs,
   IconMasksTheater,
   IconTag,
   IconTriangleSquareCircle,
   IconUsers,
-  IconUsersGroup,
-  IconUserShare
+  IconUsersGroup
 } from "@tabler/icons-react"
 
 import {useSelector} from "react-redux"
@@ -108,7 +108,7 @@ function NavBarContent({renderLink, withVersion}: Args) {
         )}
         {hasPermission(SHARED_NODE_VIEW) && (
           <NavLink to={"/shared"} onClick={onClick}>
-            {renderLink(t("shared.name"), <IconUserShare />)}
+            {renderLink(t("shared.name"), <IconFolderShare />)}
           </NavLink>
         )}
         {hasPermission(TAG_VIEW) && (

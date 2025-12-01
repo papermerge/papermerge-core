@@ -26,7 +26,7 @@ import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {selectPanelAllCustom} from "@/features/ui/panelRegistry"
 
-import {RootState} from "@/app/types"
+import type {RootState} from "@/app/types"
 import type {NType, PanelMode} from "@/types"
 import ActionButtons from "./ActionButtons"
 

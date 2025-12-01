@@ -26,8 +26,6 @@ from papermerge.core.db.base import Base
 from papermerge.core.db.engine import engine, get_db
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.document import schema as doc_schema
-from papermerge.core.features.special_folders.db import \
-    api as special_folders_api
 from papermerge.core.features.custom_fields.schema import CustomFieldType
 from papermerge.core.router_loader import discover_routers
 from papermerge.core import orm, dbapi
@@ -38,6 +36,9 @@ from papermerge.core.constants import ContentType
 from papermerge.core.types import OwnerType, ResourceType
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.features.document_types.db import api as dt_dbapi
+from papermerge.core.features.special_folders.db import \
+    api as special_folders_api
+from papermerge.core.features.groups.db.orm import UserGroup
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "document" / "tests" / "resources"
@@ -867,12 +868,15 @@ def make_document_tax(db_session: AsyncSession, document_type_tax):
 
     return _make_tax
 
+
 @pytest.fixture()
 async def make_group(db_session: AsyncSession):
-    """Create test group, optionally with special folders"""
-    async def _maker(name: str, with_special_folders: bool = False):
-        from papermerge.core.features.special_folders.db import api as special_folders_api
-
+    """Create test group, optionally with special folders and members"""
+    async def _maker(
+        name: str,
+        with_special_folders: bool = False,
+        members: list | None = None,
+    ):
         group_id = uuid.uuid4()
 
         # Step 1: Create group
@@ -889,6 +893,15 @@ async def make_group(db_session: AsyncSession):
                 db_session,
                 group_id
             )
+
+        # Step 3: Add members to the group
+        if members:
+            for user in members:
+                user_group = UserGroup(
+                    user_id=user.id,
+                    group_id=group_id,
+                )
+                db_session.add(user_group)
 
         await db_session.commit()
         await db_session.refresh(group)

@@ -83,8 +83,18 @@ def str2colexpr(keys: list[str]):
 
 async def get_nodes(
     db_session: AsyncSession,
-    node_ids: list[UUID] | None = None
+    node_ids: list[UUID] | None = None,
+    user_id: UUID | None = None,
 ) -> list[schema.Document | schema.Folder]:
+    """
+    Get nodes by IDs with user-aware breadcrumbs.
+
+    Args:
+        db_session: Database session
+        node_ids: List of node IDs to retrieve (empty list returns all nodes)
+        user_id: Current user ID for breadcrumb truncation. If provided,
+                 breadcrumbs will be truncated for shared access.
+    """
     items = []
     if node_ids is None:
         node_ids = []
@@ -101,16 +111,35 @@ async def get_nodes(
     nodes = (await db_session.scalars(stmt)).all()
 
     for node in nodes:
-        breadcrumb = await get_ancestors(db_session, node.id, include_self=False)
+        # Get full breadcrumb
+        full_breadcrumb = await get_ancestors(db_session, node.id, include_self=False)
+
+        # Determine if we need to truncate for shared access
+        shared_root_id = None
+        if user_id is not None:
+            shared_root_id = await get_shared_root_for_user(
+                db_session, node_id=node.id, user_id=user_id
+            )
+
+        if shared_root_id is not None:
+            path = truncate_breadcrumb_at_shared_root(full_breadcrumb, shared_root_id)
+        else:
+            path = full_breadcrumb
+
+        # Determine root type for frontend rendering
+        root_type = await get_breadcrumb_root_type(
+            db_session, full_breadcrumb, shared_root_id
+        )
+
         node = await load_node(db_session, node)
-        node.breadcrumb = breadcrumb
+        node.breadcrumb = Breadcrumb(path=path, root=root_type)
+
         if node.ctype == "folder":
             items.append(schema.Folder.model_validate(node))
         else:
             items.append(schema.Document.model_validate(node))
 
     return items
-
 
 async def get_folder_by_id(db_session: AsyncSession, id: uuid.UUID) -> schema.Folder:
     stmt = select(Folder).where(Folder.id == id)

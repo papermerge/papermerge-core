@@ -45,6 +45,7 @@ export default function SharedBreadcrumb({
   }
 
   const items = breadcrumb
+
   const links = items.slice(0, -1).map(i => (
     <Anchor key={i[0]} onClick={() => onClick({id: i[0], ctype: "folder"})}>
       {i[1]}

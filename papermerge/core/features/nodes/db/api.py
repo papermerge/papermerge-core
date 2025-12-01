@@ -22,12 +22,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from papermerge.core import schema, orm
 from papermerge.core.db.exceptions import ResourceHasNoOwner
 from papermerge.core.exceptions import EntityNotFound
-from papermerge.core.db.common import get_ancestors, get_descendants
+from papermerge.core.db.common import get_descendants
 from papermerge.core.types import PaginatedResponse, ResourceType, OwnerType
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.features.nodes import events
 from papermerge.core.features.nodes.schema import DeleteDocumentsData
 from papermerge.core.features.ownership.db.orm import Ownership
+from papermerge.core.db.common import (
+    get_ancestors,
+    get_shared_root_for_user,
+    truncate_breadcrumb_at_shared_root,
+    get_breadcrumb_root_type,
+)
+from papermerge.core.schemas.common import Breadcrumb
 from .orm import Folder
 
 logger = logging.getLogger(__name__)
@@ -630,9 +637,26 @@ async def remove_node_tags(
 
 
 async def get_folder(
-    db_session: AsyncSession, folder_id: UUID
+    db_session: AsyncSession,
+    folder_id: UUID,
+    user_id: UUID,
 ) -> orm.Folder:
-    breadcrumb = await get_ancestors(db_session, folder_id)
+    # Get full breadcrumb first
+    full_breadcrumb = await get_ancestors(db_session, folder_id)
+
+    # Check if we need to truncate for shared access
+    shared_root_id = await get_shared_root_for_user(
+        db_session, node_id=folder_id, user_id=user_id
+    )
+
+    if shared_root_id is not None:
+        path = truncate_breadcrumb_at_shared_root(full_breadcrumb, shared_root_id)
+    else:
+        path = full_breadcrumb
+
+    # Determine root type for frontend rendering
+    root_type = await get_breadcrumb_root_type(db_session, full_breadcrumb, shared_root_id)
+
     owner_user = aliased(orm.User, name='owner_user')
     owner_group = aliased(orm.Group, name='owner_group')
 
@@ -679,13 +703,9 @@ async def get_folder(
     if row is None:
         raise ValueError(f"Folder {folder_id} not found")
 
-    # Extract the Folder object from the row
     folder = row[0]
+    folder.breadcrumb = Breadcrumb(path=path, root=root_type)
 
-    # Set the breadcrumb on the ORM object (this is mutable)
-    folder.breadcrumb = breadcrumb
-
-    # Build the owned_by object
     if row.owner_type == OwnerType.USER:
         owned_by = schema.OwnedBy(
             id=row.owner_user_id,
@@ -699,7 +719,6 @@ async def get_folder(
             type=OwnerType.GROUP
         )
 
-    # Set the owned_by on the ORM object
     folder.owned_by = owned_by
 
     return folder

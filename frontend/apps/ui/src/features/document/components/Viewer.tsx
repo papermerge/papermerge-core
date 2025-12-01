@@ -1,44 +1,44 @@
-import { useAppDispatch, useAppSelector } from "@/app/hooks"
-import { useCurrentDoc } from "@/features/document/hooks"
-import { setPanelComponent } from "@/features/ui/panelRegistry"
-import { Flex, Group, Loader } from "@mantine/core"
-import { useDisclosure } from "@mantine/hooks"
-import { useContext } from "react"
-import { useNavigate } from "react-router-dom"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {useCurrentDoc} from "@/features/document/hooks"
+import {setPanelComponent} from "@/features/ui/panelRegistry"
+import {Flex, Group, Loader} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
+import {useContext} from "react"
+import {useNavigate} from "react-router-dom"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"
 
 import EditNodeTitleModal from "@/components/EditNodeTitleModal"
 import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
-import { useRef } from "react"
+import {useRef} from "react"
 
 import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetails"
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
-import { applyPageChangesThunk } from "@/features/document/actions/applyPageOpChanges"
+import {applyPageChangesThunk} from "@/features/document/actions/applyPageOpChanges"
 import ActionButtons from "@/features/document/components/ActionButtons"
-import { useCurrentDocVer } from "@/features/document/hooks"
+import {useCurrentDocVer} from "@/features/document/hooks"
 import {
   pagesDeleted,
   pagesReseted,
   pagesRotated,
   selectAllPages
 } from "@/features/document/store/documentVersSlice"
-import { usePanel } from "@/features/ui/hooks/usePanel"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
   clearPanelSelection,
   selectPanelAllCustom,
   updatePanelCurrentNode
 } from "@/features/ui/panelRegistry"
-import { currentDocVerUpdated } from "@/features/ui/uiSlice"
-import { selectCurrentUser } from "@/slices/currentUser"
-import type { NType, PanelMode } from "@/types"
-import { DOC_VER_PAGINATION_PAGE_BATCH_SIZE } from "../constants"
+import {currentDocVerUpdated} from "@/features/ui/uiSlice"
+import {selectCurrentUser} from "@/slices/currentUser"
+import type {NType, PanelMode} from "@/types"
+import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "../constants"
 import ContextMenu from "./ContextMenu"
 
-import { useSelectedPages } from "@/features/document/hooks"
+import {useSelectedPages} from "@/features/document/hooks"
 import useContextMenu from "@/features/document/hooks/useContextMenu"
 import DeleteEntireDocumentConfirm from "./DeleteEntireDocumentConfirm"
 import PagesHaveChangedDialog from "./PageHaveChangedDialog"
@@ -186,7 +186,7 @@ export function Viewer({doc, docVer}: Args) {
           targetDocVerID: docVer?.id!
         })
       )
-       dispatch(clearPanelSelection({panelId}))
+      dispatch(clearPanelSelection({panelId}))
     }
   }
 
@@ -216,7 +216,7 @@ export function Viewer({doc, docVer}: Args) {
           onDeletePagesClicked={onDeletePagesItemClicked}
         />
         <Group justify="space-between">
-          <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
+          <Breadcrumbs breadcrumb={doc?.breadcrumb.path} onClick={onClick} />
           <DocumentDetailsToggle />
         </Group>
       </div>

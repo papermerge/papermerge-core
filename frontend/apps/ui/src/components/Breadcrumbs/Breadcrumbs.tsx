@@ -14,7 +14,7 @@ import {IconChevronDown, IconHome, IconInbox} from "@tabler/icons-react"
 import {useContext, useRef} from "react"
 import classes from "./Breadcrumbs.module.css"
 
-import type {NType, PanelMode, UserDetails} from "@/types"
+import type {BreadcrumbType, NType, PanelMode, UserDetails} from "@/types"
 
 import PanelContext from "@/contexts/PanelContext"
 import {lastHomeUpdated, lastInboxUpdated} from "@/features/ui/uiSlice"
@@ -29,7 +29,7 @@ import {useTranslation} from "react-i18next"
 type Args = {
   onClick: (node: NType) => void
   className?: string
-  breadcrumb?: Array<[string, string]>
+  breadcrumb?: BreadcrumbType
   isFetching?: boolean
 }
 
@@ -52,7 +52,8 @@ export default function BreadcrumbsComponent({
       </Skeleton>
     )
   }
-  const items = breadcrumb
+  const items = breadcrumb.path
+
   const links = items.slice(1, -1).map(i => (
     <Anchor key={i[0]} onClick={() => onClick({id: i[0], ctype: "folder"})}>
       {i[1]}

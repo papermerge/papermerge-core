@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, \
     field_validator
 
 from papermerge.core.features.nodes.schema import NodeShort
+from papermerge.core.schemas.common import Breadcrumb
 from papermerge.core.schemas.common import ByUser, OwnedBy, Category, Tag
 from papermerge.core.features.custom_fields.schema import (
     CustomFieldType,
@@ -309,7 +310,7 @@ class DocumentNode(DocumentBase):
     slow as for each page of each doc ver signed URL must be computed)
     """
     document_type_id: UUID | None = None
-    breadcrumb: list[tuple[UUID, str]] = Field(default_factory=list)
+    breadcrumb: Breadcrumb | None = None
     ocr: bool = True  # will this document be OCRed?
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
     owner_name: str | None = None

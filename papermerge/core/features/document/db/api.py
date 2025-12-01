@@ -25,6 +25,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from papermerge.core.db.common import (
+    get_shared_root_for_user,
+    truncate_breadcrumb_at_shared_root,
+    get_breadcrumb_root_type,
+)
+from papermerge.core.schemas.common import Breadcrumb
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.types import OwnerType, ResourceType, ImagePreviewStatus, \
     MimeType
@@ -945,27 +951,39 @@ async def upload(
     return validated_model, None
 
 
+
 async def get_doc(
     session: AsyncSession,
     id: uuid.UUID,
+    user_id: uuid.UUID,
 ) -> schema.DocumentWithoutVersions:
-    stmt_doc = select(orm.Document).where(
-        orm.Document.id == id
-    )
+    stmt_doc = select(orm.Document).where(orm.Document.id == id)
     db_doc = (await session.execute(stmt_doc)).scalar_one()
-    breadcrumb = await get_ancestors(session, id)
-    db_doc.breadcrumb = breadcrumb
+
+    # Get full breadcrumb
+    full_breadcrumb = await get_ancestors(session, id)
+
+    # Check if we need to truncate for shared access
+    shared_root_id = await get_shared_root_for_user(
+        session, node_id=id, user_id=user_id
+    )
+
+    if shared_root_id is not None:
+        path = truncate_breadcrumb_at_shared_root(full_breadcrumb, shared_root_id)
+    else:
+        path = full_breadcrumb
+
+    # Determine root type for frontend rendering
+    root_type = await get_breadcrumb_root_type(session, full_breadcrumb, shared_root_id)
+
+    db_doc.breadcrumb = Breadcrumb(path=path, root=root_type)
 
     owner = await get_node_owner(session, node_id=id)
     db_doc.owner_name = owner.name
 
-    # colored_tags = session.scalars(colored_tags_stmt).all()
-    # db_doc.tags = [ct.tag for ct in colored_tags]
-
     model_doc = schema.DocumentWithoutVersions.model_validate(db_doc)
 
     return model_doc
-
 
 async def get_doc_id_from_doc_ver_id(
     db_session: AsyncSession,

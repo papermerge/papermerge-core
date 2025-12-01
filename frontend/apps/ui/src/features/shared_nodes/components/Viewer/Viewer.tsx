@@ -6,8 +6,7 @@ import {useNavigate} from "react-router-dom"
 
 import {
   currentDocVerUpdated,
-  currentSharedNodeRootChanged,
-  selectCurrentSharedNodeID
+  currentSharedNodeRootChanged
 } from "@/features/ui/uiSlice"
 
 import SharedBreadcrumbs from "@/components/SharedBreadcrumb"
@@ -19,27 +18,29 @@ import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetai
 import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
+import PageList from "@/features/document/components/PageList"
+import ThumbnailList from "@/features/document/components/ThumbnailList"
 import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "@/features/document/constants"
+import {useCurrentDoc, useCurrentDocVer} from "@/features/document/hooks"
 import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
-import PageList from "./PageList"
-import ThumbnailList from "./ThumbnailList"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectPanelAllCustom} from "@/features/ui/panelRegistry"
 
 import {RootState} from "@/app/types"
-import {
-  useCurrentSharedDoc,
-  useCurrentSharedDocVer
-} from "@/features/shared_nodes/hooks"
 import type {NType, PanelMode} from "@/types"
 import ActionButtons from "./ActionButtons"
 
 export default function SharedViewer() {
-  const {doc} = useCurrentSharedDoc()
-  const {docVer} = useCurrentSharedDocVer()
-
+  const {panelId} = usePanel()
+  const {doc} = useCurrentDoc()
+  const {docVer} = useCurrentDocVer()
   const ref = useRef<HTMLDivElement>(null)
   const mode: PanelMode = useContext(PanelContext)
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+  const {thumbnailPanelIsOpen: thumbnailsIsOpen} = useAppSelector(s =>
+    selectPanelAllCustom(s, panelId)
+  )
 
   /* generate first batch of previews: for pages and for their thumbnails */
   const allPreviewsAreAvailable = useGeneratePreviews({
@@ -48,8 +49,6 @@ export default function SharedViewer() {
     pageSize: DOC_VER_PAGINATION_PAGE_BATCH_SIZE,
     imageSize: "md"
   })
-
-  const currentNodeID = useAppSelector(selectCurrentSharedNodeID)
 
   const onClick = (node: NType) => {
     if (node.ctype == "folder") {
@@ -70,18 +69,7 @@ export default function SharedViewer() {
       navigate(`/shared/folder/${node.id}`)
     }
   }
-  /*
-  useEffect(() => {
-    if (doc) {
-      const maxVerNum = Math.max(...doc.versions.map(v => v.number))
-      const docVer = doc.versions.find(v => v.number == maxVerNum)
-      if (docVer) {
-        dispatch(currentDocVerUpdated({mode: mode, docVerID: docVer.id}))
-      }
-    }
-  }, [isSuccess, doc])
-  console.log(`shared viewer ${doc}`)
-  */
+
   if (!doc) {
     return <Loader />
   }
@@ -93,21 +81,24 @@ export default function SharedViewer() {
   if (!allPreviewsAreAvailable) {
     return <Loader />
   }
+
   return (
-    <div>
-      <ActionButtons />
-      <Group justify="space-between">
-        <SharedBreadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
-        <DocumentDetailsToggle />
+    <div className={classes.viewer}>
+      <Group className={classes.header}>
+        <ActionButtons />
+        <Group justify="space-between">
+          <SharedBreadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
+          <DocumentDetailsToggle />
+        </Group>
       </Group>
       <Flex ref={ref} className={classes.inner}>
-        <ThumbnailList />
+        {thumbnailsIsOpen && <ThumbnailList docVer={docVer} />}
         <ThumbnailsToggle />
-        <PageList />
+        <PageList docVer={docVer} />
         <DocumentDetails
-          doc={doc}
           docVer={docVer}
-          docID={currentNodeID}
+          doc={doc}
+          docID={doc?.id}
           isLoading={false}
         />
       </Flex>

@@ -1,14 +1,14 @@
 import {useAppDispatch} from "@/app/hooks"
 import useDownloadButton from "@/features/document/components/DownloadButton/useDownloadButton"
+import {useCurrentDoc} from "@/features/document/hooks"
 import {fetchAndDownloadDocument} from "@/features/document/store/documentDownloadsSlice"
-import useCurrentSharedDoc from "@/features/shared_nodes/hooks/useCurrentSharedDoc"
 import {UUID} from "@/types.d/common"
 import {useState} from "react"
 import {DownloadButton} from "viewer"
 
 export default function DownloadButtonContainer() {
   const [wasOpened, setWasOpened] = useState<boolean>(false)
-  const {doc} = useCurrentSharedDoc()
+  const {doc} = useCurrentDoc()
   const {versions, txt, isError, isLoading, i18nIsReady} = useDownloadButton({
     initiateListDownload: wasOpened,
     nodeID: doc?.id

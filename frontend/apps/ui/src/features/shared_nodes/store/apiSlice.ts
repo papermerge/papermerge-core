@@ -1,18 +1,18 @@
-import {apiSlice} from "@/features/api/slice"
-import {NodeQueryParams} from "@/features/nodes/types"
+import { apiSlice } from "@/features/api/slice"
+import { NodeQueryParams } from "@/features/nodes/types"
 
 import {
   PAGINATION_DEFAULT_ITEMS_PER_PAGES,
   SHARED_FOLDER_ROOT_ID
 } from "@/cconstants"
-import type {FolderType, NodeType, Paginated} from "@/types"
+import type { FolderType, NodeType, Paginated } from "@/types"
 import {
   NewSharedNodes,
   SharedNodeAccessDetails,
   SharedNodeAccessUpdate
 } from "@/types.d/shared_nodes"
 
-import type {DocumentType} from "@/features/document/types"
+import type { DocumentType } from "@/features/document/types"
 
 export type PaginatedArgs = {
   nodeID: string
@@ -30,36 +30,6 @@ interface GetSharedNodeArgs {
 
 export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
   endpoints: builder => ({
-    getPaginatedSharedNodes: builder.query<Paginated<NodeType>, PaginatedArgs>({
-      query: ({nodeID, queryParams}: PaginatedArgs) => {
-        const queryString = buildQueryString(queryParams || {})
-        return `/shared-nodes/folder/${nodeID}?${queryString}`
-      },
-      providesTags: (
-        result = {
-          page_number: 1,
-          page_size: 1,
-          num_pages: 1,
-          items: [],
-          total_items: 1
-        },
-        _error,
-        arg
-      ) => [
-        "SharedNode", // generic SharedNode tag
-        {type: "SharedNode", id: arg.nodeID}, // "SharedNode" tag per parent ID
-        // "SharedNode" tag per each returned item
-        ...result.items.map(({id}) => ({type: "SharedNode", id}) as const)
-      ],
-      transformResponse(res: Paginated<NodeType>, _, arg) {
-        if (arg.nodeID == SHARED_FOLDER_ROOT_ID) {
-          for (let i = 0; i < res.items.length; i++) {
-            res.items[i].is_shared_root = true
-          }
-        }
-        return res
-      }
-    }),
     getPaginatedSharedRootNodes: builder.query<
       Paginated<NodeType>,
       PaginatedTopLevelArgs
@@ -148,7 +118,6 @@ export const apiSliceWithSharedNodes = apiSlice.injectEndpoints({
 
 export const {
   useAddNewSharedNodeMutation,
-  useGetPaginatedSharedNodesQuery, // get shared nodes with specific parent ID
   useGetPaginatedSharedRootNodesQuery, // get top level shared nodes
   useGetSharedNodeAccessDetailsQuery,
   useUpdateSharedNodeAccessMutation,

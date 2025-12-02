@@ -216,7 +216,7 @@ export function Viewer({doc, docVer}: Args) {
           onDeletePagesClicked={onDeletePagesItemClicked}
         />
         <Group justify="space-between">
-          <Breadcrumbs breadcrumb={doc?.breadcrumb.path} onClick={onClick} />
+          <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
           <DocumentDetailsToggle />
         </Group>
       </div>

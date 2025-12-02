@@ -69,7 +69,8 @@ export default function Commander() {
   }
 
   const onTableRowClick = (row: NodeType, openInSecondaryPanel: boolean) => {
-    const component = row.ctype === "document" ? "viewer" : "sharedCommander"
+    const component =
+      row.ctype === "document" ? "sharedViewer" : "sharedCommander"
 
     // Secondary panel always uses dispatch
     if (openInSecondaryPanel || panelId == "secondary") {

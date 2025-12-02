@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional, Dict, Any
 from datetime import datetime
-from typing import List, Literal, Tuple
+from typing import List, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator, \
@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, ValidationError, field_validator, \
 from fastapi import Query
 
 from papermerge.core.schemas.common import OwnedBy, ByUser
+from papermerge.core.schemas.common import Breadcrumb
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core.types import OwnerType
 
@@ -164,7 +165,7 @@ class Folder(NewFolder):
     perms: list[str] = []
     is_shared: bool = False
 
-    breadcrumb: List[Tuple[UUID, str]] = []
+    breadcrumb: Breadcrumb | None = None
 
     @field_validator("tags", mode="before")
     def tags_validator(cls, value):

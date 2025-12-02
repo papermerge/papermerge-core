@@ -1,7 +1,6 @@
 import {RootState} from "@/app/types"
 import type {
   NodeType,
-  Paginated,
   ServerNotifDocumentMoved,
   ServerNotifDocumentsMoved
 } from "@/types"
@@ -12,7 +11,6 @@ import {
   createSelector,
   createSlice
 } from "@reduxjs/toolkit"
-import {apiSliceWithSharedNodes} from "./apiSlice"
 
 interface DocumentThumbnailUpdated {
   document_id: string
@@ -73,15 +71,6 @@ const sharedNodesSlice = createSlice({
         message: `Document ${payload.new_document_title} moved to new folder (based on custom field changes)`
       })
     }
-  },
-  extraReducers(builder) {
-    builder.addMatcher(
-      apiSliceWithSharedNodes.endpoints.getPaginatedSharedNodes.matchFulfilled,
-      (state, action: PayloadAction<Paginated<NodeType>>) => {
-        const payload = action.payload
-        sharedNodesAdapter.addMany(state, payload.items)
-      }
-    )
   }
 })
 

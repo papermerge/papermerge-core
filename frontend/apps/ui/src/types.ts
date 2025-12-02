@@ -1,6 +1,7 @@
 import type {Group} from "@/types.d/groups"
 import {DocumentType} from "./features/document/types"
 import {Preferences} from "./features/preferences/types"
+import {BreadcrumbRootType} from "./types/breadcrumb"
 
 export type ByUser = {
   username: string
@@ -200,7 +201,10 @@ export type EntityWithTags = {
 
 export type BreadcrumbItemType = [string, string]
 
-export type BreadcrumbType = Array<BreadcrumbItemType>
+export type BreadcrumbType = {
+  path: Array<BreadcrumbItemType>
+  root: BreadcrumbRootType
+}
 
 export type FolderType = NodeType & {
   breadcrumb: BreadcrumbType

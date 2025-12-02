@@ -121,3 +121,13 @@ class ResourceType(str, Enum):
     CUSTOM_FIELD = "custom_field"
     DOCUMENT_TYPE = "document_type"
     TAG = "tag"
+
+
+class BreadcrumbRootType(str, Enum):
+    """
+    Type of root for breadcrumb navigation.
+    Used by frontend to render the breadcrumb root differently.
+    """
+    HOME = "home"
+    INBOX = "inbox"
+    SHARED = "shared"

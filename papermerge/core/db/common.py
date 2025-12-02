@@ -8,11 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from papermerge.core.features.nodes.db import orm
 from papermerge.core.features.shared_nodes.db import orm as sn_orm
 from papermerge.core.features.roles.db import orm as roles_orm
-from papermerge.core.features.ownership.db import api as ownership_api
-from papermerge.core.types import ResourceType, OwnerType
+from papermerge.core.types import OwnerType
 from papermerge.core.schemas.common import OwnedBy
 from papermerge.core.features.ownership.db.orm import Ownership
 from papermerge.core.features.groups.db.orm import UserGroup
+from papermerge.core.features.ownership.db import api as ownership_api
+from papermerge.core.types import ResourceType
 
 
 async def get_ancestors(
@@ -50,6 +51,123 @@ async def get_ancestors(
     result = await db_session.execute(stmt)
 
     return [(row.id, row.title) for row in result]
+
+from papermerge.core.types import BreadcrumbRootType
+
+
+async def get_shared_root_for_user(
+    db_session: AsyncSession,
+    node_id: UUID,
+    user_id: UUID,
+) -> UUID | None:
+    """
+    Find the shared root node if user is accessing a node via a share.
+
+    Returns the ID of the topmost shared ancestor if user is accessing via share,
+    or None if user is the owner (not accessing via share).
+    """
+
+    # First check if user is the owner (direct or via group)
+    is_owner = await ownership_api.user_can_access_resource(
+        session=db_session,
+        user_id=user_id,
+        resource_type=ResourceType.NODE,
+        resource_id=node_id
+    )
+
+    if is_owner:
+        return None  # User is owner, show full breadcrumb
+
+    # User is accessing via share - find the shared root
+    ancestors = await get_ancestors(db_session, node_id, include_self=True)
+    ancestor_ids = [a[0] for a in ancestors]
+
+    # Get groups user belongs to
+    user_groups_stmt = select(UserGroup.group_id).where(UserGroup.user_id == user_id)
+    user_group_ids = [row[0] for row in await db_session.execute(user_groups_stmt)]
+
+    # Find which ancestors are shared with this user
+    stmt = (
+        select(sn_orm.SharedNode.node_id)
+        .where(
+            sn_orm.SharedNode.node_id.in_(ancestor_ids),
+            or_(
+                sn_orm.SharedNode.user_id == user_id,
+                sn_orm.SharedNode.group_id.in_(user_group_ids),
+            )
+        )
+    )
+
+    shared_node_ids = set((await db_session.scalars(stmt)).all())
+
+    if not shared_node_ids:
+        return None
+
+    # Find the topmost shared ancestor (first one in breadcrumb order)
+    for ancestor_id, _ in ancestors:
+        if ancestor_id in shared_node_ids:
+            return ancestor_id
+
+    return None
+
+
+def truncate_breadcrumb_at_shared_root(
+    breadcrumb: list[tuple[UUID, str]],
+    shared_root_id: UUID
+) -> list[tuple[UUID, str]]:
+    """
+    Truncate breadcrumb to start from the shared root.
+
+    Given breadcrumb: [home, Projects, Flights 001, doc1.pdf]
+    And shared_root_id pointing to "Flights 001"
+    Returns: [Flights 001, doc1.pdf]
+    """
+    result = []
+    found_root = False
+    for item in breadcrumb:
+        if item[0] == shared_root_id:
+            found_root = True
+        if found_root:
+            result.append(item)
+    return result
+
+
+async def get_breadcrumb_root_type(
+    db_session: AsyncSession,
+    breadcrumb: list[tuple[UUID, str]],
+    shared_root_id: UUID | None,
+) -> BreadcrumbRootType:
+    """
+    Determine the root type of a breadcrumb for frontend rendering.
+
+    Returns:
+        - SHARED if user is accessing via share
+        - HOME if root folder is a home folder
+        - INBOX if root folder is an inbox folder
+    """
+    from papermerge.core.features.special_folders.db.orm import SpecialFolder
+    from papermerge.core.types import FolderType
+
+    if shared_root_id is not None:
+        return BreadcrumbRootType.SHARED
+
+    if not breadcrumb:
+        return BreadcrumbRootType.HOME  # Default fallback
+
+    # Get the root folder ID (first element in breadcrumb)
+    root_folder_id = breadcrumb[0][0]
+
+    # Check if it's a special folder (home or inbox)
+    stmt = select(SpecialFolder.folder_type).where(
+        SpecialFolder.folder_id == root_folder_id
+    )
+    result = await db_session.execute(stmt)
+    folder_type = result.scalar_one_or_none()
+
+    if folder_type == FolderType.INBOX:
+        return BreadcrumbRootType.INBOX
+
+    return BreadcrumbRootType.HOME  # Default to HOME
 
 
 async def get_descendants(

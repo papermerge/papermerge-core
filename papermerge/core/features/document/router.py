@@ -470,7 +470,7 @@ async def get_document_details(
         ):
             raise exc.HTTP403Forbidden()
 
-        doc = await dbapi.get_doc(db_session, id=document_id)
+        doc = await dbapi.get_doc(db_session, id=document_id, user_id=user.id)
     except NoResultFound:
         raise exc.HTTP404NotFound()
     return doc

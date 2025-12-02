@@ -39,7 +39,7 @@ async def get_node(
         raise HTTP403Forbidden()
 
     try:
-        folder = await dbapi.get_folder(db_session, folder_id=folder_id)
+        folder = await dbapi.get_folder(db_session, folder_id=folder_id, user_id=user.id)
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Resource not found")
 

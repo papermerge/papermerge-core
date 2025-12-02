@@ -1,9 +1,9 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import {useGetFolderQuery} from "@/features/nodes/storage/api"
 import {
-  useGetPaginatedSharedNodesQuery,
-  useGetPaginatedSharedRootNodesQuery
-} from "@/features/shared_nodes/store/apiSlice"
+  useGetFolderQuery,
+  useGetPaginatedNodesQuery
+} from "@/features/nodes/storage/api"
+import {useGetPaginatedSharedRootNodesQuery} from "@/features/shared_nodes/store/apiSlice"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {
   selectCurrentNodeID,
@@ -152,7 +152,7 @@ function useGetSharedNodes(queryParams: NodeQueryParams, nodeID?: string) {
     isError: isError2,
     refetch: refetch2,
     error: error2
-  } = useGetPaginatedSharedNodesQuery(
+  } = useGetPaginatedNodesQuery(
     {
       nodeID: nodeID!,
       queryParams

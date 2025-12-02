@@ -418,7 +418,7 @@ async def get_nodes_details(
         ):
             raise exc.HTTP403Forbidden()
 
-    nodes = await nodes_dbapi.get_nodes(db_session, node_ids=node_ids)
+    nodes = await nodes_dbapi.get_nodes(db_session, node_ids=node_ids, user_id=user.id)
 
     return nodes
 

@@ -4,7 +4,7 @@ import uuid
 
 from pydantic import BaseModel, ConfigDict
 
-from papermerge.core.types import OwnerType
+from papermerge.core.types import OwnerType, BreadcrumbRootType
 
 T = TypeVar("T")
 
@@ -44,5 +44,20 @@ class OwnedBy(BaseModel):
     id: uuid.UUID  # owner ID user_id, group_id etc
     name: str  # user.name, group.name etc
     type: OwnerType  # user, group etc
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class Breadcrumb(BaseModel):
+    """
+    Breadcrumb with path and root type information.
+
+    The root type tells the frontend how to render the breadcrumb root:
+    - home: render with home icon
+    - inbox: render with inbox icon
+    - shared: render with shared/user icon
+    """
+    path: list[tuple[uuid.UUID, str]]
+    root: BreadcrumbRootType
 
     model_config = ConfigDict(from_attributes=True)

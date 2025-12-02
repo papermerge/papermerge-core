@@ -127,7 +127,7 @@ export default function useRootItem(itemId: string) {
         folderLabel = t("common.home", {defaultValue: "Home"})
         break
       case "inbox":
-        folderLabel = t("common.Inbox", {defaultValue: "Inbox"})
+        folderLabel = t("common.inbox", {defaultValue: "Inbox"})
         break
       case "shared":
         folderLabel = t("common.shared", {defaultValue: "Shared"})

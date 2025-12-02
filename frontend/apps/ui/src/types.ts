@@ -1,7 +1,6 @@
 import type {Group} from "@/types.d/groups"
 import {DocumentType} from "./features/document/types"
 import {Preferences} from "./features/preferences/types"
-import {BreadcrumbRootType} from "./types/breadcrumb"
 
 export type ByUser = {
   username: string
@@ -198,6 +197,20 @@ export type EntityWithTags = {
   id: string
   tags: Array<NodeTag>
 }
+
+export type GroupHome = {
+  home_id: string
+  group_name: string
+  group_id: string
+}
+
+export type GroupInbox = {
+  inbox_id: string
+  group_name: string
+  group_id: string
+}
+
+export type BreadcrumbRootType = "shared" | "inbox" | "home"
 
 export type BreadcrumbItemType = [string, string]
 

@@ -1,4 +1,4 @@
-import type {ByUser} from "./common"
+import type { ByUser } from "./common"
 
 export type NewGroup = {
   name: string
@@ -29,16 +29,4 @@ export type GroupUpdate = {
   id: string
   name?: string
   delete_special_folders?: boolean
-}
-
-export type GroupHome = {
-  home_id: string
-  group_name: string
-  group_id: string
-}
-
-export type GroupInbox = {
-  inbox_id: string
-  group_name: string
-  group_id: string
 }

@@ -87,6 +87,7 @@ export default function SharedViewer() {
         <ActionButtons />
         <DocumentDetailsToggle />
       </Group>
+
       <Flex ref={ref} className={classes.inner}>
         {thumbnailsIsOpen && <ThumbnailList docVer={docVer} />}
         <ThumbnailsToggle />

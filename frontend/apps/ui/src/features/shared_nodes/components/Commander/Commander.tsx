@@ -2,6 +2,7 @@ import useVisibleColumns from "@/hooks/useVisibleColumns"
 import {Stack} from "@mantine/core"
 
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import Breadcrumbs from "@/components/Breadcrumbs"
 import {
   selectPanelSelectedIDs,
   updatePanelCurrentNode
@@ -11,8 +12,9 @@ import {DataTable, TablePagination} from "kommon"
 import {useTranslation} from "react-i18next"
 import {useNavigate} from "react-router-dom"
 
+import {getSharedFolderBreadcrumb} from "@/components/Breadcrumbs/utils"
 import {usePanel} from "@/features/ui/hooks/usePanel"
-import type {NodeType} from "@/types"
+import type {NodeType, NType} from "@/types"
 
 import useNodes from "@/features/shared_nodes/hooks/useNodes"
 import nodeColumns from "./columns"
@@ -41,6 +43,15 @@ export default function Commander() {
   } = useNodes()
 
   const visibleColumns = useVisibleColumns(nodeColumns(t))
+
+  const onClick = (node: NType) => {
+    if (node.id == "shared") {
+      navigate("/shared")
+      return
+    }
+
+    actions.updateCurrentNode(node)
+  }
 
   const handleSelectionChange = (newSelection: Set<string>) => {
     const arr = Array.from(newSelection)
@@ -89,8 +100,15 @@ export default function Commander() {
     navigate(`/${path}/${row.id}`)
   }
 
+  const breadcrumb = getSharedFolderBreadcrumb(currentFolder?.breadcrumb)
+
   return (
     <Stack style={{height: "100%"}}>
+      <Breadcrumbs
+        breadcrumb={breadcrumb}
+        onClick={onClick}
+        isFetching={isFetching}
+      />
       <DataTable<NodeType>
         data={data?.items || []}
         columns={visibleColumns}

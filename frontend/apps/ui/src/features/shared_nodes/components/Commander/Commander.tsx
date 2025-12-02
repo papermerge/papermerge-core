@@ -45,6 +45,11 @@ export default function Commander() {
   const visibleColumns = useVisibleColumns(nodeColumns(t))
 
   const onClick = (node: NType) => {
+    if (node.id == "shared") {
+      navigate("/shared")
+      return
+    }
+
     actions.updateCurrentNode(node)
   }
 

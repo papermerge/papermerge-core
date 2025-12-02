@@ -1,4 +1,3 @@
-import {useAppSelector} from "@/app/hooks"
 import {Badge, Group, Loader, Menu, Skeleton} from "@mantine/core"
 import {
   IconChevronDown,
@@ -8,177 +7,40 @@ import {
   IconUser,
   IconUsers
 } from "@tabler/icons-react"
-import {useState} from "react"
 
-import type {
-  BreadcrumbRootType,
-  GroupHome,
-  GroupInbox,
-  NType,
-  UserDetails
-} from "@/types"
+import type {GroupHome, GroupInbox, NType} from "@/types"
 
-import {
-  useGetUserGroupHomesQuery,
-  useGetUserGroupInboxesQuery
-} from "@/features/users/storage/api"
-import {selectCurrentUser} from "@/slices/currentUser"
-import {equalUUIDs} from "@/utils"
 import {useTranslation} from "react-i18next"
+import useRootItem from "./useRootItem"
 
 type RootItemArgs = {
   itemId: string
   onClick: (n: NType) => void
 }
 
-type RootContext = {
-  type: "personal" | "group"
-  groupName?: string
-  rootType: BreadcrumbRootType
-  folderId: string
-}
-
 export default function RootItem({itemId, onClick}: RootItemArgs) {
   const {t} = useTranslation()
-  const user = useAppSelector(selectCurrentUser) as UserDetails | undefined
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-
-  // Lazy load - only fetch when dropdown is opened
   const {
-    data: inboxes,
-    isLoading: inboxesAreLoading,
-    error: inboxesError
-  } = useGetUserGroupInboxesQuery(undefined, {
-    skip: !isDropdownOpen
-  })
-
-  const {
-    data: homes,
-    isLoading: homesAreLoading,
-    error: homesError
-  } = useGetUserGroupHomesQuery(undefined, {
-    skip: !isDropdownOpen
-  })
+    user,
+    context,
+    ownerLabel,
+    folderLabel,
+    rootIcon,
+    homes,
+    homesAreLoading,
+    homesError,
+    inboxes,
+    inboxesAreLoading,
+    inboxesError,
+    actions
+  } = useRootItem(itemId)
 
   const handleDropdownOpen = () => {
-    setIsDropdownOpen(true)
+    actions.updateDropdown(true)
   }
 
   const onLocalClick = (folderId: string) => {
     onClick({id: folderId, ctype: "folder"})
-  }
-
-  // Determine current context from itemId
-  const getCurrentContext = (): RootContext | null => {
-    if (!user) return null
-
-    // Check personal folders
-    if (equalUUIDs(itemId, user.home_folder_id)) {
-      return {
-        type: "personal",
-        rootType: "home",
-        folderId: user.home_folder_id
-      }
-    }
-
-    if (equalUUIDs(itemId, user.inbox_folder_id)) {
-      return {
-        type: "personal",
-        rootType: "inbox",
-        folderId: user.inbox_folder_id
-      }
-    }
-
-    if (itemId === "shared") {
-      return {
-        type: "personal",
-        rootType: "shared",
-        folderId: "shared"
-      }
-    }
-
-    // Check group homes (only if data is loaded)
-    if (homes) {
-      const groupHome = homes.find(h => equalUUIDs(h.home_id, itemId))
-      if (groupHome) {
-        return {
-          type: "group",
-          groupName: groupHome.group_name,
-          rootType: "home",
-          folderId: groupHome.home_id
-        }
-      }
-    }
-
-    // Check group inboxes (only if data is loaded)
-    if (inboxes) {
-      const groupInbox = inboxes.find(i => equalUUIDs(i.inbox_id, itemId))
-      if (groupInbox) {
-        return {
-          type: "group",
-          groupName: groupInbox.group_name,
-          rootType: "inbox",
-          folderId: groupInbox.inbox_id
-        }
-      }
-    }
-
-    // Default fallback - try to determine from the item itself
-    // This handles the case before lazy data is loaded
-    return null
-  }
-
-  const context = getCurrentContext()
-
-  // Build the display label for the badge
-  const getBadgeLabel = (): {ownerLabel: string; folderLabel: string} => {
-    if (!context) {
-      // Fallback when context can't be determined yet
-      return {
-        ownerLabel: t("common.personal", {defaultValue: "Personal"}),
-        folderLabel: t("common.home", {defaultValue: "Home"})
-      }
-    }
-
-    const ownerLabel =
-      context.type === "personal"
-        ? t("common.personal", {defaultValue: "Personal"})
-        : context.groupName || ""
-
-    let folderLabel: string
-    switch (context.rootType) {
-      case "home":
-        folderLabel = t("common.home", {defaultValue: "Home"})
-        break
-      case "inbox":
-        folderLabel = t("common.Inbox", {defaultValue: "Inbox"})
-        break
-      case "shared":
-        folderLabel = t("common.shared", {defaultValue: "Shared"})
-        break
-      default:
-        folderLabel = t("common.home", {defaultValue: "Home"})
-    }
-
-    return {ownerLabel, folderLabel}
-  }
-
-  const {ownerLabel, folderLabel} = getBadgeLabel()
-
-  // Get icon for root type
-  const getRootIcon = () => {
-    if (!context) return <IconHome size={16} />
-
-    switch (context.rootType) {
-      case "home":
-        return <IconHome size={16} />
-      case "inbox":
-        return <IconInbox size={16} />
-      case "shared":
-        return <IconShare size={16} />
-      default:
-        return <IconHome size={16} />
-    }
   }
 
   // Render dropdown content
@@ -226,7 +88,13 @@ export default function RootItem({itemId, onClick}: RootItemArgs) {
               onClick={() => onLocalClick(user.inbox_folder_id)}
               leftSection={<IconInbox size={16} />}
             >
-              {t("common.Inbox", {defaultValue: "Inbox"})}
+              {t("common.inbox", {defaultValue: "Inbox"})}
+            </Menu.Item>
+            <Menu.Item
+              onClick={() => onLocalClick("shared")}
+              leftSection={<IconShare size={16} />}
+            >
+              {t("common.shared", {defaultValue: "Shared"})}
             </Menu.Item>
           </>
         )}
@@ -307,7 +175,7 @@ export default function RootItem({itemId, onClick}: RootItemArgs) {
       <Badge
         variant="light"
         size="lg"
-        leftSection={getRootIcon()}
+        leftSection={rootIcon}
         style={{cursor: "pointer"}}
         onClick={handleBadgeClick}
       >

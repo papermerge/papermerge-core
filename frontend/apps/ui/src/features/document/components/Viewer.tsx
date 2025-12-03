@@ -18,7 +18,6 @@ import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
 import {applyPageChangesThunk} from "@/features/document/actions/applyPageOpChanges"
-import ActionButtons from "@/features/document/components/ActionButtons"
 import {useCurrentDocVer} from "@/features/document/hooks"
 import {
   pagesDeleted,
@@ -37,6 +36,7 @@ import {selectCurrentUser} from "@/slices/currentUser"
 import type {NType, PanelMode} from "@/types"
 import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "../constants"
 import ContextMenu from "./ContextMenu"
+import PanelToolbar from "./PanelToolbar"
 
 import {useSelectedPages} from "@/features/document/hooks"
 import useContextMenu from "@/features/document/hooks/useContextMenu"
@@ -209,7 +209,7 @@ export function Viewer({doc, docVer}: Args) {
   return (
     <div ref={ref} className={classes.viewer}>
       <div className={classes.header}>
-        <ActionButtons
+        <PanelToolbar
           onEditNodeTitleClicked={onEditNodeTitleItem}
           onRotateCWClicked={onRotateCWItemClicked}
           onRotateCCClicked={onRotateCCItemClicked}

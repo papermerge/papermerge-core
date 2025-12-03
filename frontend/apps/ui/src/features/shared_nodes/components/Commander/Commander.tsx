@@ -16,6 +16,7 @@ import {getSharedFolderBreadcrumb} from "@/components/Breadcrumbs/utils"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import type {NodeType, NType} from "@/types"
 
+import PanelToolbar from "@/components/DualPanel/PanelToolbar"
 import useNodes from "@/features/shared_nodes/hooks/useNodes"
 import nodeColumns from "./columns"
 
@@ -104,6 +105,7 @@ export default function Commander() {
 
   return (
     <Stack style={{height: "100%"}}>
+      <PanelToolbar />
       <Breadcrumbs
         breadcrumb={breadcrumb}
         onClick={onClick}

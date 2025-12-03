@@ -1,4 +1,3 @@
-import ToggleSecondaryPanel from "@/components/DualPanel/ToggleSecondaryPanel"
 import PanelContext from "@/contexts/PanelContext"
 import DeletePagesButton from "@/features/document/components/DeletePagesButton"
 import EditTitleButton from "@/features/document/components/EditTitleButton"
@@ -6,7 +5,7 @@ import {useRuntimeConfig} from "@/hooks/runtime_config"
 import {Group} from "@mantine/core"
 import {useContext} from "react"
 
-import DuplicatePanelButton from "@/components/DualPanel/DuplicatePanelButton"
+import PanelToolbar from "@/components/DualPanel/PanelToolbar"
 import DownloadButton from "@/features/document/components/DownloadButton"
 import RotateButton from "@/features/document/components/RotateButton"
 import RotateCCButton from "@/features/document/components/RotateCCButton"
@@ -20,7 +19,7 @@ interface Args {
   onDeletePagesClicked: () => void
 }
 
-export default function ActionButtons({
+export default function PanelToolbarContainer({
   onEditNodeTitleClicked,
   onRotateCWClicked,
   onRotateCCClicked,
@@ -32,25 +31,23 @@ export default function ActionButtons({
   const runtimeConfig = useRuntimeConfig()
 
   return (
-    <Group justify="space-between">
-      <Group>
-        <EditTitleButton onClick={onEditNodeTitleClicked} />
-        {!runtimeConfig.ocr__automatic && <RunOCRButton />}
-        <DownloadButton />
-        {selectedPages.length > 0 && (
-          <RotateButton onClick={onRotateCWClicked} />
-        )}
-        {selectedPages.length > 0 && (
-          <RotateCCButton onClick={onRotateCCClicked} />
-        )}
-        {selectedPages.length > 0 && (
-          <DeletePagesButton onClick={onDeletePagesClicked} />
-        )}
-      </Group>
-      <Group>
-        <DuplicatePanelButton />
-        <ToggleSecondaryPanel />
-      </Group>
-    </Group>
+    <PanelToolbar
+      leftActions={
+        <Group>
+          <EditTitleButton onClick={onEditNodeTitleClicked} />
+          {!runtimeConfig.ocr__automatic && <RunOCRButton />}
+          <DownloadButton />
+          {selectedPages.length > 0 && (
+            <RotateButton onClick={onRotateCWClicked} />
+          )}
+          {selectedPages.length > 0 && (
+            <RotateCCButton onClick={onRotateCCClicked} />
+          )}
+          {selectedPages.length > 0 && (
+            <DeletePagesButton onClick={onDeletePagesClicked} />
+          )}
+        </Group>
+      }
+    />
   )
 }

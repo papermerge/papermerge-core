@@ -1,18 +1,19 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {ERRORS_403_ACCESS_FORBIDDEN} from "@/cconstants"
+import PanelToolbar from "@/components/DualPanel/PanelToolbar"
 import useVisibleColumns from "@/features/documentsList/hooks/useVisibleColumns"
 import {showDocumentDetailsInSecondaryPanel} from "@/features/documentsList/storage/thunks"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {selectPanelDetailsEntityId} from "@/features/ui/panelRegistry"
 import {isHTTP403Forbidden} from "@/services/helpers"
-import {Group, Stack} from "@mantine/core"
+import {Stack} from "@mantine/core"
 import type {SortState} from "kommon"
 import {DataTable, TablePagination} from "kommon"
 import {useTranslation} from "react-i18next"
 import {useNavigate} from "react-router-dom"
 import useDocumentsListTable from "../hooks/useDocumentsListTable"
 import {DocumentListItem} from "../types"
-import ActionButtons from "./ActionButtons"
+import ColumnSelectorContainer from "./ColumnSelector"
 
 export default function DocumentsListByCategory() {
   const {t} = useTranslation()
@@ -64,9 +65,8 @@ export default function DocumentsListByCategory() {
 
   return (
     <Stack style={{height: "100%"}}>
-      <Group w={"100%"}>
-        <ActionButtons />
-      </Group>
+      <PanelToolbar rightActions={<ColumnSelectorContainer />} />
+
       <DataTable
         //@ts-ignore
         data={data?.items || []}

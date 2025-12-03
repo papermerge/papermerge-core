@@ -63,8 +63,9 @@ import {useTranslation} from "react-i18next"
 import DraggingIcon from "./DraggingIcon"
 import DropNodesModal from "./DropNodesDialog"
 import ExtractPagesModal from "./ExtractPagesModal"
-import FolderNodeActions from "./FolderNodeActions"
+
 import NodesList from "./NodesList"
+import PanelToolbar from "./PanelToolbar"
 import SupportedFilesInfoModal from "./SupportedFilesInfoModal"
 
 export default function Commander() {
@@ -317,7 +318,7 @@ export default function Commander() {
         onDrop={onDrop}
         className={dragOver ? classes.accept_files : classes.commander}
       >
-        <FolderNodeActions selectedNodes={selectedNodes} />
+        <PanelToolbar selectedNodes={selectedNodes} />
         <Breadcrumbs
           breadcrumb={currentFolder?.breadcrumb}
           onClick={onClick}

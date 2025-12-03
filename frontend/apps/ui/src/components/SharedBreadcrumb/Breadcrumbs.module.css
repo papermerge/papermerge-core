@@ -1,8 +1,0 @@
-.breadcrumbs {
-  a {
-    padding: 0.5rem 0;
-    color: light-dark(var(--mantine-color-pmg-9), var(--mantine-color-pmg-2));
-  }
-  margin-top: 0;
-  margin-bottom: 0;
-}

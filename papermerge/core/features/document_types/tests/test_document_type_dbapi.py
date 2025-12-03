@@ -61,3 +61,26 @@ async def test_get_document_types_grouped_by_owner_without_pagination(
     assert len(result) == 2
     group_names = [item.name for item in result]
     assert set(group_names) == {"My", "team one"}
+
+
+async def test_get_document_types_list(
+    db_session,
+    make_user,
+    make_document_type_with_custom_fields
+):
+    user: orm.User = await make_user(username="coco")
+    doc_type = await make_document_type_with_custom_fields(
+        name="Invoice",
+        custom_fields=[
+            {"name": "Implemented", "type_handler": "boolean"},
+        ],
+        user_id=user.id
+    )
+
+    result = await dt_dbapi.get_document_type(
+        db_session,
+        user_id=user.id,
+        document_type_id=doc_type.id
+    )
+
+    assert result.id == doc_type.id

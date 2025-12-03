@@ -7,7 +7,8 @@ from pydantic import BaseModel, ConfigDict
 
 from papermerge.core.schemas.common import ByUser, OwnedBy
 from papermerge.core.types import OwnerType
-from papermerge.core.features.custom_fields.schema import CustomField
+from papermerge.core.features.custom_fields.schema import CustomField, \
+    CustomFieldShort
 
 
 class DocumentTypeShort(BaseModel):
@@ -28,7 +29,7 @@ class DocumentTypeDetails(BaseModel):
     id: UUID
     name: str
     path_template: str | None = None
-    custom_fields: list[CustomField]
+    custom_fields: list[CustomFieldShort]
 
     owned_by: OwnedBy
     created_at: datetime

@@ -116,7 +116,7 @@ class CustomFieldWithValue(BaseModel):
 
 class CreateCustomField(BaseModel):
     """Schema for creating a custom field"""
-    name: str
+    name: str = Field(min_length=1)
     type_handler: str
     config: dict[str, Any] = Field(default_factory=dict)
     owner_type: OwnerType | None = None

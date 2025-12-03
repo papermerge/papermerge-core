@@ -15,7 +15,7 @@ type Args = {
   maxItemLength?: number
 }
 
-export default function BreadcrumbLinks({
+export default function getBreadcrumbLinks({
   items,
   onClick,
   maxItems = 4,

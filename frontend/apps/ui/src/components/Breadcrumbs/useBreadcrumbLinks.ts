@@ -46,6 +46,8 @@ export function useBreadcrumbLinks({
   const endItems = items.slice(-itemsToShowAtEnd)
   const fullPath = items.map(([, title]) => title).join(" / ")
 
+  console.log(`----startItems=${startItems}----`)
+  console.log(`-----endItems=${endItems}-----`)
   return {
     items,
     needsTruncation,

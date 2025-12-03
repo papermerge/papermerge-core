@@ -292,3 +292,128 @@ async def test_get_custom_field_forbidden(
     response = await client2.get(f"/custom-fields/{field.id}")
 
     assert response.status_code == 404
+
+
+async def test_create_select_custom_field_via_api(
+    auth_api_client: AuthTestClient,
+    db_session: AsyncSession
+):
+    """Create a select custom field with 'free' and 'paid' options via API"""
+    count_before_result = await db_session.execute(
+        select(func.count(orm.CustomField.id))
+    )
+    count_before = count_before_result.scalar()
+    assert count_before == 0
+
+    data = {
+        "name": "Subscription",
+        "type_handler": "select",
+        "config": {
+            "options": [
+                {"value": "free", "label": "Free"},
+                {"value": "paid", "label": "Paid"}
+            ]
+        },
+        "owner_type": "user",
+        "owner_id": str(auth_api_client.user.id)
+    }
+
+    response = await auth_api_client.post(
+        "/custom-fields/",
+        json=data,
+    )
+    assert response.status_code == 201, response.json()
+
+    # Verify record was created in database
+    count_after_result = await db_session.execute(
+        select(func.count(orm.CustomField.id))
+    )
+    count_after = count_after_result.scalar()
+    assert count_after == 1
+
+    # Validate response data
+    custom_field = schema.CustomField(**response.json())
+    assert custom_field.name == "Subscription"
+    assert custom_field.type_handler == "select"
+
+    # Verify config contains the two options
+    assert "options" in custom_field.config
+    options = custom_field.config["options"]
+    assert len(options) == 2
+
+    # Extract option values and labels
+    option_values = [opt["value"] for opt in options]
+    option_labels = [opt["label"] for opt in options]
+
+    assert "free" in option_values
+    assert "paid" in option_values
+    assert "Free" in option_labels
+    assert "Paid" in option_labels
+
+    # Verify default config values
+    assert custom_field.config.get("allow_custom") is False
+    assert custom_field.config.get("required") is False
+
+
+async def test_create_multiselect_custom_field_via_api(
+    auth_api_client: AuthTestClient,
+    db_session: AsyncSession
+):
+    """Create a multiselect custom field with 'financial' and 'legal' options via API"""
+    count_before_result = await db_session.execute(
+        select(func.count(orm.CustomField.id))
+    )
+    count_before = count_before_result.scalar()
+    assert count_before == 0
+
+    data = {
+        "name": "Categories",
+        "type_handler": "multiselect",
+        "config": {
+            "options": [
+                {"value": "financial", "label": "Financial"},
+                {"value": "legal", "label": "Legal"}
+            ]
+        },
+        "owner_type": "user",
+        "owner_id": str(auth_api_client.user.id)
+    }
+
+    response = await auth_api_client.post(
+        "/custom-fields/",
+        json=data,
+    )
+    assert response.status_code == 201, response.json()
+
+    # Verify record was created in database
+    count_after_result = await db_session.execute(
+        select(func.count(orm.CustomField.id))
+    )
+    count_after = count_after_result.scalar()
+    assert count_after == 1
+
+    # Validate response data
+    custom_field = schema.CustomField(**response.json())
+    assert custom_field.name == "Categories"
+    assert custom_field.type_handler == "multiselect"
+
+    # Verify config contains the two options
+    assert "options" in custom_field.config
+    options = custom_field.config["options"]
+    assert len(options) == 2
+
+    # Extract option values and labels
+    option_values = [opt["value"] for opt in options]
+    option_labels = [opt["label"] for opt in options]
+
+    assert "financial" in option_values
+    assert "legal" in option_values
+    assert "Financial" in option_labels
+    assert "Legal" in option_labels
+
+    # Verify default config values specific to multiselect
+    assert custom_field.config.get("allow_custom") is False
+    assert custom_field.config.get("required") is False
+    assert custom_field.config.get("min_selections") is None
+    assert custom_field.config.get("max_selections") is None
+    assert custom_field.config.get("separator") == ", "

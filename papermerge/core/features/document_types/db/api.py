@@ -648,13 +648,13 @@ async def get_document_type(
         owned_by = schema.OwnedBy(
             id=row.owner_id,
             name=row.owner_username,
-            type="user"
+            type=OwnerType.USER
         )
     else:  # OwnerType.GROUP
         owned_by = schema.OwnedBy(
             id=row.owner_id,
             name=row.owner_group_name,
-            type="group"
+            type=OwnerType.GROUP
         )
 
     # Build the complete DocumentTypeDetails object

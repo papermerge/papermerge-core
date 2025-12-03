@@ -1,4 +1,5 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
+import {useAuth} from "@/app/hooks/useAuth"
 import CloseSecondaryPanel from "@/components/CloseSecondaryPanel"
 import {useGetDocumentTypeQuery} from "@/features/document-types/storage/api"
 import {selectMyPreferences} from "@/features/preferences/storage/preference"
@@ -20,12 +21,11 @@ import {Link, useNavigation} from "react-router-dom"
 import {DeleteDocumentTypeButton} from "./DeleteButton"
 import DocumentTypeForm from "./DocumentTypeForm"
 import EditButton from "./EditButton"
-import {useAuth} from "@/app/hooks/useAuth"
 
 import LoadingPanel from "@/components/LoadingPanel"
+import {DOCUMENT_TYPE_DELETE, DOCUMENT_TYPE_UPDATE} from "@/scopes"
 import {useTranslation} from "react-i18next"
 import {DocumentTypeDetails} from "../types"
-import {DOCUMENT_TYPE_DELETE, DOCUMENT_TYPE_UPDATE} from "@/scopes"
 
 export default function DocumentTypeDetailsContainer() {
   const {panelId} = usePanel()
@@ -82,7 +82,7 @@ export default function DocumentTypeDetailsContainer() {
             label={t?.("created_at", {defaultValue: "Created at"})}
           />
           <CopyableTextInput
-            value={data.created_by.username}
+            value={data.created_by?.username}
             label={t?.("created_by", {defaultValue: "Created by"})}
           />
         </Stack>

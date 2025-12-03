@@ -264,3 +264,23 @@ function extractDetailMessage(
 
   return null
 }
+
+/**
+ * Extract error message from a Form.
+ * Used in:
+ *  - new custom field modal
+ *  - new document type modal
+ */
+export function extractApiError(err: unknown, fallback: string): string {
+  const error = err as {data?: {detail?: unknown}}
+
+  if (Array.isArray(error?.data?.detail)) {
+    return error.data.detail.map((e: {msg?: string}) => e.msg).join(", ")
+  }
+
+  if (typeof error?.data?.detail === "string") {
+    return error.data.detail
+  }
+
+  return fallback
+}

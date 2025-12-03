@@ -1,8 +1,11 @@
-import {useEffect, useState} from "react"
-import OwnerSelect from "@/components/OwnerSelect"
+import {useAppSelector} from "@/app/hooks"
 import {CURRENCIES} from "@/cconstants"
+import OwnerSelect from "@/components/OwnerSelect"
 import {useAddNewCustomFieldMutation} from "@/features/custom-fields/storage/api"
+import {selectCurrentUser} from "@/slices/currentUser"
+import type {Owner} from "@/types"
 import {CurrencyType, CustomFieldDataType} from "@/types"
+import {extractApiError} from "@/utils/errorHandling"
 import {
   Button,
   Group,
@@ -13,11 +16,9 @@ import {
   Text,
   TextInput
 } from "@mantine/core"
+import {useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
 import {getCustomFieldTypes} from "../utils"
-import type {Owner} from "@/types"
-import {useAppSelector} from "@/app/hooks"
-import {selectCurrentUser} from "@/slices/currentUser"
 
 interface Args {
   opened: boolean
@@ -82,8 +83,14 @@ export default function NewCustomFieldModal({
     try {
       await addNewCustomField(newCustomFieldData).unwrap()
     } catch (err: unknown) {
-      // @ts-ignore
-      setError(err.data.detail)
+      setError(
+        extractApiError(
+          err,
+          t("custom_fields.form.error", {
+            defaultValue: "Failed to create custom field"
+          })
+        )
+      )
     }
   }
 
@@ -141,7 +148,7 @@ export default function NewCustomFieldModal({
         </Button>
         <Group>
           {isLoading && <Loader size="sm" />}
-          <Button disabled={isLoading} onClick={onLocalSubmit}>
+          <Button disabled={isLoading || !name.trim()} onClick={onLocalSubmit}>
             {t("common.submit")}
           </Button>
         </Group>

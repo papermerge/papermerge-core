@@ -10,6 +10,7 @@ from papermerge.core.db.exceptions import ResourceAccessDenied
 from papermerge.core import utils, schema
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
+from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.features.custom_fields import schema as cf_schema
 from papermerge.core.features.custom_fields.db import api as dbapi
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
@@ -194,10 +195,10 @@ async def create_custom_field(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
-    except IntegrityError:
+    except IntegrityError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Duplicate custom field name"
+            detail=str(e)
         )
 
     return ret
@@ -229,7 +230,6 @@ async def delete_custom_field(
 
     Required scope: `{scope}`
     """
-    from papermerge.core.features.ownership.db import api as ownership_api
 
     has_access = await ownership_api.user_can_access_resource(
         session=db_session,

@@ -1,6 +1,10 @@
+import {useAppSelector} from "@/app/hooks"
 import OwnerSelect from "@/components/OwnerSelect"
 import {useGetCustomFieldsQuery} from "@/features/custom-fields/storage/api"
 import {useAddDocumentTypeMutation} from "@/features/document-types/storage/api"
+import {selectCurrentUser} from "@/slices/currentUser"
+import type {Owner} from "@/types"
+import {extractApiError} from "@/utils/errorHandling"
 import {
   Button,
   Group,
@@ -13,9 +17,6 @@ import {
 } from "@mantine/core"
 import {useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
-import {useAppSelector} from "@/app/hooks"
-import {selectCurrentUser} from "@/slices/currentUser"
-import type {Owner} from "@/types"
 
 interface Args {
   opened: boolean
@@ -97,10 +98,12 @@ export default function NewDocumentTypeModal({
       setError("")
     } catch (err: any) {
       setError(
-        err?.data?.detail ||
+        extractApiError(
+          err,
           t("document_types.form.error", {
             defaultValue: "Failed to create document type"
           })
+        )
       )
     }
   }

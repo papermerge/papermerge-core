@@ -1,19 +1,16 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
-import {Flex, Loader} from "@mantine/core"
+import {Flex, Group, Loader} from "@mantine/core"
 import {useContext, useRef} from "react"
 import {useNavigate} from "react-router-dom"
 
-import {
-  currentDocVerUpdated,
-  currentSharedNodeRootChanged
-} from "@/features/ui/uiSlice"
+import {currentDocVerUpdated} from "@/features/ui/uiSlice"
 
 import PanelContext from "@/contexts/PanelContext"
 
-import {store} from "@/app/store"
-import {SHARED_FOLDER_ROOT_ID} from "@/cconstants"
+import Breadcrumbs from "@/components/Breadcrumbs"
 import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetails"
+import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
 import PageList from "@/features/document/components/PageList"
@@ -22,9 +19,13 @@ import {DOC_VER_PAGINATION_PAGE_BATCH_SIZE} from "@/features/document/constants"
 import {useCurrentDoc, useCurrentDocVer} from "@/features/document/hooks"
 import useGeneratePreviews from "@/features/document/hooks/useGeneratePreviews"
 import {usePanel} from "@/features/ui/hooks/usePanel"
-import {selectPanelAllCustom} from "@/features/ui/panelRegistry"
+import {
+  selectPanelAllCustom,
+  setPanelComponent,
+  updatePanelCurrentNode
+} from "@/features/ui/panelRegistry"
 
-import type {RootState} from "@/app/types"
+import {getSharedFolderBreadcrumb} from "@/components/Breadcrumbs/utils"
 import type {NType, PanelMode} from "@/types"
 import PanelToolbar from "./PanelToolbar"
 
@@ -49,20 +50,36 @@ export default function SharedViewer() {
   })
 
   const onClick = (node: NType) => {
-    if (node.ctype == "folder") {
-      if (node.id == SHARED_FOLDER_ROOT_ID) {
-        dispatch(currentSharedNodeRootChanged(undefined))
-        navigate(`/shared`)
-        return
-      }
+    if (node.id == "shared" && mode == "main") {
+      navigate("/shared")
+      return
     }
 
-    if (mode == "main" && node.ctype == "folder") {
-      const state = store.getState() as RootState
-      const sharedNode = state.sharedNodes.entities[node.id]
-      if (sharedNode.is_shared_root) {
-        dispatch(currentSharedNodeRootChanged(node.id))
-      }
+    if (node.id == "shared" && mode == "secondary") {
+      dispatch(
+        updatePanelCurrentNode({
+          component: "sharedCommander",
+          panelID: "secondary"
+        })
+      )
+      return
+    }
+
+    if (mode == "secondary" && node.ctype == "folder") {
+      dispatch(
+        updatePanelCurrentNode({
+          entityID: node.id,
+          component: "sharedCommander",
+          panelID: "secondary"
+        })
+      )
+      dispatch(
+        setPanelComponent({
+          panelId: "secondary",
+          component: node.ctype == "folder" ? "sharedCommander" : "sharedViewer"
+        })
+      )
+    } else if (mode == "main" && node.ctype == "folder") {
       dispatch(currentDocVerUpdated({mode: mode, docVerID: undefined}))
       navigate(`/shared/folder/${node.id}`)
     }
@@ -80,9 +97,15 @@ export default function SharedViewer() {
     return <Loader />
   }
 
+  const breadcrumb = getSharedFolderBreadcrumb(doc?.breadcrumb)
+
   return (
     <div className={classes.viewer}>
       <PanelToolbar />
+      <Group justify="space-between" py={"xs"}>
+        <Breadcrumbs breadcrumb={breadcrumb} onClick={onClick} />
+        <DocumentDetailsToggle />
+      </Group>
       <Flex ref={ref} className={classes.inner}>
         {thumbnailsIsOpen && <ThumbnailList docVer={docVer} />}
         <ThumbnailsToggle />

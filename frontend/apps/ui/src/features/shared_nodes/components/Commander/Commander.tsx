@@ -46,7 +46,16 @@ export default function Commander() {
   const visibleColumns = useVisibleColumns(nodeColumns(t))
 
   const onClick = (node: NType) => {
-    if (node.id == "shared") {
+    if (node.id == "shared" && panelId == "secondary") {
+      dispatch(
+        updatePanelCurrentNode({
+          component: "sharedCommander",
+          panelID: "secondary"
+        })
+      )
+      return
+    }
+    if (panelId == "main" && node.id == "shared") {
       navigate("/shared")
       return
     }

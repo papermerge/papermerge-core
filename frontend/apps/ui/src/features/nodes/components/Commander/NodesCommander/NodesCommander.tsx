@@ -150,6 +150,15 @@ export default function Commander() {
   }
 
   const onClick = (node: NType) => {
+    if (node.id == "shared" && panelId == "secondary") {
+      dispatch(
+        updatePanelCurrentNode({
+          component: "sharedCommander",
+          panelID: "secondary"
+        })
+      )
+      return
+    }
     if (node.id == "shared") {
       navigate("/shared")
       return

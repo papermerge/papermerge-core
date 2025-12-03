@@ -215,7 +215,7 @@ export function Viewer({doc, docVer}: Args) {
           onRotateCCClicked={onRotateCCItemClicked}
           onDeletePagesClicked={onDeletePagesItemClicked}
         />
-        <Group justify="space-between">
+        <Group justify="space-between" py={"xs"}>
           <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
           <DocumentDetailsToggle />
         </Group>

@@ -1,8 +1,9 @@
-import {Anchor, Breadcrumbs, Group, Loader, Skeleton} from "@mantine/core"
+import {Breadcrumbs, Group, Loader, Skeleton} from "@mantine/core"
 import {useRef} from "react"
 import classes from "./Breadcrumbs.module.css"
 
 import type {BreadcrumbType, NType} from "@/types"
+import BreadcrumbLinks from "./BreadcrumbLinks"
 import RootItem from "./RootItem"
 
 type Args = {
@@ -34,12 +35,7 @@ export default function BreadcrumbsComponent({
 
   const items = breadcrumb.path
 
-  const links = items.slice(1, -1).map(i => (
-    <Anchor key={i[0]} onClick={() => onClick({id: i[0], ctype: "folder"})}>
-      {i[1]}
-    </Anchor>
-  ))
-  const lastOne = items[items.length - 1][1]
+  const middleAndLastItems = items.slice(1)
 
   if (items.length == 1) {
     return (
@@ -56,8 +52,7 @@ export default function BreadcrumbsComponent({
     <Group ref={ref} my={0} className={className}>
       <Breadcrumbs className={classes.breadcrumbs}>
         <RootItem itemId={items[0][0]} onClick={onRootElementClick} />
-        {links}
-        <Anchor>{lastOne}</Anchor>
+        <BreadcrumbLinks items={middleAndLastItems} onClick={onClick} />
       </Breadcrumbs>
       {isFetching && <Loader size={"sm"} />}
     </Group>

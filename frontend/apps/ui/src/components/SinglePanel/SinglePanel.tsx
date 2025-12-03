@@ -1,4 +1,5 @@
 import {useAppSelector} from "@/app/hooks"
+import {Box} from "@mantine/core"
 import {useContext} from "react"
 
 import PanelContext from "@/contexts/PanelContext"
@@ -60,13 +61,13 @@ export default function SinglePanel({className}: Args) {
   const panelComponent = useAppSelector(s => selectPanelComponent(s, panelId))
 
   if (!panelComponent) {
-    return <div className={className}>No panel component selected</div>
+    return <Box className={className}>No panel component selected</Box>
   }
 
   const Component = PANEL_COMPONENTS_SAFE[panelComponent]
   return (
-    <div className={className}>
+    <Box className={className}>
       <Component />
-    </div>
+    </Box>
   )
 }

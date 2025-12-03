@@ -1,6 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
-import {Flex, Group, Loader} from "@mantine/core"
+import {Flex, Loader} from "@mantine/core"
 import {useContext, useRef} from "react"
 import {useNavigate} from "react-router-dom"
 
@@ -14,7 +14,6 @@ import PanelContext from "@/contexts/PanelContext"
 import {store} from "@/app/store"
 import {SHARED_FOLDER_ROOT_ID} from "@/cconstants"
 import DocumentDetails from "@/components/document/DocumentDetails/DocumentDetails"
-import DocumentDetailsToggle from "@/components/document/DocumentDetailsToggle"
 import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
 import PageList from "@/features/document/components/PageList"
@@ -27,7 +26,7 @@ import {selectPanelAllCustom} from "@/features/ui/panelRegistry"
 
 import type {RootState} from "@/app/types"
 import type {NType, PanelMode} from "@/types"
-import ActionButtons from "./ActionButtons"
+import PanelToolbar from "./PanelToolbar"
 
 export default function SharedViewer() {
   const {panelId} = usePanel()
@@ -83,11 +82,7 @@ export default function SharedViewer() {
 
   return (
     <div className={classes.viewer}>
-      <Group className={classes.header} pb={"md"} justify="space-between">
-        <ActionButtons />
-        <DocumentDetailsToggle />
-      </Group>
-
+      <PanelToolbar />
       <Flex ref={ref} className={classes.inner}>
         {thumbnailsIsOpen && <ThumbnailList docVer={docVer} />}
         <ThumbnailsToggle />

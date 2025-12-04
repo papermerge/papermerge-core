@@ -1,5 +1,7 @@
 import {useEffect, useState} from "react"
 
+import MultiSelectCustomField from "@/features/custom-fields/components/MultiSelectCustomField"
+import SelectCustomField from "@/features/custom-fields/components/SelectCustomField"
 import {
   CustomFieldDate,
   CustomFieldMonetary,
@@ -262,6 +264,17 @@ function GenericCustomField({
   if (customField.custom_field.type_handler == "yearmonth") {
     return (
       <CustomFieldYearMonth customField={customField} onChange={onChange} />
+    )
+  }
+  // NEW: Handle select type
+  if (customField.custom_field.type_handler == "select") {
+    return <SelectCustomField customField={customField} onChange={onChange} />
+  }
+
+  // NEW: Handle multiselect type
+  if (customField.custom_field.type_handler == "multiselect") {
+    return (
+      <MultiSelectCustomField customField={customField} onChange={onChange} />
     )
   }
 

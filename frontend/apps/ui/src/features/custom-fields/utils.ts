@@ -36,6 +36,17 @@ export function getCustomFieldTypes(t?: TFunction): ComboboxItem[] {
       label:
         t?.("customFieldType.yearmonth", {defaultValue: "Year/Month"}) ||
         "Year/Month"
+    },
+    {
+      value: "select",
+      label:
+        t?.("customFieldTypes.select", {defaultValue: "Select"}) || "Select"
+    },
+    {
+      value: "multiselect",
+      label:
+        t?.("customFieldTypes.multiselect", {defaultValue: "Multi-Select"}) ||
+        "Multi-Select"
     }
   ]
 

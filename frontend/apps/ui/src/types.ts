@@ -296,20 +296,22 @@ export type RoleDetails = {
 export type RoleUpdate = Pick<Role, "id" | "name" | "scopes">
 
 export type CustomFieldDataType =
-  | "text"
   | "date"
+  | "text"
   | "boolean"
   | "int"
   | "float"
   | "monetary"
   | "yearmonth"
+  | "select"
+  | "multiselect"
 
 export type NewCustomField = {
   name: string
   type_handler: CustomFieldDataType
-  config?: string
+  config?: Record<string, any>
   owner_type?: string
-  owner_id: string
+  owner_id?: string
 }
 
 export type CustomField = NewCustomField & {
@@ -339,7 +341,7 @@ export type CustomFieldWithValue = {
 
 export type CustomFieldUpdate = Pick<
   CustomField,
-  "id" | "name" | "type_handler" | "config"
+  "id" | "name" | "type_handler" | "config" | "owner_id" | "owner_type"
 >
 
 export type FileItemStatus = "uploading" | "success" | "failure"

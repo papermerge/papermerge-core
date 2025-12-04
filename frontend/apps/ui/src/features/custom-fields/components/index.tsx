@@ -1,4 +1,4 @@
-import CustomFieldDetails from "./CustomFieldDetailsContainer"
+import CustomFieldDetails from "./CustomFieldDetails"
 import CustomFieldsList from "./List"
 
 export {CustomFieldDetails, CustomFieldsList}

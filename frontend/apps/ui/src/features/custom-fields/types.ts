@@ -15,6 +15,8 @@ export type CustomFieldType =
   | "float"
   | "monetary"
   | "yearmonth"
+  | "select"
+  | "multiselect"
 
 export interface CustomFieldQueryParams extends Partial<PaginatedArgs> {
   page_number?: number
@@ -36,6 +38,7 @@ export interface CustomFieldItem {
   id: string
   name: string
   type_handler: CustomFieldType
+  config: Record<string, any>
   created_at: string
   updated_at: string
   created_by: ByUser

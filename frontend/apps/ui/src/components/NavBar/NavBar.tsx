@@ -22,15 +22,15 @@ import {
 } from "@/slices/currentUser.ts"
 import {Center, Group, Loader, Text} from "@mantine/core"
 import {
-  IconAlignJustified,
+  IconCategory2,
+  IconClipboardList,
   IconFile,
   IconFolder,
-  IconFolderShare,
+  IconForms,
   IconInbox,
-  IconLogs,
   IconMasksTheater,
+  IconShare,
   IconTag,
-  IconTriangleSquareCircle,
   IconUsers,
   IconUsersGroup
 } from "@tabler/icons-react"
@@ -40,6 +40,16 @@ import {NavLink} from "react-router-dom"
 
 import {useGetVersionQuery} from "@/features/version/apiSlice"
 import {useTranslation} from "react-i18next"
+
+export default function NavBar() {
+  const collapsed = useSelector(selectNavBarCollapsed)
+
+  if (collapsed) {
+    return <NavBarCollapsed />
+  }
+
+  return <NavBarFull />
+}
 
 type NavLinkState = {
   isActive: boolean
@@ -68,47 +78,39 @@ function NavBarContent({renderLink, withVersion}: Args) {
   const status = useSelector(selectCurrentUserStatus)
   const error = useSelector(selectCurrentUserError)
 
-  const onClick = () => {
-    if (status == "loading" || isLoading) {
-      return <Loader />
-    }
+  if (status == "loading" || isLoading) {
+    return <Loader />
+  }
 
-    if (status == "failed") {
-      return <>{error}</>
-    }
+  if (status == "failed") {
+    return <>{error}</>
+  }
 
-    if (!user) {
-      return <Loader />
-    }
+  if (!user) {
+    return <Loader />
   }
 
   return (
     <>
       <div className="navbar">
         {hasPermission(NODE_VIEW) && (
-          <NavLink to={`/documents/`} onClick={onClick}>
+          <NavLink to={`/documents/`}>
             {renderLink(t("documents"), <IconFile />)}
           </NavLink>
         )}
         {hasPermission(NODE_VIEW) && (
-          <NavLink
-            to={`/inbox/${lastInbox?.inbox_id || user.inbox_folder_id}`}
-            onClick={onClick}
-          >
+          <NavLink to={`/inbox/${lastInbox?.inbox_id || user.inbox_folder_id}`}>
             {renderLink(t("inbox.name"), <IconInbox />)}
           </NavLink>
         )}
         {hasPermission(NODE_VIEW) && (
-          <NavLink
-            to={`/home/${lastHome?.home_id || user.home_folder_id}`}
-            onClick={onClick}
-          >
+          <NavLink to={`/home/${lastHome?.home_id || user.home_folder_id}`}>
             {renderLink(t("files"), <IconFolder />)}
           </NavLink>
         )}
         {hasPermission(SHARED_NODE_VIEW) && (
-          <NavLink to={"/shared"} onClick={onClick}>
-            {renderLink(t("shared.name"), <IconFolderShare />)}
+          <NavLink to={"/shared"}>
+            {renderLink(t("shared.name"), <IconShare />)}
           </NavLink>
         )}
         {hasPermission(TAG_VIEW) && (
@@ -118,15 +120,12 @@ function NavBarContent({renderLink, withVersion}: Args) {
         )}
         {hasPermission(CUSTOM_FIELD_VIEW) && (
           <NavLink to="/custom-fields">
-            {renderLink(t("custom_fields.name"), <IconAlignJustified />)}
+            {renderLink(t("custom_fields.name"), <IconForms />)}
           </NavLink>
         )}
         {hasPermission(DOCUMENT_TYPE_VIEW) && (
           <NavLink to="/categories">
-            {renderLink(
-              t("document_types.name.by"),
-              <IconTriangleSquareCircle />
-            )}
+            {renderLink(t("document_types.name.by"), <IconCategory2 />)}
           </NavLink>
         )}
         {hasPermission(USER_VIEW) && (
@@ -146,7 +145,7 @@ function NavBarContent({renderLink, withVersion}: Args) {
         )}
         {hasPermission(AUDIT_LOG_VIEW) && (
           <NavLink to="/audit-logs">
-            {renderLink(t("audit_log.name"), <IconLogs />)}
+            {renderLink(t("audit_log.name"), <IconClipboardList />)}
           </NavLink>
         )}
       </div>
@@ -171,16 +170,6 @@ function NavBarCollapsed() {
       renderLink={(text, icon) => NavLinkWithFeedbackShort(icon)}
     />
   )
-}
-
-function NavBar() {
-  const collapsed = useSelector(selectNavBarCollapsed)
-
-  if (collapsed) {
-    return <NavBarCollapsed />
-  }
-
-  return <NavBarFull />
 }
 
 function NavLinkWithFeedback(
@@ -229,5 +218,3 @@ function NavLinkWithFeedbackShort(icon: React.JSX.Element): ResponsiveLink {
     return <Group>{icon}</Group>
   }
 }
-
-export default NavBar

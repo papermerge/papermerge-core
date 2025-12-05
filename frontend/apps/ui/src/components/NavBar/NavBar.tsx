@@ -20,7 +20,6 @@ import {
   selectCurrentUserError,
   selectCurrentUserStatus
 } from "@/slices/currentUser.ts"
-import {BreadcrumbRootType} from "@/types"
 import {Center, Group, Loader, Skeleton, Text} from "@mantine/core"
 import {
   IconCategory2,
@@ -66,24 +65,22 @@ interface NavItemArgs {
   label: string
   icon: React.JSX.Element
   permission: string
-  rootType?: BreadcrumbRootType
+
   renderLink: RenderLinkFunc
 }
 
-function NavItem({
-  to,
-  label,
-  icon,
-  permission,
-  rootType,
-  renderLink
-}: NavItemArgs) {
+function NavItem({to, label, icon, permission, renderLink}: NavItemArgs) {
   const dispatch = useAppDispatch()
   const {hasPermission} = useAuth()
   const lastCurrentMenuItem = useAppSelector(selectNavBarLastMenuItem)
 
   const location = useLocation()
   const [isPending, setIsPending] = useState(false)
+
+  const onClick = () => {
+    setIsPending(true)
+    dispatch(updateCurrentNavBarMenuItem(to))
+  }
 
   // Reset pending state when location changes
   useEffect(() => {
@@ -92,11 +89,6 @@ function NavItem({
 
   if (!hasPermission(permission)) {
     return null
-  }
-
-  const onClick = () => {
-    setIsPending(true)
-    dispatch(updateCurrentNavBarMenuItem(to))
   }
 
   const isActiveByLastMenuItemState = lastCurrentMenuItem == to && !isPending
@@ -163,7 +155,6 @@ function NavBarContent({renderLink, withVersion}: Args) {
           label={t("inbox.name")}
           icon={<IconInbox />}
           permission={NODE_VIEW}
-          rootType="inbox"
           renderLink={renderLink}
         />
         <NavItem
@@ -171,7 +162,6 @@ function NavBarContent({renderLink, withVersion}: Args) {
           label={t("files")}
           icon={<IconFolder />}
           permission={NODE_VIEW}
-          rootType="home"
           renderLink={renderLink}
         />
         <NavItem
@@ -179,7 +169,6 @@ function NavBarContent({renderLink, withVersion}: Args) {
           label={t("shared.name")}
           icon={<IconShare />}
           permission={SHARED_NODE_VIEW}
-          rootType="shared"
           renderLink={renderLink}
         />
         <NavItem

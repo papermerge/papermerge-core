@@ -1,8 +1,11 @@
 import {Badge, Group, Menu, Skeleton} from "@mantine/core"
 import {IconChevronDown} from "@tabler/icons-react"
 
-import type {NType} from "@/types"
+import type {BreadcrumbRootType, NType} from "@/types"
 
+import {useAppDispatch} from "@/app/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {updateCurrentNavBarMenuItem} from "@/features/ui/uiSlice"
 import {useTranslation} from "react-i18next"
 import DropdownContent from "./DropdownContent"
 import useRootItem from "./useRootItem"
@@ -14,6 +17,9 @@ type Args = {
 
 export default function RootItem({itemId, onClick}: Args) {
   const {t} = useTranslation()
+  const {panelId} = usePanel()
+  const dispatch = useAppDispatch()
+
   const {
     user,
     context,
@@ -33,7 +39,16 @@ export default function RootItem({itemId, onClick}: Args) {
     actions.updateDropdown(true)
   }
 
-  const onLocalClick = (folderId: string) => {
+  const onLocalClick = (folderId: string, rootType?: BreadcrumbRootType) => {
+    if (rootType === "home" && panelId == "main") {
+      dispatch(updateCurrentNavBarMenuItem("/home"))
+    }
+    if (rootType === "inbox" && panelId == "main") {
+      dispatch(updateCurrentNavBarMenuItem("/inbox"))
+    }
+    if (rootType === "shared" && panelId == "main") {
+      dispatch(updateCurrentNavBarMenuItem("/shared"))
+    }
     onClick({id: folderId, ctype: "folder"})
   }
 

@@ -1,5 +1,10 @@
 import type {RootState} from "@/app/types"
-import type {BooleanString, ClientPage, PanelMode} from "@/types"
+import type {
+  BooleanString,
+  BreadcrumbRootType,
+  ClientPage,
+  PanelMode
+} from "@/types"
 import type {PanelComponent} from "@/types.d/ui"
 import {PayloadAction, createSelector, createSlice} from "@reduxjs/toolkit"
 import Cookies from "js-cookie"
@@ -30,6 +35,7 @@ type DragNodeStartedArg = {
 }
 
 interface NavBarState {
+  menuItem?: string
   collapsed: boolean
   width: number
 }
@@ -85,6 +91,7 @@ interface LastInboxArg {
 }
 
 export interface UIState {
+  breadcrumbRootType?: BreadcrumbRootType
   navbar: NavBarState
   dragndrop?: DragNDropState
   mainViewer?: ViewerState
@@ -136,6 +143,16 @@ const uiSlice = createSlice({
         Cookies.set(NAVBAR_WIDTH_COOKIE, `${COLLAPSED_WIDTH}`)
       }
     },
+    updateCurrentNavBarMenuItem(
+      state,
+      action: PayloadAction<string | undefined>
+    ) {
+      const menuItem = action.payload
+      if (state.navbar) {
+        state.navbar.menuItem = menuItem
+      }
+    },
+
     mainPanelComponentUpdated(state, action: PayloadAction<PanelComponent>) {
       state.mainPanelComponent = action.payload
     },
@@ -235,6 +252,7 @@ const uiSlice = createSlice({
 
 export const {
   toggleNavBar,
+  updateCurrentNavBarMenuItem,
   currentSharedNodeRootChanged,
   mainPanelComponentUpdated,
   secondaryPanelComponentUpdated,
@@ -366,6 +384,10 @@ export const selectViewerPagesHaveChangedDialogVisibility = (
   state: RootState
 ) => {
   return state.ui.viewerPageHaveChangedDialogVisibility || "closed"
+}
+
+export const selectNavBarLastMenuItem = (state: RootState) => {
+  return state.ui.navbar.menuItem
 }
 
 /* Load initial collapse state value from cookie */

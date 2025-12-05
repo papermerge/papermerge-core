@@ -1,8 +1,12 @@
 import {Badge, Group, Menu, Skeleton} from "@mantine/core"
 import {IconChevronDown} from "@tabler/icons-react"
+import {useEffect} from "react"
 
 import type {NType} from "@/types"
 
+import {useAppDispatch} from "@/app/hooks"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {updateBreadcrumbRootType} from "@/features/ui/uiSlice"
 import {useTranslation} from "react-i18next"
 import DropdownContent from "./DropdownContent"
 import useRootItem from "./useRootItem"
@@ -14,6 +18,9 @@ type Args = {
 
 export default function RootItem({itemId, onClick}: Args) {
   const {t} = useTranslation()
+  const {panelId} = usePanel()
+  const dispatch = useAppDispatch()
+
   const {
     user,
     context,
@@ -28,6 +35,12 @@ export default function RootItem({itemId, onClick}: Args) {
     inboxesError,
     actions
   } = useRootItem(itemId)
+
+  useEffect(() => {
+    if (panelId == "main") {
+      dispatch(updateBreadcrumbRootType(context?.rootType))
+    }
+  }, [context, dispatch])
 
   const handleDropdownOpen = () => {
     actions.updateDropdown(true)

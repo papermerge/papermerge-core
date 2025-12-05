@@ -3,7 +3,6 @@ import {apiSlice} from "@/features/api/slice"
 import {uploadFile} from "@/features/files/storage/thunks"
 import type {UploadFileOutput} from "@/features/files/types"
 import {generateThumbnail} from "@/features/nodes/storage/thumbnailObjectsSlice"
-import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
 import {Button, Menu} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconUpload} from "@tabler/icons-react"
@@ -15,8 +14,7 @@ import {
 import {isSupportedFile} from "@/features/nodes/utils"
 import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import useUploadDestinationFolder from "@/hooks/useUploadDestinationFolder"
-import {selectCurrentUser} from "@/slices/currentUser"
-import {IconChevronDown, IconFolder} from "@tabler/icons-react"
+import {IconChevronDown} from "@tabler/icons-react"
 import {useRef, useState} from "react"
 import {useTranslation} from "react-i18next"
 import SupportedFilesInfoModal from "../../nodes/components/Commander/NodesCommander/SupportedFilesInfoModal"
@@ -33,24 +31,9 @@ export default function UploadButton() {
     {open: supportedFilesInfoOpen, close: supportedFilesInfoClose}
   ] = useDisclosure(false)
 
-  const folderID = useAppSelector(s => selectCurrentNodeID(s, "main"))
-  const currentUser = useAppSelector(selectCurrentUser)
   const userPreferences = useAppSelector(selectMyPreferences)
 
   let destinations = useUploadDestinationFolder()
-
-  if (
-    currentUser &&
-    folderID &&
-    folderID != currentUser.home_folder_id &&
-    folderID != currentUser.inbox_folder_id
-  ) {
-    destinations.push({
-      id: folderID,
-      label: t("common.current_location", {defaultValue: "Current Location"}),
-      icon: IconFolder
-    })
-  }
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>

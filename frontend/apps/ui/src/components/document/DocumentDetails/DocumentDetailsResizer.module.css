@@ -1,0 +1,48 @@
+.resizer {
+  /* Invisible by default, but still interactive */
+  width: 8px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  position: relative;
+  z-index: 10;
+
+  /* The visible line - initially transparent */
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    background-color: transparent;
+    border-radius: 2px;
+    transition: background-color 0.15s ease;
+  }
+}
+
+/* Hover state - show the blue line */
+.visible::before {
+  background-color: light-dark(
+    var(--mantine-color-blue-5),
+    var(--mantine-color-blue-6)
+  );
+}
+
+/* Dragging state - slightly different color for feedback */
+.dragging::before {
+  background-color: light-dark(
+    var(--mantine-color-blue-6),
+    var(--mantine-color-blue-5)
+  );
+}
+
+/* Expand the hit area for easier grabbing */
+.resizer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -4px;
+  right: -4px;
+}

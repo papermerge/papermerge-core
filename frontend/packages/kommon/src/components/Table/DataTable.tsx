@@ -27,7 +27,7 @@ interface Args<T> {
   onSortChange?: (sort: SortState) => void
   loading?: boolean
   emptyMessage?: string
-  onRowClick?: (row: T, otherPanel: boolean) => void
+  onRowClick?: (row: T, otherPanel: boolean, event?: React.MouseEvent) => void
   //the ID of the row to highlight
   highlightRowID?: string
   // Checkbox functionality
@@ -202,7 +202,7 @@ interface RowArgs<T> {
   highlightRowID?: string
   row: T
   visibleColumns: ColumnConfig<T>[]
-  onRowClick?: (row: T, otherPanel: boolean) => void
+  onRowClick?: (row: T, otherPanel: boolean, event?: React.MouseEvent) => void
   highlightColors: {backgroundColor: string; borderColor: string}
   withCheckbox?: boolean
   withSecondaryPanelTriggerColumn?: boolean
@@ -292,7 +292,11 @@ interface TBodyArgs<T> {
   withCheckbox?: boolean
   withSecondaryPanelTriggerColumn?: boolean
   selectedRows?: Set<string>
-  onRowSelect?: (rowId: string, checked: boolean) => void
+  onRowSelect?: (
+    rowId: string,
+    checked: boolean,
+    event?: React.MouseEvent
+  ) => void
   getRowId?: (row: T) => string
 }
 

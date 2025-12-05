@@ -30,6 +30,9 @@ import {
 import type {ClientDocumentVersion, PanelMode} from "@/types"
 import DocumentDetailsToggle from "../DocumentDetailsToggle"
 import CustomFields from "./CustomFields"
+import DocumentDetailsResizer, {
+  DOCUMENT_DETAILS_DEFAULT_WIDTH
+} from "./DocumentDetailsResizer"
 
 interface Args {
   doc?: DocumentType
@@ -43,73 +46,95 @@ export default function DocumentDetails({doc, docVer, docID, isLoading}: Args) {
 
   const {panelId} = usePanel()
 
-  const {documentDetailsPanelIsOpen: isOpen} = useAppSelector(s =>
-    selectPanelAllCustom(s, panelId)
-  )
+  const {documentDetailsPanelIsOpen: isOpen, documentDetailsWidth} =
+    useAppSelector(s => selectPanelAllCustom(s, panelId))
   const ocrLang = useAppSelector(s => selectDocumentVersionOCRLang(s, panelId))
+
+  // Use stored width or default
+  const widthPercent = documentDetailsWidth ?? DOCUMENT_DETAILS_DEFAULT_WIDTH
 
   if (!docID || isLoading) {
     return (
-      <div className={classes.documentDetailsOpened}>
-        <DocumentDetailsToggle />
-        <Stack className={classes.documentDetailsContent} justify="flex-start">
-          <Skeleton height={"20"} />
-          <Skeleton height={"20"} />
-          <Skeleton height={"20"} />
-        </Stack>
-      </div>
+      <>
+        <DocumentDetailsResizer />
+        <div
+          className={classes.documentDetailsOpened}
+          style={{width: `${widthPercent}%`}}
+        >
+          <DocumentDetailsToggle />
+          <Stack
+            className={classes.documentDetailsContent}
+            justify="flex-start"
+          >
+            <Skeleton height={"20"} />
+            <Skeleton height={"20"} />
+            <Skeleton height={"20"} />
+          </Stack>
+        </div>
+      </>
     )
   }
 
   if (isOpen) {
     return (
-      <div className={classes.documentDetailsOpened}>
-        <Stack className={classes.documentDetailsContent} justify="flex-start">
-          <TextInput
-            label="ID"
-            readOnly
-            value={docID}
-            rightSection={<CopyButton value={docID || ""} />}
-          />
-          <TextInput
-            label={t("common.version_id")}
-            readOnly
-            value={docVer?.id}
-            rightSection={<CopyButton value={docVer?.id || ""} />}
-          />
-          <TextInput
-            label={t("common.version_number")}
-            readOnly
-            value={docVer?.number}
-            rightSection={<CopyButton value={`${docVer?.number}` || ""} />}
-          />
-
-          <TextInput
-            label={t("common.owner")}
-            readOnly
-            value={doc?.owner_name || t(OWNER_ME)}
-            rightSection={<CopyButton value={doc?.owner_name || t(OWNER_ME)} />}
-          />
-          <Group>
-            <TagsInput
-              rightSection={<EditTagsButton />}
-              label={t("common.tags")}
+      <>
+        <DocumentDetailsResizer />
+        <div
+          className={classes.documentDetailsOpened}
+          style={{width: `${widthPercent}%`}}
+        >
+          <Stack
+            className={classes.documentDetailsContent}
+            justify="flex-start"
+          >
+            <TextInput
+              label="ID"
               readOnly
-              value={doc?.tags?.map(t => t.name) || []}
+              value={docID}
+              rightSection={<CopyButton value={docID || ""} />}
+            />
+            <TextInput
+              label={t("common.version_id")}
+              readOnly
+              value={docVer?.id}
+              rightSection={<CopyButton value={docVer?.id || ""} />}
+            />
+            <TextInput
+              label={t("common.version_number")}
+              readOnly
+              value={docVer?.number}
+              rightSection={<CopyButton value={`${docVer?.number}` || ""} />}
+            />
+
+            <TextInput
+              label={t("common.owner")}
+              readOnly
+              value={doc?.owner_name || t(OWNER_ME)}
+              rightSection={
+                <CopyButton value={doc?.owner_name || t(OWNER_ME)} />
+              }
+            />
+            <Group>
+              <TagsInput
+                rightSection={<EditTagsButton />}
+                label={t("common.tags")}
+                readOnly
+                value={doc?.tags?.map(t => t.name) || []}
+                mt="md"
+              />
+            </Group>
+            <Group>
+              <CustomFields docID={docID} doc={doc} isLoading={isLoading} />
+            </Group>
+            <TextInput
+              label={t("common.ocr_language")}
+              readOnly
+              value={ocrLang}
               mt="md"
             />
-          </Group>
-          <Group>
-            <CustomFields docID={docID} doc={doc} isLoading={isLoading} />
-          </Group>
-          <TextInput
-            label={t("common.ocr_language")}
-            readOnly
-            value={ocrLang}
-            mt="md"
-          />
-        </Stack>
-      </div>
+          </Stack>
+        </div>
+      </>
     )
   }
 
@@ -122,31 +147,17 @@ function EditTagsButton() {
   const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
   const {currentData: doc} = useGetDocumentQuery(docID ?? skipToken)
 
-  const onClick = () => {
-    open()
-  }
-
-  const onSubmit = () => {
-    close()
-  }
-
-  const onCancel = () => {
-    close()
-  }
-
   return (
     <>
-      <ActionIcon variant="default" onClick={onClick}>
-        <IconEdit stroke={1.4} />
+      <ActionIcon variant="transparent" onClick={open}>
+        <IconEdit />
       </ActionIcon>
-      {doc && (
-        <EditNodeTagsModal
-          opened={opened}
-          node={doc}
-          onSubmit={onSubmit}
-          onCancel={onCancel}
-        />
-      )}
+      <EditNodeTagsModal
+        opened={opened}
+        node={{id: docID!, tags: doc?.tags || []}}
+        onSubmit={close}
+        onCancel={close}
+      />
     </>
   )
 }

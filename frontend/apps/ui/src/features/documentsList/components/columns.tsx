@@ -29,7 +29,10 @@ export default function documentByCategoryColumns({items, t}: Args) {
         return (
           <Box
             style={{cursor: "pointer"}}
-            onClick={() => onClick?.(row, false)}
+            onClick={(event: React.MouseEvent) => onClick?.(row, false, event)}
+            onAuxClick={(event: React.MouseEvent) =>
+              onClick?.(row, false, event)
+            }
           >
             <Text component="a">{value as string}</Text>
           </Box>

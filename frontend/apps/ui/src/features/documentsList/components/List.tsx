@@ -50,8 +50,19 @@ export default function DocumentsListByCategory() {
 
   const onTableRowClick = (
     row: DocumentListItem,
-    openInSecondaryPanel: boolean
+    openInSecondaryPanel: boolean,
+    event?: React.MouseEvent
   ) => {
+    // Check for new tab intent (Ctrl/Cmd+click or middle-click)
+    const openInNewTab =
+      event && (event.ctrlKey || event.metaKey || event.button === 1)
+
+    if (openInNewTab) {
+      const url = `/document/${row.id}`
+      window.open(url, "_blank")
+      return
+    }
+
     if (openInSecondaryPanel) {
       dispatch(showDocumentDetailsInSecondaryPanel(row.id))
     } else {

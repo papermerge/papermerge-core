@@ -32,7 +32,11 @@ export interface FilterValue {
     | "to"
 }
 
-type ClickFunc<T> = (row: T, otherPanel: boolean) => void
+type ClickFunc<T> = (
+  row: T,
+  otherPanel: boolean,
+  event?: React.MouseEvent
+) => void
 
 export interface ColumnConfig<T = any> {
   key: keyof T

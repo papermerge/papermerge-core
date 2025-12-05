@@ -191,11 +191,31 @@ export default function Commander() {
     actions.setSelection(arr)
   }
 
-  const onTableRowClick = (row: NodeType, openInSecondaryPanel: boolean) => {
+  const onTableRowClick = (
+    row: NodeType,
+    openInSecondaryPanel: boolean,
+    event?: React.MouseEvent
+  ) => {
     const component = row.ctype === "document" ? "viewer" : "commander"
 
+    // Check for new tab intent (Ctrl/Cmd+click or middle-click)
+    const openInNewTab =
+      event && (event.ctrlKey || event.metaKey || event.button === 1)
+
+    if (openInNewTab && row.ctype === "document") {
+      const url = `/document/${row.id}`
+      window.open(url, "_blank")
+      return
+    }
+
+    if (openInNewTab && row.ctype === "folder") {
+      const url = `/folder/${row.id}`
+      window.open(url, "_blank")
+      return
+    }
+
     // Secondary panel always uses dispatch
-    if (openInSecondaryPanel || panelId == "secondary") {
+    if (openInSecondaryPanel || panelId === "secondary") {
       dispatch(
         updatePanelCurrentNode({
           panelID: "secondary",
@@ -421,6 +441,7 @@ function DataItems({
   const viewOptionValue = viewOption as ViewOption
   const visibleColumns = useVisibleColumns(nodeColumns(t))
   const getRowId = (row: NodeType) => row.id
+  const currentNodeID = useAppSelector(s => selectCurrentNodeID(s, "secondary"))
 
   if (data.items.length == 0) {
     return (
@@ -474,6 +495,7 @@ function DataItems({
       withCheckbox={true}
       withSecondaryPanelTriggerColumn={panelId == "main"}
       getRowId={getRowId}
+      highlightRowID={currentNodeID}
     />
   )
 }

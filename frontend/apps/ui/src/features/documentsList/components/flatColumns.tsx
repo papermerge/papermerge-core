@@ -21,7 +21,8 @@ export default function flatColumns(t?: TFunction) {
         return (
           <Box
             style={{cursor: "pointer"}}
-            onClick={() => onClick?.(row, false)}
+            onClick={event => onClick?.(row, false, event)}
+            onAuxClick={event => onClick?.(row, false, event)} // for middle-click
           >
             <Text component="a">{value as string}</Text>
           </Box>

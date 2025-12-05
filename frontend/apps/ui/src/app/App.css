@@ -35,9 +35,9 @@
 }
 
 main.main-content {
-  margin: 0.5rem;
   flex: 1; /* Takes all remaining space after sidebar */
   overflow-y: auto; /* Enable vertical scrolling for content only */
+  overflow-x: hidden;
   display: flex;
   flex-direction: row;
 }
@@ -49,6 +49,15 @@ main.main-content {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.secondary-panel {
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Darker shadow for dark mode */
+[data-mantine-color-scheme="dark"] .secondary-panel {
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.25);
 }
 
 .scrollable-y {

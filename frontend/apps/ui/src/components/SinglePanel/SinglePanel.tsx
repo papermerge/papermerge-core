@@ -1,6 +1,6 @@
 import {useAppSelector} from "@/app/hooks"
 import {Box} from "@mantine/core"
-import {useContext} from "react"
+import {CSSProperties, useContext} from "react"
 
 import PanelContext from "@/contexts/PanelContext"
 import {selectPanelComponent} from "@/features/ui/panelRegistry"
@@ -54,19 +54,24 @@ const PANEL_COMPONENTS_SAFE = {
 
 interface Args {
   className: string
+  style?: CSSProperties
 }
 
-export default function SinglePanel({className}: Args) {
+export default function SinglePanel({className, style}: Args) {
   const panelId = useContext(PanelContext)
   const panelComponent = useAppSelector(s => selectPanelComponent(s, panelId))
 
   if (!panelComponent) {
-    return <Box className={className}>No panel component selected</Box>
+    return (
+      <Box className={className} style={style}>
+        No panel component selected
+      </Box>
+    )
   }
 
   const Component = PANEL_COMPONENTS_SAFE[panelComponent]
   return (
-    <Box className={className}>
+    <Box className={className} style={style}>
       <Component />
     </Box>
   )

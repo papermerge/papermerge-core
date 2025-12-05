@@ -10,6 +10,9 @@ import type {SortState} from "kommon"
 const EMPTY_ARRAY: string[] = []
 const EMPTY_OBJECT: Record<string, any> = {}
 
+// Default main panel width as percentage (50% = equal split)
+const DEFAULT_MAIN_PANEL_WIDTH = 50
+
 export interface PanelListState {
   pageNumber?: number
   pageSize?: number
@@ -47,6 +50,9 @@ export interface PanelRegistryState {
   panels: {
     [panelId: string]: PanelState
   }
+  // Main panel width as percentage (0-100)
+  // Secondary panel width = 100 - mainPanelWidth
+  mainPanelWidth: number
 }
 
 // ============================================================================
@@ -65,7 +71,8 @@ const initialState: PanelRegistryState = {
       component: undefined,
       componentStates: {}
     }
-  }
+  },
+  mainPanelWidth: DEFAULT_MAIN_PANEL_WIDTH
 }
 
 // ============================================================================
@@ -159,6 +166,7 @@ const panelRegistrySlice = createSlice({
         ...filters
       }
     },
+
     updatePanelCurrentNode: (
       state,
       action: PayloadAction<{
@@ -310,6 +318,18 @@ const panelRegistrySlice = createSlice({
         component: undefined,
         componentStates: {}
       }
+    },
+
+    // Set main panel width (percentage)
+    setMainPanelWidth: (state, action: PayloadAction<number>) => {
+      // Clamp value between 20 and 80 percent
+      const width = Math.max(20, Math.min(80, action.payload))
+      state.mainPanelWidth = width
+    },
+
+    // Reset panel width to default (50/50 split)
+    resetMainPanelWidth: state => {
+      state.mainPanelWidth = DEFAULT_MAIN_PANEL_WIDTH
     }
   }
 })
@@ -325,7 +345,9 @@ export const {
   resetPanelComponentState,
   resetPanel,
   closePanel,
-  updatePanelCurrentNode
+  updatePanelCurrentNode,
+  setMainPanelWidth,
+  resetMainPanelWidth
 } = panelRegistrySlice.actions
 
 export default panelRegistrySlice.reducer
@@ -421,3 +443,10 @@ export const selectPanelAllCustom = createSelector(
 
 export const selectCurrentNodeID = (state: RootState, panelId: string) =>
   selectPanelList(state, panelId)?.entityID
+
+// Panel width selectors
+export const selectMainPanelWidth = (state: RootState): number =>
+  state.panelRegistry.mainPanelWidth ?? DEFAULT_MAIN_PANEL_WIDTH
+
+export const selectSecondaryPanelWidth = (state: RootState): number =>
+  100 - selectMainPanelWidth(state)

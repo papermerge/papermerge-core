@@ -1,5 +1,5 @@
 import {useAppSelector} from "@/app/hooks"
-import {IconHome, IconInbox, IconShare} from "@tabler/icons-react"
+import {IconFolder, IconInbox, IconShare} from "@tabler/icons-react"
 import {useState} from "react"
 
 import type {BreadcrumbRootType, UserDetails} from "@/types"
@@ -112,7 +112,7 @@ export default function useRootItem(itemId: string) {
       // Fallback when context can't be determined yet
       return {
         ownerLabel: t("common.personal", {defaultValue: "Personal"}),
-        folderLabel: t("common.home", {defaultValue: "Home"})
+        folderLabel: t("common.Files", {defaultValue: "Files"})
       }
     }
 
@@ -124,7 +124,7 @@ export default function useRootItem(itemId: string) {
     let folderLabel: string
     switch (context.rootType) {
       case "home":
-        folderLabel = t("common.home", {defaultValue: "Home"})
+        folderLabel = t("common.files", {defaultValue: "Files"})
         break
       case "inbox":
         folderLabel = t("common.inbox", {defaultValue: "Inbox"})
@@ -142,17 +142,17 @@ export default function useRootItem(itemId: string) {
   const {ownerLabel, folderLabel} = getBadgeLabel()
   // Get icon for root type
   const getRootIcon = () => {
-    if (!context) return <IconHome size={16} />
+    if (!context) return <IconFolder size={16} />
 
     switch (context.rootType) {
       case "home":
-        return <IconHome size={16} />
+        return <IconFolder size={16} />
       case "inbox":
         return <IconInbox size={16} />
       case "shared":
         return <IconShare size={16} />
       default:
-        return <IconHome size={16} />
+        return <IconFolder size={16} />
     }
   }
 

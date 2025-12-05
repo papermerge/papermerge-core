@@ -1,6 +1,6 @@
 import type {BreadcrumbRootType} from "@/types"
 import {Group, Loader, Menu} from "@mantine/core"
-import {IconHome, IconInbox, IconShare, IconUser} from "@tabler/icons-react"
+import {IconFolder, IconInbox, IconShare, IconUser} from "@tabler/icons-react"
 
 import type {GroupHome, GroupInbox, UserDetails} from "@/types"
 
@@ -71,17 +71,18 @@ export default function DropdownContent({
       {user && (
         <>
           <Menu.Item
-            onClick={() => onClick(user.home_folder_id, "home")}
-            leftSection={<IconHome size={16} />}
-          >
-            {t("common.home", {defaultValue: "Home"})}
-          </Menu.Item>
-          <Menu.Item
             onClick={() => onClick(user.inbox_folder_id, "inbox")}
             leftSection={<IconInbox size={16} />}
           >
             {t("common.inbox", {defaultValue: "Inbox"})}
           </Menu.Item>
+          <Menu.Item
+            onClick={() => onClick(user.home_folder_id, "home")}
+            leftSection={<IconFolder size={16} />}
+          >
+            {t("common.files", {defaultValue: "Files"})}
+          </Menu.Item>
+
           <Menu.Item
             onClick={() => onClick("shared", "shared")}
             leftSection={<IconShare size={16} />}

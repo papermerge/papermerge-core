@@ -1,3 +1,4 @@
+import type {BreadcrumbRootType} from "@/types"
 import {Group, Loader, Menu} from "@mantine/core"
 import {IconHome, IconInbox, IconShare, IconUser} from "@tabler/icons-react"
 
@@ -22,7 +23,7 @@ interface Args {
   inboxesAreLoading: boolean
   homesError?: HomesError
   inboxesError?: InboxesError
-  onClick: (folderId: string) => void
+  onClick: (folderId: string, rootType?: BreadcrumbRootType) => void
 }
 
 export default function DropdownContent({
@@ -70,19 +71,19 @@ export default function DropdownContent({
       {user && (
         <>
           <Menu.Item
-            onClick={() => onClick(user.home_folder_id)}
+            onClick={() => onClick(user.home_folder_id, "home")}
             leftSection={<IconHome size={16} />}
           >
             {t("common.home", {defaultValue: "Home"})}
           </Menu.Item>
           <Menu.Item
-            onClick={() => onClick(user.inbox_folder_id)}
+            onClick={() => onClick(user.inbox_folder_id, "inbox")}
             leftSection={<IconInbox size={16} />}
           >
             {t("common.inbox", {defaultValue: "Inbox"})}
           </Menu.Item>
           <Menu.Item
-            onClick={() => onClick("shared")}
+            onClick={() => onClick("shared", "shared")}
             leftSection={<IconShare size={16} />}
           >
             {t("common.shared", {defaultValue: "Shared"})}
@@ -90,7 +91,11 @@ export default function DropdownContent({
         </>
       )}
 
-      <GroupSections homes={homes} inboxes={inboxes} onClick={onClick} />
+      <GroupSections
+        homes={homes}
+        inboxes={inboxes}
+        onClick={(folderId: string) => onClick(folderId, undefined)}
+      />
     </>
   )
 }

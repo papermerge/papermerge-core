@@ -35,6 +35,7 @@ type DragNodeStartedArg = {
 }
 
 interface NavBarState {
+  menuItem?: string
   collapsed: boolean
   width: number
 }
@@ -142,13 +143,16 @@ const uiSlice = createSlice({
         Cookies.set(NAVBAR_WIDTH_COOKIE, `${COLLAPSED_WIDTH}`)
       }
     },
-    updateBreadcrumbRootType(
+    updateCurrentNavBarMenuItem(
       state,
-      action: PayloadAction<BreadcrumbRootType | undefined>
+      action: PayloadAction<string | undefined>
     ) {
-      const rootType = action.payload
-      state.breadcrumbRootType = rootType
+      const menuItem = action.payload
+      if (state.navbar) {
+        state.navbar.menuItem = menuItem
+      }
     },
+
     mainPanelComponentUpdated(state, action: PayloadAction<PanelComponent>) {
       state.mainPanelComponent = action.payload
     },
@@ -248,7 +252,7 @@ const uiSlice = createSlice({
 
 export const {
   toggleNavBar,
-  updateBreadcrumbRootType,
+  updateCurrentNavBarMenuItem,
   currentSharedNodeRootChanged,
   mainPanelComponentUpdated,
   secondaryPanelComponentUpdated,
@@ -382,8 +386,8 @@ export const selectViewerPagesHaveChangedDialogVisibility = (
   return state.ui.viewerPageHaveChangedDialogVisibility || "closed"
 }
 
-export const selectBreadcrumbRootType = (state: RootState) => {
-  return state.ui.breadcrumbRootType
+export const selectNavBarLastMenuItem = (state: RootState) => {
+  return state.ui.navbar.menuItem
 }
 
 /* Load initial collapse state value from cookie */

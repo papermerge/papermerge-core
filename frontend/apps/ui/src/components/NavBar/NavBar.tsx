@@ -1,8 +1,9 @@
-import {useAppSelector} from "@/app/hooks"
+import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useAuth} from "@/app/hooks/useAuth"
 import {
-  selectBreadcrumbRootType,
-  selectNavBarCollapsed
+  selectNavBarCollapsed,
+  selectNavBarLastMenuItem,
+  updateCurrentNavBarMenuItem
 } from "@/features/ui/uiSlice"
 import {
   AUDIT_LOG_VIEW,
@@ -19,7 +20,8 @@ import {
   selectCurrentUserError,
   selectCurrentUserStatus
 } from "@/slices/currentUser.ts"
-import {Center, Group, Loader, Text} from "@mantine/core"
+import {BreadcrumbRootType} from "@/types"
+import {Center, Group, Loader, Skeleton, Text} from "@mantine/core"
 import {
   IconCategory2,
   IconClipboardList,
@@ -56,19 +58,16 @@ type NavLinkState = {
   isPending: boolean
 }
 
-type BreadcrumbRootType = "home" | "inbox" | "shared"
-
 type ResponsiveLink = ({isActive, isPending}: NavLinkState) => React.JSX.Element
 type RenderLinkFunc = (text: string, icon: React.JSX.Element) => ResponsiveLink
 
-interface NavItemProps {
+interface NavItemArgs {
   to: string
   label: string
   icon: React.JSX.Element
   permission: string
   rootType?: BreadcrumbRootType
   renderLink: RenderLinkFunc
-  breadcrumbRootType?: BreadcrumbRootType
 }
 
 function NavItem({
@@ -78,9 +77,11 @@ function NavItem({
   permission,
   rootType,
   renderLink
-}: Omit<NavItemProps, "breadcrumbRootType">) {
+}: NavItemArgs) {
+  const dispatch = useAppDispatch()
   const {hasPermission} = useAuth()
-  const breadcrumbRootType = useAppSelector(selectBreadcrumbRootType)
+  const lastCurrentMenuItem = useAppSelector(selectNavBarLastMenuItem)
+
   const location = useLocation()
   const [isPending, setIsPending] = useState(false)
 
@@ -93,27 +94,27 @@ function NavItem({
     return null
   }
 
-  const isOnRootPath = ["/home", "/inbox", "/shared", "/documents"].some(
-    path => location.pathname === path
-  )
+  const onClick = () => {
+    setIsPending(true)
+    dispatch(updateCurrentNavBarMenuItem(to))
+  }
 
-  const isActiveByBreadcrumb =
-    !isOnRootPath && rootType != null && breadcrumbRootType === rootType
+  const isActiveByLastMenuItemState = lastCurrentMenuItem == to && !isPending
 
   return (
     <NavLink
       to={to}
       className={({isActive}) =>
-        isActive || isActiveByBreadcrumb ? "active" : ""
+        isActive || isActiveByLastMenuItemState ? "active" : ""
       }
-      onClick={() => setIsPending(true)}
+      onClick={onClick}
     >
       {({isActive}) =>
         renderLink(
           label,
           icon
         )({
-          isActive: isActive || isActiveByBreadcrumb,
+          isActive: isActive || isActiveByLastMenuItemState,
           isPending: isPending && !isActive
         })
       }
@@ -135,7 +136,7 @@ function NavBarContent({renderLink, withVersion}: Args) {
   const error = useSelector(selectCurrentUserError)
 
   if (status === "loading" || isLoading) {
-    return <Loader />
+    return <LoadingNavBar />
   }
 
   if (status === "failed") {
@@ -143,84 +144,93 @@ function NavBarContent({renderLink, withVersion}: Args) {
   }
 
   if (!user) {
-    return <Loader />
+    return <LoadingNavBar />
   }
-  const item = (
-    props: Omit<NavItemProps, "renderLink" | "breadcrumbRootType">
-  ) => <NavItem {...props} renderLink={renderLink} />
 
   return (
     <>
       <div className="navbar">
-        {item({
-          to: "/documents",
-          label: t("documents"),
-          icon: <IconFile />,
-          permission: NODE_VIEW
-        })}
-        {item({
-          to: "/inbox",
-          label: t("inbox.name"),
-          icon: <IconInbox />,
-          permission: NODE_VIEW,
-          rootType: "inbox"
-        })}
-        {item({
-          to: "/home",
-          label: t("files"),
-          icon: <IconFolder />,
-          permission: NODE_VIEW,
-          rootType: "home"
-        })}
-        {item({
-          to: "/shared",
-          label: t("shared.name"),
-          icon: <IconShare />,
-          permission: SHARED_NODE_VIEW,
-          rootType: "shared"
-        })}
-        {item({
-          to: "/tags",
-          label: t("tags.name"),
-          icon: <IconTag />,
-          permission: TAG_VIEW
-        })}
-        {item({
-          to: "/custom-fields",
-          label: t("custom_fields.name"),
-          icon: <IconForms />,
-          permission: CUSTOM_FIELD_VIEW
-        })}
-        {item({
-          to: "/categories",
-          label: t("document_types.name.by"),
-          icon: <IconCategory2 />,
-          permission: DOCUMENT_TYPE_VIEW
-        })}
-        {item({
-          to: "/users",
-          label: t("users.name"),
-          icon: <IconUsers />,
-          permission: USER_VIEW
-        })}
-        {item({
-          to: "/groups",
-          label: t("groups.name"),
-          icon: <IconUsersGroup />,
-          permission: GROUP_VIEW
-        })}
-        {item({
-          to: "/roles",
-          label: t("roles.name"),
-          icon: <IconMasksTheater />,
-          permission: ROLE_VIEW
-        })}
-        {item({
-          to: "/audit-logs",
-          label: t("audit_log.name"),
-          icon: <IconClipboardList />,
-          permission: AUDIT_LOG_VIEW
-        })}
+        <NavItem
+          to={"/documents"}
+          label={t("documents")}
+          icon={<IconFile />}
+          permission={NODE_VIEW}
+          renderLink={renderLink}
+        />
+
+        <NavItem
+          to="/inbox"
+          label={t("inbox.name")}
+          icon={<IconInbox />}
+          permission={NODE_VIEW}
+          rootType="inbox"
+          renderLink={renderLink}
+        />
+        <NavItem
+          to="/home"
+          label={t("files")}
+          icon={<IconFolder />}
+          permission={NODE_VIEW}
+          rootType="home"
+          renderLink={renderLink}
+        />
+        <NavItem
+          to="/shared"
+          label={t("shared.name")}
+          icon={<IconShare />}
+          permission={SHARED_NODE_VIEW}
+          rootType="shared"
+          renderLink={renderLink}
+        />
+        <NavItem
+          to="/tags"
+          label={t("tags.name")}
+          icon={<IconTag />}
+          permission={TAG_VIEW}
+          renderLink={renderLink}
+        />
+        <NavItem
+          to="/custom-fields"
+          label={t("custom_fields.name")}
+          icon={<IconForms />}
+          permission={CUSTOM_FIELD_VIEW}
+          renderLink={renderLink}
+        />
+        <NavItem
+          to="/categories"
+          label={t("document_types.name.by")}
+          icon={<IconCategory2 />}
+          permission={DOCUMENT_TYPE_VIEW}
+          renderLink={renderLink}
+        />
+        <NavItem
+          to="/users"
+          label={t("users.name")}
+          icon={<IconUsers />}
+          permission={USER_VIEW}
+          renderLink={renderLink}
+        />
+        <NavItem
+          to="/groups"
+          label={t("groups.name")}
+          icon={<IconUsersGroup />}
+          permission={GROUP_VIEW}
+          renderLink={renderLink}
+        />
+        <NavItem
+          to="/roles"
+          label={t("roles.name")}
+          icon={<IconMasksTheater />}
+          permission={ROLE_VIEW}
+          renderLink={renderLink}
+        />
+        <NavItem
+          to="/audit-logs"
+          label={t("audit_log.name")}
+          icon={<IconClipboardList />}
+          permission={AUDIT_LOG_VIEW}
+          renderLink={renderLink}
+        />
       </div>
       {withVersion && (
         <Center className="navbar-bg-color">
@@ -239,9 +249,7 @@ function NavBarFull() {
 
 function NavBarCollapsed() {
   return (
-    <NavBarContent
-      renderLink={(text, icon) => NavLinkWithFeedbackShort(icon)}
-    />
+    <NavBarContent renderLink={(_, icon) => NavLinkWithFeedbackShort(icon)} />
   )
 }
 
@@ -249,7 +257,7 @@ function NavLinkWithFeedback(
   text: string,
   icon: React.JSX.Element
 ): ResponsiveLink {
-  return ({isActive, isPending}) => {
+  return ({isPending}) => {
     if (isPending) {
       return (
         <Group>
@@ -268,7 +276,7 @@ function NavLinkWithFeedback(
 }
 
 function NavLinkWithFeedbackShort(icon: React.JSX.Element): ResponsiveLink {
-  return ({isActive, isPending}) => {
+  return ({isPending}) => {
     if (isPending) {
       return (
         <Group>
@@ -278,4 +286,20 @@ function NavLinkWithFeedbackShort(icon: React.JSX.Element): ResponsiveLink {
     }
     return <Group>{icon}</Group>
   }
+}
+
+function LoadingNavBar() {
+  const collapsed = useSelector(selectNavBarCollapsed)
+  const width = collapsed ? "2rem" : "7rem"
+  return (
+    <>
+      <div className="navbar">
+        <Skeleton height={"1.5rem"} m={"xs"} width={width} />
+        <Skeleton height={"1.5rem"} m={"xs"} width={width} />
+        <Skeleton height={"1.5rem"} m={"xs"} width={width} />
+        <Skeleton height={"1.5rem"} m={"xs"} width={width} />
+        <Skeleton height={"1.5rem"} m={"xs"} width={width} />
+      </div>
+    </>
+  )
 }

@@ -6,7 +6,6 @@ import {useCustomFields} from "./useCustomFields"
 
 interface CustomFieldsContainerProps {
   doc?: DocumentType
-  docID?: string
   isLoading: boolean
 }
 
@@ -18,7 +17,6 @@ interface CustomFieldsContainerProps {
  */
 export function CustomFieldsContainer({
   doc,
-  docID,
   isLoading: isDocLoading
 }: CustomFieldsContainerProps) {
   const {
@@ -31,9 +29,9 @@ export function CustomFieldsContainer({
     errorMessage,
     onDocumentTypeChange
   } = useCustomFields({
-    docId: docID,
+    docId: doc?.id,
     groupId: undefined,
-    currentDocumentTypeId: doc?.id
+    currentDocumentTypeId: doc?.document_type_id
   })
 
   // Handle document type change from Select component
@@ -45,13 +43,13 @@ export function CustomFieldsContainer({
   )
 
   // Show loading state if document is still loading
-  if (isDocLoading || !docID || !doc) {
+  if (isDocLoading || !doc) {
     return <Skeleton height={120} />
   }
 
   return (
     <CustomFieldsPresentation
-      docId={docID}
+      docId={doc.id}
       customFields={customFields}
       documentTypeId={documentTypeId}
       documentTypes={documentTypes}

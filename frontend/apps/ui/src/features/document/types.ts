@@ -69,11 +69,13 @@ export type NodeTag = {
 export type DocumentType = {
   id: string
   ctype: "document"
+  document_type_id: string
   title: string
   breadcrumb: BreadcrumbType
   ocr: boolean
   ocr_status: OcrStatusEnum
   versions: Array<DocumentVersion>
+
   parent_id: string | null
   user_id: string
   updated_at: string

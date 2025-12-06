@@ -224,12 +224,7 @@ export function Viewer({doc, docVer}: Args) {
         {thumbnailsIsOpen && <ThumbnailList docVer={docVer} />}
         <ThumbnailsToggle />
         <PageList docVer={docVer} />
-        <DocumentDetails
-          docVer={docVer}
-          doc={doc}
-          docID={doc?.id}
-          isLoading={false}
-        />
+        <DocumentDetails docVer={docVer} doc={doc} isLoading={false} />
         <PagesHaveChangedDialog docID={doc.id} />
         <ContextMenu
           opened={opened}

@@ -36,12 +36,11 @@ import DocumentDetailsResizer, {
 
 interface Args {
   doc?: DocumentType
-  docID?: string
   docVer?: ClientDocumentVersion
   isLoading: boolean
 }
 
-export default function DocumentDetails({doc, docVer, docID, isLoading}: Args) {
+export default function DocumentDetails({doc, docVer, isLoading}: Args) {
   const {t} = useTranslation()
 
   const {panelId} = usePanel()
@@ -53,7 +52,7 @@ export default function DocumentDetails({doc, docVer, docID, isLoading}: Args) {
   // Use stored width or default
   const widthPercent = documentDetailsWidth ?? DOCUMENT_DETAILS_DEFAULT_WIDTH
 
-  if (!docID || isLoading) {
+  if (!doc || isLoading) {
     return (
       <>
         <DocumentDetailsResizer />
@@ -90,8 +89,8 @@ export default function DocumentDetails({doc, docVer, docID, isLoading}: Args) {
             <TextInput
               label="ID"
               readOnly
-              value={docID}
-              rightSection={<CopyButton value={docID || ""} />}
+              value={doc.id}
+              rightSection={<CopyButton value={doc.id || ""} />}
             />
             <TextInput
               label={t("common.version_id")}
@@ -124,7 +123,7 @@ export default function DocumentDetails({doc, docVer, docID, isLoading}: Args) {
               />
             </Group>
             <Group>
-              <CustomFields docID={docID} doc={doc} isLoading={isLoading} />
+              <CustomFields doc={doc} isLoading={isLoading} />
             </Group>
             <TextInput
               label={t("common.ocr_language")}

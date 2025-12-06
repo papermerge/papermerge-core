@@ -5,6 +5,9 @@ export {
 } from "./CustomFields.container"
 export {CustomFieldsPresentation} from "./CustomFields.presentation"
 
+// CategorySelect component export
+export {CategorySelect} from "./CategorySelect"
+
 // Hook exports
 export {useAutoSaveCustomField} from "./useAutoSaveCustomField"
 export {useCustomFields} from "./useCustomFields"

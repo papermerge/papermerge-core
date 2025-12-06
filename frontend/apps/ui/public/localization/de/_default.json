@@ -651,5 +651,14 @@
     "thb": "THB - Thailändischer Baht",
     "twd": "TWD - Taiwan-Dollar",
     "vnd": "VND - Vietnamesischer Dong"
+  },
+  "category_select": {
+    "recently_used": "Zuletzt verwendet",
+    "all_categories": "Alle Kategorien",
+    "confirm_title": "Kategorie ändern?",
+    "confirm_message": "Das Ändern der Kategorie löscht alle benutzerdefinierten Feldwerte für dieses Dokument. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "new_category": "Neue Kategorie:",
+    "confirm_button": "Kategorie ändern",
+    "none": "Keine"
   }
 }

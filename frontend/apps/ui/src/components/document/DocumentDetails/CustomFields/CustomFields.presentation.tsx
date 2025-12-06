@@ -1,6 +1,7 @@
-import {Select, Skeleton, Stack, Text} from "@mantine/core"
+import {Skeleton, Stack, Text} from "@mantine/core"
 import {useTranslation} from "react-i18next"
 import {BooleanField} from "./BooleanField"
+import {CategorySelect} from "./CategorySelect"
 import {DateField} from "./DateField"
 import {MonetaryField} from "./MonetaryField"
 import {MultiSelectField} from "./MultiSelectField"
@@ -13,7 +14,7 @@ import {YearMonthField} from "./YearMonthField"
  * Presentation component for CustomFields
  *
  * Renders:
- * - Document type (category) selector
+ * - Document type (category) selector with confirmation and recently used
  * - List of custom field inputs based on document type
  * - Loading and error states
  *
@@ -42,23 +43,13 @@ export function CustomFieldsPresentation({
     )
   }
 
-  // Transform document types for Select component
-  const documentTypeOptions = documentTypes.map(dt => ({
-    value: dt.id,
-    label: dt.name
-  }))
-
   return (
     <Stack gap="md" style={{width: "100%"}}>
       {/* Document Type / Category Selector */}
-      <Select
-        label={t("common.category")}
-        data={documentTypeOptions}
+      <CategorySelect
+        documentTypes={documentTypes}
         value={documentTypeId}
-        placeholder={t("common.pick_value")}
         onChange={onDocumentTypeChange}
-        clearable
-        searchable
         disabled={isLoadingDocTypes}
       />
 

@@ -11,6 +11,7 @@ import documentDownloadsReducer from "@/features/document/store/documentDownload
 import docVersReducer from "@/features/document/store/documentVersSlice"
 import imageObjects from "@/features/document/store/imageObjectsSlice"
 import pagesReducer from "@/features/document/store/pagesSlice"
+import recentCategoriesReducer from "@/features/document/store/recentCategoriesSlice"
 import documentsByCategoryReducer from "@/features/documentsList/storage/documentsByCategory"
 import filesReducer from "@/features/files/storage/files"
 import groupsReducer from "@/features/groups/storage/group"
@@ -42,6 +43,7 @@ const rootReducer = {
   auditLogs: auditLogsReducer,
   customFields: customFieldsReducer,
   documentTypes: documentTypesReducer,
+  recentCategories: recentCategoriesReducer,
   users: usersReducer,
   nodes: nodesReducer,
   sharedNodes: sharedNodesReducer,

@@ -16,6 +16,7 @@ export function loadPersistedState() {
 // Select what to persist
 export function selectStateToPersist(state: RootState) {
   return {
-    panelRegistry: state.panelRegistry
+    panelRegistry: state.panelRegistry,
+    recentCategories: state.recentCategories
   }
 }

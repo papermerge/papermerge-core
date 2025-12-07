@@ -91,7 +91,7 @@
       "all_versions": "All Verisions",
       "only_last_version": "Only Last Version",
       "title": "Titel",
-      "custom_fields": "Custom Fields",
+      "custom_fields": "Metadata",
       "tags": "Tags",
       "category": "Categories"
     }
@@ -251,7 +251,7 @@
   "document_types.name.by": "Categories",
   "document_types.new.title": "New Category",
   "document_types.form.name": "Name",
-  "document_types.form.custom_fields": "Custom Fields",
+  "document_types.form.custom_fields": "Metadata",
   "document_types.form.custom_fields.placeholder": "Pick value",
   "document_types.form.path_template": "Path Template",
   "document_types.delete.hint": "This won't affect associated documents",
@@ -260,15 +260,15 @@
   "document_types.delete.many.title": "Delete Document Types",
   "document_types.delete.many.description": "Are you sure you want to delete selected document types?",
   "document_types.list.empty": "There are currently no document types",
-  "custom_fields.name": "Custom Fields",
-  "custom_fields.new.title": "New Custom Field",
-  "custom_fields.edit.title": "Edit Custom Field",
+  "custom_fields.name": "Metadata",
+  "custom_fields.new.title": "New Metadata",
+  "custom_fields.edit.title": "Edit Metadata",
   "custom_fields.form.name": "Name",
   "custom_fields.form.type": "Type",
   "custom_fields.form.currency": "Currency",
-  "custom_fields.delete.one.title": "Delete Custom Field",
+  "custom_fields.delete.one.title": "Delete Metadata",
   "custom_fields.delete.one.description": "Are you sure you want to delete this custom field?",
-  "custom_fields.delete.many.title": "Delete Custom Fields",
+  "custom_fields.delete.many.title": "Delete Metadata",
   "custom_fields.delete.many.description": "Are you sure you want to delete selected custom fields?",
   "custom_fields.list.empty": "There are currently no fields",
   "groups.name": "Groups",
@@ -358,18 +358,18 @@
     "owned_by": "Owned By"
   },
   "customFieldDetails": {
-    "name": "Custom Fields"
+    "name": "Metadata"
   },
   "customFields": {
     "filterByType": {
       "label": "Types"
     },
     "notifications": {
-      "created": "Custom field was successfully created",
-      "updated": "Custom field was successfully updated",
-      "deleted": "Custom field was successfully deleted"
+      "created": "Metadata was successfully created",
+      "updated": "Metadata was successfully updated",
+      "deleted": "Metadata was successfully deleted"
     },
-    "searchLabel": "Search custom fields..."
+    "searchLabel": "Search metadata..."
   },
   "customFieldType": {
     "date": "Date",
@@ -450,7 +450,7 @@
   "roles.form.permissions.groups.users": "Users",
   "roles.form.permissions.groups.groups": "Groups",
   "roles.form.permissions.groups.tags": "Tags",
-  "roles.form.permissions.groups.custom_fields": "Custom Fields",
+  "roles.form.permissions.groups.custom_fields": "Metadata",
   "roles.form.permissions.groups.document_types": "Document Types",
   "roles.form.permissions.groups.nodes": "Nodes",
   "roles.form.permissions.groups.shared_nodes": "Shared Nodes",
@@ -514,7 +514,7 @@
     "document.download.last_version_only": "Download Last Document Version Only",
     "document.update.title": "Update Document Title",
     "document.update.tags": "Update Document Tags",
-    "document.update.custom_fields": "Update Document Custom Fields",
+    "document.update.custom_fields": "Update Document Metadata",
     "document.update.document_type": "Update Document Category",
 
     "tag.select": "Select Tags",

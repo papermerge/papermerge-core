@@ -1,20 +1,16 @@
 import logging
 import uuid
-from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Security, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.db.exceptions import ResourceAccessDenied
-from papermerge.core import utils, schema
-from papermerge.core.features.auth import get_current_user
-from papermerge.core.features.auth import scopes
-from papermerge.core.features.ownership.db import api as ownership_api
+from papermerge.core import schema, scopes
 from papermerge.core.features.custom_fields import schema as cf_schema
 from papermerge.core.features.custom_fields.db import api as dbapi
+from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
-from papermerge.core.features.users.schema import User
 from papermerge.core.features.users.db import api as user_dbapi
 from papermerge.core.db.engine import get_db
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
@@ -39,11 +35,8 @@ logger = logging.getLogger(__name__)
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_VIEW)
 async def get_custom_fields_without_pagination(
-    user: Annotated[
-        User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
-    ],
+    user: scopes.ViewCustomFields,
     group_id: uuid.UUID | None = None,
     document_type_id: uuid.UUID | None = None,
     db_session: AsyncSession = Depends(get_db),
@@ -58,8 +51,6 @@ async def get_custom_fields_without_pagination(
     be raised.
     If `group_id` parameter is not provided (empty) then
     will return all custom fields of the current user.
-
-    Required scope: `{scope}`
     """
     owner_id = group_id or user.id
     owner_type = OwnerType.USER
@@ -82,18 +73,12 @@ async def get_custom_fields_without_pagination(
 
 
 @router.get("/", response_model=schema.PaginatedResponse[schema.CustomFieldEx])
-@utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_VIEW)
 async def get_custom_fields(
-    user: Annotated[
-        User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
-    ],
+    user: scopes.ViewCustomFields,
     params: CustomFieldParams = Depends(),
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.PaginatedResponse[schema.CustomFieldEx]:
-    """Get paginated list of custom fields
-
-    Required scope: `{scope}`
-    """
+    """Get paginated list of custom fields"""
     try:
         filters = params.to_filters()
         result = await dbapi.get_custom_fields(
@@ -119,21 +104,12 @@ async def get_custom_fields(
 
 
 @router.get("/{custom_field_id}", response_model=cf_schema.CustomFieldDetails)
-@utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_VIEW)
 async def get_custom_field(
     custom_field_id: uuid.UUID,
-    user: Annotated[
-        User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_VIEW])
-    ],
+    user: scopes.ViewCustomFields,
     db_session: AsyncSession = Depends(get_db),
 ):
-    """Get custom field
-
-    Required scope: `{scope}`
-    """
-    from papermerge.core.features.ownership.db import api as ownership_api
-    from papermerge.core.types import ResourceType
-
+    """Get custom field"""
     has_access = await ownership_api.user_can_access_resource(
         session=db_session,
         user_id=user.id,
@@ -170,12 +146,9 @@ async def get_custom_field(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_CREATE)
 async def create_custom_field(
     data: schema.CreateCustomField,
-    user: Annotated[
-        User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_CREATE])
-    ],
+    user: scopes.CreateCustomFields,
     db_session: AsyncSession = Depends(get_db),
 ) -> cf_schema.CustomField:
     """Create a new custom field"""
@@ -218,18 +191,12 @@ async def create_custom_field(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_DELETE)
 async def delete_custom_field(
     custom_field_id: uuid.UUID,
-    user: Annotated[
-        User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_DELETE])
-    ],
+    user:  scopes.DeleteCustomFields,
     db_session: AsyncSession = Depends(get_db),
 ) -> None:
-    """Deletes custom field
-
-    Required scope: `{scope}`
-    """
+    """Deletes custom field"""
 
     has_access = await ownership_api.user_can_access_resource(
         session=db_session,
@@ -271,21 +238,13 @@ async def delete_custom_field(
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.CUSTOM_FIELD_UPDATE)
 async def update_custom_field(
     custom_field_id: uuid.UUID,
     data: schema.UpdateCustomField,
-    cur_user: Annotated[
-        User, Security(get_current_user, scopes=[scopes.CUSTOM_FIELD_UPDATE])
-    ],
+    cur_user: scopes.UpdateCustomFields,
     db_session: AsyncSession = Depends(get_db),
 ) -> cf_schema.CustomField:
-    """Updates custom field
-
-    Required scope: `{scope}`
-    """
-    from papermerge.core.features.ownership.db import api as ownership_api
-
+    """Updates custom field"""
     has_access = await ownership_api.user_can_access_resource(
         session=db_session,
         user_id=cur_user.id,

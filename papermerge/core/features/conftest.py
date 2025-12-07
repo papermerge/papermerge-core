@@ -39,6 +39,7 @@ from papermerge.core.features.document_types.db import api as dt_dbapi
 from papermerge.core.features.special_folders.db import \
     api as special_folders_api
 from papermerge.core.features.groups.db.orm import UserGroup
+from papermerge.core import types
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
 RESOURCES = Path(DIR_ABS_PATH) / "document" / "tests" / "resources"
@@ -534,7 +535,7 @@ async def document_type_groceries(db_session: AsyncSession, user, make_custom_fi
     cf1 = await make_custom_field_v2(name="Shop", type_handler="text")
     cf2 = await make_custom_field_v2(name="Total", type_handler="monetary")
     cf3 = await make_custom_field_v2(name="EffectiveDate", type_handler="date")
-
+    owner = types.Owner.create_from(user_id=user.id)
     # Create document type WITHOUT user parameter
     dt = orm.DocumentType(
         id=uuid.uuid4(),
@@ -546,10 +547,8 @@ async def document_type_groceries(db_session: AsyncSession, user, make_custom_fi
     # Set ownership
     await ownership_api.set_owner(
         session=db_session,
-        resource_type=ResourceType.DOCUMENT_TYPE,
-        resource_id=dt.id,
-        owner_type=OwnerType.USER,
-        owner_id=user.id
+        resource=types.DocumentTypeResource(id=dt.id),
+        owner=owner,
     )
 
     # Associate custom fields
@@ -956,26 +955,22 @@ def make_custom_field_v2(db_session: AsyncSession, user):
     UPDATED: Create custom field with ownership instead of user_id/group_id
     """
     async def _maker(
-            name: str,
-            type_handler: str = "text",
-            config: dict | None = None,
-            user_id: UUID | None = None,
-            group_id: UUID | None = None
+        name: str,
+        type_handler: str = "text",
+        config: dict | None = None,
+        user_id: UUID | None = None,
+        group_id: UUID | None = None
     ):
         if config is None:
             config = {}
 
         # Determine owner
         if user_id:
-            owner_type = OwnerType.USER
-            owner_id = user_id
+            owner = types.Owner.create_from(user_id=user_id)
         elif group_id:
-            owner_type = OwnerType.GROUP
-            owner_id = group_id
+            owner = types.Owner.create_from(group_id=group_id)
         else:
-            # Default to the fixture user
-            owner_type = OwnerType.USER
-            owner_id = user.id
+            owner = types.Owner.create_from(user_id=user.id)
 
         # Create custom field WITHOUT user_id/group_id
         cf = orm.CustomField(
@@ -990,10 +985,8 @@ def make_custom_field_v2(db_session: AsyncSession, user):
         # Set ownership
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.CUSTOM_FIELD,
-            resource_id=cf.id,
-            owner_type=owner_type,
-            owner_id=owner_id
+            resource=types.CustomFieldResource(id=cf.id),
+            owner=owner,
         )
 
         await db_session.commit()

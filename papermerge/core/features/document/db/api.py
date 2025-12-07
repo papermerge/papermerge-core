@@ -46,6 +46,7 @@ from papermerge.core.db.common import get_ancestors, get_node_owner
 from papermerge.core.pathlib import (
     abs_docver_path,
 )
+from papermerge.core import types
 from papermerge.core import config
 
 settings = config.get_settings()
@@ -543,10 +544,8 @@ async def create_document(
         # Set ownership
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.NODE,
-            resource_id=doc_id,
-            owner_type=owner_type,
-            owner_id=owner_id
+            resource=types.NodeResource(id=doc_id),
+            owner=types.Owner(owner_type=owner_type, owner_id=owner_id),
         )
 
         await db_session.commit()

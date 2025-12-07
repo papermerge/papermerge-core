@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func, Sequence, case
 
 from papermerge.core.db.exceptions import DependenciesExist
-from papermerge.core import schema, orm
+from papermerge.core import schema, orm, types
 from papermerge.core import constants as const
 from papermerge.core.tasks import send_task
 from papermerge.core.features.ownership.db import api as ownership_api
@@ -433,10 +433,8 @@ async def create_document_type(
         # Set ownership
         await ownership_api.set_owner(
             session=session,
-            resource_type=ResourceType.DOCUMENT_TYPE,
-            resource_id=dtype.id,
-            owner_type=data.owner_type,
-            owner_id=data.owner_id
+            resource=types.DocumentTypeResource(id=dtype.id),
+            owner=types.Owner(owner_type=data.owner_type, owner_id=data.owner_id)
         )
         await session.commit()
         await session.refresh(dtype)
@@ -861,10 +859,8 @@ async def update_document_type(
         # Update ownership
         await ownership_api.set_owner(
             session=session,
-            resource_type=ResourceType.DOCUMENT_TYPE,
-            resource_id=doc_type.id,
-            owner_type=owner_type,
-            owner_id=owner_id
+            resource=types.DocumentTypeResource(id=doc_type.id),
+            owner=types.Owner(owner_type=owner_type, owner_id=owner_id)
         )
 
 

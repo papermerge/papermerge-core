@@ -2,15 +2,13 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from papermerge.core import orm
-from papermerge.core.types import ResourceType
+from papermerge.core import orm, types
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.custom_fields import schema as cf_schema
 from papermerge.core.features.document_types.db import api as dt_dbapi
 from papermerge.core.features.document_types import schema as dt_schema
 from papermerge.core.features.ownership.db import api as ownership_api
-from papermerge.core.features.ownership.schema import Owner, OwnerType
-from papermerge.core.features.custom_fields import types
+from papermerge.core.features.custom_fields import types as cf_types
 
 
 async def test_count_select_field_single_document(
@@ -30,12 +28,12 @@ async def test_count_select_field_single_document(
     - count("high") = 1
     - count("low") = 0
     """
-    owner = Owner.create_from(user_id=user.id)
+    owner = types.Owner.create_from(user_id=user.id)
     field = await make_custom_field_select(
         name="Priority",
         options=[
-            types.opt(value="high", label="High"),
-            types.opt(value="low", label="Low")
+            cf_types.opt(value="high", label="High"),
+            cf_types.opt(value="low", label="Low")
         ],
         owner=owner
     )
@@ -44,7 +42,7 @@ async def test_count_select_field_single_document(
     dt_data = dt_schema.CreateDocumentType(
         name="Task",
         custom_field_ids=[field.id],
-        owner_type=OwnerType.USER,
+        owner_type=types.OwnerType.USER,
         owner_id=user.id
     )
     doc_type = await dt_dbapi.create_document_type(db_session, data=dt_data)
@@ -70,19 +68,14 @@ async def test_count_select_field_single_document(
 
     await ownership_api.set_owner(
         session=db_session,
-        resource_type=ResourceType.NODE,
-        resource_id=doc.id,
-        owner_type=OwnerType.USER,
-        owner_id=user.id
+        resource=types.NodeResource(id=doc.id),
+        owner=owner
     )
     await ownership_api.set_owner(
         session=db_session,
-        resource_type=ResourceType.NODE,
-        resource_id=doc2.id,
-        owner_type=OwnerType.USER,
-        owner_id=user.id
+        resource=types.NodeResource(id=doc2.id),
+        owner=owner
     )
-
 
     value_data = cf_schema.SetCustomFieldValue(
         field_id=field.id,

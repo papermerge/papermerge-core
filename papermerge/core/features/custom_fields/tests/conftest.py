@@ -3,11 +3,11 @@ import uuid
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from papermerge.core.features.custom_fields import types
+from papermerge.core.features.custom_fields import types as cf_types
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.features.ownership.schema import Owner
 from papermerge.core.features.custom_fields.db import orm
-from papermerge.core.types import ResourceType
+from papermerge.core import types
 
 
 @pytest.fixture
@@ -17,10 +17,10 @@ async def make_custom_field_select(db_session: AsyncSession, user):
     """
     async def _maker(
         name: str,
-        options: list[types.SelectOptionInput],
+        options: list[cf_types.SelectOptionInput],
         owner: Owner,
     ) -> orm.CustomField:
-        config = types.SelectFieldConfig(options=options)
+        config = cf_types.SelectFieldConfig(options=options)
 
         cf = orm.CustomField(
             id=uuid.uuid4(),
@@ -33,10 +33,8 @@ async def make_custom_field_select(db_session: AsyncSession, user):
 
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.CUSTOM_FIELD,
-            resource_id=cf.id,
-            owner_type=owner.owner_type,
-            owner_id=owner.owner_id,
+            resource=types.CustomFieldResource(id=cf.id),
+            owner=owner,
         )
 
         await db_session.commit()
@@ -54,10 +52,10 @@ def make_custom_field_multiselect(db_session: AsyncSession, user):
     """
     async def _maker(
         name: str,
-        options: list[types.SelectOptionInput],
+        options: list[cf_types.SelectOptionInput],
         owner: Owner
     ) -> orm.CustomField:
-        config = types.MultiSelectFieldConfig(
+        config = cf_types.MultiSelectFieldConfig(
             options=options,
         )
 
@@ -72,10 +70,8 @@ def make_custom_field_multiselect(db_session: AsyncSession, user):
 
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.CUSTOM_FIELD,
-            resource_id=cf.id,
-            owner_type=owner.owner_type,
-            owner_id=owner.id,
+            resource=types.CustomFieldResource(id=cf.id),
+            owner=owner
         )
 
         await db_session.commit()

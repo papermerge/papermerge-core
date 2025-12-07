@@ -5,9 +5,8 @@ from sqlalchemy import select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 
-from papermerge.core import orm
+from papermerge.core import orm, types
 from papermerge.core.features.ownership.db.orm import Ownership
-from papermerge.core.types import OwnerType, ResourceType
 from papermerge.core.schemas.common import OwnedBy
 
 
@@ -17,9 +16,9 @@ from papermerge.core.schemas.common import OwnedBy
 
 async def get_owner_info(
     session: AsyncSession,
-    resource_type: ResourceType,
+    resource_type: types.ResourceType,
     resource_id: UUID
-) -> Tuple[OwnerType, UUID] | None:
+) -> Tuple[types.OwnerType, UUID] | None:
     """
     Get the owner type and ID for a resource.
 
@@ -33,13 +32,13 @@ async def get_owner_info(
     ownership = (await session.execute(stmt)).scalar_one_or_none()
 
     if ownership:
-        return (OwnerType(ownership.owner_type), ownership.owner_id)
+        return (types.OwnerType(ownership.owner_type), ownership.owner_id)
     return None
 
 
 async def get_owner_details(
     session: AsyncSession,
-    resource_type: ResourceType,
+    resource_type: types.ResourceType,
     resource_id: UUID
 ) -> OwnedBy | None:
     """
@@ -59,25 +58,25 @@ async def get_owner_details(
     if not ownership:
         return None
 
-    owner_type = OwnerType(ownership.owner_type)
+    owner_type = types.OwnerType(ownership.owner_type)
     owner_id = ownership.owner_id
 
     # Fetch owner name based on type
-    if owner_type == OwnerType.USER:
+    if owner_type == types.OwnerType.USER:
         user = await session.get(user_orm.User, owner_id)
         if user:
             return OwnedBy(
                 id=user.id,
                 name=user.username,
-                type=OwnerType.USER
+                type=types.OwnerType.USER
             )
-    elif owner_type == OwnerType.GROUP:
+    elif owner_type == types.OwnerType.GROUP:
         group = await session.get(group_orm.Group, owner_id)
         if group:
             return OwnedBy(
                 id=group.id,
                 name=group.name,
-                type=OwnerType.GROUP
+                type=types.OwnerType.GROUP
             )
     # Add PROJECT and WORKSPACE cases when implemented
 
@@ -86,10 +85,8 @@ async def get_owner_details(
 
 async def set_owner(
     session: AsyncSession,
-    resource_type: ResourceType,
-    resource_id: UUID,
-    owner_type: OwnerType,
-    owner_id: UUID
+    resource: types.Resource,
+    owner: types.Owner
 ) -> Ownership:
     """
     Set or update the owner of a resource.
@@ -97,22 +94,22 @@ async def set_owner(
     Creates ownership record if it doesn't exist, updates if it does.
     """
     stmt = select(Ownership).where(
-        Ownership.resource_type == resource_type.value,
-        Ownership.resource_id == resource_id
+        Ownership.resource_type == resource.type.value,
+        Ownership.resource_id == resource.id
     )
     ownership = (await session.execute(stmt)).scalar_one_or_none()
 
     if ownership:
         # Update existing ownership
-        ownership.owner_type = owner_type.value
-        ownership.owner_id = owner_id
+        ownership.owner_type = resource.owner_type.value
+        ownership.owner_id = resource.owner_id
     else:
         # Create new ownership
         ownership = Ownership(
-            owner_type=owner_type.value,
-            owner_id=owner_id,
-            resource_type=resource_type.value,
-            resource_id=resource_id
+            owner_type=owner.owner_type.value,
+            owner_id=owner.owner_id,
+            resource_type=resource.type.value,
+            resource_id=resource.id
         )
         session.add(ownership)
 
@@ -122,9 +119,9 @@ async def set_owner(
 
 async def set_owners(
     session: AsyncSession,
-    resource_type: ResourceType,
+    resource_type: types.ResourceType,
     resource_ids: list[UUID],
-    owner_type: OwnerType,
+    owner_type: types.OwnerType,
     owner_id: UUID
 ) -> list[Ownership]:
     """
@@ -167,7 +164,7 @@ async def set_owners(
 
 async def delete_ownership(
     session: AsyncSession,
-    resource_type: ResourceType,
+    resource_type: types.ResourceType,
     resource_id: UUID
 ) -> None:
     """
@@ -187,7 +184,7 @@ async def delete_ownership(
 
 async def has_owned_resources(
     session: AsyncSession,
-    owner_type: OwnerType,
+    owner_type: types.OwnerType,
     owner_id: UUID
 ) -> bool:
     """
@@ -205,7 +202,7 @@ async def has_owned_resources(
 
 async def get_owned_resource_counts(
     session: AsyncSession,
-    owner_type: OwnerType,
+    owner_type: types.OwnerType,
     owner_id: UUID
 ) -> dict[str, int]:
     """
@@ -230,7 +227,7 @@ async def get_owned_resource_counts(
     counts = {row.resource_type: row.count for row in result}
 
     # Ensure all resource types are present
-    for resource_type in ResourceType:
+    for resource_type in types.ResourceType:
         if resource_type.value not in counts:
             counts[resource_type.value] = 0
 
@@ -239,9 +236,9 @@ async def get_owned_resource_counts(
 
 async def is_owner(
     session: AsyncSession,
-    resource_type: ResourceType,
+    resource_type: types.ResourceType,
     resource_id: UUID,
-    owner_type: OwnerType,
+    owner_type: types.OwnerType,
     owner_id: UUID
 ) -> bool:
     """
@@ -264,8 +261,8 @@ async def is_owner(
 
 async def check_name_unique_for_owner(
     session: AsyncSession,
-    resource_type: ResourceType,
-    owner_type: OwnerType,
+    resource_type: types.ResourceType,
+    owner_type: types.OwnerType,
     owner_id: UUID,
     name: str,
     exclude_id: UUID | None = None,
@@ -295,10 +292,10 @@ async def check_name_unique_for_owner(
 
     # Map resource types to their ORM models and name columns
     resource_map = {
-        ResourceType.NODE: (node_orm.Node, node_orm.Node.title),
-        ResourceType.TAG: (tag_orm.Tag, tag_orm.Tag.name),
-        ResourceType.CUSTOM_FIELD: (cf_orm.CustomField, cf_orm.CustomField.name),
-        ResourceType.DOCUMENT_TYPE: (dt_orm.DocumentType, dt_orm.DocumentType.name),
+        types.ResourceType.NODE: (node_orm.Node, node_orm.Node.title),
+        types.ResourceType.TAG: (tag_orm.Tag, tag_orm.Tag.name),
+        types.ResourceType.CUSTOM_FIELD: (cf_orm.CustomField, cf_orm.CustomField.name),
+        types.ResourceType.DOCUMENT_TYPE: (dt_orm.DocumentType, dt_orm.DocumentType.name),
     }
 
     if resource_type not in resource_map:
@@ -320,10 +317,10 @@ async def check_name_unique_for_owner(
     )
 
     # For nodes, check uniqueness within parent
-    if resource_type == ResourceType.NODE and parent_id is not None:
+    if resource_type == types.ResourceType.NODE and parent_id is not None:
         stmt = stmt.where(resource_table.parent_id == parent_id)
 
-    if resource_type == ResourceType.NODE and ctype is not None:
+    if resource_type == types.ResourceType.NODE and ctype is not None:
         stmt = stmt.where(resource_table.ctype == ctype)
 
     # Exclude current resource (for updates)
@@ -342,9 +339,9 @@ async def check_name_unique_for_owner(
 
 async def get_resources_by_owner(
     session: AsyncSession,
-    owner_type: OwnerType,
+    owner_type: types.OwnerType,
     owner_id: UUID,
-    resource_type: ResourceType | None = None,
+    resource_type: types.ResourceType | None = None,
 ) -> list[UUID]:
     """
     Get all resource IDs owned by a specific owner.
@@ -369,9 +366,9 @@ async def get_resources_by_owner(
 
 async def transfer_all_resources(
     session: AsyncSession,
-    from_owner_type: OwnerType,
+    from_owner_type: types.OwnerType,
     from_owner_id: UUID,
-    to_owner_type: OwnerType,
+    to_owner_type: types.OwnerType,
     to_owner_id: UUID
 ) -> int:
     """
@@ -408,7 +405,7 @@ async def create_node_with_owner(
     session: AsyncSession,
     title: str,
     ctype: Literal["document", "folder"],
-    owner_type: OwnerType,
+    owner_type: types.OwnerType,
     owner_id: UUID,
     parent_id: UUID | None = None,
     **kwargs
@@ -428,7 +425,7 @@ async def create_node_with_owner(
     # Check name uniqueness
     is_unique = await ownership_api.check_name_unique_for_owner(
         session=session,
-        resource_type=ResourceType.NODE,
+        resource_type=types.ResourceType.NODE,
         owner_type=owner_type,
         owner_id=owner_id,
         name=title,
@@ -464,10 +461,8 @@ async def create_node_with_owner(
     # Set ownership
     await ownership_api.set_owner(
         session=session,
-        resource_type=ResourceType.NODE,
-        resource_id=node.id,
-        owner_type=owner_type,
-        owner_id=owner_id
+        resource=types.NodeResource(id=node.id),
+        owner=types.OwnerType(owner_type=owner_type, owner_id=owner_id),
     )
 
     return node
@@ -476,7 +471,7 @@ async def create_node_with_owner(
 async def update_node_owner(
     session: AsyncSession,
     node_id: UUID,
-    new_owner_type: OwnerType,
+    new_owner_type: types.OwnerType,
     new_owner_id: UUID
 ) -> None:
     """
@@ -497,7 +492,7 @@ async def update_node_owner(
     # Check if name is unique under new owner
     is_unique = await ownership_api.check_name_unique_for_owner(
         session=session,
-        resource_type=ResourceType.NODE,
+        resource_type=types.ResourceType.NODE,
         owner_type=new_owner_type,
         owner_id=new_owner_id,
         name=node.title,
@@ -514,7 +509,7 @@ async def update_node_owner(
     # Update ownership
     await ownership_api.set_owner(
         session=session,
-        resource_type=ResourceType.NODE,
+        resource_type=types.ResourceType.NODE,
         resource_id=node_id,
         owner_type=new_owner_type,
         owner_id=new_owner_id
@@ -534,7 +529,7 @@ async def delete_node_with_ownership(
     # Delete ownership first
     await ownership_api.delete_ownership(
         session=session,
-        resource_type=ResourceType.NODE,
+        resource_type=types.ResourceType.NODE,
         resource_id=node_id
     )
 
@@ -545,7 +540,7 @@ async def delete_node_with_ownership(
 
 async def get_nodes_for_owner(
     session: AsyncSession,
-    owner_type: OwnerType,
+    owner_type: types.OwnerType,
     owner_id: UUID,
     parent_id: UUID | None = None,
     limit: int = 100,
@@ -562,7 +557,7 @@ async def get_nodes_for_owner(
         select(node_orm.Node)
         .join(Ownership, Ownership.resource_id == node_orm.Node.id)
         .where(
-            Ownership.resource_type == ResourceType.NODE.value,
+            Ownership.resource_type == types.ResourceType.NODE.value,
             Ownership.owner_type == owner_type.value,
             Ownership.owner_id == owner_id
         )
@@ -580,7 +575,7 @@ async def get_nodes_for_owner(
 async def user_can_access_resource(
     session: AsyncSession,
     user_id: UUID,
-    resource_type: ResourceType,
+    resource_type: types.ResourceType,
     resource_id: UUID
 ) -> bool:
     """
@@ -613,11 +608,11 @@ async def user_can_access_resource(
         return False
 
     # Check if user owns it directly
-    if ownership.owner_type == OwnerType.USER.value and ownership.owner_id == user_id:
+    if ownership.owner_type == types.OwnerType.USER.value and ownership.owner_id == user_id:
         return True
 
     # Check if owned by a group the user belongs to
-    if ownership.owner_type == OwnerType.GROUP.value:
+    if ownership.owner_type == types.OwnerType.GROUP.value:
         # Check if user is an active member of the group
         stmt = (
             select(func.count())
@@ -637,7 +632,7 @@ async def user_can_access_resource(
 async def user_can_access_multiple_resources(
     session: AsyncSession,
     user_id: UUID,
-    resource_type: ResourceType,
+    resource_type: types.ResourceType,
     resource_ids: list[UUID]
 ) -> dict[UUID, bool]:
     """
@@ -682,8 +677,8 @@ async def user_can_access_multiple_resources(
     for ownership in ownerships:
         # Check if user has access
         has_access = (
-                (ownership.owner_type == OwnerType.USER.value and ownership.owner_id == user_id) or
-                (ownership.owner_type == OwnerType.GROUP.value and ownership.owner_id in user_group_ids)
+                (ownership.owner_type == types.OwnerType.USER.value and ownership.owner_id == user_id) or
+                (ownership.owner_type == types.OwnerType.GROUP.value and ownership.owner_id in user_group_ids)
         )
         access_map[ownership.resource_id] = has_access
 

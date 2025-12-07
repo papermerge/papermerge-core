@@ -20,9 +20,9 @@ async def test_count_select_field_single_document(
     Count documents with a single select value.
 
     Setup:
-    - Create select field "Priority" with options: high, low
+    - Create custom field of type "select" named "Priority" with options: high, low
     - Create document type with the field
-    - Create one document with Priority="high"
+    - Create two documents with custom field Priority="high"
 
     Expected:
     - count("high") = 1
@@ -48,14 +48,13 @@ async def test_count_select_field_single_document(
     doc_type = await dt_dbapi.create_document_type(db_session, data=dt_data)
 
     # Create document
-    doc = orm.Document(
+    doc1 = orm.Document(
         id=uuid.uuid4(),
         ctype="document",
         title="task-1.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
     )
-    db_session.add(doc)
     doc2 = orm.Document(
         id=uuid.uuid4(),
         ctype="document",
@@ -63,17 +62,13 @@ async def test_count_select_field_single_document(
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
     )
-    db_session.add(doc2)
+    db_session.add_all([doc1, doc2])
     await db_session.flush()
 
-    await ownership_api.set_owner(
+    await ownership_api.set_owners(
         session=db_session,
-        resource=types.NodeResource(id=doc.id),
-        owner=owner
-    )
-    await ownership_api.set_owner(
-        session=db_session,
-        resource=types.NodeResource(id=doc2.id),
+        resource_type=types.ResourceType.NODE,
+        resource_ids=[doc1.id, doc2.id],
         owner=owner
     )
 
@@ -81,7 +76,7 @@ async def test_count_select_field_single_document(
         field_id=field.id,
         value="high"
     )
-    await cf_dbapi.set_custom_field_value(db_session, doc.id, value_data)
+    await cf_dbapi.set_custom_field_value(db_session, doc1.id, value_data)
     await cf_dbapi.set_custom_field_value(db_session, doc2.id, value_data)
 
     high_count = await cf_dbapi.count_documents_by_option_value(
@@ -92,4 +87,4 @@ async def test_count_select_field_single_document(
     )
 
     assert high_count == 2  # used in two documents
-    assert low_count == 0
+    assert low_count == 0 # not used in any document

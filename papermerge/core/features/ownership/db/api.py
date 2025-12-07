@@ -121,8 +121,7 @@ async def set_owners(
     session: AsyncSession,
     resource_type: types.ResourceType,
     resource_ids: list[UUID],
-    owner_type: types.OwnerType,
-    owner_id: UUID
+    owner
 ) -> list[Ownership]:
     """
     Set or update the owner of multiple resources using bulk upsert.
@@ -138,8 +137,8 @@ async def set_owners(
         {
             "resource_type": resource_type.value,
             "resource_id": resource_id,
-            "owner_type": owner_type.value,
-            "owner_id": owner_id,
+            "owner_type": owner.owner_type.value,
+            "owner_id": owner.owner_id,
         }
         for resource_id in resource_ids
     ]

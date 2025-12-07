@@ -23,7 +23,8 @@ from papermerge.core import schema, orm
 from papermerge.core.db.exceptions import ResourceHasNoOwner
 from papermerge.core.exceptions import EntityNotFound
 from papermerge.core.db.common import get_descendants
-from papermerge.core.types import PaginatedResponse, ResourceType, OwnerType, NodeResource, TagResource, Owner
+from papermerge.core.types import PaginatedResponse, ResourceType, OwnerType, \
+    NodeResource, TagResource, Owner
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.features.nodes import events
 from papermerge.core.features.nodes.schema import DeleteDocumentsData
@@ -808,8 +809,7 @@ async def move_nodes(
         db_session,
         resource_type=ResourceType.NODE,
         resource_ids=descendants_ids,
-        owner_type=owner_type,
-        owner_id=owner_id
+        owner=Owner(owner_type=owner_type, owner_id=owner_id),
     )
     await db_session.commit()
 

@@ -23,7 +23,7 @@ from papermerge.core import schema, orm
 from papermerge.core.db.exceptions import ResourceHasNoOwner
 from papermerge.core.exceptions import EntityNotFound
 from papermerge.core.db.common import get_descendants
-from papermerge.core.types import PaginatedResponse, ResourceType, OwnerType
+from papermerge.core.types import PaginatedResponse, ResourceType, OwnerType, NodeResource, TagResource, Owner
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.features.nodes import events
 from papermerge.core.features.nodes.schema import DeleteDocumentsData
@@ -409,10 +409,8 @@ async def create_folder(
     )
     await ownership_api.set_owner(
         db_session,
-        resource_id=folder_id,
-        resource_type=ResourceType.NODE,
-        owner_id=owner_id,
-        owner_type=owner_type
+        resource=NodeResource(id=folder_id),
+        owner=Owner(owner_type=owner_type, owner_id=owner_id)
     )
 
     db_session.add(folder)
@@ -490,10 +488,8 @@ async def assign_node_tags(
             # Set ownership for new tag
             await ownership_api.set_owner(
                 session=db_session,
-                resource_type=ResourceType.TAG,
-                resource_id=new_tag.id,
-                owner_type=node_owner_type,
-                owner_id=node_owner_id
+                resource=TagResource(id=new_tag.id),
+                owner=Owner(owner_type=node_owner_type, owner_id=node_owner_id)
             )
 
     # Get all tags (existing + newly created) and assign to node

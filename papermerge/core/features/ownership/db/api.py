@@ -101,8 +101,8 @@ async def set_owner(
 
     if ownership:
         # Update existing ownership
-        ownership.owner_type = resource.owner_type.value
-        ownership.owner_id = resource.owner_id
+        ownership.owner_type = owner.owner_type.value
+        ownership.owner_id = owner.owner_id
     else:
         # Create new ownership
         ownership = Ownership(

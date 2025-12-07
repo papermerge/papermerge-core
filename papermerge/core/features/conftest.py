@@ -33,7 +33,7 @@ from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core import config
 from papermerge.core.constants import ContentType
-from papermerge.core.types import OwnerType, ResourceType
+from papermerge.core.types import OwnerType, ResourceType, NodeResource, TagResource, DocumentTypeResource, Owner
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.features.document_types.db import api as dt_dbapi
 from papermerge.core.features.special_folders.db import \
@@ -106,10 +106,8 @@ def make_folder(db_session: AsyncSession):
         # Set ownership
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.NODE,
-            resource_id=folder.id,
-            owner_type=owner_type,
-            owner_id=owner_id
+            resource=NodeResource(id=folder.id),
+            owner=Owner(owner_type=owner_type, owner_id=owner_id)
         )
 
         await db_session.commit()
@@ -256,10 +254,8 @@ def make_document_version(db_session: AsyncSession):
         # Set ownership
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.NODE,
-            resource_id=db_doc.id,
-            owner_type=OwnerType.USER,
-            owner_id=user.id
+            resource=NodeResource(id=db_doc.id),
+            owner=Owner(owner_type=OwnerType.USER, owner_id=user.id)
         )
 
         db_doc_ver = orm.DocumentVersion(
@@ -615,10 +611,8 @@ def make_document_zdf(db_session: AsyncSession, document_type_zdf):
 
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.NODE,
-            resource_id=doc.id,
-            owner_type=OwnerType.USER,
-            owner_id=user.id
+            resource=NodeResource(id=doc.id),
+            owner=Owner(owner_type=OwnerType.USER, owner_id=user.id)
         )
 
         await db_session.commit()
@@ -653,10 +647,8 @@ def make_document_salary(db_session: AsyncSession, document_type_salary):
         # Set ownership
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.NODE,
-            resource_id=doc.id,
-            owner_type=OwnerType.USER,
-            owner_id=user.id
+            resource=NodeResource(id=doc.id),
+            owner=Owner(owner_type=OwnerType.USER, owner_id=user.id)
         )
 
         await db_session.commit()
@@ -732,10 +724,8 @@ def make_document_type(db_session, user):
 
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.DOCUMENT_TYPE,
-            resource_id=dt.id,
-            owner_type=owner_type,
-            owner_id=owner_id
+            resource=DocumentTypeResource(id=dt.id),
+            owner=Owner(owner_type=owner_type, owner_id=owner_id)
         )
 
         # Associate custom fields
@@ -791,10 +781,8 @@ def make_document_receipt(db_session: AsyncSession, document_type_groceries):
         # Set ownership
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.NODE,
-            resource_id=doc.id,
-            owner_type=owner_type,
-            owner_id=owner_id
+            resource=NodeResource(id=doc.id),
+            owner=Owner(owner_type=owner_type, owner_id=owner_id)
         )
 
         await db_session.commit()
@@ -856,10 +844,8 @@ def make_document_tax(db_session: AsyncSession, document_type_tax):
         # Set ownership
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.NODE,
-            resource_id=doc.id,
-            owner_type=OwnerType.USER,
-            owner_id=user.id
+            resource=NodeResource(id=doc.id),
+            owner=Owner(owner_type=OwnerType.USER, owner_id=user.id)
         )
 
         await db_session.commit()
@@ -1046,10 +1032,8 @@ async def make_tag_with_owner(db_session: AsyncSession):
 
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.TAG,
-            resource_id=tag.id,
-            owner_type=owner_type,
-            owner_id=owner_id
+            resource=TagResource(id=tag.id),
+            owner=Owner(owner_type=owner_type, owner_id=owner_id)
         )
 
         await db_session.commit()
@@ -1094,10 +1078,8 @@ async def make_node_with_owner(db_session: AsyncSession):
 
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.NODE,
-            resource_id=node.id,
-            owner_type=owner_type,
-            owner_id=owner_id
+            resource=NodeResource(id=node.id),
+            owner=Owner(owner_type=owner_type, owner_id=owner_id)
         )
 
         await db_session.commit()
@@ -1224,10 +1206,8 @@ def make_document_with_numeric_cf(
         # Step 4: Set ownership on the document
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.NODE,
-            resource_id=doc.id,
-            owner_type=OwnerType.USER,
-            owner_id=user.id
+            resource=NodeResource(id=doc.id),
+            owner=Owner(owner_type=OwnerType.USER, owner_id=user.id)
         )
 
         await db_session.commit()

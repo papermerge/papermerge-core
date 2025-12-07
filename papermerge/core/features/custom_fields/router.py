@@ -12,7 +12,7 @@ from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.features.users.db import api as user_dbapi
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
-from papermerge.core.types import ResourceType, OwnerType
+from papermerge.core.types import ResourceType, OwnerType, Owner
 from .schema import CustomFieldParams
 
 router = APIRouter(
@@ -54,7 +54,7 @@ async def get_custom_fields_without_pagination(
     if group_id:
         owner_type = OwnerType.GROUP
 
-    owner=schema.Owner(owner_id=owner_id, owner_type=owner_type)
+    owner=Owner(owner_id=owner_id, owner_type=owner_type)
 
     if group_id:
         ok = await user_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)

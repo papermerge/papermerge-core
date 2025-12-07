@@ -19,7 +19,7 @@ from papermerge.core.exceptions import EntityNotFound
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 from papermerge.core.features.ownership.db import api as ownership_api
-from papermerge.core.types import ResourceType, OwnerType
+from papermerge.core.types import ResourceType, OwnerType, Owner
 from .schema import TagParams
 
 router = APIRouter(
@@ -62,7 +62,7 @@ async def retrieve_tags_without_pagination(
     else:
         owner_type = OwnerType.USER
 
-    owner=schema.Owner(owner_id=owner_id, owner_type=owner_type)
+    owner=Owner(owner_id=owner_id, owner_type=owner_type)
     db_tags = await tags_dbapi.get_tags_without_pagination(
         db_session, owner=owner
     )

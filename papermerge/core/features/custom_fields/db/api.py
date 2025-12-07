@@ -16,7 +16,7 @@ from papermerge.core.utils.tz import utc_now
 from papermerge.core.features.custom_fields.cf_types.registry import \
     TypeRegistry
 from papermerge.core.features.ownership.db import api as ownership_api
-from papermerge.core.types import OwnerType, ResourceType
+from papermerge.core.types import OwnerType, ResourceType, CustomFieldResource, Owner
 from papermerge.core.features.ownership.db.orm import Ownership
 
 logger = logging.getLogger(__name__)
@@ -196,10 +196,8 @@ async def create_custom_field(
         # Set ownership
         await ownership_api.set_owner(
             session=session,
-            resource_type=ResourceType.CUSTOM_FIELD,
-            resource_id=field.id,
-            owner_type=owner_type,
-            owner_id=owner_id
+            resource=CustomFieldResource(id=field.id),
+            owner=Owner(owner_type=owner_type, owner_id=owner_id)
         )
 
         await session.commit()
@@ -792,10 +790,8 @@ async def update_custom_field(
         # Update ownership
         await ownership_api.set_owner(
             session=session,
-            resource_type=ResourceType.CUSTOM_FIELD,
-            resource_id=field_id,
-            owner_type=owner_type,
-            owner_id=owner_id
+            resource=CustomFieldResource(id=field_id),
+            owner=Owner(owner_type=owner_type, owner_id=owner_id)
         )
 
     await session.commit()

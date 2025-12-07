@@ -10,6 +10,7 @@ from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import schema, orm
+from papermerge.core.db.common import build_access_control_condition
 from papermerge.core.db.exceptions import ResourceAccessDenied
 from papermerge.core.utils.tz import utc_now
 from papermerge.core.features.custom_fields.cf_types.registry import \
@@ -1444,3 +1445,127 @@ def _apply_custom_field_sorting(
             query = query.order_by(sort_column.asc())
 
     return query
+
+
+async def count_documents_by_option_value(
+    session: AsyncSession,
+    field_id: uuid.UUID,
+    option_value: str,
+    user_id: uuid.UUID,
+) -> int:
+    """
+     Count documents that have a specific option value selected for a custom field.
+
+     Only counts documents the user has access to.
+
+     Works for both 'select' (single value) and 'multiselect' (array of values) fields.
+
+     For select fields, the value is stored as:
+         {"raw": "high", "sortable": "high", "metadata": {...}}
+
+     For multiselect fields, the value is stored as:
+         {"raw": ["hr", "legal"], "sortable": "hr,legal", "metadata": {...}}
+
+     Returns:
+         Number of documents using this option value that user can access
+
+     Raises:
+         ValueError: If the custom field doesn't exist or is not
+         select/multiselect type
+     """
+    field = await session.get(orm.CustomField, field_id)
+    if not field:
+        raise ValueError(f"Custom field {field_id} not found")
+
+    if field.type_handler not in ("select", "multiselect"):
+        raise ValueError(
+            f"Custom field {field_id} is of type '{field.type_handler}', "
+            "expected 'select' or 'multiselect'"
+        )
+
+    if field.type_handler == "select":
+        # For select: value->>'raw' = 'option_value'
+        value_condition = orm.CustomFieldValue.value["raw"].astext == option_value
+    else:
+        # For multiselect: value->'raw' @> '["option_value"]'::jsonb
+        # This checks if the array contains the value
+        value_condition = orm.CustomFieldValue.value["raw"].contains([option_value])
+
+    stmt = (
+        select(func.count())
+        .select_from(orm.CustomFieldValue)
+        .join(
+            orm.Document,
+            orm.CustomFieldValue.document_id == orm.Document.id
+        )
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.NODE.value,
+                orm.Ownership.resource_id == orm.Document.id
+            )
+        )
+        .where(
+            and_(
+                orm.CustomFieldValue.field_id == field_id,
+                value_condition,
+                build_access_control_condition(user_id)
+            )
+        )
+    )
+
+    result = await session.execute(stmt)
+    return result.scalar() or 0
+
+
+async def get_option_usage_counts(
+    session: AsyncSession,
+    field_id: uuid.UUID,
+    user_id: uuid.UUID,
+    option_values: Optional[list[str]] = None,
+) -> dict[str, int]:
+    """
+    Get document counts for multiple option values of a select/multiselect field.
+
+    Only counts documents the user has access to.
+
+    If option_values is None, returns counts for all options defined in the field's config.
+
+    Args:
+        session: Database session
+        field_id: UUID of the custom field (must be select or multiselect type)
+        user_id: UUID of the user (for access control)
+        option_values: Optional list of specific option values to count.
+                      If None, counts all options from the field's config.
+
+    Returns:
+        Dictionary mapping option value → document count
+        Example: {"high": 2, "low": 5, "medium": 0}
+
+    Raises:
+        ValueError: If the custom field doesn't exist or is not select/multiselect type
+    """
+    # Get the field and validate type
+    field = await session.get(orm.CustomField, field_id)
+    if not field:
+        raise ValueError(f"Custom field {field_id} not found")
+
+    if field.type_handler not in ("select", "multiselect"):
+        raise ValueError(
+            f"Custom field {field_id} is of type '{field.type_handler}', "
+            "expected 'select' or 'multiselect'"
+        )
+
+    # If no specific values provided, get all options from config
+    if option_values is None:
+        config = field.config or {}
+        options = config.get("options", [])
+        option_values = [opt.get("value") for opt in options if opt.get("value")]
+
+    # Count each option
+    result = {}
+    for value in option_values:
+        count = await count_documents_by_option_value(session, field_id, value, user_id)
+        result[value] = count
+
+    return result

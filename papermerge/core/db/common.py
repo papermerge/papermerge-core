@@ -295,3 +295,38 @@ async def get_node_owner(db_session: AsyncSession, node_id: UUID) -> OwnedBy:
         raise ValueError(f"No owner found for node {node_id}")
 
     return owner
+
+
+def build_access_control_condition(user_id: UUID):
+    """
+    Build the access control condition for filtering documents.
+
+    User can access documents if:
+    1. They own it directly (owner_type = 'user' AND owner_id = user_id)
+    2. It's owned by a group they belong to
+
+    Args:
+        user_id: The user's UUID
+
+    Returns:
+        SQLAlchemy condition for access control
+    """
+    # Subquery to get user's group IDs
+    user_groups_subquery = (
+        select(UserGroup.group_id)
+        .where(
+            UserGroup.user_id == user_id,
+            UserGroup.deleted_at.is_(None)
+        )
+    )
+
+    return or_(
+        and_(
+            Ownership.owner_type == OwnerType.USER.value,
+            Ownership.owner_id == user_id
+        ),
+        and_(
+            Ownership.owner_type == OwnerType.GROUP.value,
+            Ownership.owner_id.in_(user_groups_subquery)
+        )
+    )

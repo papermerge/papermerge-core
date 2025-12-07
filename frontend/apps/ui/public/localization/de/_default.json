@@ -91,7 +91,7 @@
       "all_versions": "Alle Versionen",
       "only_last_version": "Nur letzte Version",
       "title": "Titel",
-      "custom_fields": "Benutzerdefinierte Felder",
+      "custom_fields": "Metadaten",
       "tags": "Schlagwörter",
       "category": "Kategorie"
     }
@@ -251,7 +251,7 @@
   "document_types.name.by": "Kategorien",
   "document_types.new.title": "Neue Kategorie",
   "document_types.form.name": "Name",
-  "document_types.form.custom_fields": "Benutzerdefinierte Felder",
+  "document_types.form.custom_fields": "Metadaten",
   "document_types.form.custom_fields.placeholder": "Wert auswählen",
   "document_types.form.path_template": "Pfadvorlage",
   "document_types.delete.hint": "Dies hat keine Auswirkungen auf die zugehörigen Dokumente",
@@ -260,17 +260,17 @@
   "document_types.delete.many.title": "Kategorie löschen",
   "document_types.delete.many.description": "Kategorien löschen",
   "document_types.list.empty": "Derzeit gibt es keine Kategorien",
-  "custom_fields.name": "BD-Felder",
-  "custom_fields.new.title": "Neue Benutzerdefiniertefeld",
-  "custom_fields.edit.title": "Benutzerdefiniertefeld bearbeiten",
+  "custom_fields.name": "Metadaten",
+  "custom_fields.new.title": "Neue Metadata",
+  "custom_fields.edit.title": "Metadata bearbeiten",
   "custom_fields.form.name": "Name",
   "custom_fields.form.type": "Typ",
   "custom_fields.form.currency": "Währung",
-  "custom_fields.delete.one.title": "Benutzerdefiniertefeld löschen",
-  "custom_fields.delete.one.description": "Benutzerdefiniertefeld löschen?",
-  "custom_fields.delete.many.title": "Benutzerdefiniertefelder löschen",
-  "custom_fields.delete.many.description": "Benutzerdefiniertefelder löschen?",
-  "custom_fields.list.empty": "Derzeit sind keine Benutzerdefiniertefelder vorhanden",
+  "custom_fields.delete.one.title": "Metadata löschen",
+  "custom_fields.delete.one.description": "Metadata löschen?",
+  "custom_fields.delete.many.title": "Metadata löschen",
+  "custom_fields.delete.many.description": "Metadata löschen?",
+  "custom_fields.list.empty": "Derzeit sind keine Metadata vorhanden",
   "groups.name": "Gruppen",
   "groups.new.title": "Neue Gruppe",
   "groups.edit.title": "Grupe nearbeiten",
@@ -358,18 +358,18 @@
     "owned_by": "Besitzer"
   },
   "customFieldDetails": {
-    "name": "Benutzerdefinierte Felder"
+    "name": "Metadaten"
   },
   "customFields": {
     "filterByType": {
       "label": "Typen"
     },
     "notifications": {
-      "created": "Benutzerdefiniertes Feld wurde erfolgreich erstellt",
-      "updated": "Benutzerdefiniertes Feld wurde erfolgreich aktualisiert",
-      "deleted": "Benutzerdefiniertes Feld wurde erfolgreich gelöscht"
+      "created": "Metadata wurde erfolgreich erstellt",
+      "updated": "Metadata wurde erfolgreich aktualisiert",
+      "deleted": "Metadata wurde erfolgreich gelöscht"
     },
-    "searchLabel": "BD-Felder suchen..."
+    "searchLabel": "Metadaten suchen..."
   },
   "customFieldType": {
     "date": "Datum",
@@ -450,7 +450,7 @@
   "roles.form.permissions.groups.users": "Benutzer",
   "roles.form.permissions.groups.groups": "Gruppen",
   "roles.form.permissions.groups.tags": "Tags",
-  "roles.form.permissions.groups.custom_fields": "BD",
+  "roles.form.permissions.groups.custom_fields": "Metadaten",
   "roles.form.permissions.groups.document_types": "Kategorien",
   "roles.form.permissions.groups.nodes": "Ordner u. Dockumente",
   "roles.form.permissions.groups.shared_nodes": "Shared Nodes",
@@ -514,7 +514,7 @@
     "document.download.last_version_only": "Nur letzte Dokumentversion herunterladen",
     "document.update.title": "Dokumenttitel bearbeiten",
     "document.update.tags": "Dokument-Schlagwörter bearbeiten",
-    "document.update.custom_fields": "Benutzerdefinierte Dokumentfelder bearbeiten",
+    "document.update.custom_fields": "Metadata bearbeiten",
     "document.update.document_type": "Dokumentkategorie bearbeiten",
 
     "tag.select": "Schlagwörter auswählen",
@@ -554,10 +554,10 @@
     "page.extract": "Seiten extrahieren",
     "page.delete": "Seiten löschen",
 
-    "custom_field.create": "Benutzerdefinierte Felder erstellen",
-    "custom_field.view": "Benutzerdefinierte Felder anzeigen",
-    "custom_field.update": "Benutzerdefinierte Felder bearbeiten",
-    "custom_field.delete": "Benutzerdefinierte Felder löschen",
+    "custom_field.create": "Metadata erstellen",
+    "custom_field.view": "Metadata anzeigen",
+    "custom_field.update": "Metadata bearbeiten",
+    "custom_field.delete": "Metadata löschen",
 
     "document_type.create": "Dokumenttypen erstellen",
     "document_type.view": "Dokumenttypen anzeigen",

@@ -1,18 +1,16 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.exc import IntegrityError, NoResultFound
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.db.exceptions import ResourceAccessDenied
-from papermerge.core import schema, scopes
+from papermerge.core import schema, scopes, db
 from papermerge.core.features.custom_fields import schema as cf_schema
 from papermerge.core.features.custom_fields.db import api as dbapi
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.features.users.db import api as user_dbapi
-from papermerge.core.db.engine import get_db
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 from papermerge.core.types import ResourceType, OwnerType
 from .schema import CustomFieldParams
@@ -27,7 +25,6 @@ logger = logging.getLogger(__name__)
 
 @router.get(
     "/all",
-    response_model=list[cf_schema.CustomField],
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": "User does not belong to group",
@@ -37,10 +34,10 @@ logger = logging.getLogger(__name__)
 )
 async def get_custom_fields_without_pagination(
     user: scopes.ViewCustomFields,
+    db_session: db.DBRouterAsyncSession,
     group_id: uuid.UUID | None = None,
     document_type_id: uuid.UUID | None = None,
-    db_session: AsyncSession = Depends(get_db),
-):
+) -> list[cf_schema.CustomField]:
     """Get all custom fields without pagination
 
     If non-empty `group_id` parameter is supplied it will
@@ -72,11 +69,13 @@ async def get_custom_fields_without_pagination(
     return result
 
 
-@router.get("/", response_model=schema.PaginatedResponse[schema.CustomFieldEx])
+@router.get("/")
 async def get_custom_fields(
     user: scopes.ViewCustomFields,
+    db_session: db.DBRouterAsyncSession,
+    # Without = Depends(), FastAPI interprets
+    # params: CustomFieldParams as a request body (JSON), not query parameters.
     params: CustomFieldParams = Depends(),
-    db_session: AsyncSession = Depends(get_db),
 ) -> schema.PaginatedResponse[schema.CustomFieldEx]:
     """Get paginated list of custom fields"""
     try:
@@ -103,12 +102,12 @@ async def get_custom_fields(
     return result
 
 
-@router.get("/{custom_field_id}", response_model=cf_schema.CustomFieldDetails)
+@router.get("/{custom_field_id}")
 async def get_custom_field(
     custom_field_id: uuid.UUID,
+    db_session: db.DBRouterAsyncSession,
     user: scopes.ViewCustomFields,
-    db_session: AsyncSession = Depends(get_db),
-):
+) -> cf_schema.CustomFieldDetails:
     """Get custom field"""
     has_access = await ownership_api.user_can_access_resource(
         session=db_session,
@@ -149,7 +148,7 @@ async def get_custom_field(
 async def create_custom_field(
     data: schema.CreateCustomField,
     user: scopes.CreateCustomFields,
-    db_session: AsyncSession = Depends(get_db),
+    db_session: db.DBRouterAsyncSession,
 ) -> cf_schema.CustomField:
     """Create a new custom field"""
     try:
@@ -194,7 +193,7 @@ async def create_custom_field(
 async def delete_custom_field(
     custom_field_id: uuid.UUID,
     user:  scopes.DeleteCustomFields,
-    db_session: AsyncSession = Depends(get_db),
+    db_session: db.DBRouterAsyncSession,
 ) -> None:
     """Deletes custom field"""
 
@@ -230,7 +229,6 @@ async def delete_custom_field(
 @router.patch(
     "/{custom_field_id}",
     status_code=200,
-    response_model=cf_schema.CustomField,
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": """User does not belong to group""",
@@ -242,7 +240,7 @@ async def update_custom_field(
     custom_field_id: uuid.UUID,
     data: schema.UpdateCustomField,
     cur_user: scopes.UpdateCustomFields,
-    db_session: AsyncSession = Depends(get_db),
+    db_session: db.DBRouterAsyncSession,
 ) -> cf_schema.CustomField:
     """Updates custom field"""
     has_access = await ownership_api.user_can_access_resource(

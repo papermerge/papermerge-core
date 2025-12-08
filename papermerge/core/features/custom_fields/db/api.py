@@ -16,7 +16,8 @@ from papermerge.core.utils.tz import utc_now
 from papermerge.core.features.custom_fields.cf_types.registry import \
     TypeRegistry
 from papermerge.core.features.ownership.db import api as ownership_api
-from papermerge.core.types import OwnerType, ResourceType, CustomFieldResource, Owner
+from papermerge.core.types import OwnerType, ResourceType, CustomFieldResource, \
+    Owner
 from papermerge.core.features.ownership.db.orm import Ownership
 
 logger = logging.getLogger(__name__)
@@ -1565,3 +1566,226 @@ async def get_option_usage_counts(
         result[value] = count
 
     return result
+
+
+async def migrate_option_values(
+    session: AsyncSession,
+    field_id: uuid.UUID,
+    mappings: list[dict[str, str]],
+    user_id: uuid.UUID,
+) -> dict:
+    """
+    Migrate custom field values from old option keys to new option keys.
+
+    Only migrates documents the user has access to (owned by user or user's groups).
+
+    This function:
+    1. For each mapping (old_value → new_value), finds all documents using old_value
+    2. Updates the "raw" value and "sortable" in the JSONB column
+    3. Returns counts of migrated documents per mapping
+
+    Note: Metadata (label, color, icon) is preserved as-is. The custom field
+    definition update (which happens separately) handles the new labels.
+
+    Args:
+        session: Database session
+        field_id: UUID of the custom field (must be select or multiselect type)
+        mappings: List of dicts with "old_value" and "new_value" keys
+                  Example: [{"old_value": "high", "new_value": "h"}, ...]
+        user_id: UUID of the user (for access control)
+
+    Returns:
+        Dict with migration results:
+        {
+            "field_id": uuid,
+            "success": bool,
+            "total_documents_migrated": int,
+            "results": [
+                {"old_value": "high", "new_value": "h", "documents_updated": 2},
+                ...
+            ],
+            "errors": []
+        }
+
+    Raises:
+        ValueError: If field doesn't exist or is not select/multiselect type
+    """
+    # Validate field exists and is correct type
+    field = await session.get(orm.CustomField, field_id)
+    if not field:
+        raise ValueError(f"Custom field {field_id} not found")
+
+    if field.type_handler not in ("select", "multiselect"):
+        raise ValueError(
+            f"Custom field {field_id} is of type '{field.type_handler}', "
+            "expected 'select' or 'multiselect'"
+        )
+
+    results = []
+    total_migrated = 0
+    errors = []
+
+    for mapping in mappings:
+        old_value = mapping["old_value"]
+        new_value = mapping["new_value"]
+
+        try:
+            if field.type_handler == "select":
+                count = await _migrate_select_value(
+                    session=session,
+                    field_id=field_id,
+                    old_value=old_value,
+                    new_value=new_value,
+                    user_id=user_id,
+                )
+            else:
+                count = await _migrate_multiselect_value(
+                    session=session,
+                    field_id=field_id,
+                    old_value=old_value,
+                    new_value=new_value,
+                    user_id=user_id,
+                )
+
+            results.append({
+                "old_value": old_value,
+                "new_value": new_value,
+                "documents_updated": count,
+            })
+            total_migrated += count
+
+        except Exception as e:
+            errors.append(f"Failed to migrate '{old_value}' → '{new_value}': {str(e)}")
+
+    await session.commit()
+
+    return {
+        "field_id": field_id,
+        "success": len(errors) == 0,
+        "total_documents_migrated": total_migrated,
+        "results": results,
+        "errors": errors,
+    }
+
+
+async def _migrate_select_value(
+    session: AsyncSession,
+    field_id: uuid.UUID,
+    old_value: str,
+    new_value: str,
+    user_id: uuid.UUID,
+) -> int:
+    """
+    Migrate a single value for a 'select' type field.
+
+    Updates only "raw" and "sortable", preserves existing metadata.
+
+    Returns the number of documents updated.
+    """
+    # Find all custom field values that match criteria with access control
+    stmt = (
+        select(orm.CustomFieldValue)
+        .join(
+            orm.Document,
+            orm.CustomFieldValue.document_id == orm.Document.id
+        )
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.NODE.value,
+                orm.Ownership.resource_id == orm.Document.id
+            )
+        )
+        .where(
+            and_(
+                orm.CustomFieldValue.field_id == field_id,
+                orm.CustomFieldValue.value["raw"].astext == old_value,
+                build_access_control_condition(user_id)
+            )
+        )
+    )
+
+    result = await session.execute(stmt)
+    cfvs = result.scalars().all()
+
+    # Update each record
+    for cfv in cfvs:
+        current_value = cfv.value.copy()
+        current_value["raw"] = new_value
+        current_value["sortable"] = new_value.lower()
+        cfv.value = current_value
+        cfv.updated_at = utc_now()
+
+    return len(cfvs)
+
+
+async def _migrate_multiselect_value(
+    session: AsyncSession,
+    field_id: uuid.UUID,
+    old_value: str,
+    new_value: str,
+    user_id: uuid.UUID,
+) -> int:
+    """
+    Migrate a single value for a 'multiselect' type field.
+
+    Replaces old_value with new_value in the array, updates sortable.
+    Preserves existing metadata.
+
+    Returns the number of documents updated.
+    """
+    # Find all custom field values where raw array contains old_value
+    stmt = (
+        select(orm.CustomFieldValue)
+        .join(
+            orm.Document,
+            orm.CustomFieldValue.document_id == orm.Document.id
+        )
+        .join(
+            orm.Ownership,
+            and_(
+                orm.Ownership.resource_type == ResourceType.NODE.value,
+                orm.Ownership.resource_id == orm.Document.id
+            )
+        )
+        .where(
+            and_(
+                orm.CustomFieldValue.field_id == field_id,
+                orm.CustomFieldValue.value["raw"].contains([old_value]),
+                build_access_control_condition(user_id)
+            )
+        )
+    )
+
+    result = await session.execute(stmt)
+    cfvs = result.scalars().all()
+
+    updated_count = 0
+
+    for cfv in cfvs:
+        current_value = cfv.value.copy()
+
+        # Get current raw values array
+        raw_values = current_value.get("raw", [])
+        if not isinstance(raw_values, list):
+            continue
+
+        # Replace old_value with new_value in the array
+        new_raw_values = [
+            new_value if v == old_value else v
+            for v in raw_values
+        ]
+
+        # Update raw and sortable
+        current_value["raw"] = new_raw_values
+        current_value["sortable"] = ",".join(sorted(new_raw_values))
+
+        # Update metadata count if present
+        if "metadata" in current_value and current_value["metadata"]:
+            current_value["metadata"]["count"] = len(new_raw_values)
+
+        cfv.value = current_value
+        cfv.updated_at = utc_now()
+        updated_count += 1
+
+    return updated_count

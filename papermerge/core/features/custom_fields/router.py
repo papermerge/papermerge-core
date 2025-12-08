@@ -1,7 +1,7 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Query
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from papermerge.core.db.exceptions import ResourceAccessDenied
@@ -269,3 +269,44 @@ async def update_custom_field(
         raise HTTPException(status_code=404, detail="Not found")
 
     return cfield
+
+
+@router.get("/{custom_field_id}/usage-counts")
+async def get_option_usage_counts(
+    custom_field_id: uuid.UUID,
+    db_session: db.DBRouterAsyncSession,
+    user: scopes.ViewCustomFields,
+    # Query(...) means "required, no default value"
+    option_values: list[str] = Query(..., min_length=1),
+) -> dict[str, int]:
+    """
+    Get document counts for option values of a select/multiselect field.
+
+    It basically counts how many documents reference given value of
+    select/multiselect option.
+    Here select/multiselect means custom field of type select/multiselect.
+    """
+    has_access = await ownership_api.user_can_access_resource(
+        session=db_session,
+        user_id=user.id,
+        resource_type=ResourceType.CUSTOM_FIELD,
+        resource_id=custom_field_id
+    )
+
+    if not has_access:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,  # Use 404 to not leak existence
+            detail=f"{ResourceType.CUSTOM_FIELD.value.replace('_', ' ').title()} not found"
+        )
+
+    try:
+        result = await dbapi.get_option_usage_counts(
+            db_session,
+            user_id=user.id,
+            field_id=custom_field_id,
+            option_values=option_values
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return result

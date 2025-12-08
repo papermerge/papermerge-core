@@ -11,7 +11,7 @@ from papermerge.core.exceptions import EntityNotFound
 from papermerge.core import schema
 from papermerge.core import orm
 from papermerge.core.features.ownership.db import api as ownership_api
-from papermerge.core.types import OwnerType, ResourceType
+from papermerge.core.types import OwnerType, ResourceType, TagResource, Owner
 from papermerge.core.features.ownership.db.orm import Ownership
 
 
@@ -444,10 +444,8 @@ async def create_tag(
         # Set ownership
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.TAG,
-            resource_id=db_tag.id,
-            owner_type=owner_type,
-            owner_id=owner_id
+            resource=TagResource(id=db_tag.id),
+            owner=Owner(owner_type=owner_type, owner_id=owner_id)
         )
 
         await db_session.commit()
@@ -563,10 +561,8 @@ async def update_tag(
         # Update ownership
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.TAG,
-            resource_id=tag_id,
-            owner_type=attrs.owner_type,
-            owner_id=attrs.owner_id
+            resource=TagResource(id=tag_id),
+            owner=Owner(owner_type=attrs.owner_type, owner_id=attrs.owner_id)
         )
 
     try:

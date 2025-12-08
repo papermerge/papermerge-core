@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.types import OwnerType
+from core.types import OwnerType, Owner
 from papermerge.core import orm, schema
 from papermerge.core.features.document_types.db import api as dt_dbapi
 from papermerge.core.features.users.db import api as users_api
@@ -19,7 +19,7 @@ async def test_get_document_types_by_owner_without_pagination(
     db_session.add(user_group)
     await db_session.commit()
 
-    owner = schema.Owner(owner_type=OwnerType.GROUP, owner_id=family.id)
+    owner = Owner(owner_type=OwnerType.GROUP, owner_id=family.id)
 
     results = await dt_dbapi.get_document_types_by_owner_without_pagination(
         db_session, owner=owner

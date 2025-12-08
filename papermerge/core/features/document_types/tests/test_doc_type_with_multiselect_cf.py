@@ -13,7 +13,7 @@ import uuid
 import pytest
 
 from papermerge.core import orm
-from papermerge.core.types import OwnerType, ResourceType
+from papermerge.core.types import OwnerType, ResourceType, NodeResource, Owner
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.custom_fields import schema as cf_schema
 from papermerge.core.features.document_types.db import api as dt_dbapi
@@ -76,10 +76,8 @@ async def test_multiselect_field_with_valid_values(
 
     await ownership_api.set_owner(
         session=db_session,
-        resource_type=ResourceType.NODE,
-        resource_id=doc.id,
-        owner_type=OwnerType.USER,
-        owner_id=user.id
+        resource=NodeResource(id=doc.id),
+        owner=Owner(owner_type=OwnerType.USER, owner_id=user.id)
     )
     await db_session.commit()
 
@@ -158,10 +156,8 @@ async def test_multiselect_field_with_invalid_value(
 
     await ownership_api.set_owner(
         session=db_session,
-        resource_type=ResourceType.NODE,
-        resource_id=doc.id,
-        owner_type=OwnerType.USER,
-        owner_id=user.id
+        resource=NodeResource(id=doc.id),
+        owner=Owner(owner_type=OwnerType.USER, owner_id=user.id)
     )
     await db_session.commit()
 

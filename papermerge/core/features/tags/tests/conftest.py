@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import orm
 from papermerge.core.features.ownership.db import api as ownership_api
-from papermerge.core.types import OwnerType, ResourceType
+from papermerge.core.types import OwnerType, ResourceType, TagResource, Owner
 
 
 @pytest.fixture()
@@ -36,10 +36,8 @@ def make_tag(db_session: AsyncSession):
 
         await ownership_api.set_owner(
             session=db_session,
-            resource_type=ResourceType.TAG,
-            resource_id=db_tag.id,
-            owner_type=owner_type,
-            owner_id=owner_id
+            resource=TagResource(id=db_tag.id),
+            owner=Owner(owner_type=owner_type, owner_id=owner_id)
         )
 
         await db_session.commit()

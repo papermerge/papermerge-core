@@ -12,15 +12,14 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, and_
 
-from papermerge.core import orm, constants
+from papermerge.core import orm, constants, types
 from papermerge.core.features.special_folders.db.orm import SpecialFolder
 from papermerge.core.features.ownership.db import api as ownership_api
-from papermerge.core.types import OwnerType, ResourceType, FolderType
 
 
 async def create_special_folders_for_user(
-        db_session: AsyncSession,
-        user_id: UUID,
+    db_session: AsyncSession,
+    user_id: UUID,
 ) -> Dict[str, UUID]:
     """
     Create home and inbox folders for a user.
@@ -32,7 +31,7 @@ async def create_special_folders_for_user(
     Returns:
         Dictionary with 'home' and 'inbox' keys mapping to folder IDs
     """
-
+    owner = types.Owner.create_from(user_id=user_id)
     home_id = uuid.uuid4()
     inbox_id = uuid.uuid4()
 
@@ -57,31 +56,27 @@ async def create_special_folders_for_user(
     # Set ownership for both folders
     await ownership_api.set_owner(
         session=db_session,
-        resource_type=ResourceType.NODE,
-        resource_id=home_id,
-        owner_type=OwnerType.USER,
-        owner_id=user_id
+        resource=types.NodeResource(id=home_id),
+        owner=owner,
     )
 
     await ownership_api.set_owner(
         session=db_session,
-        resource_type=ResourceType.NODE,
-        resource_id=inbox_id,
-        owner_type=OwnerType.USER,
-        owner_id=user_id
+        resource=types.NodeResource(id=inbox_id),
+        owner=owner
     )
 
     # Create special folder entries
     home_special = SpecialFolder(
-        owner_type=OwnerType.USER.value,
+        owner_type=types.OwnerType.USER.value,
         owner_id=user_id,
-        folder_type=FolderType.HOME.value,
+        folder_type=types.FolderType.HOME.value,
         folder_id=home_id
     )
     inbox_special = SpecialFolder(
-        owner_type=OwnerType.USER.value,
+        owner_type=types.OwnerType.USER.value,
         owner_id=user_id,
-        folder_type=FolderType.INBOX.value,
+        folder_type=types.FolderType.INBOX.value,
         folder_id=inbox_id
     )
 
@@ -108,6 +103,7 @@ async def create_special_folders_for_group(
     Returns:
         Dictionary with 'home' and 'inbox' keys mapping to folder IDs
     """
+    owner = types.Owner.create_from(group_id=group_id)
     home_id = uuid.uuid4()
     inbox_id = uuid.uuid4()
 
@@ -132,31 +128,27 @@ async def create_special_folders_for_group(
     # Set ownership for both folders
     await ownership_api.set_owner(
         session=db_session,
-        resource_type=ResourceType.NODE,
-        resource_id=home_id,
-        owner_type=OwnerType.GROUP,
-        owner_id=group_id
+        resource=types.NodeResource(id=home_id),
+        owner=owner,
     )
 
     await ownership_api.set_owner(
         session=db_session,
-        resource_type=ResourceType.NODE,
-        resource_id=inbox_id,
-        owner_type=OwnerType.GROUP,
-        owner_id=group_id
+        resource=types.NodeResource(id=inbox_id),
+        owner=owner,
     )
 
     # Create special folder entries
     home_special = SpecialFolder(
-        owner_type=OwnerType.GROUP.value,
+        owner_type=types.OwnerType.GROUP.value,
         owner_id=group_id,
-        folder_type=FolderType.HOME.value,
+        folder_type=types.FolderType.HOME.value,
         folder_id=home_id
     )
     inbox_special = SpecialFolder(
-        owner_type=OwnerType.GROUP.value,
+        owner_type=types.OwnerType.GROUP.value,
         owner_id=group_id,
-        folder_type=FolderType.INBOX.value,
+        folder_type=types.FolderType.INBOX.value,
         folder_id=inbox_id
     )
 
@@ -171,9 +163,9 @@ async def create_special_folders_for_group(
 
 async def get_special_folder(
     db_session: AsyncSession,
-    owner_type: OwnerType,
+    owner_type: types.OwnerType,
     owner_id: UUID,
-    folder_type: FolderType
+    folder_type: types.FolderType
 ) -> Optional[SpecialFolder]:
     """
     Get a specific special folder for an owner.
@@ -200,7 +192,7 @@ async def get_special_folder(
 
 async def get_all_special_folders(
     db_session: AsyncSession,
-    owner_type: OwnerType,
+    owner_type: types.OwnerType,
     owner_id: UUID
 ) -> list[SpecialFolder]:
     """
@@ -226,7 +218,7 @@ async def get_all_special_folders(
 
 async def has_special_folders(
     db_session: AsyncSession,
-    owner_type: OwnerType,
+    owner_type: types.OwnerType,
     owner_id: UUID
 ) -> bool:
     """
@@ -242,7 +234,7 @@ async def has_special_folders(
     """
     folders = await get_all_special_folders(db_session, owner_type, owner_id)
     folder_types = {f.folder_type for f in folders}
-    return FolderType.HOME in folder_types and FolderType.INBOX in folder_types
+    return types.FolderType.HOME in folder_types and types.FolderType.INBOX in folder_types
 
 
 async def delete_special_folders_for_group(
@@ -262,7 +254,7 @@ async def delete_special_folders_for_group(
     # First get the folder IDs so we can delete the actual folders
     stmt = select(SpecialFolder).where(
         and_(
-            SpecialFolder.owner_type == OwnerType.GROUP,
+            SpecialFolder.owner_type == types.OwnerType.GROUP,
             SpecialFolder.owner_id == group_id
         )
     )
@@ -274,7 +266,7 @@ async def delete_special_folders_for_group(
     # Delete special folder entries (this will happen automatically via trigger)
     stmt = delete(SpecialFolder).where(
         and_(
-            SpecialFolder.owner_type == OwnerType.GROUP,
+            SpecialFolder.owner_type == types.OwnerType.GROUP,
             SpecialFolder.owner_id == group_id
         )
     )

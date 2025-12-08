@@ -1,7 +1,7 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Query
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from papermerge.core.db.exceptions import ResourceAccessDenied
@@ -12,7 +12,7 @@ from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.features.users.db import api as user_dbapi
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
-from papermerge.core.types import ResourceType, OwnerType
+from papermerge.core.types import ResourceType, OwnerType, Owner
 from .schema import CustomFieldParams
 
 router = APIRouter(
@@ -54,7 +54,7 @@ async def get_custom_fields_without_pagination(
     if group_id:
         owner_type = OwnerType.GROUP
 
-    owner=schema.Owner(owner_id=owner_id, owner_type=owner_type)
+    owner=Owner(owner_id=owner_id, owner_type=owner_type)
 
     if group_id:
         ok = await user_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
@@ -269,3 +269,44 @@ async def update_custom_field(
         raise HTTPException(status_code=404, detail="Not found")
 
     return cfield
+
+
+@router.get("/{custom_field_id}/usage-counts")
+async def get_option_usage_counts(
+    custom_field_id: uuid.UUID,
+    db_session: db.DBRouterAsyncSession,
+    user: scopes.ViewCustomFields,
+    # Query(...) means "required, no default value"
+    option_values: list[str] = Query(..., min_length=1),
+) -> dict[str, int]:
+    """
+    Get document counts for option values of a select/multiselect field.
+
+    It basically counts how many documents reference given value of
+    select/multiselect option.
+    Here select/multiselect means custom field of type select/multiselect.
+    """
+    has_access = await ownership_api.user_can_access_resource(
+        session=db_session,
+        user_id=user.id,
+        resource_type=ResourceType.CUSTOM_FIELD,
+        resource_id=custom_field_id
+    )
+
+    if not has_access:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,  # Use 404 to not leak existence
+            detail=f"{ResourceType.CUSTOM_FIELD.value.replace('_', ' ').title()} not found"
+        )
+
+    try:
+        result = await dbapi.get_option_usage_counts(
+            db_session,
+            user_id=user.id,
+            field_id=custom_field_id,
+            option_values=option_values
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return result

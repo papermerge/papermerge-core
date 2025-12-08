@@ -2,7 +2,8 @@ import {useAppSelector} from "@/app/hooks"
 import type {SelectOption} from "@/features/custom-fields/components/SelectOptions"
 import {
   useEditCustomFieldMutation,
-  useGetCustomFieldQuery
+  useGetCustomFieldQuery,
+  useLazyGetCustomFieldTypeSelectUsageCountQuery
 } from "@/features/custom-fields/storage/api"
 import {selectCurrentUser} from "@/slices/currentUser"
 import type {
@@ -14,6 +15,25 @@ import type {
 import {extractApiError} from "@/utils/errorHandling"
 import {useCallback, useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
+import {CustomFieldItem} from "../../types"
+
+type UsageOptionCountType = Record<string, number>
+
+type OptionValueMapping = {
+  old_value: string
+  new_value: string
+}
+
+type OptionValueMappingWithCount = {
+  old_value: string
+  new_value: string
+  count: number
+}
+
+type OptionValuesChangesTotal = {
+  mappings: OptionValueMappingWithCount[]
+  total_count: number
+}
 
 interface UseEditCustomFieldModalArgs {
   customFieldId: string
@@ -21,6 +41,7 @@ interface UseEditCustomFieldModalArgs {
 }
 
 interface UseEditCustomFieldModalReturn {
+  optionValuesChangesTotal: OptionValuesChangesTotal | null
   // Form state
   name: string
   dataType: CustomFieldDataType
@@ -68,8 +89,11 @@ export function useEditCustomFieldModal({
   const {data, isLoading} = useGetCustomFieldQuery(customFieldId)
   const [updateCustomField, {isLoading: isUpdating}] =
     useEditCustomFieldMutation()
+  const [getOptionUsageCount] = useLazyGetCustomFieldTypeSelectUsageCountQuery()
 
   // Form state
+  const [optionValuesChangesTotal, setOptionValuesChangesTotal] =
+    useState<OptionValuesChangesTotal | null>(null)
   const [name, setName] = useState<string>("")
   const [dataType, setDataType] = useState<CustomFieldDataType>("text")
   const [currency, setCurrency] = useState<CurrencyType>("EUR")
@@ -185,6 +209,30 @@ export function useEditCustomFieldModal({
   }, [dataType, currency, selectOptions])
 
   const onLocalSubmit = useCallback(async () => {
+    if (isSelect(data) && haveValueOptionChanged(selectOptions, data)) {
+      const changedOptions = changedValueOptionList(selectOptions, data)
+      const changedValues = changedOptions.map(opt => opt.old_value)
+
+      try {
+        const result = await getOptionUsageCount({
+          field_id: customFieldId,
+          values: changedValues
+        }).unwrap()
+
+        setOptionValuesChangesTotal(
+          getOptionValueChanges({counts: result, mappings: changedOptions})
+        )
+      } catch (err: unknown) {
+        setError(
+          extractApiError(
+            err,
+            t("customField.form.error", {
+              defaultValue: "Failed to retrieve option usage count"
+            })
+          )
+        )
+      }
+    }
     const config = buildConfig()
 
     const updatedData: CustomFieldUpdate = {
@@ -207,8 +255,8 @@ export function useEditCustomFieldModal({
       setError(
         extractApiError(
           err,
-          t("document_types.form.error", {
-            defaultValue: "Failed to create document type"
+          t("customField.form.error", {
+            defaultValue: "Failed to update metadata field"
           })
         )
       )
@@ -220,7 +268,11 @@ export function useEditCustomFieldModal({
     owner,
     buildConfig,
     updateCustomField,
-    onSubmit
+    onSubmit,
+    data,
+    selectOptions,
+    getOptionUsageCount,
+    t
   ])
 
   return {
@@ -234,6 +286,7 @@ export function useEditCustomFieldModal({
     isUpdating,
     isDataLoaded,
     isSelectType,
+    optionValuesChangesTotal,
     onNameChange,
     onDataTypeChange,
     onCurrencyChange,
@@ -245,3 +298,93 @@ export function useEditCustomFieldModal({
 }
 
 export default useEditCustomFieldModal
+
+function isSelect(data?: CustomFieldItem): boolean {
+  if (!data) {
+    return false
+  }
+
+  if (data.type_handler != "multiselect" && data.type_handler != "select") {
+    return false
+  }
+
+  return true
+}
+
+function haveValueOptionChanged(
+  options: SelectOption[],
+  data?: CustomFieldItem
+): boolean {
+  if (!data) {
+    return false
+  }
+
+  const initialOptions = data.config.options as SelectOption[]
+  if (initialOptions.length !== options.length) {
+    return true
+  }
+
+  for (let i = 0; i < options.length; i++) {
+    if (initialOptions[i].value !== options[i].value) {
+      return true
+    }
+  }
+
+  return false
+}
+
+function changedValueOptionList(
+  options: SelectOption[],
+  data?: CustomFieldItem
+): OptionValueMapping[] {
+  let arr: OptionValueMapping[] = []
+
+  if (!data) {
+    return arr
+  }
+
+  const initialOptions = data.config.options as SelectOption[]
+  if (initialOptions.length !== options.length) {
+    return arr
+  }
+
+  for (let i = 0; i < options.length; i++) {
+    if (initialOptions[i].value !== options[i].value) {
+      arr.push({
+        old_value: initialOptions[i].value,
+        new_value: options[i].value
+      })
+    }
+  }
+
+  return arr
+}
+
+interface GetOptionValuesArgs {
+  counts: Record<string, number>
+  mappings: OptionValueMapping[]
+}
+
+function getOptionValueChanges({
+  counts,
+  mappings
+}: GetOptionValuesArgs): OptionValuesChangesTotal {
+  let arr: OptionValueMappingWithCount[] = []
+  let total = 0
+
+  for (let i = 0; i < mappings.length; i++) {
+    const count = counts[mappings[i].old_value]
+    const entry = {
+      new_value: mappings[i].new_value,
+      old_value: mappings[i].old_value,
+      count: count
+    }
+    arr.push(entry)
+    total += count
+  }
+
+  return {
+    mappings: arr,
+    total_count: total
+  }
+}

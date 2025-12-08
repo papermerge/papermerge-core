@@ -18,6 +18,11 @@ interface GetCustomFieldsArgs {
   document_type_id?: string | null
 }
 
+interface UsageCountsInputType {
+  field_id: string
+  values: string[]
+}
+
 export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
   endpoints: builder => ({
     getPaginatedCustomFields: builder.query<
@@ -68,6 +73,16 @@ export const apiSliceWithCustomFields = apiSlice.injectEndpoints({
       query: groupID => `/custom-fields/${groupID}`,
       providesTags: (_result, _error, arg) => [{type: "CustomField", id: arg}]
     }),
+    getCustomFieldTypeSelectUsageCount: builder.query<
+      Record<string, number>,
+      UsageCountsInputType
+    >({
+      query({field_id, values}: UsageCountsInputType) {
+        const params = new URLSearchParams()
+        values.forEach(value => params.append("option_values", value))
+        return `/custom-fields/${field_id}/usage-counts?${params}`
+      }
+    }),
     addNewCustomField: builder.mutation<CustomFieldItem, NewCustomField>({
       query: cf => ({
         url: "/custom-fields/",
@@ -104,6 +119,8 @@ export const {
   useGetPaginatedCustomFieldsQuery,
   useGetCustomFieldsQuery,
   useGetCustomFieldQuery,
+  useGetCustomFieldTypeSelectUsageCountQuery,
+  useLazyGetCustomFieldTypeSelectUsageCountQuery,
   useEditCustomFieldMutation,
   useDeleteCustomFieldMutation,
   useAddNewCustomFieldMutation

@@ -2,7 +2,8 @@ import {useAppSelector} from "@/app/hooks"
 import type {SelectOption} from "@/features/custom-fields/components/SelectOptions"
 import {
   useEditCustomFieldMutation,
-  useGetCustomFieldQuery
+  useGetCustomFieldQuery,
+  useLazyGetCustomFieldTypeSelectUsageCountQuery
 } from "@/features/custom-fields/storage/api"
 import {selectCurrentUser} from "@/slices/currentUser"
 import type {
@@ -12,8 +13,17 @@ import type {
   Owner
 } from "@/types"
 import {extractApiError} from "@/utils/errorHandling"
-import {useCallback, useEffect, useState} from "react"
+import {useDebouncedCallback} from "@mantine/hooks"
+import {useCallback, useEffect, useRef, useState} from "react"
 import {useTranslation} from "react-i18next"
+
+import type {OptionValuesChangesTotal} from "./types"
+import {
+  changedValueOptionList,
+  haveValueOptionChanged,
+  isSelect,
+  wrapOptionValueChanges
+} from "./utils"
 
 interface UseEditCustomFieldModalArgs {
   customFieldId: string
@@ -21,6 +31,8 @@ interface UseEditCustomFieldModalArgs {
 }
 
 interface UseEditCustomFieldModalReturn {
+  optionValuesChangesTotal: OptionValuesChangesTotal | null
+  isCheckingMigration: boolean
   // Form state
   name: string
   dataType: CustomFieldDataType
@@ -47,15 +59,10 @@ interface UseEditCustomFieldModalReturn {
   formReset: () => void
 }
 
+const DEBOUNCE_MS = 1500
+
 /**
  * Hook for managing EditCustomFieldModal state and logic
- *
- * Handles:
- * - Fetching existing custom field data
- * - Form state management
- * - Config building for different field types
- * - API mutation for updates
- * - Form reset
  */
 export function useEditCustomFieldModal({
   customFieldId,
@@ -68,8 +75,12 @@ export function useEditCustomFieldModal({
   const {data, isLoading} = useGetCustomFieldQuery(customFieldId)
   const [updateCustomField, {isLoading: isUpdating}] =
     useEditCustomFieldMutation()
+  const [getOptionUsageCount, {isFetching: isCheckingMigration}] =
+    useLazyGetCustomFieldTypeSelectUsageCountQuery()
 
   // Form state
+  const [optionValuesChangesTotal, setOptionValuesChangesTotal] =
+    useState<OptionValuesChangesTotal | null>(null)
   const [name, setName] = useState<string>("")
   const [dataType, setDataType] = useState<CustomFieldDataType>("text")
   const [currency, setCurrency] = useState<CurrencyType>("EUR")
@@ -80,6 +91,69 @@ export function useEditCustomFieldModal({
     type: "user",
     label: "Me"
   })
+
+  // Track the latest request to avoid race conditions
+  const latestRequestRef = useRef<number>(0)
+
+  // Check migration impact (called with debounce)
+  const checkMigrationImpact = useCallback(
+    async (currentOptions: SelectOption[]) => {
+      if (!data || !isSelect(data)) {
+        setOptionValuesChangesTotal(null)
+        return
+      }
+
+      if (!haveValueOptionChanged(currentOptions, data)) {
+        setOptionValuesChangesTotal(null)
+        return
+      }
+
+      const changedOptions = changedValueOptionList(currentOptions, data)
+      const changedValues = changedOptions.map(opt => opt.old_value)
+
+      const requestId = ++latestRequestRef.current
+
+      try {
+        const result = await getOptionUsageCount({
+          field_id: customFieldId,
+          values: changedValues
+        }).unwrap()
+
+        // Ignore if a newer request was made
+        if (requestId !== latestRequestRef.current) {
+          return
+        }
+
+        const wrapped = wrapOptionValueChanges({
+          counts: result,
+          mappings: changedOptions
+        })
+
+        setOptionValuesChangesTotal(wrapped)
+      } catch (err: unknown) {
+        // Ignore if a newer request was made
+        if (requestId !== latestRequestRef.current) {
+          return
+        }
+
+        setError(
+          extractApiError(
+            err,
+            t("customField.form.error", {
+              defaultValue: "Failed to retrieve option usage count"
+            })
+          )
+        )
+      }
+    },
+    [data, customFieldId, getOptionUsageCount, t]
+  )
+
+  // Debounced version of checkMigrationImpact
+  const debouncedCheckMigration = useDebouncedCallback(
+    checkMigrationImpact,
+    DEBOUNCE_MS
+  )
 
   // Parse config from loaded data
   const parseConfigFromData = useCallback(() => {
@@ -107,6 +181,7 @@ export function useEditCustomFieldModal({
       setName(data.name || "")
       setDataType((data.type_handler as CustomFieldDataType) || "text")
       setError("")
+      setOptionValuesChangesTotal(null)
 
       // Set owner
       if (data.owned_by && data.owned_by.type === "group") {
@@ -147,6 +222,7 @@ export function useEditCustomFieldModal({
     // Reset select options when switching away from select types
     if (value !== "select" && value !== "multiselect") {
       setSelectOptions([])
+      setOptionValuesChangesTotal(null)
     }
   }, [])
 
@@ -158,9 +234,14 @@ export function useEditCustomFieldModal({
     setOwner(newOwner)
   }, [])
 
-  const onSelectOptionsChange = useCallback((options: SelectOption[]) => {
-    setSelectOptions(options)
-  }, [])
+  const onSelectOptionsChange = useCallback(
+    (options: SelectOption[]) => {
+      setSelectOptions(options)
+      // Trigger debounced migration check
+      debouncedCheckMigration(options)
+    },
+    [debouncedCheckMigration]
+  )
 
   const buildConfig = useCallback(() => {
     if (dataType === "monetary") {
@@ -207,8 +288,8 @@ export function useEditCustomFieldModal({
       setError(
         extractApiError(
           err,
-          t("document_types.form.error", {
-            defaultValue: "Failed to create document type"
+          t("customField.form.error", {
+            defaultValue: "Failed to update metadata field"
           })
         )
       )
@@ -220,7 +301,8 @@ export function useEditCustomFieldModal({
     owner,
     buildConfig,
     updateCustomField,
-    onSubmit
+    onSubmit,
+    t
   ])
 
   return {
@@ -234,6 +316,8 @@ export function useEditCustomFieldModal({
     isUpdating,
     isDataLoaded,
     isSelectType,
+    isCheckingMigration,
+    optionValuesChangesTotal,
     onNameChange,
     onDataTypeChange,
     onCurrencyChange,

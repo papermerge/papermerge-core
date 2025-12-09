@@ -1,4 +1,12 @@
-import {ActionIcon, Button, Group, Stack, Text, TextInput} from "@mantine/core"
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Group,
+  Stack,
+  Text,
+  TextInput
+} from "@mantine/core"
 import {IconPlus, IconTrash} from "@tabler/icons-react"
 import {useTranslation} from "react-i18next"
 import type {SelectOptionsProps} from "./types"
@@ -24,6 +32,20 @@ export function SelectOptionsPresentation({
       <Text size="sm" fw={500}>
         {t("custom_fields.form.options", {defaultValue: "Options"})}
       </Text>
+
+      {/* Column headers */}
+      {options.length > 0 && (
+        <Group gap="xs" wrap="nowrap">
+          <Text size="xs" c="dimmed" style={{flex: 1}}>
+            {t("custom_fields.form.option_label", {defaultValue: "Label"})}
+          </Text>
+          <Text size="xs" c="dimmed" style={{flex: 1}}>
+            {t("custom_fields.form.option_value", {defaultValue: "Value"})}
+          </Text>
+          {/* Spacer for the delete button column */}
+          <Box w={28} />
+        </Group>
+      )}
 
       {options.map((option, index) => (
         <Group key={index} gap="xs" wrap="nowrap">

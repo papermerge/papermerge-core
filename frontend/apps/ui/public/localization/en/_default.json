@@ -660,5 +660,11 @@
     "new_category": "New category:",
     "confirm_button": "Change Category",
     "none": "None"
+  },
+  "cfSelectMigration": {
+    "document_one": "{{count}} document",
+    "document_other": "{{count}} documents",
+    "documents_will_be_updated_one": "{{count}} document will be automatically updated",
+    "documents_will_be_updated_other": "{{count}} documents will be automatically updated"
   }
 }

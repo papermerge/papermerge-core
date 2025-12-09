@@ -706,13 +706,35 @@ async def delete_custom_field(
 async def update_custom_field(
     session: AsyncSession,
     field_id: uuid.UUID,
-    data: schema.UpdateCustomField
+    data: schema.UpdateCustomField,
+    user_id: uuid.UUID | None = None,
 ) -> schema.CustomField:
-    """Update a custom field"""
+    """
+    Update a custom field.
 
+    If this is a select/multiselect field and option values have changed,
+    automatically migrates all document values to the new option values
+    in the same transaction.
+
+    Args:
+        session: Database session
+        field_id: UUID of the custom field to update
+        data: Update data
+        user_id: UUID of the user (required for migration access control)
+
+    Returns:
+        Updated custom field
+
+    Raises:
+        ValueError: If field not found or validation fails
+    """
     field = await session.get(orm.CustomField, field_id)
     if not field:
         raise ValueError(f"Custom field {field_id} not found")
+
+    # Capture old config before any updates (for migration detection)
+    old_config = field.config.copy() if field.config else {}
+    old_type_handler = field.type_handler
 
     # Update fields
     if data.name is not None:
@@ -794,6 +816,23 @@ async def update_custom_field(
             resource=CustomFieldResource(id=field_id),
             owner=Owner(owner_type=owner_type, owner_id=owner_id)
         )
+
+    # Check if migration is needed for select/multiselect fields
+    if (
+        data.config is not None
+        and old_type_handler in ("select", "multiselect")
+        and field.type_handler in ("select", "multiselect")
+        and user_id is not None
+    ):
+        mappings = _detect_option_value_changes(old_config, data.config)
+
+        if mappings:
+            await migrate_option_values(
+                session=session,
+                field_id=field_id,
+                mappings=mappings,
+                user_id=user_id,
+            )
 
     await session.commit()
     await session.refresh(field)
@@ -1584,8 +1623,10 @@ async def migrate_option_values(
     2. Updates the "raw" value and "sortable" in the JSONB column
     3. Returns counts of migrated documents per mapping
 
-    Note: Metadata (label, color, icon) is preserved as-is. The custom field
-    definition update (which happens separately) handles the new labels.
+    Note: This function does NOT commit. Caller is responsible for committing
+    the transaction (allows combining with other operations atomically).
+
+    Note: Metadata (label, color, icon) is preserved as-is.
 
     Args:
         session: Database session
@@ -1604,13 +1645,11 @@ async def migrate_option_values(
                 {"old_value": "high", "new_value": "h", "documents_updated": 2},
                 ...
             ],
-            "errors": []
         }
 
     Raises:
         ValueError: If field doesn't exist or is not select/multiselect type
     """
-    # Validate field exists and is correct type
     field = await session.get(orm.CustomField, field_id)
     if not field:
         raise ValueError(f"Custom field {field_id} not found")
@@ -1623,48 +1662,40 @@ async def migrate_option_values(
 
     results = []
     total_migrated = 0
-    errors = []
 
     for mapping in mappings:
         old_value = mapping["old_value"]
         new_value = mapping["new_value"]
 
-        try:
-            if field.type_handler == "select":
-                count = await _migrate_select_value(
-                    session=session,
-                    field_id=field_id,
-                    old_value=old_value,
-                    new_value=new_value,
-                    user_id=user_id,
-                )
-            else:
-                count = await _migrate_multiselect_value(
-                    session=session,
-                    field_id=field_id,
-                    old_value=old_value,
-                    new_value=new_value,
-                    user_id=user_id,
-                )
+        if field.type_handler == "select":
+            count = await _migrate_select_value(
+                session=session,
+                field_id=field_id,
+                old_value=old_value,
+                new_value=new_value,
+                user_id=user_id,
+            )
+        else:
+            count = await _migrate_multiselect_value(
+                session=session,
+                field_id=field_id,
+                old_value=old_value,
+                new_value=new_value,
+                user_id=user_id,
+            )
 
-            results.append({
-                "old_value": old_value,
-                "new_value": new_value,
-                "documents_updated": count,
-            })
-            total_migrated += count
-
-        except Exception as e:
-            errors.append(f"Failed to migrate '{old_value}' → '{new_value}': {str(e)}")
-
-    await session.commit()
+        results.append({
+            "old_value": old_value,
+            "new_value": new_value,
+            "documents_updated": count,
+        })
+        total_migrated += count
 
     return {
         "field_id": field_id,
-        "success": len(errors) == 0,
+        "success": True,
         "total_documents_migrated": total_migrated,
         "results": results,
-        "errors": errors,
     }
 
 
@@ -1789,3 +1820,43 @@ async def _migrate_multiselect_value(
         updated_count += 1
 
     return updated_count
+
+
+def _detect_option_value_changes(
+    old_config: dict,
+    new_config: dict,
+) -> list[dict[str, str]]:
+    """
+    Detect which option values have changed between old and new config.
+
+    Compares options by their position in the list (index-based matching).
+    Only returns mappings where the value actually changed.
+
+    Args:
+        old_config: Previous field configuration
+        new_config: New field configuration
+
+    Returns:
+        List of mappings: [{"old_value": "x", "new_value": "y"}, ...]
+    """
+    old_options = old_config.get("options", [])
+    new_options = new_config.get("options", [])
+
+    mappings = []
+
+    for i, old_opt in enumerate(old_options):
+        if i >= len(new_options):
+            # Option was removed - skip
+            continue
+
+        new_opt = new_options[i]
+        old_value = old_opt.get("value")
+        new_value = new_opt.get("value")
+
+        if old_value and new_value and old_value != new_value:
+            mappings.append({
+                "old_value": old_value,
+                "new_value": new_value,
+            })
+
+    return mappings

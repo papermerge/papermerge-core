@@ -26,6 +26,7 @@ export function EditCustomFieldModalContainer({
     currency,
     owner,
     selectOptions,
+    optionValuesChangesTotal,
     error,
     isLoading,
     isUpdating,
@@ -64,6 +65,7 @@ export function EditCustomFieldModalContainer({
       isUpdating={isUpdating}
       isDataLoaded={isDataLoaded}
       isSelectType={isSelectType}
+      optionValuesChangesTotal={optionValuesChangesTotal}
       onNameChange={onNameChange}
       onDataTypeChange={onDataTypeChange}
       onCurrencyChange={onCurrencyChange}

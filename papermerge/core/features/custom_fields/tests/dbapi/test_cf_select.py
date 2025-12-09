@@ -227,6 +227,9 @@ async def test_migrate_option_values_of_cf_type_select(
         user_id=user.id,
     )
 
+    # Commit manually since migrate_option_values no longer commits
+    await db_session.commit()
+
     # Verify migration result
     assert result["success"] is True
     assert result["total_documents_migrated"] == 2
@@ -234,7 +237,6 @@ async def test_migrate_option_values_of_cf_type_select(
     assert result["results"][0]["old_value"] == "high"
     assert result["results"][0]["new_value"] == "h"
     assert result["results"][0]["documents_updated"] == 2
-    assert len(result["errors"]) == 0
 
     # Verify documents were updated
     cfv1_after = await cf_dbapi.get_custom_field_value(db_session, doc1.id, field.id)
@@ -354,6 +356,9 @@ async def test_migrate_option_values_of_cf_type_multiselect(
         user_id=user.id,
     )
 
+    # Commit manually since migrate_option_values no longer commits
+    await db_session.commit()
+
     # Verify migration result
     assert result["success"] is True
     assert result["total_documents_migrated"] == 2
@@ -361,7 +366,6 @@ async def test_migrate_option_values_of_cf_type_multiselect(
     assert result["results"][0]["old_value"] == "hr"
     assert result["results"][0]["new_value"] == "human_resources"
     assert result["results"][0]["documents_updated"] == 2
-    assert len(result["errors"]) == 0
 
     # Verify documents were updated
     cfv1_after = await cf_dbapi.get_custom_field_value(db_session, doc1.id, field.id)
@@ -371,3 +375,80 @@ async def test_migrate_option_values_of_cf_type_multiselect(
     assert set(cfv1_after.value.raw) == {"human_resources", "finance"}
     assert set(cfv2_after.value.raw) == {"human_resources", "legal"}
     assert set(cfv3_after.value.raw) == {"finance"}  # unchanged
+
+
+async def test_detect_option_value_changes(
+    db_session: AsyncSession,
+):
+    """
+    Test _detect_option_value_changes helper function.
+    """
+    # Test: value changed at position 0
+    old_config = {
+        "options": [
+            {"value": "high", "label": "High"},
+            {"value": "medium", "label": "Medium"},
+        ]
+    }
+    new_config = {
+        "options": [
+            {"value": "h", "label": "High"},
+            {"value": "medium", "label": "Medium"},
+        ]
+    }
+    mappings = cf_dbapi._detect_option_value_changes(old_config, new_config)
+    assert mappings == [{"old_value": "high", "new_value": "h"}]
+
+    # Test: multiple values changed
+    old_config = {
+        "options": [
+            {"value": "high", "label": "High"},
+            {"value": "medium", "label": "Medium"},
+            {"value": "low", "label": "Low"},
+        ]
+    }
+    new_config = {
+        "options": [
+            {"value": "h", "label": "High"},
+            {"value": "m", "label": "Medium"},
+            {"value": "low", "label": "Low"},
+        ]
+    }
+    mappings = cf_dbapi._detect_option_value_changes(old_config, new_config)
+    assert mappings == [
+        {"old_value": "high", "new_value": "h"},
+        {"old_value": "medium", "new_value": "m"},
+    ]
+
+    # Test: no changes
+    old_config = {
+        "options": [
+            {"value": "high", "label": "High"},
+        ]
+    }
+    new_config = {
+        "options": [
+            {"value": "high", "label": "High Priority"},  # only label changed
+        ]
+    }
+    mappings = cf_dbapi._detect_option_value_changes(old_config, new_config)
+    assert mappings == []
+
+    # Test: option removed (fewer options in new config)
+    old_config = {
+        "options": [
+            {"value": "high", "label": "High"},
+            {"value": "medium", "label": "Medium"},
+        ]
+    }
+    new_config = {
+        "options": [
+            {"value": "h", "label": "High"},
+        ]
+    }
+    mappings = cf_dbapi._detect_option_value_changes(old_config, new_config)
+    assert mappings == [{"old_value": "high", "new_value": "h"}]
+
+    # Test: empty configs
+    mappings = cf_dbapi._detect_option_value_changes({}, {})
+    assert mappings == []

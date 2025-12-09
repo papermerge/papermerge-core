@@ -26,9 +26,8 @@ export default function Migration({optionValuesChangesTotal}: Args) {
 
   return (
     <Paper withBorder p="md" my="md" radius="sm">
-      <Text>
-        ⚠️
-        {t("cfSelectMigration.documents_using_modified_values", {
+      <Text size="sm" c="dimmed">
+        {t("cfSelectMigration.documents_will_be_updated", {
           count: optionValuesChangesTotal.total_count
         })}
       </Text>

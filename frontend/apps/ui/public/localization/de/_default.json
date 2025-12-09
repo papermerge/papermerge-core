@@ -664,7 +664,7 @@
   "cfSelectMigration": {
     "document_one": "{{count}} Dokument",
     "document_other": "{{count}} Dokumente",
-    "documents_using_modified_values_one": "{{count}} Dokument verwendet die Werte, die du änderst:",
-    "documents_using_modified_values_other": "{{count}} Dokumente verwenden die Werte, die du änderst:"
+    "documents_will_be_updated_one": "{{count}} Dokument wird automatisch aktualisiert",
+    "documents_will_be_updated_other": "{{count}} Dokumente werden automatisch aktualisiert"
   }
 }

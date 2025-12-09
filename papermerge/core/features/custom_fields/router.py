@@ -252,7 +252,7 @@ async def update_custom_field(
 
     if not has_access:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,  # Use 404 to not leak existence
+            status_code=status.HTTP_404_NOT_FOUND,
             detail=f"{ResourceType.CUSTOM_FIELD.value.replace('_', ' ').title()} not found"
         )
 
@@ -263,13 +263,17 @@ async def update_custom_field(
             username=cur_user.username
         ):
             cfield: cf_schema.CustomField = await dbapi.update_custom_field(
-                db_session, field_id=custom_field_id, data=data
+                db_session,
+                field_id=custom_field_id,
+                data=data,
+                user_id=cur_user.id,
             )
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Not found")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     return cfield
-
 
 @router.get("/{custom_field_id}/usage-counts")
 async def get_option_usage_counts(

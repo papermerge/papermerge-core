@@ -15,25 +15,14 @@ import type {
 import {extractApiError} from "@/utils/errorHandling"
 import {useCallback, useEffect, useState} from "react"
 import {useTranslation} from "react-i18next"
-import {CustomFieldItem} from "../../types"
 
-type UsageOptionCountType = Record<string, number>
-
-type OptionValueMapping = {
-  old_value: string
-  new_value: string
-}
-
-type OptionValueMappingWithCount = {
-  old_value: string
-  new_value: string
-  count: number
-}
-
-type OptionValuesChangesTotal = {
-  mappings: OptionValueMappingWithCount[]
-  total_count: number
-}
+import type {OptionValuesChangesTotal} from "./types"
+import {
+  changedValueOptionList,
+  haveValueOptionChanged,
+  isSelect,
+  wrapOptionValueChanges
+} from "./utils"
 
 interface UseEditCustomFieldModalArgs {
   customFieldId: string
@@ -208,10 +197,11 @@ export function useEditCustomFieldModal({
     return {}
   }, [dataType, currency, selectOptions])
 
-  const onLocalSubmit = useCallback(async () => {
+  const checkIfMigrationIsRequired = async () => {
     if (isSelect(data) && haveValueOptionChanged(selectOptions, data)) {
       const changedOptions = changedValueOptionList(selectOptions, data)
       const changedValues = changedOptions.map(opt => opt.old_value)
+      let optionValuesChangesTotal
 
       try {
         const result = await getOptionUsageCount({
@@ -219,9 +209,12 @@ export function useEditCustomFieldModal({
           values: changedValues
         }).unwrap()
 
-        setOptionValuesChangesTotal(
-          getOptionValueChanges({counts: result, mappings: changedOptions})
-        )
+        optionValuesChangesTotal = wrapOptionValueChanges({
+          counts: result,
+          mappings: changedOptions
+        })
+
+        setOptionValuesChangesTotal(optionValuesChangesTotal)
       } catch (err: unknown) {
         setError(
           extractApiError(
@@ -231,8 +224,31 @@ export function useEditCustomFieldModal({
             })
           )
         )
+        // migration required and there was a problem getting
+        // information about the migration!
+        return true
+      } // catch
+
+      if (
+        optionValuesChangesTotal &&
+        optionValuesChangesTotal.total_count > 0
+      ) {
+        return true
       }
+    } // isSelect() && haveValueOptionChanges()
+
+    return false
+  }
+
+  const onLocalSubmit = useCallback(async () => {
+    const isMigrationRequired = await checkIfMigrationIsRequired()
+    if (isMigrationRequired) {
+      // won't submit this form is migration is required
+      return
     }
+
+    // continue only if no migration is required
+
     const config = buildConfig()
 
     const updatedData: CustomFieldUpdate = {
@@ -298,93 +314,3 @@ export function useEditCustomFieldModal({
 }
 
 export default useEditCustomFieldModal
-
-function isSelect(data?: CustomFieldItem): boolean {
-  if (!data) {
-    return false
-  }
-
-  if (data.type_handler != "multiselect" && data.type_handler != "select") {
-    return false
-  }
-
-  return true
-}
-
-function haveValueOptionChanged(
-  options: SelectOption[],
-  data?: CustomFieldItem
-): boolean {
-  if (!data) {
-    return false
-  }
-
-  const initialOptions = data.config.options as SelectOption[]
-  if (initialOptions.length !== options.length) {
-    return true
-  }
-
-  for (let i = 0; i < options.length; i++) {
-    if (initialOptions[i].value !== options[i].value) {
-      return true
-    }
-  }
-
-  return false
-}
-
-function changedValueOptionList(
-  options: SelectOption[],
-  data?: CustomFieldItem
-): OptionValueMapping[] {
-  let arr: OptionValueMapping[] = []
-
-  if (!data) {
-    return arr
-  }
-
-  const initialOptions = data.config.options as SelectOption[]
-  if (initialOptions.length !== options.length) {
-    return arr
-  }
-
-  for (let i = 0; i < options.length; i++) {
-    if (initialOptions[i].value !== options[i].value) {
-      arr.push({
-        old_value: initialOptions[i].value,
-        new_value: options[i].value
-      })
-    }
-  }
-
-  return arr
-}
-
-interface GetOptionValuesArgs {
-  counts: Record<string, number>
-  mappings: OptionValueMapping[]
-}
-
-function getOptionValueChanges({
-  counts,
-  mappings
-}: GetOptionValuesArgs): OptionValuesChangesTotal {
-  let arr: OptionValueMappingWithCount[] = []
-  let total = 0
-
-  for (let i = 0; i < mappings.length; i++) {
-    const count = counts[mappings[i].old_value]
-    const entry = {
-      new_value: mappings[i].new_value,
-      old_value: mappings[i].old_value,
-      count: count
-    }
-    arr.push(entry)
-    total += count
-  }
-
-  return {
-    mappings: arr,
-    total_count: total
-  }
-}

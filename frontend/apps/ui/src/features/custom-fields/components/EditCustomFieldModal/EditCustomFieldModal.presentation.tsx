@@ -18,6 +18,8 @@ import {
   TextInput
 } from "@mantine/core"
 import {useTranslation} from "react-i18next"
+import Migration from "./Migration"
+import type {OptionValuesChangesTotal} from "./types"
 
 interface EditCustomFieldModalPresentationProps {
   // Modal state
@@ -26,6 +28,7 @@ interface EditCustomFieldModalPresentationProps {
 
   // Form state
   name: string
+  optionValuesChangesTotal: OptionValuesChangesTotal | null
   dataType: CustomFieldDataType
   currency: CurrencyType
   owner: Owner
@@ -60,6 +63,7 @@ export function EditCustomFieldModalPresentation({
   opened,
   onClose,
   name,
+  optionValuesChangesTotal,
   dataType,
   currency,
   owner,
@@ -78,6 +82,8 @@ export function EditCustomFieldModalPresentation({
   onCancel
 }: EditCustomFieldModalPresentationProps) {
   const {t} = useTranslation()
+  const isMigrationRequired =
+    optionValuesChangesTotal && optionValuesChangesTotal.total_count > 0
 
   return (
     <Modal
@@ -127,6 +133,10 @@ export function EditCustomFieldModalPresentation({
           initialOptions={selectOptions.length > 0 ? selectOptions : undefined}
           disabled={isUpdating}
         />
+      )}
+
+      {isMigrationRequired && (
+        <Migration optionValuesChangesTotal={optionValuesChangesTotal} />
       )}
 
       <OwnerSelect value={owner} onChange={onOwnerChange} />

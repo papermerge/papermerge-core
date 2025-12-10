@@ -18,7 +18,7 @@ class SelectTypeHandler(CustomFieldTypeHandler[SelectConfig]):
         return SelectConfig
 
     def to_storage(self, value: Any, config: SelectConfig) -> CustomFieldValueData:
-        if value is None:
+        if value is None or value == "":
             return CustomFieldValueData(raw=None, sortable=None, metadata={})
 
         str_value = str(value)
@@ -51,9 +51,7 @@ class SelectTypeHandler(CustomFieldTypeHandler[SelectConfig]):
         return data.raw
 
     def validate(self, value: Any, config: SelectConfig) -> ValidationResult:
-        if value is None:
-            if config.required:
-                return ValidationResult(is_valid=False, error="Selection is required")
+        if value is None or value == "":
             return ValidationResult(is_valid=True)
 
         str_value = str(value)

@@ -1,7 +1,7 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {useCurrentDoc} from "@/features/document/hooks"
 import {setPanelComponent} from "@/features/ui/panelRegistry"
-import {Flex, Group, Loader} from "@mantine/core"
+import {Center, Flex, Group, Loader} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {useContext} from "react"
 import {useNavigate} from "react-router-dom"
@@ -195,7 +195,11 @@ export function Viewer({doc, docVer}: Args) {
   }
 
   if (!doc) {
-    return <Loader />
+    return (
+      <Center h="100%">
+        <Loader />
+      </Center>
+    )
   }
 
   if (!docVer) {
@@ -203,7 +207,11 @@ export function Viewer({doc, docVer}: Args) {
   }
 
   if (!allPreviewsAreAvailable) {
-    return <Loader />
+    return (
+      <Center h="100%">
+        <Loader />
+      </Center>
+    )
   }
 
   return (

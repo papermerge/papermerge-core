@@ -463,40 +463,8 @@ async def test_set_empty_value_for_select_type(
     If CF of type Select receives empty string (i.e. "") as value
     it will clear current selection.
     """
-    owner = types.Owner.create_from(user_id=user.id)
-    field = await make_custom_field_select(
-        name="Priority",
-        options=[
-            cf_types.opt(value="high", label="High"),
-            cf_types.opt(value="medium", label="Medium"),
-            cf_types.opt(value="low", label="Low")
-        ],
-        owner=owner
-    )
-
-    dt_data = dt_schema.CreateDocumentType(
-        name="Task",
-        custom_field_ids=[field.id],
-        owner_type=types.OwnerType.USER,
-        owner_id=user.id
-    )
-    doc_type = await dt_dbapi.create_document_type(db_session, data=dt_data)
-
-
-    doc = orm.Document(
-        id=uuid.uuid4(),
-        ctype="document",
-        title="task-1.pdf",
-        document_type_id=doc_type.id,
-        parent_id=user.home_folder_id,
-    )
-    db_session.add(doc)
-    await db_session.flush()
-
-    await ownership_api.set_owner(
-        session=db_session,
-        resource=types.NodeResource(id=doc.id),
-        owner=owner
+    doc, field = await _create_doc_with_prio_cf(
+        db_session, user, make_custom_field_select
     )
 
     value_data = cf_schema.SetCustomFieldValue(
@@ -529,8 +497,33 @@ async def test_set_empty_value_for_multiselect_type(
     If CF of type MultiSelect receives empty string (i.e. "") as value
     it will clear current selection.
     """
+    doc, field = await _create_doc_with_prio_cf(
+        db_session, user, make_custom_field_multiselect
+    )
+    value_data = cf_schema.SetCustomFieldValue(
+        field_id=field.id,
+        value=["high"]
+    )
+
+    await cf_dbapi.set_custom_field_value(db_session, doc.id, value_data)
+    cfv = await cf_dbapi.get_custom_field_value(db_session, doc.id, field.id)
+    # check current value
+    assert cfv.value.raw == ["high"]
+
+    value_data = cf_schema.SetCustomFieldValue(
+        field_id=field.id,
+        value=""  # <--- SET EMPTY VALUE!
+    )
+    # 1. no validation error
+    await cf_dbapi.set_custom_field_value(db_session, doc.id, value_data)
+    cfv = await cf_dbapi.get_custom_field_value(db_session, doc.id, field.id)
+    # 2. selection was cleared
+    assert cfv.value.raw is None
+
+
+async def _create_doc_with_prio_cf(db_session, user, make_cf_select):
     owner = types.Owner.create_from(user_id=user.id)
-    field = await make_custom_field_multiselect(
+    field = await make_cf_select(
         name="Priority",
         options=[
             cf_types.opt(value="high", label="High"),
@@ -565,22 +558,4 @@ async def test_set_empty_value_for_multiselect_type(
         owner=owner
     )
 
-    value_data = cf_schema.SetCustomFieldValue(
-        field_id=field.id,
-        value=["high"]
-    )
-
-    await cf_dbapi.set_custom_field_value(db_session, doc.id, value_data)
-    cfv = await cf_dbapi.get_custom_field_value(db_session, doc.id, field.id)
-    # check current value
-    assert cfv.value.raw == ["high"]
-
-    value_data = cf_schema.SetCustomFieldValue(
-        field_id=field.id,
-        value=""  # <--- SET EMPTY VALUE!
-    )
-    # 1. no validation error
-    await cf_dbapi.set_custom_field_value(db_session, doc.id, value_data)
-    cfv = await cf_dbapi.get_custom_field_value(db_session, doc.id, field.id)
-    # 2. selection was cleared
-    assert cfv.value.raw is None
+    return doc, field

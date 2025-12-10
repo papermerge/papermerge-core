@@ -18,7 +18,7 @@ class MultiSelectTypeHandler(CustomFieldTypeHandler[MultiSelectConfig]):
         return MultiSelectConfig
 
     def to_storage(self, value: Any, config: MultiSelectConfig) -> CustomFieldValueData:
-        if value is None or value == []:
+        if value is None or value == [] or value == "":
             return CustomFieldValueData(raw=None, sortable=None, metadata={})
 
         # Ensure value is a list
@@ -69,12 +69,7 @@ class MultiSelectTypeHandler(CustomFieldTypeHandler[MultiSelectConfig]):
         return data.raw
 
     def validate(self, value: Any, config: MultiSelectConfig) -> ValidationResult:
-        if value is None or value == []:
-            if config.required:
-                return ValidationResult(
-                    is_valid=False,
-                    error="At least one selection is required"
-                )
+        if value is None or value == [] or value == "":
             return ValidationResult(is_valid=True)
 
         # Convert to list

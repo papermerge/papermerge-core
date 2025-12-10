@@ -89,10 +89,14 @@ export function CategorySelect({
     if (validRecentIds.size > 0) {
       const recentItems = recentCategories
         .filter(rc => validRecentIds.has(rc.id))
-        .map(rc => ({
-          value: rc.id,
-          label: rc.name
-        }))
+        .map(rc => {
+          // Look up current name from documentTypes (source of truth)
+          const currentCategory = documentTypes.find(dt => dt.id === rc.id)
+          return {
+            value: rc.id,
+            label: currentCategory?.name ?? rc.name // Fallback to stored name if not found
+          }
+        })
 
       options.push({
         group: t("category_select.recently_used", {

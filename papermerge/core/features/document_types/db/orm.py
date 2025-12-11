@@ -16,6 +16,7 @@ class DocumentTypeCustomField(Base):
     custom_field_id: Mapped[UUID] = mapped_column(
         ForeignKey("custom_fields.id"),
     )
+    position: Mapped[int] = mapped_column(default=0)  # NEW
 
 
 class DocumentType(Base, AuditColumns, OwnedResourceMixin):
@@ -25,5 +26,6 @@ class DocumentType(Base, AuditColumns, OwnedResourceMixin):
     name: Mapped[str]
     path_template: Mapped[str] = mapped_column(nullable=True)
     custom_fields: Mapped[list["CustomField"]] = relationship(  #  noqa: F821
-        secondary="document_types_custom_fields"
+        secondary="document_types_custom_fields",
+        order_by="DocumentTypeCustomField.position"
     )

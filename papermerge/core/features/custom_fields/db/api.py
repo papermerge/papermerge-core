@@ -877,7 +877,7 @@ async def get_document_custom_field_values(
         orm.DocumentTypeCustomField.custom_field_id == orm.CustomField.id
     ).where(
         orm.DocumentTypeCustomField.document_type_id == doc.document_type_id
-    )
+    ).order_by(orm.DocumentTypeCustomField.position)
 
     fields = (await session.execute(stmt)).scalars().all()
 

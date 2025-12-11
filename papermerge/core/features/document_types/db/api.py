@@ -419,17 +419,25 @@ async def create_document_type(
     else:
         cf_ids = data.custom_field_ids
 
-    stmt = select(orm.CustomField).where(orm.CustomField.id.in_(cf_ids))
-    custom_fields = (await session.execute(stmt)).scalars().all()
     dtype = DocumentType(
         id=uuid.uuid4(),
         name=data.name,
-        custom_fields=custom_fields,
         path_template=data.path_template,
     )
 
     try:
         session.add(dtype)
+        await session.flush()  # Get the dtype.id available
+
+        # Create association entries with positions
+        for position, cf_id in enumerate(cf_ids):
+            assoc = orm.DocumentTypeCustomField(
+                document_type_id=dtype.id,
+                custom_field_id=cf_id,
+                position=position
+            )
+            session.add(assoc)
+
         # Set ownership
         await ownership_api.set_owner(
             session=session,
@@ -441,7 +449,6 @@ async def create_document_type(
     except IntegrityError as e:
         await session.rollback()
         raise ValueError(f"Failed to create document type: {str(e)}")
-
 
     return dtype
 

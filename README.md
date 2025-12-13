@@ -143,3 +143,11 @@ yarn workspaces list
     uv sync --group dev
     uv pytest
 ```
+
+## Misc
+
+Switch to specific python version in your virtual environment:
+
+```commandline
+ uv sync --python 3.14
+```

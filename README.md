@@ -74,11 +74,8 @@ means that all data is restored to initial state and all documents are deleted.
 
 ### Backend
 
-Make sure you have installed [poetry](https://python-poetry.org/) version 2.1.
-Install all dependencies:
-
 ```
-$ poetry install -E pg
+$ uv sync
 ```
 
 Make sure you have the following environment variables set (e.g. with direnv):
@@ -92,7 +89,7 @@ export PAPERMERGE__MAIN__API_PREFIX='/api'
 Start BE with following command:
 
 ```
-$ poetry run task server
+$ uv run task server
 ```
 
 This command will start BE server on localhost port 8000.
@@ -138,4 +135,11 @@ To see all workspaces use:
 
 ```commandline
 yarn workspaces list
+```
+
+## Run test suite
+
+```commandline
+    uv sync --group dev
+    uv pytest
 ```

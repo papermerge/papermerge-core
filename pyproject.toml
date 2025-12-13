@@ -8,10 +8,8 @@ authors = [
 maintainers = [
     { name = "Eugen Ciur", email = "eugen@papermerge.com" }
 ]
-license = "Apache 2.0"
+license = "Apache-2.0"
 readme = "README.md"
-homepage = "https://www.papermerge.com/"
-documentation = "https://docs.papermerge.io/"
 classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
@@ -30,48 +28,56 @@ keywords = [
     "archives",
     "records"
 ]
-packages = [
-    { include = "papermerge/core" },
-]
-requires-python = ">=3.13,<4"
+requires-python = ">=3.13"
 dependencies = [
-    "redis (>=5.2, <6)",
-    "celery[gevent,redis] (>=5.5.3)",
-    "pyyaml (>=6.0.3)",
-    "python-magic (>=0.4.27)",
-    "uritemplate (>=4.2.0)",
-    "pdf2image (>=1.17.0)",
-    "uvicorn (>=0.38.0)",
-    "python-jose (>=3.5.0)",
-    "img2pdf (>=0.6.3)",
-    "passlib >=1.7.4",
-    "sqlalchemy (>=2.0.44)",
-    "typer (>=0.20.0)",
-    "rich (>=14.2.0)",
-    "pytz (>=2025.2)",
-    "pydantic-settings (>=2.12.0)",
-    "alembic (>=1.17.1)",
-    "fastapi[standard] (>=0.121.1)",
-    "taskipy (>=1.14.1)",
-    "asyncpg (>=0.30.0,<0.31.0)",
-    "aiofiles (>=24.1.0,<25.0.0)",
-    "psycopg2-binary (>=2.9.11)"
+    "redis",
+    "celery[gevent,redis]",
+    "pyyaml",
+    "python-magic",
+    "uritemplate",
+    "pdf2image",
+    "uvicorn",
+    "python-jose",
+    "img2pdf",
+    "passlib",
+    "sqlalchemy",
+    "typer",
+    "rich",
+    "pytz",
+    "pydantic-settings",
+    "alembic",
+    "fastapi[standard]",
+    "taskipy",
+    "asyncpg",
+    "aiofiles",
+    "psycopg2-binary",
 ]
 
 [project.urls]
-Tracker = "https://github.com/ciur/papermerge/issues"
-Source = "https://github.com/papermerge/papermerge-core"
-
+Homepage = "https://www.papermerge.com/"
+Documentation = "https://docs.papermerge.io/"
+Repository = "https://github.com/papermerge/papermerge-core"
+Issues = "https://github.com/ciur/papermerge/issues"
 
 [project.optional-dependencies]
-cloud = ["botocore (>=1.40.70)", "boto3 (>=1.40.70)", "cryptography (>=46.0.3)"]
+aws_s3 = [
+    "botocore",
+    "boto3",
+    "cryptography",
+]
 
-[tool.poetry.group.test]
-optional = true
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+]
 
-[tool.poetry.group.test.dependencies]
-pytest = "^9.0.2"
-pytest-asyncio = "^1.2.0"
+
+[project.scripts]
+papermerge-cli = "papermerge.cli:main"
+docs = "papermerge.core.cli.docs:app"
+sign_url = "papermerge.core.cli.cf_sign_url:app"
+
 
 [tool.taskipy.settings]
 use_vars = true
@@ -81,16 +87,9 @@ env_vars = "PAPERMERGE__MAIN__API_PREFIX=''"
 
 [tool.taskipy.tasks]
 test = { cmd = "{env_vars} pytest", cwd = "." }
-# run following commands from docker/dev only
 worker = "celery -A config worker -c 5"
 server = "fastapi dev papermerge/app.py"
 migrate = "alembic upgrade head"
-
-[project.scripts]
-papermerge-cli = "papermerge.cli:main"
-docs = 'papermerge.core.cli.docs:app'
-sign_url = 'papermerge.core.cli.cf_sign_url:app'
-
 
 [tool.ruff]
 target-version = "py311"
@@ -98,19 +97,21 @@ line-length = 88
 indent-width = 4
 
 [tool.ruff.lint]
-"select" = [
+select = [
     "F", # pyflakes
     "I001", # isort
     "UP", # pyupgrade
 ]
-"ignore" = [
+ignore = [
     "UP007"
 ]
 
-
 [build-system]
-requires = ["setuptools >= 61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["papermerge/core"]
 
 [tool.pytest.ini_options]
 testpaths = ["papermerge"]

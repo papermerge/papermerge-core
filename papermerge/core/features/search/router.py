@@ -4,8 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 
-from papermerge.core.features.auth.dependencies import require_scopes
-from papermerge.core.features.auth import scopes
+from papermerge.core import scopes
 from papermerge.core.features.search.db import api as search_dbapi
 from papermerge.core.db.engine import get_db
 from .schema import SearchQueryParams, SearchDocumentsByTypeResponse, \
@@ -36,7 +35,7 @@ logger = logging.getLogger(__name__)
     }
 )
 async def documents_search(
-    user: require_scopes(scopes.NODE_VIEW),
+    user: scopes.ViewNode,
     params: SearchQueryParams,
     db_session: AsyncSession = Depends(get_db)
 ):

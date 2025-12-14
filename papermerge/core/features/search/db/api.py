@@ -173,7 +173,6 @@ async def search_documents_by_type(
             cfv_alias = aliased(CustomFieldValue)
             sort_column = getattr(cfv_alias, handler.get_sort_column())
             config = handler.parse_config(cf.config or {})
-
             filter_expr = handler.get_filter_expression(
                 sort_column,
                 filter_spec.operator,

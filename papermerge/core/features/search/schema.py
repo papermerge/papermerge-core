@@ -8,6 +8,7 @@ from pydantic import (
     BaseModel,
     Field,
     field_validator,
+    model_validator,
     ConfigDict
 )
 
@@ -38,6 +39,11 @@ class CustomFieldOperator(str, Enum):
     # List operations
     IN = "in"  # value in list
     NOT_IN = "not_in"  # value not in list
+
+    # Multiselect
+    ANY = "any"
+    ALL = "all"
+    NOT = "not"
 
 
 class TagOperator(str, Enum):
@@ -213,11 +219,17 @@ class CustomFieldFilter(BaseModel):
     operator: CustomFieldOperator = Field(
         ...,
         description="Comparison operator (must be compatible with field type)",
-        examples=["contains", "eq", "gt", "gte"]
+        examples=["eq", "gt", "gte", "all", "any"]
     )
 
-    value: Union[str, int, float, bool, date] = Field(
-        ...,
+    values: Optional[List[str]] = Field(
+        default=None,
+        description="List of values",
+        examples=[["urgent", "2024"]]
+    )
+
+    value: Optional[Union[str, int, float, bool, date]] = Field(
+        default=None,
         description="Value to compare (type depends on field type)",
         examples=[
             "completed",
@@ -237,13 +249,23 @@ class CustomFieldFilter(BaseModel):
             raise ValueError('field_name cannot be empty')
         return cleaned
 
-    @field_validator('value')
-    @classmethod
-    def validate_value(cls, v: Any) -> Any:
-        """Validate value is not None"""
-        if v is None:
-            raise ValueError('value cannot be None')
-        return v
+    @model_validator(mode='after')
+    def validate_exactly_one_value_field(self) -> 'CustomFieldFilter':
+        """Ensure exactly one of 'value' or 'values' is provided."""
+        has_value = self.value is not None
+        has_values = self.values is not None and len(self.values) > 0
+
+        if has_value and has_values:
+            raise ValueError(
+                "Cannot specify both 'value' and 'values'; use one or the other"
+            )
+
+        if not has_value and not has_values:
+            raise ValueError(
+                "Must specify either 'value' or 'values'"
+            )
+
+        return self
 
 
 

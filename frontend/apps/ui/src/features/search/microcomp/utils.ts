@@ -141,8 +141,26 @@ export function autocompleteText(inputValue: string, val: string): string {
   return trimmed + val
 }
 
-type OperatorSymbol = "=" | "!=" | ">" | ">=" | "<" | "<="
-type OperatorText = "eq" | "ne" | "gt" | "gte" | "lt" | "lte"
+type OperatorSymbol =
+  | "="
+  | "!="
+  | ">"
+  | ">="
+  | "<"
+  | "<="
+  | "all"
+  | "any"
+  | "not"
+type OperatorText =
+  | "eq"
+  | "ne"
+  | "gt"
+  | "gte"
+  | "lt"
+  | "lte"
+  | "all"
+  | "any"
+  | "not"
 
 const SYMBOL_MAP: Record<OperatorSymbol, OperatorText> = {
   "=": "eq",
@@ -150,7 +168,10 @@ const SYMBOL_MAP: Record<OperatorSymbol, OperatorText> = {
   ">": "gt",
   ">=": "gte",
   "<": "lt",
-  "<=": "lte"
+  "<=": "lte",
+  all: "all",
+  not: "not",
+  any: "any"
 } as const
 
 export function operatorSym2Text(sym: string): OperatorText | null {

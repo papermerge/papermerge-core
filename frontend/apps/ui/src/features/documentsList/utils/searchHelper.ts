@@ -68,11 +68,12 @@ export function buildSearchQueryParams({
 
         break
 
-      case "cf":
+      case "md":
         const newCF = {
           field_name: filter.fieldName,
           operator: operatorSym2Text(filter.operator || "="),
-          value: filter.value
+          value: filter.value,
+          values: filter.values
         } as CustomFieldFilter
 
         if (!filterList.custom_fields) {
@@ -80,10 +81,11 @@ export function buildSearchQueryParams({
         } else {
           filterList.custom_fields.push(newCF)
         }
+        break
 
       // We'll add custom_field case later
       default:
-        console.warn(`Unknown filter type: ${filter.type}`)
+        console.warn(`Unknown filter type: ${filter}`)
     }
   }
 
@@ -132,6 +134,7 @@ export function extractSingleCategoryId(filters: Filter[]): string | null {
  * so that only on change of complete filters FE will send search request to BE
  */
 export function uniqueSearchString(filters: Filter[]): string {
+  console.log(filters)
   const onlyCompleteFilters = filters.filter(f => {
     if (f.type == "fts" && f.value) {
       return true
@@ -145,7 +148,7 @@ export function uniqueSearchString(filters: Filter[]): string {
       return true
     }
 
-    if (f.type == "cf" && f.value && f.fieldName && f.operator) {
+    if (f.type == "md" && (f.value || f.values) && f.fieldName && f.operator) {
       return true
     }
 
@@ -158,9 +161,11 @@ export function uniqueSearchString(filters: Filter[]): string {
   const values1 = onlyCompleteFilters.map(f => f.value)
   const values2 = onlyCompleteFilters.map(f => f.values)
 
-  return JSON.stringify({
+  const ret = JSON.stringify({
     operators,
     values1,
     values2
   })
+
+  return ret
 }

@@ -35,6 +35,10 @@ export default function CustomFieldMultiSelectFilter({index}: Args) {
     dispatch(updateFilter({index, updates: {operator}}))
   }
 
+  const handleValueChange = (values: string[]) => {
+    dispatch(updateFilter({index, updates: {values}}))
+  }
+
   return (
     <Box className={styles.tokenContainer} onClick={e => e.stopPropagation()}>
       <Group gap={0}>
@@ -44,7 +48,7 @@ export default function CustomFieldMultiSelectFilter({index}: Args) {
       {cfNameValue && (
         <OperatorSelect item={filter} onOperatorChange={handleOperatorChange} />
       )}
-      {cfNameValue && <MultiSelect data={data} />}
+      {cfNameValue && <MultiSelect data={data} onChange={handleValueChange} />}
       <ActionIcon
         size="xs"
         className={styles.removeButton}

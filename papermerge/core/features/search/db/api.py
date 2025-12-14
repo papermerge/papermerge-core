@@ -266,39 +266,66 @@ async def search_documents(
                 )
             )
 
-    # =========================================================================
-    # Step 8: Apply sorting
-    # =========================================================================
-    if include_custom_fields:
-        base_query = _apply_sorting_with_custom_fields(
-            base_query,
-            params,
-            custom_fields
-        )
-    else:
-        base_query = _apply_sorting_simple(base_query, params)
+    # Note: We'll apply sorting later, after getting distinct document IDs
 
     # =========================================================================
-    # Step 9: Get total count
+    # Step 8: Get total count
     # =========================================================================
     count_result = await db_session.execute(count_query)
     total_count = count_result.scalar() or 0
 
     # =========================================================================
-    # Step 10: Apply pagination and get document IDs
+    # Step 9: Get distinct document IDs (without ordering yet)
     # =========================================================================
     offset = (params.page_number - 1) * params.page_size
 
-    paginated_doc_ids_query = (
+    # First get distinct document IDs without ordering
+    # (to avoid PostgreSQL "SELECT DISTINCT, ORDER BY" conflict)
+    distinct_ids_query = (
         base_query
         .with_only_columns(DocumentSearchIndex.document_id)
         .distinct()
-        .limit(params.page_size)
-        .offset(offset)
     )
 
-    doc_ids_result = await db_session.execute(paginated_doc_ids_query)
-    paginated_doc_ids = [row[0] for row in doc_ids_result.all()]
+    distinct_ids_result = await db_session.execute(distinct_ids_query)
+    all_distinct_ids = [row[0] for row in distinct_ids_result.all()]
+
+    if not all_distinct_ids:
+        num_pages = math.ceil(total_count / params.page_size) if total_count > 0 else 0
+        return search_schema.SearchDocumentsResponse(
+            items=[],
+            page_number=params.page_number,
+            page_size=params.page_size,
+            num_pages=num_pages,
+            total_items=total_count,
+            custom_fields=custom_fields_info if include_custom_fields else [],
+            document_type_id=document_type_ids[0] if len(document_type_ids) == 1 else None
+        )
+
+    # =========================================================================
+    # Step 10: Apply sorting and pagination to the distinct IDs
+    # =========================================================================
+    # Build a new query with just the search index for these document IDs
+    sorted_query = (
+        select(DocumentSearchIndex.document_id)
+        .where(DocumentSearchIndex.document_id.in_(all_distinct_ids))
+    )
+
+    # Apply sorting
+    if include_custom_fields:
+        sorted_query = _apply_sorting_with_custom_fields(
+            sorted_query,
+            params,
+            custom_fields
+        )
+    else:
+        sorted_query = _apply_sorting_simple(sorted_query, params)
+
+    # Apply pagination
+    sorted_query = sorted_query.limit(params.page_size).offset(offset)
+
+    sorted_result = await db_session.execute(sorted_query)
+    paginated_doc_ids = [row[0] for row in sorted_result.all()]
 
     if not paginated_doc_ids:
         num_pages = math.ceil(total_count / params.page_size) if total_count > 0 else 0
@@ -381,12 +408,12 @@ async def search_documents(
             orm.Node.updated_by == updated_user.id
         )
         .outerjoin(
-            orm.NodeTags,
-            orm.NodeTags.node_id == DocumentSearchIndex.document_id
+            orm.NodeTagsAssociation,
+            orm.NodeTagsAssociation.node_id == DocumentSearchIndex.document_id
         )
         .outerjoin(
             orm.Tag,
-            orm.Tag.id == orm.NodeTags.tag_id
+            orm.Tag.id == orm.NodeTagsAssociation.tag_id
         )
         .where(DocumentSearchIndex.document_id.in_(paginated_doc_ids))
     )

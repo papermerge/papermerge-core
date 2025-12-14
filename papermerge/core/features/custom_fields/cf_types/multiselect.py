@@ -1,6 +1,7 @@
 from typing import Any, Type
 
 from sqlalchemy.sql import ColumnElement
+from sqlalchemy import cast, ARRAY, String
 
 from .base import CustomFieldTypeHandler, ValidationResult
 from .config import MultiSelectConfig

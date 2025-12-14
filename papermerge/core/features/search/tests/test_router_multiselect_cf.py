@@ -271,8 +271,8 @@ async def test_search_documents_by_multiselect_cf_with_eq_operator(
             "custom_fields": [
                 {
                     "field_name": "Teams",
-                    "operator": "eq",
-                    "value": "frontend"
+                    "operator": "any",
+                    "values": ["frontend"]
                 }
             ]
         },
@@ -386,8 +386,8 @@ async def test_search_documents_by_multiselect_cf_multiple_filters(
             "custom_fields": [
                 {
                     "field_name": "Assigned Dept",
-                    "operator": "contains",
-                    "value": "hr"
+                    "operator": "any",
+                    "values": ["hr"]
                 },
                 {
                     "field_name": "Priority",
@@ -470,8 +470,8 @@ async def test_search_no_results_when_multiselect_value_not_found(
             "custom_fields": [
                 {
                     "field_name": "Categories",
-                    "operator": "contains",
-                    "value": "marketing"
+                    "operator": "all",
+                    "values": ["marketing"]
                 }
             ]
         },

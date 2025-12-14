@@ -488,42 +488,36 @@ class DocumentCFV(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-# ============================================================================
-# Search Responses
-# ============================================================================
-
 class SearchDocumentsResponse(BaseModel):
     """
-    Response for general search (across all document types).
-    Similar to /documents/ endpoint.
-    Does NOT include custom field values since documents may have different types.
+    This response includes:
+    - items: List of DocumentCFV (documents with optional custom field values)
+    - custom_fields: Metadata about which custom fields are included in the response
+                    (empty if no custom fields are relevant to the search)
+    - document_type_id: Set when exactly one document type is filtered
+                       (for backwards compatibility)
+
+    The custom_fields list in response is the union of:
+    1. All custom fields from document types specified in category filters
+    2. All custom fields referenced in custom_field filters
+    (deduplicated by custom field ID)
     """
-    items: List[FlatDocument] = Field(..., description="Search results")
+    items: List[DocumentCFV] = Field(..., description="Search results")
     page_number: int = Field(..., ge=1, description="Current page number")
     page_size: int = Field(..., ge=1, description="Items per page")
     num_pages: int = Field(..., ge=0, description="Total number of pages")
     total_items: int = Field(..., ge=0, description="Total number of results")
-    document_type_id: Optional[UUID] = None
 
-    model_config = ConfigDict(from_attributes=True)
-
-
-
-class SearchDocumentsByTypeResponse(BaseModel):
-    """
-    Response for document type-specific search.
-    Similar to /documents/type/{document_type_id}/ endpoint.
-    Includes custom field values and metadata.
-    """
-    items: List[DocumentCFV] = Field(..., description="Search results with custom fields")
-    page_number: int = Field(..., ge=1, description="Current page number")
-    page_size: int = Field(..., ge=1, description="Items per page")
-    num_pages: int = Field(..., ge=0, description="Total number of pages")
-    total_items: int = Field(..., ge=0, description="Total number of results")
-    document_type_id: UUID
+    # NEW: Custom fields metadata (union of all relevant custom fields)
     custom_fields: List[CustomFieldInfo] = Field(
-        ...,
-        description="Custom fields metadata for this document type"
+        default_factory=list,
+        description="Custom fields metadata included in this response"
+    )
+
+    # For backwards compatibility - set when exactly one document type is filtered
+    document_type_id: Optional[UUID] = Field(
+        None,
+        description="Document type ID (set when filtering by exactly one category)"
     )
 
     model_config = ConfigDict(from_attributes=True)

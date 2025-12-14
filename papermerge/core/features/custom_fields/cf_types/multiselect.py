@@ -122,50 +122,56 @@ class MultiSelectTypeHandler(CustomFieldTypeHandler[MultiSelectConfig]):
         self,
         column: ColumnElement,
         operator: str,
-        value: list[str],
+        value: list[str] | str,
         config: MultiSelectConfig,
     ) -> ColumnElement:
         """
         Build SQLAlchemy filter expression for multiselect fields.
 
         For multiselect, the raw value is stored as a JSONB array: ["hr", "dev", "legal"]
-        The `value` parameter is the list of values to filter by.
+        The sortable value is stored as comma-separated sorted string: "dev,hr,legal"
 
         Operators:
         - "any": Match documents where stored array contains ANY of the filter values
         - "all": Match documents where stored array contains ALL of the filter values
         - "not": Match documents where stored array contains NONE of the filter values
+        - "eq": Match documents where sortable value exactly equals the value
+        - "contains": Match documents where sortable value contains the substring
+        - Other operators: Delegate to base class implementation on sortable column
         """
-        # For multiselect, we need to access the JSONB value['raw'] column
-        # The `column` passed here is the generated column (value_text), but we need
-        # to access the parent table's `value` JSONB column.
-        #
+        # For array-based operators, we need to access the JSONB value['raw'] column
+        # The `column` passed here is value_text (the generated sortable column)
         # We can get the table from the column and access the value column
         table = column.table
         raw_json_array = table.c.value["raw"]
 
-        if not value or not isinstance(value, list):
-            # If no filter values, return a true condition (match all)
-            return column.isnot(None) | column.is_(None)  # Always true
+        # Handle list-based operators (any, all, not)
+        if operator in ("any", "all", "not"):
+            if not value or not isinstance(value, list):
+                # If no filter values, return a true condition (match all)
+                return column.isnot(None) | column.is_(None)  # Always true
 
-        if operator == "any":
-            # Match if ANY of the filter values are in the stored array
-            # PostgreSQL: value->'raw' ?| array['hr', 'dev']
-            # Need to cast the Python list to PostgreSQL array type
-            pg_array = cast(value, ARRAY(String))
-            return raw_json_array.op('?|')(pg_array)
+            if operator == "any":
+                # Match if ANY of the filter values are in the stored array
+                # PostgreSQL: value->'raw' ?| array['hr', 'dev']
+                # Need to cast the Python list to PostgreSQL array type
+                pg_array = cast(value, ARRAY(String))
+                return raw_json_array.op('?|')(pg_array)
 
-        elif operator == "all":
-            # Match if ALL of the filter values are in the stored array
-            # PostgreSQL: value->'raw' @> '["hr", "dev"]'::jsonb
-            # SQLAlchemy: Use contains for JSONB array containment
-            return raw_json_array.contains(value)
+            elif operator == "all":
+                # Match if ALL of the filter values are in the stored array
+                # PostgreSQL: value->'raw' @> '["hr", "dev"]'::jsonb
+                # SQLAlchemy: Use contains for JSONB array containment
+                return raw_json_array.contains(value)
 
-        elif operator == "not":
-            # Match if NONE of the filter values are in the stored array
-            # This is the negation of "any"
-            # PostgreSQL: NOT (value->'raw' ?| array['hr', 'dev'])
-            pg_array = cast(value, ARRAY(String))
-            return ~raw_json_array.op('?|')(pg_array)
+            elif operator == "not":
+                # Match if NONE of the filter values are in the stored array
+                # This is the negation of "any"
+                # PostgreSQL: NOT (value->'raw' ?| array['hr', 'dev'])
+                pg_array = cast(value, ARRAY(String))
+                return ~raw_json_array.op('?|')(pg_array)
+
+        # For other operators (eq, contains, etc.), use the sortable column (value_text)
+        # and delegate to base class implementation
         else:
-            raise ValueError(f"Unsupported operator for multiselect: {operator}")
+            return super().get_filter_expression(column, operator, value, config)

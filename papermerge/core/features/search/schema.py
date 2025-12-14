@@ -268,7 +268,6 @@ class CustomFieldFilter(BaseModel):
         return self
 
 
-
 class OwnerFilter(BaseModel):
     type: Optional[OwnerType] = Field(
         OwnerType.USER,

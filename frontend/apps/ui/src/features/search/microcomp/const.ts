@@ -6,13 +6,13 @@ export const TAG_OP = [TAG_OP_ALL, TAG_OP_ANY, TAG_OP_NOT]
 export const TAG_IMPLICIT_OPERATOR = TAG_OP_ALL
 export const CATEGORY = "cat"
 export const CATEGORY_IMPLICIT_OPERATOR = "any"
-export const CUSTOM_FIELD = "cf"
+export const CUSTOM_FIELD = "md"
 export const CUSTOM_FIELD_IMPLICIT_OPERATOR = "="
 
 export const FILTERS = [
   "cat:", // Category
   "tag:",
-  "cf:",
+  "md:",
   "title:",
   "created_at:",
   "created_by:",
@@ -28,4 +28,9 @@ export const OPERATOR_TEXT = [
   "iContains:",
   "startsWith:",
   "iStartsWith:"
+]
+export const OPERATOR_MULTISELECT = [
+  {value: "all", label: "All"},
+  {value: "any", label: "Any"},
+  {value: "not", label: "Not"}
 ]

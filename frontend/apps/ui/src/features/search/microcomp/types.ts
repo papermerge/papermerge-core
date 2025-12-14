@@ -17,7 +17,7 @@ export type FilterType =
   | "fts" // Free text / full text search
   | "cat" // Category
   | "tag" // Tag
-  | "cf" // Custom Field
+  | "md" // Metadata / Custom Field
   | "title"
   | "created_at"
   | "created_by"
@@ -26,6 +26,8 @@ export type FilterType =
   | "owner"
 
 export type TagOperator = "any" | "all" | "not"
+
+export type MultiSelectOperator = "any" | "all" | "not"
 
 export type CategoryOperator = "any" | "not"
 
@@ -79,11 +81,12 @@ export interface TagFilter extends BasicFilter {
 }
 
 export interface CustomFieldFilter extends BasicFilter {
-  type: "cf"
+  type: "md"
   fieldName?: string
   operator?: CustomFieldOperator
   typeHandler?: CustomFieldType
   value?: string | number
+  config?: Record<any, any>
   id?: string
 }
 

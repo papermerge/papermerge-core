@@ -11,27 +11,6 @@ interface Args {
 }
 
 export default function AutocompleteOptions({suggestions}: Args) {
-  /**
-  const categoryID = useAppSelector(selectDocumentCategoryID)
-  const {data: tags = [], isSuccess: tagsAreLoaded} = useGetTagsQuery(
-    hasThisTypeSuggestion({suggestions, type: "tag"}) ? undefined : skipToken
-  )
-
-  const {data: categories = [], isSuccess: categoriesAreLoaded} =
-    useGetDocumentTypesQuery(
-      hasThisTypeSuggestion({suggestions, type: "category"})
-        ? undefined
-        : skipToken
-    )
-
-  const {data: customFields = [], isSuccess: customFieldsAreLoaded} =
-    useGetCustomFieldsQuery(
-      hasThisTypeSuggestion({suggestions, type: "customField"})
-        ? {document_type_id: categoryID}
-        : skipToken
-    )
-
-  */
   let empty: ReactNode = (
     <Combobox.Option value="">
       <Loader />

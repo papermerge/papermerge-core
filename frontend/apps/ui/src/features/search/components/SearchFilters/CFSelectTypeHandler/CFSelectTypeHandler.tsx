@@ -20,7 +20,7 @@ export default function CFSelectTypeHandler({index}: Args) {
   return (
     <Box className={styles.tokenContainer} onClick={e => e.stopPropagation()}>
       <Group gap={0}>
-        <Text c={"green"}>cf:</Text>
+        <Text c={"green"}>md:</Text>
         <SelectCustomField index={index} />
       </Group>
       <ActionIcon

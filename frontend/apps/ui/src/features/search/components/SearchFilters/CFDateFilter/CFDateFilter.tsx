@@ -56,7 +56,7 @@ export default function CFDateFilter({index}: Args) {
   return (
     <Box className={styles.tokenContainer} onClick={e => e.stopPropagation()}>
       <Group gap={0}>
-        <Text c={"blue"}>cf:</Text>
+        <Text c={"blue"}>md:</Text>
         <SelectCustomField index={index} />
         <CFNumericOperator
           item={filter}

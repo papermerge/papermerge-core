@@ -37,6 +37,7 @@ export default function SelectCustomField({index}: Args) {
         updates: {
           typeHandler: cf.type_handler,
           fieldName: cf.name,
+          config: cf.config,
           id: cf.id
         }
       })

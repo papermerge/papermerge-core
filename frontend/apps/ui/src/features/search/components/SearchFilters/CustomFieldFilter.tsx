@@ -1,6 +1,7 @@
 import {useAppSelector} from "@/app/hooks"
 import {CustomFieldFilter} from "@/features/search/microcomp/types"
 import CFDateFilter from "./CFDateFilter"
+import CFMultiSelectFilter from "./CFMultiSelectFilter"
 import CFNumericFilter from "./CFNumericFilter"
 import CFSelectTypeHandler from "./CFSelectTypeHandler"
 
@@ -30,6 +31,10 @@ export default function CustomFieldTokenComponent({index}: Args) {
 
   if (filter.typeHandler == "date") {
     return <CFDateFilter index={index} />
+  }
+
+  if (filter.typeHandler == "multiselect") {
+    return <CFMultiSelectFilter index={index} />
   }
 
   return <>Unknown Custom Field Token: {filter.typeHandler}</>

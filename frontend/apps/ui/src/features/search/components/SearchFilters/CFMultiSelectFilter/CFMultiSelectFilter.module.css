@@ -1,0 +1,36 @@
+.tokenContainer {
+  display: inline-flex;
+  align-items: center;
+  background-color: #f0f0f0;
+  border-radius: 0.5rem;
+  padding: 2px 8px;
+  border: 1px solid #d0d0d0;
+  position: relative; /* Added for absolute positioning of remove button */
+}
+
+.removeButton {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #dc3545;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border: 1px solid white;
+  padding: 0;
+}
+
+.tokenContainer:hover .removeButton {
+  opacity: 1;
+}
+
+.removeButton:hover {
+  background-color: #c82333;
+}

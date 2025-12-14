@@ -152,11 +152,10 @@ class MultiSelectTypeHandler(CustomFieldTypeHandler[MultiSelectConfig]):
                 return column.isnot(None) | column.is_(None)  # Always true
 
             if operator == "any":
-                # Match if ANY of the filter values are in the stored array
-                # PostgreSQL: value->'raw' ?| array['hr', 'dev']
-                # Need to cast the Python list to PostgreSQL array type
-                pg_array = cast(value, ARRAY(String))
-                return raw_json_array.op('?|')(pg_array)
+                # Match if stored array is a subset of filter values
+                # (all stored values must be in the filter list)
+                # PostgreSQL: value->'raw' <@ '["hr", "dev"]'::jsonb
+                return raw_json_array.contained_by(value)
 
             elif operator == "all":
                 # Match if ALL of the filter values are in the stored array

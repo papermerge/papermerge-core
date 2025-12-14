@@ -11,7 +11,7 @@ import {ActionIcon, Box, Group, Select, Text} from "@mantine/core"
 import {DatePickerInput, type DateValue} from "@mantine/dates"
 import {IconX} from "@tabler/icons-react"
 import {format, parse} from "date-fns"
-import SelectCustomField from "../SelectCustomField"
+import SelectCustomField from "../SelectCustomField/SelectCustomField"
 import styles from "./CFDateFilter.module.css"
 
 interface Args {

@@ -66,6 +66,7 @@
   transition: all 0.2s ease;
   flex-wrap: wrap;
   min-height: 42px;
+  width: 35rem;
   overflow-y: auto;
   overflow-y: hidden;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);

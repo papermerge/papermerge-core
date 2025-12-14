@@ -4,6 +4,7 @@
   background-color: #f0f0f0;
   border-radius: 0.5rem;
   padding: 2px 8px;
+  min-width: 30rem;
   border: 1px solid #d0d0d0;
   position: relative; /* Added for absolute positioning of remove button */
 }

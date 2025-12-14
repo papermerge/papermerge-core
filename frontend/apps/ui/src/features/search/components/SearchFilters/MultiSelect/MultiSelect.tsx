@@ -1,19 +1,20 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import {OPERATOR_MULTISELECT} from "@/features/search/microcomp/const"
+
 import type {MultiSelectOperator} from "@/features/search/microcomp/types"
 import {CustomFieldFilter} from "@/features/search/microcomp/types"
 import {removeFilter, updateFilter} from "@/features/search/storage/search"
 import {ActionIcon, Box, Group, MultiSelect, Select, Text} from "@mantine/core"
 import {IconX} from "@tabler/icons-react"
 import SelectCustomField from "../SelectCustomField"
-import styles from "./CFMultiSelectFilter.module.css"
+import {useSelectCustomField} from "../SelectCustomField/useSelectCustomField"
+import styles from "./MultiSelect.module.css"
 import {MultiSelectConfig} from "./types"
 
 interface Args {
   index: number
 }
 
-export default function CFMultiSelectFilter({index}: Args) {
+export default function CustomFieldMultiSelectFilter({index}: Args) {
   const dispatch = useAppDispatch()
   const filter = useAppSelector(
     state => state.search.filters[index]
@@ -23,6 +24,7 @@ export default function CFMultiSelectFilter({index}: Args) {
   const data = options.map(o => {
     return {label: o.label, value: o.value}
   })
+  const {value: cfNameValue} = useSelectCustomField(index)
 
   const handleRemoveClick = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -39,16 +41,14 @@ export default function CFMultiSelectFilter({index}: Args) {
         <Text c={"green"}>md:</Text>
         <SelectCustomField index={index} />
       </Group>
-      <CFMultiSelectOperatorDropDown
-        item={filter}
-        onOperatorChange={handleOperatorChange}
-      />
-      <MultiSelect data={data} />
+      {cfNameValue && (
+        <OperatorSelect item={filter} onOperatorChange={handleOperatorChange} />
+      )}
+      {cfNameValue && <MultiSelect data={data} />}
       <ActionIcon
         size="xs"
         className={styles.removeButton}
         onClick={handleRemoveClick}
-        aria-label="Remove token"
       >
         <IconX size={10} stroke={3} />
       </ActionIcon>
@@ -56,15 +56,12 @@ export default function CFMultiSelectFilter({index}: Args) {
   )
 }
 
-interface CFMultiSelectOperatorDropDownArgs {
+interface OperatorSelectArgs {
   item: CustomFieldFilter
   onOperatorChange?: (operator: MultiSelectOperator) => void
 }
 
-function CFMultiSelectOperatorDropDown({
-  item,
-  onOperatorChange
-}: CFMultiSelectOperatorDropDownArgs) {
+function OperatorSelect({item, onOperatorChange}: OperatorSelectArgs) {
   const handleChange = (value: string | null) => {
     if (value && onOperatorChange) {
       onOperatorChange(value as MultiSelectOperator)
@@ -81,3 +78,9 @@ function CFMultiSelectOperatorDropDown({
     />
   )
 }
+
+const OPERATOR_MULTISELECT = [
+  {value: "all", label: "All"},
+  {value: "any", label: "Any"},
+  {value: "not", label: "Not"}
+]

@@ -8,7 +8,7 @@ import {
 import {removeFilter, updateFilter} from "@/features/search/storage/search"
 import {ActionIcon, Box, Group, NumberInput, Select, Text} from "@mantine/core"
 import {IconX} from "@tabler/icons-react"
-import SelectCustomField from "../SelectCustomField"
+import SelectCustomField from "../SelectCustomField/SelectCustomField"
 import styles from "./CFNumericFilter.module.css"
 
 interface Args {

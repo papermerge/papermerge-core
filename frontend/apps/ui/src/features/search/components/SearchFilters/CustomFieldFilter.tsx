@@ -1,9 +1,9 @@
 import {useAppSelector} from "@/app/hooks"
 import {CustomFieldFilter} from "@/features/search/microcomp/types"
 import CFDateFilter from "./CFDateFilter"
-import CFMultiSelectFilter from "./CFMultiSelectFilter"
 import CFNumericFilter from "./CFNumericFilter"
 import CFSelectTypeHandler from "./CFSelectTypeHandler"
+import CFMultiSelectFilter from "./MultiSelect"
 
 interface Args {
   index: number

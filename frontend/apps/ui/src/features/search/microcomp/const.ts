@@ -29,8 +29,3 @@ export const OPERATOR_TEXT = [
   "startsWith:",
   "iStartsWith:"
 ]
-export const OPERATOR_MULTISELECT = [
-  {value: "all", label: "All"},
-  {value: "any", label: "Any"},
-  {value: "not", label: "Not"}
-]

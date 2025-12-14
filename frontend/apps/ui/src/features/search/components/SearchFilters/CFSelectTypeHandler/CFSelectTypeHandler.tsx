@@ -2,7 +2,7 @@ import {useAppDispatch} from "@/app/hooks"
 import {removeFilter} from "@/features/search/storage/search"
 import {ActionIcon, Box, Group, Text} from "@mantine/core"
 import {IconX} from "@tabler/icons-react"
-import SelectCustomField from "../SelectCustomField"
+import SelectCustomField from "../SelectCustomField/SelectCustomField"
 import styles from "./CFSelectTypeHandler.module.css"
 
 interface Args {

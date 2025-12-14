@@ -151,8 +151,9 @@ class MultiSelectTypeHandler(CustomFieldTypeHandler[MultiSelectConfig]):
         if operator == "any":
             # Match if ANY of the filter values are in the stored array
             # PostgreSQL: value->'raw' ?| array['hr', 'dev']
-            # SQLAlchemy: Use has_any for JSONB array overlap
-            return raw_json_array.has_any(value)
+            # Need to cast the Python list to PostgreSQL array type
+            pg_array = cast(value, ARRAY(String))
+            return raw_json_array.op('?|')(pg_array)
 
         elif operator == "all":
             # Match if ALL of the filter values are in the stored array
@@ -164,6 +165,7 @@ class MultiSelectTypeHandler(CustomFieldTypeHandler[MultiSelectConfig]):
             # Match if NONE of the filter values are in the stored array
             # This is the negation of "any"
             # PostgreSQL: NOT (value->'raw' ?| array['hr', 'dev'])
-            return ~raw_json_array.has_any(value)
+            pg_array = cast(value, ARRAY(String))
+            return ~raw_json_array.op('?|')(pg_array)
         else:
             raise ValueError(f"Unsupported operator for multiselect: {operator}")

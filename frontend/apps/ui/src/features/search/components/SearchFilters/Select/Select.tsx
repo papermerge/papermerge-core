@@ -25,6 +25,9 @@ export default function CustomFieldSelectFilter({index}: Args) {
     return {label: o.label, value: o.value}
   })
   const {value: cfNameValue} = useSelectCustomField(index)
+  const showOperator = Boolean(cfNameValue)
+  const showValue =
+    showOperator && filter.operator && ["!=", "="].includes(filter.operator)
 
   const handleRemoveClick = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -46,10 +49,10 @@ export default function CustomFieldSelectFilter({index}: Args) {
         <Text c={"green"}>md:</Text>
         <SelectCustomField index={index} />
       </Group>
-      {cfNameValue && (
+      {showOperator && (
         <OperatorSelect item={filter} onOperatorChange={handleOperatorChange} />
       )}
-      {cfNameValue && (
+      {showValue && (
         <Select data={data} onChange={handleValueChange} clearable />
       )}
       <ActionIcon
@@ -78,7 +81,7 @@ function OperatorSelect({item, onOperatorChange}: OperatorSelectArgs) {
   return (
     <Select
       value={item.operator}
-      w={"12ch"}
+      w={"15ch"}
       data={OPERATOR_SELECT}
       size="sm"
       onChange={handleChange}
@@ -89,6 +92,6 @@ function OperatorSelect({item, onOperatorChange}: OperatorSelectArgs) {
 const OPERATOR_SELECT = [
   {value: "=", label: "="},
   {value: "!=", label: "!="},
-  {value: "emp", label: "Empty"},
-  {value: "nemp", label: "Not Empty"}
+  {value: "is_empty", label: "Is Empty"},
+  {value: "is_not_empty", label: "Is Not Empty"}
 ]

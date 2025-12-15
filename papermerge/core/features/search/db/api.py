@@ -246,6 +246,24 @@ async def search_documents(
             else:
                 value = filter_spec.values
 
+            if filter_spec.operator == "is_null":
+                has_value_subquery = (
+                    select(CustomFieldValue.document_id)
+                    .where(
+                        and_(
+                            CustomFieldValue.field_id == cf.id,
+                            CustomFieldValue.value["raw"].astext.isnot(None)
+                        )
+                    )
+                )
+                base_query = base_query.where(
+                    ~DocumentSearchIndex.document_id.in_(has_value_subquery)
+                )
+                count_query = count_query.where(
+                    ~DocumentSearchIndex.document_id.in_(has_value_subquery)
+                )
+                continue
+
             filter_expr = handler.get_filter_expression(
                 sort_column,
                 filter_spec.operator,

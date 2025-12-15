@@ -8,7 +8,6 @@ from pydantic import (
     BaseModel,
     Field,
     field_validator,
-    model_validator,
     ConfigDict
 )
 
@@ -44,6 +43,10 @@ class CustomFieldOperator(str, Enum):
     ANY = "any"
     ALL = "all"
     NOT = "not"
+
+    # Select
+    IS_NULL = "is_null"
+    IS_NOT_NULL = "is_not_null"
 
 
 class TagOperator(str, Enum):
@@ -248,24 +251,6 @@ class CustomFieldFilter(BaseModel):
         if not cleaned:
             raise ValueError('field_name cannot be empty')
         return cleaned
-
-    @model_validator(mode='after')
-    def validate_exactly_one_value_field(self) -> 'CustomFieldFilter':
-        """Ensure exactly one of 'value' or 'values' is provided."""
-        has_value = self.value is not None
-        has_values = self.values is not None and len(self.values) > 0
-
-        if has_value and has_values:
-            raise ValueError(
-                "Cannot specify both 'value' and 'values'; use one or the other"
-            )
-
-        if not has_value and not has_values:
-            raise ValueError(
-                "Must specify either 'value' or 'values'"
-            )
-
-        return self
 
 
 class OwnerFilter(BaseModel):

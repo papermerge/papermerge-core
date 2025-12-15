@@ -52,10 +52,13 @@ export type CustomFieldTextOperator =
 
 export type CustomFieldBooleanOperator = "=" | "!="
 
+export type CustomFieldSelectOperator = "is_null" | "is_not_null"
+
 export type CustomFieldOperator =
   | CustomFieldNumericOperator
   | CustomFieldTextOperator
   | CustomFieldBooleanOperator
+  | CustomFieldSelectOperator
 
 export interface BasicFilter {
   type: FilterType

@@ -29,6 +29,9 @@ export type TagOperator = "any" | "all" | "not"
 
 export type MultiSelectOperator = "any" | "all" | "not"
 
+// operator for custom field of type "select"
+export type SelectOperator = "eq" | "ne" | "ie" | "ine"
+
 export type CategoryOperator = "any" | "not"
 
 export type CustomFieldNumericOperator =

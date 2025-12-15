@@ -29,6 +29,9 @@ export type TagOperator = "any" | "all" | "not"
 
 export type MultiSelectOperator = "any" | "all" | "not"
 
+// operator for custom field of type "select"
+export type SelectOperator = "eq" | "ne" | "ie" | "ine"
+
 export type CategoryOperator = "any" | "not"
 
 export type CustomFieldNumericOperator =
@@ -49,10 +52,13 @@ export type CustomFieldTextOperator =
 
 export type CustomFieldBooleanOperator = "=" | "!="
 
+export type CustomFieldSelectOperator = "is_null" | "is_not_null"
+
 export type CustomFieldOperator =
   | CustomFieldNumericOperator
   | CustomFieldTextOperator
   | CustomFieldBooleanOperator
+  | CustomFieldSelectOperator
 
 export interface BasicFilter {
   type: FilterType

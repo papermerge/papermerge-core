@@ -69,7 +69,7 @@ export function buildSearchQueryParams({
         break
 
       case "md":
-        const newCF = {
+        let newCF = {
           field_name: filter.fieldName,
           operator: operatorSym2Text(filter.operator || "="),
           value: filter.value,
@@ -134,7 +134,6 @@ export function extractSingleCategoryId(filters: Filter[]): string | null {
  * so that only on change of complete filters FE will send search request to BE
  */
 export function uniqueSearchString(filters: Filter[]): string {
-  console.log(filters)
   const onlyCompleteFilters = filters.filter(f => {
     if (f.type == "fts" && f.value) {
       return true
@@ -145,6 +144,16 @@ export function uniqueSearchString(filters: Filter[]): string {
     }
 
     if (f.type == "cat" && f.values && f.values.length > 0) {
+      return true
+    }
+
+    if (f.type == "md" && f.operator == "is_empty") {
+      // unary operator
+      return true
+    }
+
+    if (f.type == "md" && f.operator == "is_not_empty") {
+      // unary operator
       return true
     }
 

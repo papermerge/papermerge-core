@@ -151,6 +151,8 @@ type OperatorSymbol =
   | "all"
   | "any"
   | "not"
+  | "is_empty"
+  | "is_not_empty"
 type OperatorText =
   | "eq"
   | "ne"
@@ -161,6 +163,8 @@ type OperatorText =
   | "all"
   | "any"
   | "not"
+  | "is_null"
+  | "is_not_null"
 
 const SYMBOL_MAP: Record<OperatorSymbol, OperatorText> = {
   "=": "eq",
@@ -171,7 +175,9 @@ const SYMBOL_MAP: Record<OperatorSymbol, OperatorText> = {
   "<=": "lte",
   all: "all",
   not: "not",
-  any: "any"
+  any: "any",
+  is_empty: "is_null",
+  is_not_empty: "is_not_null"
 } as const
 
 export function operatorSym2Text(sym: string): OperatorText | null {

@@ -14,10 +14,11 @@ import math
 from uuid import UUID
 from typing import Sequence
 
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import select, func, and_, or_, text
 from sqlalchemy.orm import aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from papermerge.core.features.document.db import orm as doc_orm
 from papermerge.core.features.search.schema import TagOperator, CategoryOperator
 from papermerge.core import orm, schema
 from papermerge.core.features.search import schema as search_schema
@@ -698,3 +699,245 @@ def _apply_sorting_with_custom_fields(
 
     # Default sorting (same as simple)
     return _apply_sorting_simple(query, params)
+
+
+
+async def rebuild_document_search_index(
+    db_session: AsyncSession,
+) -> int:
+    """
+    Rebuild the entire DocumentSearchIndex by calling the PostgreSQL
+    upsert_document_search_index function for all documents.
+    This function:
+    1. Clears the existing search index
+    2. Gets all document IDs from the database
+    3. Calls the PostgreSQL upsert function for each document
+    The PostgreSQL function handles:
+    - Computing tsvector from title, tags, document type, and custom fields
+    - Applying proper language configuration
+    - Managing ownership/access control data
+    Args:
+        db_session: AsyncSession for database operations
+    Returns:
+        int: Number of documents indexed
+    Example:
+        ```python
+        from papermerge.core.db.engine import AsyncSessionLocal
+        from papermerge.core import dbapi
+        async with AsyncSessionLocal() as db_session:
+            count = await dbapi.rebuild_document_search_index(db_session)
+            print(f"Indexed {count} documents")
+        ```
+    """
+    logger.info("Starting full rebuild of document search index")
+
+    # Step 1: Clear existing index
+    await db_session.execute(
+        text("DELETE FROM document_search_index")
+    )
+    await db_session.commit()
+    logger.info("Cleared existing search index")
+
+    # Step 2: Get all document IDs
+    stmt = select(doc_orm.Document.id)
+    result = await db_session.execute(stmt)
+    document_ids = result.scalars().all()
+
+    total_docs = len(document_ids)
+    logger.info(f"Found {total_docs} documents to index")
+
+    # Step 3: Call upsert function for each document
+    indexed_count = 0
+    failed_count = 0
+
+    for doc_id in document_ids:
+        try:
+            # Call PostgreSQL function to upsert this document
+            await db_session.execute(
+                text("SELECT upsert_document_search_index(:doc_id)"),
+                {"doc_id": doc_id}
+            )
+            indexed_count += 1
+
+            # Commit every 100 documents to avoid long transactions
+            if indexed_count % 100 == 0:
+                await db_session.commit()
+                logger.info(f"Indexed {indexed_count}/{total_docs} documents")
+
+        except Exception as e:
+            logger.error(
+                f"Error indexing document {doc_id}: {e}",
+                exc_info=True
+            )
+            failed_count += 1
+            # Continue with next document
+            continue
+
+    # Final commit
+    await db_session.commit()
+
+    logger.info(
+        f"Completed index rebuild: {indexed_count} succeeded, "
+        f"{failed_count} failed out of {total_docs} total"
+    )
+
+    return indexed_count
+
+
+async def index_specific_documents(
+    db_session: AsyncSession,
+    document_ids: list[UUID],
+) -> int:
+    """
+    Rebuild search index for specific documents by their IDs.
+    This is useful when you want to reindex only certain documents
+    instead of the entire database. The PostgreSQL upsert function
+    will be called for each document.
+    Args:
+        db_session: AsyncSession for database operations
+        document_ids: List of document UUIDs to index
+    Returns:
+        int: Number of documents successfully indexed
+    Example:
+        ```python
+        from uuid import UUID
+        from papermerge.core.db.engine import AsyncSessionLocal
+        from papermerge.core import dbapi
+        doc_ids = [
+            UUID('123e4567-e89b-12d3-a456-426614174000'),
+            UUID('223e4567-e89b-12d3-a456-426614174001'),
+        ]
+        async with AsyncSessionLocal() as db_session:
+            count = await dbapi.index_specific_documents(db_session, doc_ids)
+            print(f"Indexed {count} documents")
+        ```
+    """
+    if not document_ids:
+        logger.warning("No document IDs provided for indexing")
+        return 0
+
+    logger.info(f"Indexing {len(document_ids)} specific documents")
+
+    indexed_count = 0
+    failed_count = 0
+
+    for doc_id in document_ids:
+        try:
+            # Call PostgreSQL function to upsert this document
+            await db_session.execute(
+                text("SELECT upsert_document_search_index(:doc_id)"),
+                {"doc_id": doc_id}
+            )
+            indexed_count += 1
+
+        except Exception as e:
+            logger.error(
+                f"Error indexing document {doc_id}: {e}",
+                exc_info=True
+            )
+            failed_count += 1
+            # Continue with next document
+            continue
+
+    # Commit all changes
+    await db_session.commit()
+
+    logger.info(
+        f"Indexed {indexed_count} succeeded, {failed_count} failed "
+        f"out of {len(document_ids)} requested"
+    )
+
+    return indexed_count
+
+
+async def get_document_search_index_stats(
+    db_session: AsyncSession,
+) -> dict:
+    """
+    Get statistics about the document search index.
+    Returns information about:
+    - Total documents in the system
+    - Total documents in the search index
+    - Documents missing from the index
+    - Index size information
+    Args:
+        db_session: AsyncSession for database operations
+    Returns:
+        dict: Statistics about the search index
+    Example:
+        ```python
+        async with AsyncSessionLocal() as db_session:
+            stats = await dbapi.get_document_search_index_stats(db_session)
+            print(f"Total documents: {stats['total_documents']}")
+            print(f"Indexed documents: {stats['indexed_documents']}")
+            print(f"Missing from index: {stats['missing_from_index']}")
+        ```
+    """
+    # Get total document count
+    stmt = select(text("COUNT(*)")).select_from(doc_orm.Document)
+    result = await db_session.execute(stmt)
+    total_documents = result.scalar()
+
+    # Get indexed document count
+    stmt_indexed = text("SELECT COUNT(*) FROM document_search_index")
+    result_indexed = await db_session.execute(stmt_indexed)
+    indexed_documents = result_indexed.scalar()
+
+    # Calculate missing documents
+    missing_from_index = total_documents - indexed_documents
+
+    # Get index size (PostgreSQL specific)
+    try:
+        size_query = text("""
+            SELECT pg_size_pretty(pg_total_relation_size('document_search_index'))
+        """)
+        result_size = await db_session.execute(size_query)
+        index_size = result_size.scalar()
+    except Exception as e:
+        logger.warning(f"Could not get index size: {e}")
+        index_size = "unknown"
+
+    return {
+        "total_documents": total_documents,
+        "indexed_documents": indexed_documents,
+        "missing_from_index": missing_from_index,
+        "index_size": index_size,
+    }
+
+
+async def find_unindexed_documents(
+    db_session: AsyncSession,
+) -> list[UUID]:
+    """
+    Find documents that exist in the database but are missing from the search index.
+    This can happen if:
+    - The index was manually cleared
+    - Database triggers were disabled
+    - There were errors during indexing
+    Args:
+        db_session: AsyncSession for database operations
+    Returns:
+        list[UUID]: List of document IDs that are not in the search index
+    Example:
+        ```python
+        async with AsyncSessionLocal() as db_session:
+            missing_ids = await dbapi.find_unindexed_documents(db_session)
+            if missing_ids:
+                print(f"Found {len(missing_ids)} unindexed documents")
+                # Reindex them
+                await dbapi.index_specific_documents(db_session, missing_ids)
+        ```
+    """
+    query = text("""
+        SELECT d.node_id
+        FROM documents d
+        LEFT JOIN document_search_index dsi ON dsi.document_id = d.node_id
+        WHERE dsi.document_id IS NULL
+    """)
+
+    result = await db_session.execute(query)
+    unindexed_ids = [row[0] for row in result]
+
+    logger.info(f"Found {len(unindexed_ids)} documents missing from search index")
+
+    return unindexed_ids

@@ -3,10 +3,9 @@ from collections import namedtuple
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from papermerge.core import db
 from papermerge.core.features.search import schema as search_schema
-from papermerge.core.features.search.db import api as search_dbapi
 from papermerge.core.features.document.db import api as doc_dbapi
-from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from core.tests.types import AuthTestClient
 
 
@@ -74,13 +73,13 @@ async def test_fitler_document_numeric_custom_field(
         precision=2  # 2 decimal places
     )
 
-    await cf_dbapi.update_document_custom_field_values(
+    await db.update_document_custom_field_values(
         db_session,
         document_id=doc1.id,
         custom_fields={"Amount": "2999.85"}
     )
 
-    await cf_dbapi.update_document_custom_field_values(
+    await db.update_document_custom_field_values(
         db_session,
         document_id=doc2.id,
         custom_fields={"Amount": "19.05"}
@@ -104,7 +103,7 @@ async def test_fitler_document_numeric_custom_field(
         lang=search_schema.SearchLanguage.ENG,
     )
     # search for bills with total > 100
-    results = await search_dbapi.search_documents(
+    results = await db.search_documents(
         db_session=db_session,
         user_id=user.id,
         params=params,
@@ -132,7 +131,7 @@ async def test_fitler_document_numeric_custom_field(
         lang=search_schema.SearchLanguage.ENG,
     )
     # search for bills with total < 100
-    results = await search_dbapi.search_documents(
+    results = await db.search_documents(
         db_session=db_session,
         user_id=user.id,
         params=params,
@@ -186,7 +185,7 @@ async def test_filter_documents_by_multiple_cf(
             document_type_id=invoice_type.id
         )
 
-    await cf_dbapi.update_document_custom_field_values(
+    await db.update_document_custom_field_values(
         db_session,
         document_id=doc_1.id,
         custom_fields={
@@ -195,7 +194,7 @@ async def test_filter_documents_by_multiple_cf(
             "Invoice Date": "2024-12-15"
         }
     )
-    await cf_dbapi.update_document_custom_field_values(
+    await db.update_document_custom_field_values(
         db_session,
         document_id=doc_2.id,
         custom_fields={
@@ -204,7 +203,7 @@ async def test_filter_documents_by_multiple_cf(
             "Invoice Date": "2024-12-16"
         }
     )
-    await cf_dbapi.update_document_custom_field_values(
+    await db.update_document_custom_field_values(
         db_session,
         document_id=doc_3.id,
         custom_fields={
@@ -238,7 +237,7 @@ async def test_filter_documents_by_multiple_cf(
     )
 
     # search for receipts with total amount > 30 and vendor = "lidl"
-    results = await search_dbapi.search_documents(
+    results = await db.search_documents(
         db_session=db_session,
         user_id=user.id,
         params=params
@@ -303,7 +302,7 @@ async def test_filter_and_sort_documents_by_multiple_cf(
     ]
 
     for value in values:
-        await cf_dbapi.update_document_custom_field_values(
+        await db.update_document_custom_field_values(
             db_session,
             document_id=docs[value.index].id,
             custom_fields={
@@ -338,7 +337,7 @@ async def test_filter_and_sort_documents_by_multiple_cf(
         lang=search_schema.SearchLanguage.ENG,
     )
 
-    results = await search_dbapi.search_documents(
+    results = await db.search_documents(
         db_session=db_session,
         user_id=user.id,
         params=params
@@ -399,7 +398,7 @@ async def test_filter_by_monetary_custom_field_valid_values(
         document_id=doc.id,
         document_type_id=invoice_type.id
     )
-    await cf_dbapi.update_document_custom_field_values(
+    await db.update_document_custom_field_values(
         db_session,
         document_id=doc.id,
         custom_fields={
@@ -432,7 +431,7 @@ async def test_filter_by_monetary_custom_field_valid_values(
         lang=search_schema.SearchLanguage.ENG,
     )
 
-    results = await search_dbapi.search_documents(
+    results = await db.search_documents(
         db_session=db_session,
         user_id=user.id,
         params=params,
@@ -489,7 +488,7 @@ async def test_filter_by_monetary_custom_field_invalid_values(
     )
 
     with pytest.raises(ValueError):
-        await search_dbapi.search_documents(
+        await db.search_documents(
             db_session=db_session,
             user_id=user.id,
             params=params,

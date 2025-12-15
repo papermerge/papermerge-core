@@ -4,9 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 
-from papermerge.core import scopes
-from papermerge.core.features.search.db import api as search_dbapi
-from papermerge.core.db.engine import get_db
+from papermerge.core import scopes, db
 from .schema import SearchQueryParams, SearchDocumentsResponse
 
 router = APIRouter(
@@ -37,7 +35,7 @@ logger = logging.getLogger(__name__)
 async def documents_search(
     user: scopes.ViewNode,
     params: SearchQueryParams,
-    db_session: AsyncSession = Depends(get_db)
+    db_session: AsyncSession = Depends(db.get_db)
 ):
     """
     Advanced document search and filtering.
@@ -80,7 +78,7 @@ async def documents_search(
             }
         )
         # Use unified search function
-        result = await search_dbapi.search_documents(
+        result = await db.search_documents(
             db_session=db_session,
             user_id=user.id,
             params=params

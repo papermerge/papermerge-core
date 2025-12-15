@@ -30,7 +30,7 @@ function SearchFilter({index}: SearchFilterArgs) {
       return <SearchFilterCategoryComponent index={index} />
     case "fts":
       return <FreeTextFilterComponent index={index} />
-    case "cf":
+    case "md":
       return <CustomFieldFilter index={index} />
   }
 

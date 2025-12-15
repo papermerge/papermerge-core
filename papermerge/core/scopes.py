@@ -6,10 +6,12 @@ ViewCustomFields: type[User] = require_scopes(Scopes.CUSTOM_FIELD_VIEW)
 CreateCustomFields: type[User] = require_scopes(Scopes.CUSTOM_FIELD_CREATE)
 DeleteCustomFields: type[User] = require_scopes(Scopes.CUSTOM_FIELD_DELETE)
 UpdateCustomFields: type[User] = require_scopes(Scopes.CUSTOM_FIELD_UPDATE)
+ViewNode: type[User] = require_scopes(Scopes.NODE_VIEW)
 
 __all__ = [
     "ViewCustomFields",
     "CreateCustomFields",
     "DeleteCustomFields",
-    "UpdateCustomFields"
+    "UpdateCustomFields",
+    "ViewNode",
 ]

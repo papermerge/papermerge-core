@@ -151,3 +151,25 @@ Switch to specific python version in your virtual environment:
 ```commandline
  uv sync --python 3.14
 ```
+
+## Command Line Commands
+
+`pm` - is CLI for various management commands.
+
+```commandline
+pm --help
+```
+
+### Search
+
+Clear the existing search index and rebuild it from scratch:
+
+```commandline
+pm search build
+```
+
+Search index statistics
+
+```commandline
+pm search stats
+```

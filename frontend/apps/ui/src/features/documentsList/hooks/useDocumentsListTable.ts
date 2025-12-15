@@ -1,7 +1,6 @@
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {DEBOUNCE_SEARCH_WAIT_TIME_MS} from "@/cconstants"
 import {useSearchDocumentsMutation} from "@/features/documentsList/storage/api"
-import {documentCategoryIDUpdated} from "@/features/documentsList/storage/documentsByCategory"
 import {buildSearchQueryParams} from "@/features/documentsList/utils/searchHelper"
 import useDebouncedSearchParamsString from "@/features/search/hooks/useDebouncedSearchParamsString"
 import type {SearchQueryParams} from "@/features/search/types"
@@ -55,16 +54,6 @@ export default function useDocumentsListTable() {
     // reset page number when search param change
     actions.updatePagination({pageNumber: 1})
   }, [relevantParamsString])
-
-  // Update document_type_id when data changes
-  useEffect(() => {
-    if (data && "document_type_id" in data && data.document_type_id) {
-      dispatch(documentCategoryIDUpdated(data.document_type_id))
-    } else {
-      // Clear document_type_id when it's a flat search
-      dispatch(documentCategoryIDUpdated(null))
-    }
-  }, [data, dispatch])
 
   return {
     data,

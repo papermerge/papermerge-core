@@ -11,7 +11,7 @@ import {ActionIcon, Box, Group, Select, Text} from "@mantine/core"
 import {DatePickerInput, type DateValue} from "@mantine/dates"
 import {IconX} from "@tabler/icons-react"
 import {format, parse} from "date-fns"
-import SelectCustomField from "../SelectCustomField"
+import SelectCustomField from "../SelectCustomField/SelectCustomField"
 import styles from "./CFDateFilter.module.css"
 
 interface Args {
@@ -56,7 +56,7 @@ export default function CFDateFilter({index}: Args) {
   return (
     <Box className={styles.tokenContainer} onClick={e => e.stopPropagation()}>
       <Group gap={0}>
-        <Text c={"blue"}>cf:</Text>
+        <Text c={"blue"}>md:</Text>
         <SelectCustomField index={index} />
         <CFNumericOperator
           item={filter}

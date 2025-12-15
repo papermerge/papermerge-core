@@ -3,6 +3,7 @@ import {CustomFieldFilter} from "@/features/search/microcomp/types"
 import CFDateFilter from "./CFDateFilter"
 import CFNumericFilter from "./CFNumericFilter"
 import CFSelectTypeHandler from "./CFSelectTypeHandler"
+import CFMultiSelectFilter from "./MultiSelect"
 
 interface Args {
   index: number
@@ -30,6 +31,10 @@ export default function CustomFieldTokenComponent({index}: Args) {
 
   if (filter.typeHandler == "date") {
     return <CFDateFilter index={index} />
+  }
+
+  if (filter.typeHandler == "multiselect") {
+    return <CFMultiSelectFilter index={index} />
   }
 
   return <>Unknown Custom Field Token: {filter.typeHandler}</>

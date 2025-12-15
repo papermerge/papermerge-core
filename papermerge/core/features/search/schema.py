@@ -8,6 +8,7 @@ from pydantic import (
     BaseModel,
     Field,
     field_validator,
+    model_validator,
     ConfigDict
 )
 
@@ -38,6 +39,11 @@ class CustomFieldOperator(str, Enum):
     # List operations
     IN = "in"  # value in list
     NOT_IN = "not_in"  # value not in list
+
+    # Multiselect
+    ANY = "any"
+    ALL = "all"
+    NOT = "not"
 
 
 class TagOperator(str, Enum):
@@ -213,11 +219,17 @@ class CustomFieldFilter(BaseModel):
     operator: CustomFieldOperator = Field(
         ...,
         description="Comparison operator (must be compatible with field type)",
-        examples=["contains", "eq", "gt", "gte"]
+        examples=["eq", "gt", "gte", "all", "any"]
     )
 
-    value: Union[str, int, float, bool, date] = Field(
-        ...,
+    values: Optional[List[str]] = Field(
+        default=None,
+        description="List of values",
+        examples=[["urgent", "2024"]]
+    )
+
+    value: Optional[Union[str, int, float, bool, date]] = Field(
+        default=None,
         description="Value to compare (type depends on field type)",
         examples=[
             "completed",
@@ -237,14 +249,23 @@ class CustomFieldFilter(BaseModel):
             raise ValueError('field_name cannot be empty')
         return cleaned
 
-    @field_validator('value')
-    @classmethod
-    def validate_value(cls, v: Any) -> Any:
-        """Validate value is not None"""
-        if v is None:
-            raise ValueError('value cannot be None')
-        return v
+    @model_validator(mode='after')
+    def validate_exactly_one_value_field(self) -> 'CustomFieldFilter':
+        """Ensure exactly one of 'value' or 'values' is provided."""
+        has_value = self.value is not None
+        has_values = self.values is not None and len(self.values) > 0
 
+        if has_value and has_values:
+            raise ValueError(
+                "Cannot specify both 'value' and 'values'; use one or the other"
+            )
+
+        if not has_value and not has_values:
+            raise ValueError(
+                "Must specify either 'value' or 'values'"
+            )
+
+        return self
 
 
 class OwnerFilter(BaseModel):
@@ -467,42 +488,36 @@ class DocumentCFV(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-# ============================================================================
-# Search Responses
-# ============================================================================
-
 class SearchDocumentsResponse(BaseModel):
     """
-    Response for general search (across all document types).
-    Similar to /documents/ endpoint.
-    Does NOT include custom field values since documents may have different types.
+    This response includes:
+    - items: List of DocumentCFV (documents with optional custom field values)
+    - custom_fields: Metadata about which custom fields are included in the response
+                    (empty if no custom fields are relevant to the search)
+    - document_type_id: Set when exactly one document type is filtered
+                       (for backwards compatibility)
+
+    The custom_fields list in response is the union of:
+    1. All custom fields from document types specified in category filters
+    2. All custom fields referenced in custom_field filters
+    (deduplicated by custom field ID)
     """
-    items: List[FlatDocument] = Field(..., description="Search results")
+    items: List[DocumentCFV] = Field(..., description="Search results")
     page_number: int = Field(..., ge=1, description="Current page number")
     page_size: int = Field(..., ge=1, description="Items per page")
     num_pages: int = Field(..., ge=0, description="Total number of pages")
     total_items: int = Field(..., ge=0, description="Total number of results")
-    document_type_id: Optional[UUID] = None
 
-    model_config = ConfigDict(from_attributes=True)
-
-
-
-class SearchDocumentsByTypeResponse(BaseModel):
-    """
-    Response for document type-specific search.
-    Similar to /documents/type/{document_type_id}/ endpoint.
-    Includes custom field values and metadata.
-    """
-    items: List[DocumentCFV] = Field(..., description="Search results with custom fields")
-    page_number: int = Field(..., ge=1, description="Current page number")
-    page_size: int = Field(..., ge=1, description="Items per page")
-    num_pages: int = Field(..., ge=0, description="Total number of pages")
-    total_items: int = Field(..., ge=0, description="Total number of results")
-    document_type_id: UUID
+    # NEW: Custom fields metadata (union of all relevant custom fields)
     custom_fields: List[CustomFieldInfo] = Field(
-        ...,
-        description="Custom fields metadata for this document type"
+        default_factory=list,
+        description="Custom fields metadata included in this response"
+    )
+
+    # For backwards compatibility - set when exactly one document type is filtered
+    document_type_id: Optional[UUID] = Field(
+        None,
+        description="Document type ID (set when filtering by exactly one category)"
     )
 
     model_config = ConfigDict(from_attributes=True)

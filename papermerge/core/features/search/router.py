@@ -4,12 +4,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 
-from papermerge.core.features.auth.dependencies import require_scopes
-from papermerge.core.features.auth import scopes
-from papermerge.core.features.search.db import api as search_dbapi
-from papermerge.core.db.engine import get_db
-from .schema import SearchQueryParams, SearchDocumentsByTypeResponse, \
-    SearchDocumentsResponse
+from papermerge.core import scopes, db
+from .schema import SearchQueryParams, SearchDocumentsResponse
 
 router = APIRouter(
     prefix="/search",
@@ -20,9 +16,10 @@ router = APIRouter(
 logger = logging.getLogger(__name__)
 
 
+
 @router.post(
     "/",
-    response_model=SearchDocumentsByTypeResponse | SearchDocumentsResponse,
+    response_model=SearchDocumentsResponse,
     responses={
         400: {
             "description": "Invalid search parameters (e.g., invalid date range, non-existent document type)"
@@ -36,26 +33,41 @@ logger = logging.getLogger(__name__)
     }
 )
 async def documents_search(
-    user: require_scopes(scopes.NODE_VIEW),
+    user: scopes.ViewNode,
     params: SearchQueryParams,
-    db_session: AsyncSession = Depends(get_db)
+    db_session: AsyncSession = Depends(db.get_db)
 ):
     """
     Advanced document search and filtering.
 
     **Search capabilities:**
     - Full-text search across document titles and content
-    - Filter by document type, tags, dates, or custom metadata
-    - Sort by relevance, date, title, or size
+    - Filter by document type (category), tags, or custom metadata
+    - Filter by custom field values (works with any custom field)
+    - Sort by relevance, date, title, or custom field values
     - Paginated results
 
+    **Custom Fields in Response:**
+    The response includes custom field metadata and values based on:
+    1. Document types specified in category filters → all their custom fields
+    2. Custom fields referenced in custom_field filters → those specific fields
+
+    The custom_fields in response is the union of all relevant fields (deduplicated).
+
     **Parameters:**
-    - `query`: Search text (optional)
-    - `filters.category`: Filter by category/document type (optional)
-    - `page`: Page number for pagination (default: 1)
+    - `filters.fts`: Full-text search terms
+    - `filters.categories`: Filter by category/document type
+    - `filters.tags`: Filter by tags
+    - `filters.custom_fields`: Filter by custom field values
+    - `page_number`: Page number for pagination (default: 1)
     - `page_size`: Results per page (default: 20, max: 100)
-    - `sort_by`: Field to sort by (default: relevance)
-    - `sort_order`: asc or desc (default: desc)
+    - `sort_by`: Field to sort by (can be custom field name)
+    - `sort_direction`: asc or desc (default: desc)
+
+    **Response:**
+    - `items`: List of documents with their custom field values
+    - `custom_fields`: Metadata about custom fields included in response
+    - `document_type_id`: Set when filtering by exactly one document type
     """
     try:
         logger.info(
@@ -65,31 +77,12 @@ async def documents_search(
                 "page": params.page_number
             }
         )
-
-        # Extract document type from category filter
-        document_type_id = await search_dbapi.extract_document_type_from_category(
+        # Use unified search function
+        result = await db.search_documents(
             db_session=db_session,
+            user_id=user.id,
             params=params
         )
-
-        if document_type_id is not None:
-            # Single category filter - search within specific document type
-            result = await search_dbapi.search_documents_by_type(
-                db_session=db_session,
-                document_type_id=document_type_id,
-                user_id=user.id,
-                params=params
-            )
-            # Add discriminator to response
-            result.document_type_id = document_type_id
-        else:
-            # No category or multiple categories - flat search
-            result = await search_dbapi.search_documents(
-                db_session=db_session,
-                user_id=user.id,
-                params=params
-            )
-            # Discriminator is already None in the response
 
         logger.debug(f"Search returned {len(result.items)} results for user {user.id}")
         return result

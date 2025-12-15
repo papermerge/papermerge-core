@@ -2,7 +2,7 @@ import {useAppDispatch} from "@/app/hooks"
 import {removeFilter} from "@/features/search/storage/search"
 import {ActionIcon, Box, Group, Text} from "@mantine/core"
 import {IconX} from "@tabler/icons-react"
-import SelectCustomField from "../SelectCustomField"
+import SelectCustomField from "../SelectCustomField/SelectCustomField"
 import styles from "./CFSelectTypeHandler.module.css"
 
 interface Args {
@@ -20,7 +20,7 @@ export default function CFSelectTypeHandler({index}: Args) {
   return (
     <Box className={styles.tokenContainer} onClick={e => e.stopPropagation()}>
       <Group gap={0}>
-        <Text c={"green"}>cf:</Text>
+        <Text c={"green"}>md:</Text>
         <SelectCustomField index={index} />
       </Group>
       <ActionIcon

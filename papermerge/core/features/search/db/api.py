@@ -241,7 +241,11 @@ async def search_documents(
             cfv_alias = aliased(CustomFieldValue)
             sort_column = getattr(cfv_alias, handler.get_sort_column())
             config = handler.parse_config(cf.config or {})
-            value = filter_spec.value or filter_spec.values
+            if filter_spec.value is not None:
+                value = filter_spec.value
+            else:
+                value = filter_spec.values
+
             filter_expr = handler.get_filter_expression(
                 sort_column,
                 filter_spec.operator,

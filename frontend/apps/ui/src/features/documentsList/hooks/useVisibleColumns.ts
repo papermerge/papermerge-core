@@ -3,7 +3,6 @@ import {usePanel} from "@/features/ui/hooks/usePanel"
 
 import documentByCategoryColumns from "@/features/documentsList/components/columns"
 import flatColumns from "@/features/documentsList/components/flatColumns"
-import {selectDocumentCategoryID} from "../storage/documentsByCategory"
 import {DocumentListItem} from "../types"
 
 import type {
@@ -19,13 +18,12 @@ export default function useVisibleColumns(
 ): ColumnConfig<DocumentListItem>[] {
   const {t} = useTranslation()
   const {panelId} = usePanel()
-  const categoryID = useAppSelector(selectDocumentCategoryID)
   const selected = useAppSelector(s => selectPanelVisibleColumns(s, panelId))
 
   const hasSelection = selected && selected.length > 0
   let columns: ColumnConfig<DocumentListItem>[] = []
 
-  if (categoryID) {
+  if (data?.items) {
     // different set of columns depending on category ID
     columns = documentByCategoryColumns({items: data?.items, t})
   } else {

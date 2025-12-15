@@ -74,7 +74,7 @@ dev = [
 
 
 [project.scripts]
-papermerge-cli = "papermerge.cli:main"
+pm = "papermerge.cli:main"
 docs = "papermerge.core.cli.docs:app"
 sign_url = "papermerge.core.cli.cf_sign_url:app"
 

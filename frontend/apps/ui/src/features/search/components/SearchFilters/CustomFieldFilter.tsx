@@ -1,5 +1,6 @@
 import {useAppSelector} from "@/app/hooks"
 import {CustomFieldFilter} from "@/features/search/microcomp/types"
+import CFBooleanFilter from "./Boolean"
 import CFDateFilter from "./CFDateFilter"
 import CFNumericFilter from "./CFNumericFilter"
 import CFSelectTypeHandler from "./CFSelectTypeHandler"
@@ -40,6 +41,10 @@ export default function CustomFieldTokenComponent({index}: Args) {
 
   if (filter.typeHandler == "select") {
     return <CFSelectFilter index={index} />
+  }
+
+  if (filter.typeHandler == "boolean") {
+    return <CFBooleanFilter index={index} />
   }
 
   return <>Unknown Custom Field Token: {filter.typeHandler}</>

@@ -264,6 +264,28 @@ async def search_documents(
                 )
                 continue
 
+            if filter_spec.operator == "is_not_checked":
+                # For is_not_checked, we want documents where:
+                # 1. The boolean field is False
+                # 2. The boolean field is not set (no entry in custom_field_values)
+                # This is equivalent to: NOT (value is True)
+                is_checked_subquery = (
+                    select(CustomFieldValue.document_id)
+                    .where(
+                        and_(
+                            CustomFieldValue.field_id == cf.id,
+                            CustomFieldValue.value_boolean == True
+                        )
+                    )
+                )
+                base_query = base_query.where(
+                    ~DocumentSearchIndex.document_id.in_(is_checked_subquery)
+                )
+                count_query = count_query.where(
+                    ~DocumentSearchIndex.document_id.in_(is_checked_subquery)
+                )
+                continue
+
             filter_expr = handler.get_filter_expression(
                 sort_column,
                 filter_spec.operator,

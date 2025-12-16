@@ -6,6 +6,7 @@ import CFNumericFilter from "./CFNumericFilter"
 import CFSelectTypeHandler from "./CFSelectTypeHandler"
 import CFMultiSelectFilter from "./MultiSelect"
 import CFSelectFilter from "./Select"
+import CFTextFilter from "./Text"
 
 interface Args {
   index: number
@@ -45,6 +46,10 @@ export default function CustomFieldTokenComponent({index}: Args) {
 
   if (filter.typeHandler == "boolean") {
     return <CFBooleanFilter index={index} />
+  }
+
+  if (filter.typeHandler == "text") {
+    return <CFTextFilter index={index} />
   }
 
   return <>Unknown Custom Field Token: {filter.typeHandler}</>

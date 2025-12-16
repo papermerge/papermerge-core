@@ -1,6 +1,3 @@
-"""
-Test search router with select custom field filtering.
-"""
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.tests.types import AuthTestClient
@@ -17,6 +14,32 @@ async def test_search_documents_by_boolean_cf(
     make_document_type_with_custom_fields,
     make_document
 ):
+    """
+    In this scenario there are 3 documents of type/category "Exam Result".
+    Category "Exam Result" contains one cf of type "boolean": "Passed" (boolean)
+
+    Document |  Pass Flag
+    =================================================
+    Alice    |  True/checked
+    -------------------------------------------------
+    Bob      |  False/not checked
+    --------------------------------------------------
+    Charlie  |  Not yet set (in UI is not checked)
+
+    When searching with operator "is_checked" - only Alice's document should
+    be returned in results.
+    When searching with operator "is_not_checked" - both Bob and Charlies'
+    documents should be returned in result. Notice that Bob's document cf
+    was explicitely set to "False" (was unchecked in UI) while Charlie's
+    document cf was never set (e.g. user change make this document of
+    category "Exam Result" but did not interact yet with "Passed" cf.
+
+    From user perspective Bob and Charlie documents are "unchecked".
+    Internally there is a difference though: for Bob the value `False` is
+    explicitly set i.e. there is an entry in `custom_field_values` table
+    while Charlie's document does not have an entry in `custom_field_values`
+    yet.
+    """
     exam_result_type = await make_document_type_with_custom_fields(
         name="Exam Result",
         custom_fields=[
@@ -54,16 +77,20 @@ async def test_search_documents_by_boolean_cf(
             document_type_id=exam_result_type.id
         )
 
+    # Alice document cf "Passed" is explicitly set to True
     await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=alice_doc.id,
         custom_fields={"Passed": True}
     )
+    # Bob document cf "Passed" is explicitly set to False
     await cf_dbapi.update_document_custom_field_values(
         db_session,
         document_id=bob_doc.id,
         custom_fields={"Passed": False}
     )
+    # Charlie document cf "Passed" is not set at all!
+
     # Find document with checked field
     payload = {
         "filters": {
@@ -87,6 +114,7 @@ async def test_search_documents_by_boolean_cf(
 
     returned_titles = {item["title"] for item in result["items"]}
 
+    # only Alice doc has "Passed" flag set to `True`
     assert "alice.pdf" in returned_titles, "alice should be found"
     assert len(result["items"]) == 1
 

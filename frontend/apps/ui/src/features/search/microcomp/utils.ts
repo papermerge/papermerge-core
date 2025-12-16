@@ -153,6 +153,8 @@ type OperatorSymbol =
   | "not"
   | "is_empty"
   | "is_not_empty"
+  | "is_checked"
+  | "is_not_checked"
 type OperatorText =
   | "eq"
   | "ne"
@@ -165,6 +167,8 @@ type OperatorText =
   | "not"
   | "is_null"
   | "is_not_null"
+  | "is_checked"
+  | "is_not_checked"
 
 const SYMBOL_MAP: Record<OperatorSymbol, OperatorText> = {
   "=": "eq",
@@ -177,7 +181,9 @@ const SYMBOL_MAP: Record<OperatorSymbol, OperatorText> = {
   not: "not",
   any: "any",
   is_empty: "is_null",
-  is_not_empty: "is_not_null"
+  is_not_empty: "is_not_null",
+  is_checked: "is_checked",
+  is_not_checked: "is_not_checked"
 } as const
 
 export function operatorSym2Text(sym: string): OperatorText | null {

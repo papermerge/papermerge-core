@@ -1,5 +1,7 @@
 from typing import Any, Type
 
+from sqlalchemy.sql import ColumnElement
+
 from .base import CustomFieldTypeHandler, ValidationResult
 from .config import BooleanConfig
 from .registry import TypeRegistry
@@ -46,3 +48,17 @@ class BooleanTypeHandler(CustomFieldTypeHandler[BooleanConfig]):
 
     def get_sort_column(self) -> str:
         return "value_boolean"
+
+    def get_filter_expression(
+        self,
+        column: ColumnElement,
+        operator: str,
+        value: Any,
+        config: BooleanConfig
+    ) -> ColumnElement:
+        if operator == "is_checked":
+            return column == True
+        elif operator == "is_not_checked":
+            return column != True
+        else:
+            raise ValueError(f"Unsupported operator: {operator}")

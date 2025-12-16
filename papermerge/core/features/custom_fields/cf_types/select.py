@@ -73,11 +73,11 @@ class SelectTypeHandler(CustomFieldTypeHandler[SelectConfig]):
         return "value_text"
 
     def get_filter_expression(
-            self,
-            column: ColumnElement,
-            operator: str,
-            value: Any,
-            config: SelectConfig
+        self,
+        column: ColumnElement,
+        operator: str,
+        value: Any,
+        config: SelectConfig
     ) -> ColumnElement:
         """
         Build SQLAlchemy filter expression for select fields.

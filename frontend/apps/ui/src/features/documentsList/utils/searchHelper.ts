@@ -157,6 +157,16 @@ export function uniqueSearchString(filters: Filter[]): string {
       return true
     }
 
+    if (f.type == "md" && f.operator == "is_checked") {
+      // unary operator
+      return true
+    }
+
+    if (f.type == "md" && f.operator == "is_not_checked") {
+      // unary operator
+      return true
+    }
+
     if (f.type == "md" && (f.value || f.values) && f.fieldName && f.operator) {
       return true
     }

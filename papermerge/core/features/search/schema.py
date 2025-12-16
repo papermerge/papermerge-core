@@ -48,6 +48,10 @@ class CustomFieldOperator(str, Enum):
     IS_NULL = "is_null"
     IS_NOT_NULL = "is_not_null"
 
+    # Boolean
+    IS_CHECKED = "is_checked"
+    IS_NOT_CHECKED = "is_not_checked"
+
 
 class TagOperator(str, Enum):
     ANY = "any"

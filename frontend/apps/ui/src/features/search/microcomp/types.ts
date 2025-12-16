@@ -50,7 +50,7 @@ export type CustomFieldTextOperator =
   | "startsWith"
   | "iStartsWith"
 
-export type CustomFieldBooleanOperator = "=" | "!="
+export type CustomFieldBooleanOperator = "is_checked" | "is_not_checked"
 
 export type CustomFieldSelectOperator = "is_null" | "is_not_null"
 

@@ -147,12 +147,12 @@ export function uniqueSearchString(filters: Filter[]): string {
       return true
     }
 
-    if (f.type == "md" && f.operator == "is_empty") {
+    if (f.type == "md" && f.operator == "is_null") {
       // unary operator
       return true
     }
 
-    if (f.type == "md" && f.operator == "is_not_empty") {
+    if (f.type == "md" && f.operator == "is_not_null") {
       // unary operator
       return true
     }

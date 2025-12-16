@@ -8,10 +8,8 @@ import {
   TextInput
 } from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
-import {useContext} from "react"
 import {useTranslation} from "react-i18next"
 
-import PanelContext from "@/contexts/PanelContext"
 import {useGetDocumentQuery} from "@/features/document/store/apiSlice"
 import {selectDocumentVersionOCRLang} from "@/features/document/store/documentVersSlice"
 import {skipToken} from "@reduxjs/toolkit/query"
@@ -23,11 +21,8 @@ import CopyButton from "@/components/CopyButton"
 import {EditNodeTagsModal} from "@/components/EditNodeTags"
 import type {DocumentType} from "@/features/document/types"
 import {usePanel} from "@/features/ui/hooks/usePanel"
-import {
-  selectCurrentNodeID,
-  selectPanelAllCustom
-} from "@/features/ui/panelRegistry"
-import type {ClientDocumentVersion, PanelMode} from "@/types"
+import {selectPanelAllCustom} from "@/features/ui/panelRegistry"
+import type {ClientDocumentVersion} from "@/types"
 import DocumentDetailsToggle from "../DocumentDetailsToggle"
 import CustomFields from "./CustomFields"
 import DocumentDetailsResizer, {
@@ -115,7 +110,7 @@ export default function DocumentDetails({doc, docVer, isLoading}: Args) {
             />
             <Group>
               <TagsInput
-                rightSection={<EditTagsButton />}
+                rightSection={<EditTagsButton doc_id={doc.id} />}
                 label={t("common.tags")}
                 readOnly
                 value={doc?.tags?.map(t => t.name) || []}
@@ -140,11 +135,21 @@ export default function DocumentDetails({doc, docVer, isLoading}: Args) {
   return <></>
 }
 
-function EditTagsButton() {
+interface EditTagsButtonArgs {
+  doc_id?: string
+}
+
+function EditTagsButton({doc_id}: EditTagsButtonArgs) {
   const [opened, {open, close}] = useDisclosure(false)
-  const mode: PanelMode = useContext(PanelContext)
-  const docID = useAppSelector(s => selectCurrentNodeID(s, mode))
-  const {currentData: doc} = useGetDocumentQuery(docID ?? skipToken)
+  const {currentData: doc} = useGetDocumentQuery(doc_id ?? skipToken)
+
+  if (!doc_id) {
+    return (
+      <Skeleton>
+        <IconEdit />
+      </Skeleton>
+    )
+  }
 
   return (
     <>
@@ -153,7 +158,7 @@ function EditTagsButton() {
       </ActionIcon>
       <EditNodeTagsModal
         opened={opened}
-        node={{id: docID!, tags: doc?.tags || []}}
+        node={{id: doc_id, tags: doc?.tags || []}}
         onSubmit={close}
         onCancel={close}
       />

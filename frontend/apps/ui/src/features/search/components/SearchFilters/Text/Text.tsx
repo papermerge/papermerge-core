@@ -62,10 +62,10 @@ interface FilterTagOperatorArgs {
 function Operator({item, onOperatorChange}: FilterTagOperatorArgs) {
   const {t} = useTranslation()
   const OPTIONS = [
-    {value: "eq", label: "="},
-    {value: "ne", label: "!="},
-    {value: "contains", label: t("Contains", {defaultValue: "Contains"})},
-    {value: "matches", label: t("Matches", {defaultValue: "Matches"})}
+    {value: "=", label: "="},
+    {value: "!=", label: "!="},
+    {value: "ilike", label: t("Contains", {defaultValue: "Contains"})},
+    {value: "not_ilike", label: t("!Contains", {defaultValue: "!Contains"})}
   ]
 
   const handleChange = (value: string | null) => {

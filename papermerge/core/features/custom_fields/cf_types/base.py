@@ -139,14 +139,10 @@ class CustomFieldTypeHandler(ABC, Generic[ConfigT]):
             return column.is_(None)
         elif operator == "is_not_null":
             return column.isnot(None)
-        elif operator == "like":
-            return column.like(f"%{value}%")
         elif operator == "ilike":
             return column.ilike(f"%{value}%")
-        elif operator == "starts_with":
-            return column.like(f"{value}%")
-        elif operator == "ends_with":
-            return column.like(f"%{value}")
+        elif operator == "not_ilike":
+            return ~column.ilike(f"%{value}%")
         else:
             raise ValueError(f"Unsupported operator: {operator}")
 

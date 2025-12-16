@@ -33,7 +33,8 @@ class CustomFieldOperator(str, Enum):
     LTE = "lte"  # <=
 
     # Text operations
-    CONTAINS = "contains"  # : (partial match, case-insensitive)
+    ILIKE = "ilike"
+    NOT_ILIKE = "not_ilike"
 
     # List operations
     IN = "in"  # value in list

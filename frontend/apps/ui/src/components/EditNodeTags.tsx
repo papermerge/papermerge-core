@@ -10,6 +10,7 @@ import {
 import {selectNodeById} from "@/features/nodes/storage/nodes"
 import {useGetTagsQuery} from "@/features/tags/storage/api"
 import type {EntityWithTags} from "@/types"
+import {skipToken} from "@reduxjs/toolkit/query"
 import {useTranslation} from "react-i18next"
 
 interface Args {
@@ -24,7 +25,9 @@ export const EditNodeTagsModal = ({node, onSubmit, onCancel, opened}: Args) => {
   /*
   Edit Tags Modal
   */
-  const {data, isLoading: isLoadingTags} = useGetNodeTagsQuery(node.id)
+  const {data, isLoading: isLoadingTags} = useGetNodeTagsQuery(
+    node.id ?? skipToken
+  )
   const nodeDetails = useAppSelector(s => selectNodeById(s, node.id))
 
   const [updateNodeTags, {isLoading, isSuccess}] = useUpdateNodeTagsMutation()

@@ -1,4 +1,4 @@
-import {Group, TextInput} from "@mantine/core"
+import {Group, Textarea} from "@mantine/core"
 import {useCallback, useEffect, useState} from "react"
 import {SaveStatusIndicator} from "./SaveStatusIndicator"
 import type {TextFieldProps} from "./types"
@@ -28,7 +28,7 @@ export function TextField({
   }, [customField?.value?.value?.raw])
 
   const handleChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
+    (event: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = event.currentTarget.value
       setValue(newValue)
       save(newValue)
@@ -38,12 +38,14 @@ export function TextField({
 
   return (
     <Group gap="xs" align="flex-end" wrap="nowrap">
-      <TextInput
+      <Textarea
         style={{flex: 1}}
         label={label}
         value={value}
         onChange={handleChange}
         disabled={disabled}
+        autosize
+        minRows={3}
       />
       <SaveStatusIndicator status={saveStatus} error={error} />
     </Group>

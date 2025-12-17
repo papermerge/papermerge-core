@@ -69,9 +69,10 @@ export function buildSearchQueryParams({
         break
 
       case "md":
+        const operator = operatorSym2Text(filter.operator || "=")
         let newCF = {
           field_name: filter.fieldName,
-          operator: operatorSym2Text(filter.operator || "="),
+          operator: operator,
           value: filter.value,
           values: filter.values
         } as CustomFieldFilter

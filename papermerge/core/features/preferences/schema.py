@@ -4,6 +4,8 @@ from typing import List
 
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 
+from papermerge.core.features.document.schema import DocumentLang
+
 
 class DateFormat(str, Enum):
     # ISO Standard
@@ -128,9 +130,15 @@ class Preferences(BaseModel):
         default="light",
         description="UI Theme"
     )
-    document_default_lang: str | None = Field(
-        default=None,
+
+    document_default_lang: DocumentLang | None = Field(
+        default=DocumentLang.deu,
         description="Default language for the documents"
+    )
+
+    search_lang: DocumentLang | None = Field(
+        default=DocumentLang.deu,
+        description="Search language"
     )
 
     @field_validator('timezone')
@@ -189,6 +197,16 @@ class PreferencesUpdate(BaseModel):
     number_format: Optional[str] = None
     timestamp_format: Optional[str] = None
     ui_theme: Optional[str] = None
+    document_default_lang: DocumentLang | None = Field(
+        default=DocumentLang.deu,
+        description="Default language for the documents"
+    )
+
+    search_lang: DocumentLang | None = Field(
+        default=DocumentLang.deu,
+        description="Search language"
+    )
+
 
     @field_validator('timezone')
     @classmethod

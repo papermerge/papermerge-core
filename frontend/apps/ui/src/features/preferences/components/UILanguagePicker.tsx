@@ -3,14 +3,13 @@ import {ComboboxItem, Select, SelectProps} from "@mantine/core"
 import {TFunction} from "i18next"
 import React from "react"
 
-interface TimezonePickerProps
-  extends Omit<SelectProps, "data" | "onDropdownOpen"> {
+interface Args extends Omit<SelectProps, "data" | "onDropdownOpen"> {
   value: string
   onChange: (value: any, option: ComboboxItem) => void
   t?: TFunction
 }
 
-export const UILanguagePicker: React.FC<TimezonePickerProps> = ({
+export const UILanguagePicker: React.FC<Args> = ({
   value,
   onChange,
   t,

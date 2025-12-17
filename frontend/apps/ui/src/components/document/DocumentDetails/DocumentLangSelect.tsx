@@ -1,5 +1,4 @@
 import DocumentLangSelect from "@/components/DocumentLangSelect"
-import {useCurrentDocVer} from "@/features/document/hooks"
 import {
   useGetDocVerLangQuery,
   useUpdateDocVerLangMutation
@@ -7,17 +6,19 @@ import {
 import {Skeleton} from "@mantine/core"
 import {skipToken} from "@reduxjs/toolkit/query"
 
-export default function DocumentLangSelectContainer() {
-  const {docVer} = useCurrentDocVer()
-  // Get lang
-  const {data, isLoading} = useGetDocVerLangQuery(docVer?.id ?? skipToken)
+interface Args {
+  doc_ver_id?: string
+}
+
+export default function DocumentLangSelectContainer({doc_ver_id}: Args) {
+  const {data, isLoading} = useGetDocVerLangQuery(doc_ver_id ?? skipToken)
 
   // Update lang
   const [updateLang, {isLoading: isUpdating}] = useUpdateDocVerLangMutation()
 
   const onChange = (newValue: string | null) => {
-    if (newValue && docVer?.id) {
-      updateLang({docVerId: docVer.id, lang: newValue})
+    if (newValue && doc_ver_id) {
+      updateLang({docVerId: doc_ver_id, lang: newValue})
     }
   }
 

@@ -15,13 +15,15 @@ interface BuildSearchParamsArgs {
   pageNumber: number
   pageSize: number
   sorting?: SortState | null
+  lang?: string
 }
 
 export function buildSearchQueryParams({
   filters,
   pageNumber,
   pageSize,
-  sorting
+  sorting,
+  lang
 }: BuildSearchParamsArgs): SearchQueryParams {
   const filterList: SearchQueryParams["filters"] = {}
 
@@ -95,7 +97,8 @@ export function buildSearchQueryParams({
     page_number: pageNumber,
     page_size: pageSize,
     sort_by: sorting?.column || undefined,
-    sort_direction: sorting?.direction || undefined
+    sort_direction: sorting?.direction || undefined,
+    lang
   }
 }
 

@@ -10,7 +10,7 @@ This test validates the complete flow:
 """
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.tests.types import AuthTestClient
+from papermerge.core.tests.types import AuthTestClient
 from papermerge.core.features.search import schema as search_schema
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.document.db import api as doc_dbapi

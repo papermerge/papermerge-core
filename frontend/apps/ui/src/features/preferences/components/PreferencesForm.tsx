@@ -2,7 +2,9 @@ import {Preferences} from "@/features/preferences/types"
 import {ComboboxItem, Paper, Stack} from "@mantine/core"
 import {TFunction} from "i18next"
 import DateFormatPicker from "./DateFormatPicket"
+import DocumentDefaultLangPicker from "./DocumentDefaultLangPicker"
 import NumberFormatPicker from "./NumberFormatPicker"
+import SearchLangPicker from "./SearchLangPicker"
 import TimestampFormatPicker from "./TimestampFormatPicker"
 import TimezonePicker from "./TimezonePicker"
 import UILanguagePicker from "./UILanguagePicker"
@@ -57,6 +59,18 @@ export default function PreferencesForm({
         <UIThemePicker
           value={preferences.ui_theme}
           onChange={(_, option) => onChange?.("ui_theme", option)}
+          t={t}
+        />
+
+        <DocumentDefaultLangPicker
+          value={preferences.document_default_lang}
+          onChange={(_, option) => onChange?.("document_default_lang", option)}
+          t={t}
+        />
+
+        <SearchLangPicker
+          value={preferences.search_lang}
+          onChange={(_, option) => onChange?.("search_lang", option)}
           t={t}
         />
       </Stack>

@@ -109,7 +109,7 @@ export default function DocumentDetails({doc, docVer, isLoading}: Args) {
                 <CopyButton value={doc?.owner_name || t(OWNER_ME)} />
               }
             />
-            <DocumentLangSelect />
+            <DocumentLangSelect doc_ver_id={docVer?.id} />
             <Group>
               <TagsInput
                 rightSection={<EditTagsButton doc_id={doc.id} />}

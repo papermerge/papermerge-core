@@ -2,6 +2,7 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {DEBOUNCE_SEARCH_WAIT_TIME_MS} from "@/cconstants"
 import {useSearchDocumentsMutation} from "@/features/documentsList/storage/api"
 import {buildSearchQueryParams} from "@/features/documentsList/utils/searchHelper"
+import {selectMyPreferences} from "@/features/preferences/storage/preference"
 import useDebouncedSearchParamsString from "@/features/search/hooks/useDebouncedSearchParamsString"
 import type {SearchQueryParams} from "@/features/search/types"
 import {usePanel} from "@/features/ui/hooks/usePanel"
@@ -24,6 +25,7 @@ export default function useDocumentsListTable() {
   const pageSize = useAppSelector(s => selectPanelPageSize(s, panelId)) || 10
   const pageNumber = useAppSelector(s => selectPanelPageNumber(s, panelId)) || 1
   const sorting = useAppSelector(s => selectPanelSorting(s, panelId))
+  const myPreferences = useAppSelector(selectMyPreferences)
 
   // Use the mutation hook
   const [searchDocuments, {data, isLoading, isError, error}] =
@@ -43,7 +45,8 @@ export default function useDocumentsListTable() {
       filters: debouncedSearchTokens,
       pageNumber,
       pageSize,
-      sorting
+      sorting,
+      lang: myPreferences.search_lang
     })
 
     // Execute search

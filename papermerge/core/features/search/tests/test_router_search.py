@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from papermerge.core import db
 from papermerge.core.features.search import schema as search_schema
 from papermerge.core.features.document.db import api as doc_dbapi
-from core.tests.types import AuthTestClient
+from papermerge.core.tests.types import AuthTestClient
 
 
 async def test_search_with_empty_categories_filter(

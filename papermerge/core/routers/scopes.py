@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 
 from papermerge.core import schema
 from papermerge.core.features import auth
-from core.features.auth import scopes
+from papermerge.core.features.auth import scopes
 
 router = APIRouter(
     prefix="/scopes",

@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.types import OwnerType
+from papermerge.core.types import OwnerType
 from papermerge.core.types import ResourceType
 from papermerge.core import orm, schema
 from papermerge.core.features.ownership.db import api as ownership_api

@@ -79,7 +79,6 @@ export default function DocumentLangSelect({
       value={value}
       placeholder={t("pickValue", {defaultValue: "Pick Value"})}
       onChange={handleChange}
-      clearable
       searchable
       disabled={disabled}
     />

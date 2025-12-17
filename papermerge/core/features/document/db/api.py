@@ -1401,3 +1401,55 @@ def _apply_document_sorting(
             query = query.order_by(sort_column.asc())
 
     return query
+
+
+
+async def get_doc_ver_lang(
+    db_session: AsyncSession,
+    doc_ver_id: uuid.UUID,
+) -> str:
+    """
+    Returns the lang attribute of the document version
+    identified by doc_ver_id.
+
+    Raises:
+        NoResultFound: If the document version does not exist.
+    """
+    stmt = select(orm.DocumentVersion.lang).where(
+        orm.DocumentVersion.id == doc_ver_id
+    )
+    result = (await db_session.execute(stmt)).scalar_one()
+
+    return result
+
+
+async def set_doc_ver_lang(
+    db_session: AsyncSession,
+    doc_ver_id: uuid.UUID,
+    lang: str,
+) -> str:
+    """
+    Sets the lang attribute of the document version
+    identified by doc_ver_id.
+
+    Returns the updated lang value.
+
+    Raises:
+        NoResultFound: If the document version does not exist.
+    """
+    # First verify the document version exists
+    stmt_check = select(orm.DocumentVersion.id).where(
+        orm.DocumentVersion.id == doc_ver_id
+    )
+    (await db_session.execute(stmt_check)).scalar_one()
+
+    # Update the lang attribute
+    stmt_update = (
+        update(orm.DocumentVersion)
+        .where(orm.DocumentVersion.id == doc_ver_id)
+        .values(lang=lang)
+    )
+    await db_session.execute(stmt_update)
+    await db_session.commit()
+
+    return lang

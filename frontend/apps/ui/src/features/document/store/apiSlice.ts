@@ -57,6 +57,15 @@ interface GetDocsByTypeArgs {
   order?: OrderType
 }
 
+interface DocVerLang {
+  lang: string
+}
+
+interface UpdateDocVerLangArgs {
+  docVerId: string
+  lang: string
+}
+
 export const apiSliceWithDocuments = apiSlice.injectEndpoints({
   endpoints: builder => ({
     getDocLastVersion: builder.query<DocumentVersion, string>({
@@ -259,6 +268,22 @@ export const apiSliceWithDocuments = apiSlice.injectEndpoints({
       providesTags: (_result, _error, args) => [
         {type: "DocumentCFV", id: args.document_type_id}
       ]
+    }),
+    getDocVerLang: builder.query<DocVerLang, string>({
+      query: docVerId => `/document-versions/${docVerId}/lang`,
+      providesTags: (_result, _error, arg) => [
+        {type: "DocumentVersion", id: arg}
+      ]
+    }),
+    updateDocVerLang: builder.mutation<DocVerLang, UpdateDocVerLangArgs>({
+      query: ({docVerId, lang}) => ({
+        url: `/document-versions/${docVerId}/lang`,
+        method: "PATCH",
+        body: {lang}
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        {type: "DocumentVersion", id: arg.docVerId}
+      ]
     })
   })
 })
@@ -273,5 +298,7 @@ export const {
   useUpdateDocumentCustomFieldsMutation,
   useUpdateDocumentTypeMutation,
   useGetDocumentCustomFieldsQuery,
-  useGetDocsByTypeQuery
+  useGetDocsByTypeQuery,
+  useGetDocVerLangQuery,
+  useUpdateDocVerLangMutation
 } = apiSliceWithDocuments

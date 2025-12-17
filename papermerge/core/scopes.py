@@ -7,6 +7,8 @@ CreateCustomFields: type[User] = require_scopes(Scopes.CUSTOM_FIELD_CREATE)
 DeleteCustomFields: type[User] = require_scopes(Scopes.CUSTOM_FIELD_DELETE)
 UpdateCustomFields: type[User] = require_scopes(Scopes.CUSTOM_FIELD_UPDATE)
 ViewNode: type[User] = require_scopes(Scopes.NODE_VIEW)
+UpdateNode: type[User] = require_scopes(Scopes.NODE_UPDATE)
+DownloadDocument: type[User] = require_scopes(Scopes.DOCUMENT_DOWNLOAD)
 
 __all__ = [
     "ViewCustomFields",
@@ -14,4 +16,6 @@ __all__ = [
     "DeleteCustomFields",
     "UpdateCustomFields",
     "ViewNode",
+    "UpdateNode",
+    "DownloadDocument"
 ]

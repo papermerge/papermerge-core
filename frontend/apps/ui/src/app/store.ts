@@ -27,6 +27,7 @@ import panelRegistryReducer from "@/features/ui/panelRegistry"
 import uiReducer from "@/features/ui/uiSlice"
 import usersReducer from "@/features/users/storage/user"
 import currentUserReducer from "@/slices/currentUser"
+import recentDocumentLanguagesReducer from "@/store/recentDocumentLangsSlice"
 import {configureStore} from "@reduxjs/toolkit"
 import {rtkQueryErrorLogger} from "./globalErrorMiddleware"
 import {listenerMiddleware} from "./listenerMiddleware"
@@ -44,6 +45,7 @@ const rootReducer = {
   customFields: customFieldsReducer,
   documentTypes: documentTypesReducer,
   recentCategories: recentCategoriesReducer,
+  recentDocumentLanguages: recentDocumentLanguagesReducer,
   users: usersReducer,
   nodes: nodesReducer,
   sharedNodes: sharedNodesReducer,

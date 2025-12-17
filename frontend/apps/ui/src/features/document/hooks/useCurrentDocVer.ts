@@ -5,9 +5,9 @@ import {
   addDocVersion,
   selectDocVerByID
 } from "@/features/document/store/documentVersSlice"
+import {usePanel} from "@/features/ui/hooks/usePanel"
 import {selectCurrentNodeID} from "@/features/ui/panelRegistry"
 import {currentDocVerUpdated} from "@/features/ui/uiSlice"
-import {usePanelMode} from "@/hooks"
 import {ClientDocumentVersion} from "@/types"
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query"
 import {skipToken} from "@reduxjs/toolkit/query"
@@ -29,8 +29,8 @@ interface ReturnState {
 
 export default function useCurrentDocVer(): ReturnState {
   const dispatch = useAppDispatch()
-  const mode = usePanelMode()
-  const currentDocumentID = useAppSelector(s => selectCurrentNodeID(s, mode))
+  const {panelId} = usePanel()
+  const currentDocumentID = useAppSelector(s => selectCurrentNodeID(s, panelId))
   const latestDocVerID = useAppSelector(s =>
     selectLatestDocVerByDocID(s, currentDocumentID)
   )
@@ -55,9 +55,9 @@ export default function useCurrentDocVer(): ReturnState {
       if (!latestDocVerID) {
         dispatch(addDocVersion(currentData))
       }
-      dispatch(currentDocVerUpdated({mode: mode, docVerID: currentData.id}))
+      dispatch(currentDocVerUpdated({mode: panelId, docVerID: currentData.id}))
     }
-  }, [currentData, latestDocVerID, currentDocumentID])
+  }, [currentData, latestDocVerID, currentDocumentID, panelId])
 
   const docVer: ClientDocumentVersion | undefined = useMemo(() => {
     if (docVerFromSlice) {
@@ -67,7 +67,7 @@ export default function useCurrentDocVer(): ReturnState {
     } else {
       return undefined
     }
-  }, [currentData, docVerFromSlice, latestDocVerID, latestDocVerID, mode])
+  }, [currentData, docVerFromSlice, latestDocVerID, latestDocVerID, panelId])
 
   return {
     error: undefined,

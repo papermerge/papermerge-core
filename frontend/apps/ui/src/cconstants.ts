@@ -1,4 +1,5 @@
 import {I18nLangType, OCRLangType} from "@/types"
+import type {ComboboxItem} from "@mantine/core"
 
 export const DEFAULT_TAG_BG_COLOR = "#c41fff"
 export const DEFAULT_TAG_FG_COLOR = "#ffffff"
@@ -97,3 +98,44 @@ export const IMAGE_SIZE_MAP = {
 }
 
 export const DEBOUNCE_SEARCH_WAIT_TIME_MS = 600 // miliseconds
+
+export const DOCUMENT_LANGUAGES: ComboboxItem[] = [
+  {value: "sqi", label: "Shqip"}, // Albanian
+  {value: "bel", label: "Беларуская"}, // Belarusian
+  {value: "bos", label: "Bosanski"}, // Bosnian
+  {value: "bul", label: "Български"}, // Bulgarian
+  {value: "cat", label: "Català"}, // Catalan
+  {value: "hrv", label: "Hrvatski"}, // Croatian
+  {value: "ces", label: "Čeština"}, // Czech
+  {value: "dan", label: "Dansk"}, // Danish
+  {value: "nld", label: "Nederlands"}, // Dutch
+  {value: "eng", label: "English"}, // English
+  {value: "est", label: "Eesti"}, // Estonian
+  {value: "fin", label: "Suomi"}, // Finnish
+  {value: "fra", label: "Français"}, // French
+  {value: "glg", label: "Galego"}, // Galician
+  {value: "deu", label: "Deutsch"}, // German
+  {value: "ell", label: "Ελληνικά"}, // Greek
+  {value: "hun", label: "Magyar"}, // Hungarian
+  {value: "isl", label: "Íslenska"}, // Icelandic
+  {value: "gle", label: "Gaeilge"}, // Irish
+  {value: "ita", label: "Italiano"}, // Italian
+  {value: "lav", label: "Latviešu"}, // Latvian
+  {value: "lit", label: "Lietuvių"}, // Lithuanian
+  {value: "ltz", label: "Lëtzebuergesch"}, // Luxembourgish
+  {value: "mkd", label: "Македонски"}, // Macedonian
+  {value: "mlt", label: "Malti"}, // Maltese
+  {value: "nor", label: "Norsk"}, // Norwegian
+  {value: "pol", label: "Polski"}, // Polish
+  {value: "por", label: "Português"}, // Portuguese
+  {value: "ron", label: "Română"}, // Romanian
+  {value: "rus", label: "Русский"}, // Russian
+  {value: "srp", label: "Српски"}, // Serbian
+  {value: "slk", label: "Slovenčina"}, // Slovak
+  {value: "slv", label: "Slovenščina"}, // Slovenian
+  {value: "spa", label: "Español"}, // Spanish
+  {value: "swe", label: "Svenska"}, // Swedish
+  {value: "ukr", label: "Українська"}, // Ukrainian
+  {value: "cym", label: "Cymraeg"}, // Welsh
+  {value: "eus", label: "Euskara"} // Basque
+]

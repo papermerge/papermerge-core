@@ -28,6 +28,7 @@ import CustomFields from "./CustomFields"
 import DocumentDetailsResizer, {
   DOCUMENT_DETAILS_DEFAULT_WIDTH
 } from "./DocumentDetailsResizer"
+import DocumentLangSelect from "./DocumentLangSelect"
 
 interface Args {
   doc?: DocumentType
@@ -108,6 +109,7 @@ export default function DocumentDetails({doc, docVer, isLoading}: Args) {
                 <CopyButton value={doc?.owner_name || t(OWNER_ME)} />
               }
             />
+            <DocumentLangSelect />
             <Group>
               <TagsInput
                 rightSection={<EditTagsButton doc_id={doc.id} />}
@@ -120,12 +122,6 @@ export default function DocumentDetails({doc, docVer, isLoading}: Args) {
             <Group>
               <CustomFields doc={doc} isLoading={isLoading} />
             </Group>
-            <TextInput
-              label={t("common.ocr_language")}
-              readOnly
-              value={ocrLang}
-              mt="md"
-            />
           </Stack>
         </div>
       </>

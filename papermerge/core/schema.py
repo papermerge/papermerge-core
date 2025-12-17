@@ -36,7 +36,9 @@ from .features.document.schema import (
     DocVerListItem,
     DownloadURL,
     DocumentsByTypeParams,
-    DocumentEx
+    DocumentEx,
+    DocVerLang,
+    UpdateDocVerLang
 )
 from .features.users.schema import User, UserSimple, UserEx, CreateUser, UserDetails, UpdateUser, ChangeUserPassword, UserHomes, UserInboxes, UserHome, UserInbox
 from .features.custom_fields.schema import (
@@ -162,5 +164,7 @@ __all__ = [
     'AuditLogDetails',
     'OwnedBy',
     'DocumentsByTypeParams',
-    'Owner'
+    'Owner',
+    'DocVerLang',
+    'UpdateDocVerLang'
 ]

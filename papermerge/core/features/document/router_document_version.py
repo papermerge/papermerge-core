@@ -1,16 +1,13 @@
 import logging
 import uuid
-from typing import Annotated
 
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import APIRouter, HTTPException, Security, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status
 
-from papermerge.core import schema, utils, dbapi, orm
-from papermerge.core.features.auth import get_current_user
-from papermerge.core.features.auth import scopes
+from papermerge.core import schema, dbapi, orm, scopes, db
+from papermerge.core.features.auth.scopes import Scopes
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
-from papermerge.core.db import common as dbapi_common
 from papermerge.core import exceptions as exc
 from papermerge.core.db.engine import get_db
 from papermerge.core.features.document.response import DocumentFileResponse
@@ -41,26 +38,20 @@ router = APIRouter(prefix="/document-versions", tags=["document-versions"])
         }
     }
 )
-@utils.docstring_parameter(scope=scopes.DOCUMENT_DOWNLOAD)
 async def download_document_version(
     document_version_id: uuid.UUID,
-    user: Annotated[
-        schema.User, Security(get_current_user, scopes=[scopes.DOCUMENT_DOWNLOAD])
-    ],
+    user: scopes.DownloadDocument,
     db_session: AsyncSession = Depends(get_db),
 ):
-    """Downloads given document version
-
-    Required scope: `{scope}`
-    """
+    """Downloads given document version"""
     try:
         doc_id = await dbapi.get_doc_id_from_doc_ver_id(
             db_session, doc_ver_id=document_version_id
         )
-        if not await dbapi_common.has_node_perm(
+        if not await db.has_node_perm(
                 db_session,
                 node_id=doc_id,
-                codename=scopes.NODE_VIEW,
+                codename=Scopes.NODE_VIEW,
                 user_id=user.id,
         ):
             raise exc.HTTP403Forbidden()
@@ -87,31 +78,29 @@ async def download_document_version(
     "/{doc_ver_id}/download-url",
     responses={
         status.HTTP_403_FORBIDDEN: {
-            "description": f"No `{scopes.DOCUMENT_DOWNLOAD}` permission on the node",
+            "description": f"No `{Scopes.DOCUMENT_DOWNLOAD}` permission on the node",
             "content": OPEN_API_GENERIC_JSON_DETAIL,
         }
     },
 )
-@utils.docstring_parameter(scope=scopes.DOCUMENT_DOWNLOAD)
 async def get_doc_ver_download_url(
     doc_ver_id: uuid.UUID,
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.DOCUMENT_DOWNLOAD])],
+    user: scopes.DownloadDocument,
     db_session: AsyncSession = Depends(get_db),
 ) -> schema.DownloadURL:
     """
     Returns URL for downloading given document version
 
-    Required scope: `{scope}`
     For this action user requires "node.view" permission as well.
     """
     try:
         doc_id = await dbapi.get_doc_id_from_doc_ver_id(
             db_session, doc_ver_id=doc_ver_id
         )
-        if not await dbapi_common.has_node_perm(
+        if not await db.has_node_perm(
             db_session,
             node_id=doc_id,
-            codename=scopes.NODE_VIEW,
+            codename=Scopes.NODE_VIEW,
             user_id=user.id,
         ):
             raise exc.HTTP403Forbidden()
@@ -131,24 +120,20 @@ async def get_doc_ver_download_url(
     "/{document_version_id}",
     response_model=schema.DocumentVersion
 )
-@utils.docstring_parameter(scope=scopes.NODE_VIEW)
 async def document_version_details(
     document_version_id: uuid.UUID,
-    user: Annotated[schema.User, Security(get_current_user, scopes=[scopes.NODE_VIEW])],
+    user: scopes.ViewNode,
     db_session=Depends(get_db),
 ):
-    """Get document version details
-
-    Required scope: `{scope}`
-    """
+    """Get document version details"""
     try:
         doc_id = await dbapi.get_doc_id_from_doc_ver_id(
             db_session, doc_ver_id=document_version_id
         )
-        if not await dbapi_common.has_node_perm(
+        if not await db.has_node_perm(
                 db_session,
                 node_id=doc_id,
-                codename=scopes.NODE_VIEW,
+                codename=Scopes.NODE_VIEW,
                 user_id=user.id,
         ):
             raise exc.HTTP403Forbidden()
@@ -160,3 +145,89 @@ async def document_version_details(
         raise HTTPException(status_code=404, detail=error.model_dump())
 
     return schema.DocumentVersion.model_validate(doc_ver)
+
+
+@router.get(
+    "/{doc_ver_id}/lang",
+    response_model=schema.DocVerLang,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{Scopes.NODE_VIEW}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "Document version not found",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
+async def get_doc_ver_lang(
+    doc_ver_id: uuid.UUID,
+    user: scopes.ViewNode,
+    db_session: AsyncSession = Depends(get_db),
+) -> schema.DocVerLang:
+    """Returns the lang attribute of the document version"""
+    try:
+        doc_id = await dbapi.get_doc_id_from_doc_ver_id(
+            db_session, doc_ver_id=doc_ver_id
+        )
+        if not await db.has_node_perm(
+            db_session,
+            node_id=doc_id,
+            codename=Scopes.NODE_VIEW,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
+
+        lang = await db.get_doc_ver_lang(
+            db_session,
+            doc_ver_id=doc_ver_id,
+        )
+    except NoResultFound:
+        raise exc.HTTP404NotFound()
+
+    return schema.DocVerLang(lang=lang)
+
+
+@router.patch(
+    "/{doc_ver_id}/lang",
+    response_model=schema.DocVerLang,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": f"No `{Scopes.NODE_UPDATE}` permission on the node",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "Document version not found",
+            "content": OPEN_API_GENERIC_JSON_DETAIL,
+        }
+    },
+)
+async def set_doc_ver_lang(
+    doc_ver_id: uuid.UUID,
+    payload: schema.UpdateDocVerLang,
+    user: scopes.UpdateNode,
+    db_session: AsyncSession = Depends(get_db),
+) -> schema.DocVerLang:
+    """Sets the lang attribute of the document version."""
+    try:
+        doc_id = await dbapi.get_doc_id_from_doc_ver_id(
+            db_session, doc_ver_id=doc_ver_id
+        )
+        if not await db.has_node_perm(
+            db_session,
+            node_id=doc_id,
+            codename=Scopes.NODE_UPDATE,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
+
+        lang = await db.set_doc_ver_lang(
+            db_session,
+            doc_ver_id=doc_ver_id,
+            lang=payload.lang,
+        )
+    except NoResultFound:
+        raise exc.HTTP404NotFound()
+
+    return schema.DocVerLang(lang=lang)

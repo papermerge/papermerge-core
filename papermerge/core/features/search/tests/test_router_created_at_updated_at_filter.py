@@ -11,14 +11,14 @@ async def test_very_basic_created_at(
     make_document
 ):
     with freeze_time("2025-12-16"):
-        doc_1 = await make_document(
+        await make_document(
             title="newer.pdf",
             user=user,
             parent=user.home_folder,
         )
 
     with freeze_time("2025-12-01"):
-        doc_2 = await make_document(
+        await make_document(
             title="older.pdf",
             user=user,
             parent=user.home_folder,

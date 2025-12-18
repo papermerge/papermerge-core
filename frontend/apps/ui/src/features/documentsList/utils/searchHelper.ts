@@ -2,7 +2,11 @@ import {
   CATEGORY_IMPLICIT_OPERATOR,
   TAG_IMPLICIT_OPERATOR
 } from "@/features/search/microcomp/const"
-import type {Filter} from "@/features/search/microcomp/types"
+import type {
+  CreatedAtFilter,
+  Filter,
+  UpdatedAtFilter
+} from "@/features/search/microcomp/types"
 import {operatorSym2Text} from "@/features/search/microcomp/utils"
 import type {
   CustomFieldFilter,
@@ -71,10 +75,9 @@ export function buildSearchQueryParams({
         break
 
       case "md":
-        const operator = operatorSym2Text(filter.operator || "=")
         let newCF = {
           field_name: filter.fieldName,
-          operator: operator,
+          operator: operatorSym2Text(filter.operator || "="),
           value: filter.value,
           values: filter.values
         } as CustomFieldFilter
@@ -83,6 +86,34 @@ export function buildSearchQueryParams({
           filterList.custom_fields = [newCF]
         } else {
           filterList.custom_fields.push(newCF)
+        }
+        break
+
+      case "created_at":
+        let created_at = {
+          type: "created_at",
+          operator: operatorSym2Text(filter.operator || "="),
+          value: filter.value
+        } as CreatedAtFilter
+
+        if (!filterList.created_at) {
+          filterList.created_at = [created_at]
+        } else {
+          filterList.created_at.push(created_at)
+        }
+        break
+
+      case "updated_at":
+        let updated_at = {
+          type: "updated_at",
+          operator: operatorSym2Text(filter.operator || "="),
+          value: filter.value
+        } as UpdatedAtFilter
+
+        if (!filterList.updated_at) {
+          filterList.updated_at = [updated_at]
+        } else {
+          filterList.updated_at.push(updated_at)
         }
         break
 
@@ -172,6 +203,14 @@ export function uniqueSearchString(filters: Filter[]): string {
     }
 
     if (f.type == "md" && (f.value || f.values) && f.fieldName && f.operator) {
+      return true
+    }
+
+    if (f.type == "created_at" && f.value) {
+      return true
+    }
+
+    if (f.type == "updated_at" && f.value) {
       return true
     }
 

@@ -1,4 +1,9 @@
-import {CategoryOperator, TagOperator} from "./microcomp/types"
+import {
+  CategoryOperator,
+  CreatedAtFilter,
+  TagOperator,
+  UpdatedAtFilter
+} from "./microcomp/types"
 
 export type DateTypeOperator = ">=" | ">" | "<" | "<=" | "!=" | "="
 export type NumericTypeOperator = ">=" | ">" | "<" | "<=" | "!=" | "="
@@ -44,6 +49,8 @@ export interface SearchFilters {
   categories?: CategoryFilter[]
   tags?: TagFilter[]
   custom_fields?: CustomFieldFilter[]
+  created_at?: CreatedAtFilter[]
+  updated_at?: UpdatedAtFilter[]
 }
 
 export interface SearchQueryParams {

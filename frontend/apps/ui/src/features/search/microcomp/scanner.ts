@@ -79,7 +79,7 @@ function parseFreeTextToken({
 
 function parseFilter(input: string): Filter | null {
   const parts = splitByColon(input)
-  const filters = ["md", "tag", "cat"] as const
+  const filters = ["md", "tag", "cat", "created_at", "updated_at"] as const
 
   const filter = parts[0]
 

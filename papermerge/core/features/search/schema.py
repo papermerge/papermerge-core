@@ -20,6 +20,16 @@ from papermerge.core.schemas.common import ByUser, OwnedBy
 # ENUMS
 # ============================================================================
 
+
+class NumericOperator(str, Enum):
+    EQ = "eq" # =
+    NE = "ne" # !=
+    GT = "gt" # >
+    GTE = "gte" # >=
+    LT = "lt"  # <
+    LTE = "lte"  # <=
+
+
 class CustomFieldOperator(str, Enum):
     """Comparison operators for filters"""
     # Equality
@@ -269,6 +279,15 @@ class OwnerFilter(BaseModel):
     )
 
 
+class CreatedAtFilter(BaseModel):
+    operator: NumericOperator
+    value: datetime
+
+
+class UpdatedAtFilter(BaseModel):
+    operator: NumericOperator
+    value: datetime
+
 # ============================================================================
 # MAIN REQUEST/RESPONSE SCHEMAS
 # ============================================================================
@@ -301,6 +320,16 @@ class SearchFilters(BaseModel):
     owner: Optional[OwnerFilter] = Field(
         None,
         description="Owner of the document"
+    )
+
+    created_at: Optional[List[CreatedAtFilter]]= Field(
+        None,
+        description="When first version of the document was created"
+    )
+
+    updated_at: Optional[List[CreatedAtFilter]]= Field(
+        None,
+        description="When last version of the document was updated"
     )
 
     @field_validator('tags')

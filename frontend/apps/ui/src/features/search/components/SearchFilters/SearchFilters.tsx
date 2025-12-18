@@ -1,5 +1,6 @@
 import {useAppSelector} from "@/app/hooks"
 import SearchFilterCategoryComponent from "./CatFilter"
+import CreatedAtFilter from "./CreatedAt"
 import CustomFieldFilter from "./CustomFieldFilter"
 import FreeTextFilterComponent from "./FTSFilter"
 import SearchFilterTagComponent from "./TagFilter"
@@ -32,6 +33,8 @@ function SearchFilter({index}: SearchFilterArgs) {
       return <FreeTextFilterComponent index={index} />
     case "md":
       return <CustomFieldFilter index={index} />
+    case "created_at":
+      return <CreatedAtFilter index={index} />
   }
 
   return <>Unknown filter</>

@@ -42,6 +42,7 @@ export type CustomFieldNumericOperator =
   | "<"
   | "<="
   | "!="
+export type NumericOperator = CustomFieldNumericOperator
 export type CustomFieldTextOperator =
   | "!="
   | "="
@@ -96,11 +97,23 @@ export interface CustomFieldFilter extends BasicFilter {
   id?: string
 }
 
+export interface CreatedAtFilter extends BasicFilter {
+  type: "created_at"
+  value?: string
+}
+
+export interface UpdatedAtFilter extends BasicFilter {
+  type: "updated_at"
+  value?: string
+}
+
 export type Filter =
   | FreeTextFilter
   | CategoryFilter
   | TagFilter
   | CustomFieldFilter
+  | CreatedAtFilter
+  | UpdatedAtFilter
 
 export type SuggestionType =
   | "filter"

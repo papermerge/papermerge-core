@@ -30,6 +30,7 @@ from papermerge.core.features.groups.db.orm import UserGroup
 from papermerge.core.types import OwnerType, ResourceType
 from papermerge.core.features.custom_fields.cf_types.registry import \
     TypeRegistry
+from papermerge.core.features.document.db.orm import DocumentVersion
 
 logger = logging.getLogger(__name__)
 
@@ -311,16 +312,41 @@ async def search_documents(
                 )
             )
 
+    # =========================================================================
+    # Step 8: Apply created_at filters
+    # =========================================================================
+    if params.filters and params.filters.created_at:
+        created_at_filter = _build_datetime_filter(
+            params.filters.created_at,
+            orm.Node.created_at
+        )
+        if created_at_filter is not None:
+            base_query = base_query.where(created_at_filter)
+            count_query = count_query.where(created_at_filter)
+
+    # =========================================================================
+    # Step 9: Apply updated_at filters
+    # =========================================================================
+    if params.filters and params.filters.updated_at:
+        # updated_at comes from the latest DocumentVersion.updated_at
+        updated_at_filter = _build_updated_at_filter(
+            params.filters.updated_at,
+            DocumentSearchIndex.document_id
+        )
+        if updated_at_filter is not None:
+            base_query = base_query.where(updated_at_filter)
+            count_query = count_query.where(updated_at_filter)
+
     # Note: We'll apply sorting later, after getting distinct document IDs
 
     # =========================================================================
-    # Step 8: Get total count
+    # Step 10: Get total count
     # =========================================================================
     count_result = await db_session.execute(count_query)
     total_count = count_result.scalar() or 0
 
     # =========================================================================
-    # Step 9: Get distinct document IDs (without ordering yet)
+    # Step 11: Get distinct document IDs (without ordering yet)
     # =========================================================================
     offset = (params.page_number - 1) * params.page_size
 
@@ -348,7 +374,7 @@ async def search_documents(
         )
 
     # =========================================================================
-    # Step 10: Apply sorting and pagination to the distinct IDs
+    # Step 12: Apply sorting and pagination to the distinct IDs
     # =========================================================================
     # Build a new query with just the search index for these document IDs
     sorted_query = (
@@ -385,7 +411,7 @@ async def search_documents(
         )
 
     # =========================================================================
-    # Step 11: Load full document data
+    # Step 13: Load full document data
     # =========================================================================
     created_user = aliased(orm.User, name='created_user')
     updated_user = aliased(orm.User, name='updated_user')
@@ -490,7 +516,7 @@ async def search_documents(
                 docs_dict[doc_id]['tags'].append(tag)
 
     # =========================================================================
-    # Step 12: Load custom field values (if custom fields are relevant)
+    # Step 14: Load custom field values (if custom fields are relevant)
     # =========================================================================
     cfvs_by_doc: dict = {}
 
@@ -512,7 +538,7 @@ async def search_documents(
             cfvs_by_doc[cfv.document_id].append(cfv)
 
     # =========================================================================
-    # Step 13: Build response items
+    # Step 15: Build response items
     # =========================================================================
     items = []
     for doc_id, doc_data in docs_dict.items():
@@ -686,6 +712,77 @@ def _build_tag_filters(tag_filters: list[search_schema.TagFilter]):
             conditions.append(and_(*tag_conditions))
 
     # final AND_(all tag filters)
+    return and_(*conditions) if conditions else None
+
+
+def _build_datetime_filter(filters, column):
+    """Build datetime filter for created_at field.
+
+    Args:
+        filters: List of CreatedAtFilter
+        column: SQLAlchemy column (orm.Node.created_at)
+
+    Returns:
+        SQLAlchemy filter expression combining all filters with AND logic
+    """
+    conditions = []
+
+    for filter_spec in filters:
+        operator = filter_spec.operator
+        value = filter_spec.value
+
+        if operator == search_schema.NumericOperator.EQ:
+            conditions.append(column == value)
+        elif operator == search_schema.NumericOperator.NE:
+            conditions.append(column != value)
+        elif operator == search_schema.NumericOperator.GT:
+            conditions.append(column > value)
+        elif operator == search_schema.NumericOperator.GTE:
+            conditions.append(column >= value)
+        elif operator == search_schema.NumericOperator.LT:
+            conditions.append(column < value)
+        elif operator == search_schema.NumericOperator.LTE:
+            conditions.append(column <= value)
+
+    return and_(*conditions) if conditions else None
+
+
+def _build_updated_at_filter(filters, document_id_column):
+    """Build datetime filter for updated_at field using latest DocumentVersion.updated_at.
+
+    Args:
+        filters: List of UpdatedAtFilter
+        document_id_column: SQLAlchemy column referencing document_id
+
+    Returns:
+        SQLAlchemy filter expression combining all filters with AND logic
+    """
+    conditions = []
+
+    for filter_spec in filters:
+        operator = filter_spec.operator
+        value = filter_spec.value
+
+        # Subquery to get the MAX(updated_at) from document_versions for this document
+        latest_version_updated_at = (
+            select(func.max(DocumentVersion.updated_at))
+            .where(DocumentVersion.document_id == document_id_column)
+            .scalar_subquery()
+        )
+
+        if operator == search_schema.NumericOperator.EQ:
+            conditions.append(latest_version_updated_at == value)
+        elif operator == search_schema.NumericOperator.NE:
+            conditions.append(latest_version_updated_at != value)
+        elif operator == search_schema.NumericOperator.GT:
+            conditions.append(latest_version_updated_at > value)
+        elif operator == search_schema.NumericOperator.GTE:
+            conditions.append(latest_version_updated_at >= value)
+        elif operator == search_schema.NumericOperator.LT:
+            conditions.append(latest_version_updated_at < value)
+        elif operator == search_schema.NumericOperator.LTE:
+            conditions.append(latest_version_updated_at <= value)
+
     return and_(*conditions) if conditions else None
 
 

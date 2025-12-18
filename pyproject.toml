@@ -68,6 +68,7 @@ aws_s3 = [
 
 [dependency-groups]
 dev = [
+    "freezegun>=1.5.5",
     "pytest",
     "pytest-asyncio",
 ]

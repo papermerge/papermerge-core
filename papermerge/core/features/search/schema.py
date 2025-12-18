@@ -327,7 +327,7 @@ class SearchFilters(BaseModel):
         description="When first version of the document was created"
     )
 
-    updated_at: Optional[List[CreatedAtFilter]]= Field(
+    updated_at: Optional[List[UpdatedAtFilter]]= Field(
         None,
         description="When last version of the document was updated"
     )

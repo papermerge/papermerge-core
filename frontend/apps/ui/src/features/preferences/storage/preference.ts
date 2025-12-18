@@ -15,7 +15,7 @@ const defaultPreferences: Preferences = {
   timezone: "UTC",
   ui_language: "en",
   ui_theme: "light",
-  uploaded_document_lang: "eng",
+  document_default_lang: "eng",
   search_lang: "eng"
 }
 

@@ -34,7 +34,9 @@ function SearchFilter({index}: SearchFilterArgs) {
     case "md":
       return <CustomFieldFilter index={index} />
     case "created_at":
-      return <CreatedAtFilter index={index} />
+      return <CreatedAtFilter index={index} filterName={"created_at"} />
+    case "updated_at":
+      return <CreatedAtFilter index={index} filterName={"updated_at"} />
   }
 
   return <>Unknown filter</>

@@ -8,18 +8,20 @@ import type {
 } from "@/features/search/microcomp/types"
 import {removeFilter, updateFilter} from "@/features/search/storage/search"
 import {ActionIcon, Box, Group, Select, Text} from "@mantine/core"
-import {DatePickerInput, type DateValue} from "@mantine/dates"
+import {DateTimePicker, type DateValue} from "@mantine/dates"
 import {IconX} from "@tabler/icons-react"
 import {format, parse} from "date-fns"
 import styles from "../SearchFilters.module.css"
 
 interface Args {
   index: number
+  filterName: string
 }
 
-export default function CreatedAtFilterComponent({index}: Args) {
+export default function CreatedAtFilterComponent({index, filterName}: Args) {
   const dispatch = useAppDispatch()
-  const {date_format: userDateFormat} = useAppSelector(selectMyPreferences)
+  const {timestamp_format: datetimeFormat} = useAppSelector(selectMyPreferences)
+
   const filter = useAppSelector(
     state => state.search.filters[index]
   ) as CreatedAtFilter
@@ -34,37 +36,36 @@ export default function CreatedAtFilterComponent({index}: Args) {
 
   const handleValueChange = (value: DateValue) => {
     if (value) {
-      // Convert to Date if it's a string, otherwise use as-is
       const date = typeof value === "string" ? new Date(value) : value
 
-      // Store in YYYY-MM-DD format (ISO 8601) for backend
-      const isoDateString = format(date, "yyyy-MM-dd")
-      dispatch(updateFilter({index, updates: {value: isoDateString}}))
+      // Store in ISO 8601 datetime format for backend
+      const isoDateTimeString = format(date, "yyyy-MM-dd'T'HH:mm:ss")
+      dispatch(updateFilter({index, updates: {value: isoDateTimeString}}))
     } else {
-      // Clear the value if date is null
       dispatch(updateFilter({index, updates: {value: undefined}}))
     }
   }
 
-  // Convert stored YYYY-MM-DD string back to Date for the picker
+  // Convert stored datetime string back to Date for the picker
   const dateValue =
     filter.value && typeof filter.value === "string"
-      ? parse(filter.value, "yyyy-MM-dd", new Date())
+      ? parse(filter.value, "yyyy-MM-dd'T'HH:mm:ss", new Date())
       : null
 
   return (
     <Box className={styles.tokenContainer} onClick={e => e.stopPropagation()}>
       <Group gap={0}>
-        <Text c={"blue"}>CreatedAt:</Text>
+        <Text c={"blue"}>{filterName}:</Text>
         <Operator item={filter} onOperatorChange={handleOperatorChange} />
-        <DatePickerInput
+        <DateTimePicker
           value={dateValue}
           onChange={handleValueChange}
           onClick={e => e.stopPropagation()}
           size="sm"
-          w="15ch"
-          valueFormat={userDateFormat}
-          placeholder={userDateFormat}
+          w="22ch"
+          valueFormat={datetimeFormat}
+          placeholder={datetimeFormat}
+          withSeconds
         />
       </Group>
       <ActionIcon

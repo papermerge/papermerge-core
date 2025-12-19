@@ -2,7 +2,7 @@ from decimal import Decimal
 from typing import List, Optional, Any, Union
 from uuid import UUID
 from enum import Enum
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 from pydantic import (
     BaseModel,
@@ -283,10 +283,26 @@ class CreatedAtFilter(BaseModel):
     operator: NumericOperator
     value: datetime
 
+    @field_validator('value', mode='after')
+    @classmethod
+    def ensure_timezone_aware(cls, v: datetime) -> datetime:
+        """Treat naive datetimes as UTC"""
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
+
 
 class UpdatedAtFilter(BaseModel):
     operator: NumericOperator
     value: datetime
+
+    @field_validator('value', mode='after')
+    @classmethod
+    def ensure_timezone_aware(cls, v: datetime) -> datetime:
+        """Treat naive datetimes as UTC"""
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v
 
 # ============================================================================
 # MAIN REQUEST/RESPONSE SCHEMAS

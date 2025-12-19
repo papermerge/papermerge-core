@@ -21,10 +21,11 @@ from sqlalchemy import (
     or_,
     case
 )
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.orm import joinedload, selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from papermerge.core.utils.tz import utc_now
 from papermerge.core.db.common import (
     get_shared_root_for_user,
     truncate_breadcrumb_at_shared_root,
@@ -1428,28 +1429,12 @@ async def set_doc_ver_lang(
     doc_ver_id: uuid.UUID,
     lang: str,
 ) -> str:
-    """
-    Sets the lang attribute of the document version
-    identified by doc_ver_id.
+    doc_ver = await db_session.get(orm.DocumentVersion, doc_ver_id)
+    if doc_ver is None:
+        raise NoResultFound()
 
-    Returns the updated lang value.
-
-    Raises:
-        NoResultFound: If the document version does not exist.
-    """
-    # First verify the document version exists
-    stmt_check = select(orm.DocumentVersion.id).where(
-        orm.DocumentVersion.id == doc_ver_id
-    )
-    (await db_session.execute(stmt_check)).scalar_one()
-
-    # Update the lang attribute
-    stmt_update = (
-        update(orm.DocumentVersion)
-        .where(orm.DocumentVersion.id == doc_ver_id)
-        .values(lang=lang)
-    )
-    await db_session.execute(stmt_update)
+    doc_ver.lang = lang
+    doc_ver.updated_at = utc_now()  # Python-side, affected by freeze_time
     await db_session.commit()
 
     return lang

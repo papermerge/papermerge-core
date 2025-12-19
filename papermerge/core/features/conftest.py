@@ -128,13 +128,21 @@ def make_document(db_session: AsyncSession):
         lang: str = "deu",
         user: orm.User | None = None,
     ) -> doc_schema.Document:
-        attrs = doc_schema.NewDocument(
-            title=title,
-            parent_id=parent.id,
-            ocr_status=ocr_status,
-            lang=lang
+        attrs = {
+            "title": title,
+            "parent_id": parent.id,
+            "ocr_status": ocr_status,
+            "lang": lang
+        }
+        if user is not None:
+            attrs["created_by"] = user.id
+            attrs["updated_by"] = user.id
+
+        doc, _ = await doc_dbapi.create_document(
+            db_session,
+            doc_schema.NewDocument(**attrs),
+            mime_type=MimeType.application_pdf
         )
-        doc, _ = await doc_dbapi.create_document(db_session, attrs, mime_type=MimeType.application_pdf)
 
         if doc is None:
             raise Exception("Document was not created")

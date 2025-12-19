@@ -368,6 +368,8 @@ class NewDocument(BaseModel):
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
     size: int = 0
     page_count: int = 0
+    updated_by: UUID
+    created_by: UUID
 
     model_config = ConfigDict(
         json_schema_extra={

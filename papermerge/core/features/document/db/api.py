@@ -522,6 +522,8 @@ async def create_document(
         parent_id=attrs.parent_id,
         ocr=attrs.ocr,
         lang=attrs.lang,
+        created_by=attrs.created_by,
+        updated_by=attrs.updated_by
     )
 
     doc_ver = orm.DocumentVersion(
@@ -1428,7 +1430,7 @@ async def set_doc_ver_lang(
     db_session: AsyncSession,
     doc_ver_id: uuid.UUID,
     lang: str,
-) -> str:
+):
     doc_ver = await db_session.get(orm.DocumentVersion, doc_ver_id)
     if doc_ver is None:
         raise NoResultFound()

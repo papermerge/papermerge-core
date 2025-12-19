@@ -11,6 +11,7 @@ from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core import exceptions as exc
 from papermerge.core.db.engine import get_db
 from papermerge.core.features.document.response import DocumentFileResponse
+from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 
 logger = logging.getLogger(__name__)
 
@@ -222,11 +223,16 @@ async def set_doc_ver_lang(
         ):
             raise exc.HTTP403Forbidden()
 
-        lang = await db.set_doc_ver_lang(
+        async with AsyncAuditContext(
             db_session,
-            doc_ver_id=doc_ver_id,
-            lang=payload.lang,
-        )
+            user_id=user.id,
+            username=user.username
+        ):
+            lang = await db.set_doc_ver_lang(
+                db_session,
+                doc_ver_id=doc_ver_id,
+                lang=payload.lang,
+            )
     except NoResultFound:
         raise exc.HTTP404NotFound()
 

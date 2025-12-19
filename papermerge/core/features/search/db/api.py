@@ -354,9 +354,12 @@ async def search_documents(
     # =========================================================================
     if params.filters and params.filters.updated_by:
         updated_by_filters = []
+        # Get the updated_by from the version with the highest version number
         latest_version_updated_by = (
-            select(func.max(DocumentVersion.updated_by))
+            select(DocumentVersion.updated_by)
             .where(DocumentVersion.document_id == DocumentSearchIndex.document_id)
+            .order_by(DocumentVersion.number.desc())
+            .limit(1)
             .scalar_subquery()
         )
         for f in params.filters.updated_by:

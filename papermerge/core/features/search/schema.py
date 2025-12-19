@@ -292,6 +292,14 @@ class CreatedAtFilter(BaseModel):
         return v
 
 
+class CreatedByFilter(BaseModel):
+    value: UUID # user id
+
+
+class UpdatedByFilter(BaseModel):
+    value: UUID  # user id
+
+
 class UpdatedAtFilter(BaseModel):
     operator: NumericOperator
     value: datetime
@@ -346,6 +354,16 @@ class SearchFilters(BaseModel):
     updated_at: Optional[List[UpdatedAtFilter]]= Field(
         None,
         description="When last version of the document was updated"
+    )
+
+    created_by: Optional[List[CreatedByFilter]]= Field(
+        None,
+        description="Who created the document"
+    )
+
+    updated_by: Optional[List[UpdatedByFilter]]= Field(
+        None,
+        description="Who updated the document"
     )
 
     @field_validator('tags')

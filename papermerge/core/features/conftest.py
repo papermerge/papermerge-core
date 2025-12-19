@@ -33,7 +33,8 @@ from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core import config
 from papermerge.core.constants import ContentType
-from papermerge.core.types import OwnerType, ResourceType, NodeResource, TagResource, DocumentTypeResource, Owner
+from papermerge.core.types import OwnerType, ResourceType, NodeResource, \
+    TagResource, DocumentTypeResource, Owner
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.features.document_types.db import api as dt_dbapi
 from papermerge.core.features.special_folders.db import \
@@ -128,7 +129,10 @@ def make_document(db_session: AsyncSession):
         user: orm.User | None = None,
     ) -> doc_schema.Document:
         attrs = doc_schema.NewDocument(
-            title=title, parent_id=parent.id, ocr_status=ocr_status, lang=lang
+            title=title,
+            parent_id=parent.id,
+            ocr_status=ocr_status,
+            lang=lang
         )
         doc, _ = await doc_dbapi.create_document(db_session, attrs, mime_type=MimeType.application_pdf)
 

@@ -22,5 +22,5 @@ __all__ = [
     "has_node_perm",
     "get_doc_ver_lang",
     "set_doc_ver_lang",
-    "get_last_doc_ver"
+    "get_last_doc_ver",
 ]

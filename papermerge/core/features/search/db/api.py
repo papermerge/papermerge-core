@@ -64,7 +64,7 @@ async def search_documents(
         SearchDocumentsResponse with DocumentCFV items and custom_fields metadata
     """
     # =========================================================================
-    # Step 1: Collect custom fields of interest
+    # Collect custom fields of interest
     # =========================================================================
     custom_fields_map: dict[UUID, CustomField] = {}  # id -> CustomField (for deduplication)
     document_type_ids: list[UUID] = []
@@ -129,7 +129,7 @@ async def search_documents(
     ]
 
     # =========================================================================
-    # Step 2: Build base query
+    # Build base query
     # =========================================================================
     base_query = (
         select(DocumentSearchIndex)
@@ -164,7 +164,7 @@ async def search_documents(
     )
 
     # =========================================================================
-    # Step 3: Apply access control
+    # Apply access control
     # =========================================================================
     user_groups_subquery = select(UserGroup.group_id).where(
         UserGroup.user_id == user_id
@@ -185,7 +185,7 @@ async def search_documents(
     count_query = count_query.where(access_filter)
 
     # =========================================================================
-    # Step 4: Apply FTS filter
+    # Apply FTS filter
     # =========================================================================
     if params.filters and params.filters.fts:
         fts_query = _build_fts_query(params.filters.fts, params.lang or 'eng')
@@ -201,7 +201,7 @@ async def search_documents(
         count_query = count_query.where(category_filter)
 
     # =========================================================================
-    # Step 6: Apply tag filters
+    # Apply tag filters
     # =========================================================================
     if params.filters and params.filters.tags:
         tag_filters = _build_tag_filters(params.filters.tags)
@@ -210,7 +210,7 @@ async def search_documents(
             count_query = count_query.where(tag_filters)
 
     # =========================================================================
-    # Step 7: Apply custom field filters (NEW: now works regardless of document_type_id)
+    # Apply custom field filters (NEW: now works regardless of document_type_id)
     # =========================================================================
     if params.filters and params.filters.custom_fields:
         for filter_spec in params.filters.custom_fields:
@@ -313,7 +313,7 @@ async def search_documents(
             )
 
     # =========================================================================
-    # Step 8: Apply created_at filters
+    # Apply created_at filters
     # =========================================================================
     if params.filters and params.filters.created_at:
         created_at_filter = _build_datetime_filter(
@@ -325,7 +325,7 @@ async def search_documents(
             count_query = count_query.where(created_at_filter)
 
     # =========================================================================
-    # Step 9: Apply updated_at filters
+    # Apply updated_at filters
     # =========================================================================
     if params.filters and params.filters.updated_at:
         # updated_at comes from the latest DocumentVersion.updated_at
@@ -337,16 +337,45 @@ async def search_documents(
             base_query = base_query.where(updated_at_filter)
             count_query = count_query.where(updated_at_filter)
 
+    # =========================================================================
+    # Apply created_by filters
+    # =========================================================================
+    if params.filters and params.filters.created_by:
+        created_by_filters = []
+
+        for f in params.filters.created_by:
+            created_by_filters.append(orm.Node.created_by == f.value)
+        if created_by_filters:
+            base_query = base_query.where(and_(*created_by_filters))
+            count_query = count_query.where(and_(*created_by_filters))
+
+    # =========================================================================
+    # Apply updated_by filters
+    # =========================================================================
+    if params.filters and params.filters.updated_by:
+        updated_by_filters = []
+        latest_version_updated_by = (
+            select(func.max(DocumentVersion.updated_by))
+            .where(DocumentVersion.document_id == DocumentSearchIndex.document_id)
+            .scalar_subquery()
+        )
+        for f in params.filters.updated_by:
+            updated_by_filters.append(latest_version_updated_by == f.value)
+
+        if updated_by_filters:
+            base_query = base_query.where(and_(*updated_by_filters))
+            count_query = count_query.where(and_(*updated_by_filters))
+
     # Note: We'll apply sorting later, after getting distinct document IDs
 
     # =========================================================================
-    # Step 10: Get total count
+    #  Get total count
     # =========================================================================
     count_result = await db_session.execute(count_query)
     total_count = count_result.scalar() or 0
 
     # =========================================================================
-    # Step 11: Get distinct document IDs (without ordering yet)
+    # Get distinct document IDs (without ordering yet)
     # =========================================================================
     offset = (params.page_number - 1) * params.page_size
 
@@ -374,7 +403,7 @@ async def search_documents(
         )
 
     # =========================================================================
-    # Step 12: Apply sorting and pagination to the distinct IDs
+    # Apply sorting and pagination to the distinct IDs
     # =========================================================================
     # Build a new query with just the search index for these document IDs
     sorted_query = (
@@ -411,7 +440,7 @@ async def search_documents(
         )
 
     # =========================================================================
-    # Step 13: Load full document data
+    # Load full document data
     # =========================================================================
     created_user = aliased(orm.User, name='created_user')
     updated_user = aliased(orm.User, name='updated_user')
@@ -516,7 +545,7 @@ async def search_documents(
                 docs_dict[doc_id]['tags'].append(tag)
 
     # =========================================================================
-    # Step 14: Load custom field values (if custom fields are relevant)
+    # Load custom field values (if custom fields are relevant)
     # =========================================================================
     cfvs_by_doc: dict = {}
 
@@ -758,17 +787,15 @@ def _build_updated_at_filter(filters, document_id_column):
         SQLAlchemy filter expression combining all filters with AND logic
     """
     conditions = []
+    latest_version_updated_at = (
+        select(func.max(DocumentVersion.updated_at))
+        .where(DocumentVersion.document_id == document_id_column)
+        .scalar_subquery()
+    )
 
     for filter_spec in filters:
         operator = filter_spec.operator
         value = filter_spec.value
-
-        # Subquery to get the MAX(updated_at) from document_versions for this document
-        latest_version_updated_at = (
-            select(func.max(DocumentVersion.updated_at))
-            .where(DocumentVersion.document_id == document_id_column)
-            .scalar_subquery()
-        )
 
         if operator == search_schema.NumericOperator.EQ:
             conditions.append(latest_version_updated_at == value)

@@ -107,6 +107,16 @@ export interface UpdatedAtFilter extends BasicFilter {
   value?: string
 }
 
+export interface CreatedByFilter extends BasicFilter {
+  type: "created_by"
+  value?: string
+}
+
+export interface UpdatedByFilter extends BasicFilter {
+  type: "updated_by"
+  value?: string
+}
+
 export type Filter =
   | FreeTextFilter
   | CategoryFilter
@@ -114,6 +124,8 @@ export type Filter =
   | CustomFieldFilter
   | CreatedAtFilter
   | UpdatedAtFilter
+  | CreatedByFilter
+  | UpdatedByFilter
 
 export type SuggestionType =
   | "filter"

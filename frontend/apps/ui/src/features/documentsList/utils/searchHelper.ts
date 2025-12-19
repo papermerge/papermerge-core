@@ -4,8 +4,10 @@ import {
 } from "@/features/search/microcomp/const"
 import type {
   CreatedAtFilter,
+  CreatedByFilter,
   Filter,
-  UpdatedAtFilter
+  UpdatedAtFilter,
+  UpdatedByFilter
 } from "@/features/search/microcomp/types"
 import {operatorSym2Text} from "@/features/search/microcomp/utils"
 import type {
@@ -117,6 +119,32 @@ export function buildSearchQueryParams({
         }
         break
 
+      case "created_by":
+        let created_by = {
+          type: "created_by",
+          value: filter.value
+        } as CreatedByFilter
+
+        if (!filterList.created_by) {
+          filterList.created_by = [created_by]
+        } else {
+          filterList.created_by.push(created_by)
+        }
+        break
+
+      case "updated_by":
+        let updated_by = {
+          type: "updated_by",
+          value: filter.value
+        } as UpdatedByFilter
+
+        if (!filterList.updated_by) {
+          filterList.updated_by = [updated_by]
+        } else {
+          filterList.updated_by.push(updated_by)
+        }
+        break
+
       // We'll add custom_field case later
       default:
         console.warn(`Unknown filter type: ${filter}`)
@@ -211,6 +239,14 @@ export function uniqueSearchString(filters: Filter[]): string {
     }
 
     if (f.type == "updated_at" && f.value) {
+      return true
+    }
+
+    if (f.type == "created_by" && f.value) {
+      return true
+    }
+
+    if (f.type == "updated_by" && f.value) {
       return true
     }
 

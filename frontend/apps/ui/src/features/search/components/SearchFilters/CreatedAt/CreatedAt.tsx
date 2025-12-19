@@ -10,7 +10,7 @@ import {removeFilter, updateFilter} from "@/features/search/storage/search"
 import {ActionIcon, Box, Group, Select, Text} from "@mantine/core"
 import {DateTimePicker, type DateValue} from "@mantine/dates"
 import {IconX} from "@tabler/icons-react"
-import {format, parse} from "date-fns"
+import {fromZonedTime, toZonedTime} from "date-fns-tz"
 import styles from "../SearchFilters.module.css"
 
 interface Args {
@@ -20,7 +20,8 @@ interface Args {
 
 export default function CreatedAtFilterComponent({index, filterName}: Args) {
   const dispatch = useAppDispatch()
-  const {timestamp_format: datetimeFormat} = useAppSelector(selectMyPreferences)
+  const {timestamp_format: datetimeFormat, timezone} =
+    useAppSelector(selectMyPreferences)
 
   const filter = useAppSelector(
     state => state.search.filters[index]
@@ -38,18 +39,22 @@ export default function CreatedAtFilterComponent({index, filterName}: Args) {
     if (value) {
       const date = typeof value === "string" ? new Date(value) : value
 
-      // Store in ISO 8601 datetime format for backend
-      const isoDateTimeString = format(date, "yyyy-MM-dd'T'HH:mm:ss")
-      dispatch(updateFilter({index, updates: {value: isoDateTimeString}}))
+      // User picked a local time - convert to UTC for storage
+      // fromZonedTime: "this date/time in user's timezone" -> UTC Date
+      const utcDate = fromZonedTime(date, timezone)
+
+      // Store as ISO 8601 UTC string with Z suffix
+      const isoUtcString = utcDate.toISOString()
+      dispatch(updateFilter({index, updates: {value: isoUtcString}}))
     } else {
       dispatch(updateFilter({index, updates: {value: undefined}}))
     }
   }
 
-  // Convert stored datetime string back to Date for the picker
+  // Convert stored UTC datetime string back to user's local time for the picker
   const dateValue =
     filter.value && typeof filter.value === "string"
-      ? parse(filter.value, "yyyy-MM-dd'T'HH:mm:ss", new Date())
+      ? toZonedTime(new Date(filter.value), timezone)
       : null
 
   return (
@@ -79,7 +84,6 @@ export default function CreatedAtFilterComponent({index, filterName}: Args) {
     </Box>
   )
 }
-
 interface OperatorArgs {
   item: CreatedAtFilter
   onOperatorChange?: (operator: CustomFieldNumericOperatorType) => void

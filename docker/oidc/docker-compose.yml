@@ -102,7 +102,7 @@ services:
       PAPERMERGE__MAIN__LOGGING_CFG: /app/logging.yaml
     volumes:
       - papermerge_media:/app/media
-      - ./logging.yml:/app/logging.yaml
+      - ./logging.yaml:/app/logging.yaml
     depends_on:
       postgres:
         condition: service_healthy

@@ -152,6 +152,7 @@ export function buildSearchQueryParams({
         const theValue = {id, type}
         let owner = {
           type: "owner",
+          operator: operatorSym2Text(filter.operator || "="),
           value: theValue
         } as OwnerFilter
 

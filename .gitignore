@@ -7,9 +7,8 @@
 .pnp.*
 
 # env vars
-
 .envok.yaml
-
+.env
 *.pid
 .idea/
 .env_services

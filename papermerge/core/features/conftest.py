@@ -210,6 +210,8 @@ def make_document_with_pages(db_session: AsyncSession):
         attrs = doc_schema.NewDocument(
             title=title,
             parent_id=parent.id,
+            created_by=user.id,
+            updated_by=user.id,
         )
         doc, _ = await doc_dbapi.create_document(db_session, attrs, mime_type=MimeType.application_pdf)
         PDF_PATH = RESOURCES / "three-pages.pdf"

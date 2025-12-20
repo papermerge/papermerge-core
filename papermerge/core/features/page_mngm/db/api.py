@@ -596,6 +596,8 @@ async def extract_to_multi_paged_doc(
         lang=first_page.lang,
         parent_id=dst_folder.id,
         ocr_status=types.OCRStatusEnum.unknown,
+        created_by=user_id,
+        updated_by=user_id
     )
     new_doc, error = await doc_dbapi.create_document(
         db_session,

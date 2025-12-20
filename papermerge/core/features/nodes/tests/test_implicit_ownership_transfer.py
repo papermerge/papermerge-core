@@ -93,7 +93,7 @@ async def test_move_document_one_doc_from_group_to_private(
     user = await make_user("john")
     user_group = orm.UserGroup(user=user, group=group)
     db_session.add(user_group)
-    doc = await make_document("cv.title", parent=group.home_folder)
+    doc = await make_document("cv.title", parent=group.home_folder, user=user)
 
     db_session.add(user)
     await db_session.commit()
@@ -167,7 +167,7 @@ async def test_move_nested_nodes_from_group_to_private(
 
     folder_1 = await make_folder("folder_1", group=group, parent=group.home_folder)
     folder_2 = await make_folder("folder_2", group=group, parent=folder_1)
-    doc = await make_document("cv.title", parent=folder_2)
+    doc = await make_document("cv.title", parent=folder_2, user=user)
 
     user_group = orm.UserGroup(user=user, group=group)
     db_session.add(user_group)

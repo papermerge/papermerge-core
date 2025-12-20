@@ -33,7 +33,8 @@ from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core import config
 from papermerge.core.constants import ContentType
-from papermerge.core.types import OwnerType, ResourceType, NodeResource, TagResource, DocumentTypeResource, Owner
+from papermerge.core.types import OwnerType, ResourceType, NodeResource, \
+    TagResource, DocumentTypeResource, Owner
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.features.document_types.db import api as dt_dbapi
 from papermerge.core.features.special_folders.db import \
@@ -127,10 +128,21 @@ def make_document(db_session: AsyncSession):
         lang: str = "deu",
         user: orm.User | None = None,
     ) -> doc_schema.Document:
-        attrs = doc_schema.NewDocument(
-            title=title, parent_id=parent.id, ocr_status=ocr_status, lang=lang
+        attrs = {
+            "title": title,
+            "parent_id": parent.id,
+            "ocr_status": ocr_status,
+            "lang": lang
+        }
+        if user is not None:
+            attrs["created_by"] = user.id
+            attrs["updated_by"] = user.id
+
+        doc, _ = await doc_dbapi.create_document(
+            db_session,
+            doc_schema.NewDocument(**attrs),
+            mime_type=MimeType.application_pdf
         )
-        doc, _ = await doc_dbapi.create_document(db_session, attrs, mime_type=MimeType.application_pdf)
 
         if doc is None:
             raise Exception("Document was not created")
@@ -198,6 +210,8 @@ def make_document_with_pages(db_session: AsyncSession):
         attrs = doc_schema.NewDocument(
             title=title,
             parent_id=parent.id,
+            created_by=user.id,
+            updated_by=user.id,
         )
         doc, _ = await doc_dbapi.create_document(db_session, attrs, mime_type=MimeType.application_pdf)
         PDF_PATH = RESOURCES / "three-pages.pdf"

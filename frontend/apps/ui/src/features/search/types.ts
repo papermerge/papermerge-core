@@ -1,8 +1,10 @@
 import {
   CategoryOperator,
   CreatedAtFilter,
+  CreatedByFilter,
   TagOperator,
-  UpdatedAtFilter
+  UpdatedAtFilter,
+  UpdatedByFilter
 } from "./microcomp/types"
 
 export type DateTypeOperator = ">=" | ">" | "<" | "<=" | "!=" | "="
@@ -51,6 +53,8 @@ export interface SearchFilters {
   custom_fields?: CustomFieldFilter[]
   created_at?: CreatedAtFilter[]
   updated_at?: UpdatedAtFilter[]
+  updated_by?: UpdatedByFilter[]
+  created_by?: CreatedByFilter[]
 }
 
 export interface SearchQueryParams {

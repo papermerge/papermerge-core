@@ -1,6 +1,7 @@
 import {useAppSelector} from "@/app/hooks"
 import SearchFilterCategoryComponent from "./CatFilter"
 import CreatedAtFilter from "./CreatedAt"
+import CreatedByFilter from "./CreatedBy"
 import CustomFieldFilter from "./CustomFieldFilter"
 import FreeTextFilterComponent from "./FTSFilter"
 import SearchFilterTagComponent from "./TagFilter"
@@ -37,6 +38,10 @@ function SearchFilter({index}: SearchFilterArgs) {
       return <CreatedAtFilter index={index} filterName={"created_at"} />
     case "updated_at":
       return <CreatedAtFilter index={index} filterName={"updated_at"} />
+    case "created_by":
+      return <CreatedByFilter index={index} filterName={"created_by"} />
+    case "updated_by":
+      return <CreatedByFilter index={index} filterName={"updated_by"} />
   }
 
   return <>Unknown filter</>

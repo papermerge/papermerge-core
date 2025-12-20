@@ -68,3 +68,8 @@ CREATE TRIGGER set_created_by_updated_by_trigger_nodes
     BEFORE INSERT OR UPDATE ON nodes
     FOR EACH ROW
     EXECUTE FUNCTION set_created_by_updated_by();
+
+CREATE TRIGGER set_created_by_updated_by_trigger_document_versions
+    BEFORE INSERT OR UPDATE ON document_versions
+    FOR EACH ROW
+    EXECUTE FUNCTION set_created_by_updated_by();

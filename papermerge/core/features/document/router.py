@@ -266,6 +266,8 @@ async def upload_document(
         ocr=ocr,
         file_name=file.filename or title,
         ctype="document",
+        created_by=user.id,
+        updated_by=user.id
     )
 
     if document_id is not None:

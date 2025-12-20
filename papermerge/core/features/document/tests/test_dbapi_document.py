@@ -545,7 +545,12 @@ async def test_document_version_bump_from_pages(db_session: AsyncSession, make_d
 
 async def test_basic_document_creation(db_session: AsyncSession, user):
     attrs = schema.NewDocument(
-        title="New Document", parent_id=user.home_folder.id, ocr=False, lang="deu"
+        title="New Document",
+        parent_id=user.home_folder.id,
+        ocr=False,
+        lang="deu",
+        created_by=user.id,
+        updated_by=user.id
     )
     doc, error = await dbapi.create_document(db_session, attrs=attrs, mime_type=MimeType.application_pdf)
     doc: schema.Document

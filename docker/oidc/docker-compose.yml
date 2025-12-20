@@ -79,13 +79,10 @@ services:
       - --cookie-secure=false
       - --cookie-name=_oauth2_proxy
       - --skip-provider-button=true
-      - --pass-user-headers=true
-      - --set-xauthrequest=true
-      # Configure headers for Papermerge
-      - --pass-authorization-header=false
-      - --set-authorization-header=false
-      # Skip OIDC issuer verification since internal/external URLs differ
       - --insecure-oidc-skip-issuer-verification=true
+      # Pass JWT token to upstream
+      - --pass-access-token=true
+      - --set-authorization-header=true
     extra_hosts:
       - "localhost:host-gateway"
     ports:
@@ -102,12 +99,6 @@ services:
     restart: unless-stopped
     environment:
       PAPERMERGE__DATABASE__URL: postgresql://papermerge:papermerge@postgres:5432/papermerge
-      PAPERMERGE__AUTH__REMOTE: "true"
-      PAPERMERGE__MAIN__API_PREFIX: ""
-      # Map oauth2-proxy headers to Papermerge headers
-      PAPERMERGE__AUTH__REMOTE_USER_HEADER: X-Forwarded-User
-      PAPERMERGE__AUTH__REMOTE_EMAIL_HEADER: X-Forwarded-Email
-      PAPERMERGE__AUTH__REMOTE_GROUPS_HEADER: X-Forwarded-Groups
     volumes:
       - papermerge_media:/app/media
     depends_on:

@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import NoResultFound
 
 from papermerge.core import exceptions as exc
 from papermerge.core import types
@@ -11,7 +12,6 @@ from papermerge.core.features.users.db import api as usr_dbapi
 from papermerge.core.features.users import schema as users_schema
 from papermerge.core.features.auth.remote_scheme import RemoteUserScheme
 from papermerge.core.features.auth import scopes
-from papermerge.core.db import exceptions as db_exc
 from papermerge.core.utils import base64
 from papermerge.core.db.engine import get_db
 
@@ -66,7 +66,7 @@ async def get_current_user(
         if token_data is not None:
             try:
                 user = await usr_dbapi.get_user(db_session, token_data.username)
-            except db_exc.UserNotFound:
+            except NoResultFound:
                 # create normal user
                 user = await usr_dbapi.create_user(
                     db_session,
@@ -95,9 +95,9 @@ async def get_current_user(
         # (with its home folder ID, inbox folder ID etc)
         try:
             user = await usr_dbapi.get_user(db_session, remote_user.username)
-        except db_exc.UserNotFound:
+        except NoResultFound:
             # create normal user
-            user = usr_dbapi.create_user(
+            user = await usr_dbapi.create_user(
                 db_session,
                 username=remote_user.username,
                 email=remote_user.email,

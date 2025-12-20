@@ -1,16 +1,16 @@
 import {
-  Combobox,
-  InputBase,
-  Group,
-  Text,
   Badge,
+  Combobox,
+  Group,
+  InputBase,
   Skeleton,
-  Tabs
+  Tabs,
+  Text
 } from "@mantine/core"
-import {IconUsers, IconUser, IconChevronDown} from "@tabler/icons-react"
-import type {OwnerSelectorViewProps, Owner, OwnerOption} from "./types"
+import {IconChevronDown, IconUser, IconUsers} from "@tabler/icons-react"
 import type {TFunction} from "i18next"
 import {ReactElement} from "react"
+import type {Owner, OwnerOption, OwnerSelectorViewProps} from "./types"
 
 export default function OwnerSelectorView({
   value,
@@ -24,6 +24,7 @@ export default function OwnerSelectorView({
   onTabChange,
   onSelect,
   onOptionSubmit,
+  withLabel = true,
   t
 }: OwnerSelectorViewProps) {
   if (isLoading) {
@@ -55,11 +56,16 @@ export default function OwnerSelectorView({
     ))
   }
 
+  let finalLabel: string | null | undefined = null
+  if (withLabel) {
+    finalLabel = label || t?.("selectOwner.label", {defaultValue: "Owner"})
+  }
+
   return (
     <Combobox store={combobox} onOptionSubmit={onOptionSubmit}>
       <Combobox.Target>
         <InputBase
-          label={label || t?.("selectOwner.label", {defaultValue: "Owner"})}
+          label={finalLabel}
           component="button"
           type="button"
           pointer

@@ -4,6 +4,7 @@ import CreatedAtFilter from "./CreatedAt"
 import CreatedByFilter from "./CreatedBy"
 import CustomFieldFilter from "./CustomFieldFilter"
 import FreeTextFilterComponent from "./FTSFilter"
+import OwnerFilter from "./Owner"
 import SearchFilterTagComponent from "./TagFilter"
 
 export default function SearchFilters() {
@@ -42,6 +43,8 @@ function SearchFilter({index}: SearchFilterArgs) {
       return <CreatedByFilter index={index} filterName={"created_by"} />
     case "updated_by":
       return <CreatedByFilter index={index} filterName={"updated_by"} />
+    case "owner":
+      return <OwnerFilter index={index} />
   }
 
   return <>Unknown filter</>

@@ -86,7 +86,8 @@ function parseFilter(input: string): Filter | null {
     "created_at",
     "updated_at",
     "created_by",
-    "updated_by"
+    "updated_by",
+    "owner"
   ] as const
 
   const filter = parts[0]

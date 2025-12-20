@@ -6,6 +6,7 @@ import type {
   CreatedAtFilter,
   CreatedByFilter,
   Filter,
+  OwnerFilter,
   UpdatedAtFilter,
   UpdatedByFilter
 } from "@/features/search/microcomp/types"
@@ -14,6 +15,7 @@ import type {
   CustomFieldFilter,
   SearchQueryParams
 } from "@/features/search/types"
+import {Owner} from "@/types"
 import type {SortState} from "kommon"
 
 interface BuildSearchParamsArgs {
@@ -145,6 +147,21 @@ export function buildSearchQueryParams({
         }
         break
 
+      case "owner":
+        const {id, type} = filter.value as Owner
+        const theValue = {id, type}
+        let owner = {
+          type: "owner",
+          value: theValue
+        } as OwnerFilter
+
+        if (!filterList.owner) {
+          filterList.owner = [owner]
+        } else {
+          filterList.owner.push(owner)
+        }
+        break
+
       // We'll add custom_field case later
       default:
         console.warn(`Unknown filter type: ${filter}`)
@@ -247,6 +264,10 @@ export function uniqueSearchString(filters: Filter[]): string {
     }
 
     if (f.type == "updated_by" && f.value) {
+      return true
+    }
+
+    if (f.type == "owner" && f.value) {
       return true
     }
 

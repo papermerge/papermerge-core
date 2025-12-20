@@ -69,8 +69,8 @@ function OperatorSelect({item, onOperatorChange}: OperatorSelectArgs) {
 
   return (
     <Select
-      value={item.operator}
-      w={"15ch"}
+      value={item.operator || "="}
+      w={"8ch"}
       data={OPERATOR_SELECT}
       size="sm"
       onChange={handleChange}

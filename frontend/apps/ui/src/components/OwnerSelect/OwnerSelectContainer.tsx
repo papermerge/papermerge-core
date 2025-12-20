@@ -1,3 +1,4 @@
+import {Box} from "@mantine/core"
 import OwnerSelector from "kommon/src/components/SelectOwner/SelectOwner"
 import type {OwnerSelectorContainerProps} from "kommon/src/components/SelectOwner/types"
 import {useOwnerSelector} from "./useOwnerSelector"
@@ -21,19 +22,21 @@ export default function OwnerSelectorContainer({
   } = useOwnerSelector(value, onChange)
 
   return (
-    <OwnerSelector
-      value={value}
-      label={label}
-      withLabel={withLabel}
-      isLoading={isLoading}
-      activeTab={activeTab}
-      userOptions={userOptions}
-      groupOptions={groupOptions}
-      currentOptions={currentOptions}
-      combobox={combobox}
-      onTabChange={setActiveTab}
-      onSelect={handleSelect}
-      onOptionSubmit={handleOptionSubmit}
-    />
+    <Box w="100%">
+      <OwnerSelector
+        value={value}
+        label={label}
+        withLabel={withLabel}
+        isLoading={isLoading}
+        activeTab={activeTab}
+        userOptions={userOptions}
+        groupOptions={groupOptions}
+        currentOptions={currentOptions}
+        combobox={combobox}
+        onTabChange={setActiveTab}
+        onSelect={handleSelect}
+        onOptionSubmit={handleOptionSubmit}
+      />
+    </Box>
   )
 }

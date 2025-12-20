@@ -2,6 +2,7 @@ import {
   CategoryOperator,
   CreatedAtFilter,
   CreatedByFilter,
+  OwnerFilter,
   TagOperator,
   UpdatedAtFilter,
   UpdatedByFilter
@@ -55,6 +56,7 @@ export interface SearchFilters {
   updated_at?: UpdatedAtFilter[]
   updated_by?: UpdatedByFilter[]
   created_by?: CreatedByFilter[]
+  owner?: OwnerFilter[]
 }
 
 export interface SearchQueryParams {

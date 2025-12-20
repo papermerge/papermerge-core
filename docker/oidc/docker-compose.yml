@@ -1,0 +1,119 @@
+# Docker Compose for Papermerge with Keycloak OIDC Authentication
+#
+# Architecture:
+#   User -> OAuth2-Proxy (OIDC auth) -> Papermerge Core (receives Remote-* headers)
+#                  |
+#              Keycloak (Identity Provider)
+#
+# Prerequisites:
+#   1. Generate a cookie secret: openssl rand -base64 32
+#   2. Copy .env.example to .env and set OAUTH2_COOKIE_SECRET
+#
+# Usage:
+#   docker compose up -d
+#
+# Access:
+#   - Papermerge: http://localhost:8080
+#   - Keycloak Admin: http://localhost:9090 (admin/admin)
+#
+# Test Users (pre-configured in Keycloak):
+#   - admin / admin (administrator)
+#   - demo / demo (regular user)
+
+services:
+  # PostgreSQL 17 - shared by Papermerge and Keycloak
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Keycloak - OIDC Identity Provider
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    restart: unless-stopped
+    command: start-dev --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 9090
+      KC_HOSTNAME_STRICT: "false"
+      KC_PROXY_HEADERS: "xforwarded"
+      KC_HTTP_ENABLED: "true"
+    ports:
+      - "9090:8080"
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # OAuth2 Proxy - Handles OIDC authentication
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.7.1
+    restart: unless-stopped
+    command:
+      - --http-address=0.0.0.0:4180
+      - --upstream=http://papermerge:80
+      - --provider=keycloak-oidc
+      - --client-id=papermerge
+      - --client-secret=papermerge-secret
+      - --oidc-issuer-url=http://localhost:9090/realms/papermerge
+      - --redirect-url=http://localhost:8080/oauth2/callback
+      - --email-domain=*
+      - --cookie-secret=${OAUTH2_COOKIE_SECRET}
+      - --cookie-secure=false
+      - --cookie-name=_oauth2_proxy
+      - --skip-provider-button=true
+      - --pass-user-headers=true
+      - --set-xauthrequest=true
+      # Configure headers for Papermerge
+      - --pass-authorization-header=false
+      - --set-authorization-header=false
+      # Skip OIDC issuer verification since internal/external URLs differ
+      - --insecure-oidc-skip-issuer-verification=true
+    extra_hosts:
+      - "localhost:host-gateway"
+    ports:
+      - "8080:4180"
+    depends_on:
+      - keycloak
+      - papermerge
+
+  # Papermerge Core - Document Management System (OIDC edition, no built-in auth)
+  papermerge:
+    build:
+      context: ../..
+      dockerfile: docker/oidc/Dockerfile
+    restart: unless-stopped
+    environment:
+      PAPERMERGE__DATABASE__URL: postgresql://papermerge:papermerge@postgres:5432/papermerge
+      PAPERMERGE__AUTH__REMOTE: "true"
+      PAPERMERGE__MAIN__API_PREFIX: ""
+      # Map oauth2-proxy headers to Papermerge headers
+      PAPERMERGE__AUTH__REMOTE_USER_HEADER: X-Forwarded-User
+      PAPERMERGE__AUTH__REMOTE_EMAIL_HEADER: X-Forwarded-Email
+      PAPERMERGE__AUTH__REMOTE_GROUPS_HEADER: X-Forwarded-Groups
+    volumes:
+      - papermerge_media:/app/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  papermerge_media:

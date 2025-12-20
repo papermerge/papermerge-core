@@ -1,0 +1,22 @@
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  verbose:
+    format: '%(levelname)s %(asctime)s %(module)s %(message)s'
+
+handlers:
+  console:
+    level: INFO
+    class: logging.StreamHandler
+    formatter: verbose
+
+loggers:
+  papermerge:
+    level: INFO
+    handlers: [console]
+    propagate: no
+  uvicorn:
+    level: INFO
+    handlers: [console]
+    propagate: no

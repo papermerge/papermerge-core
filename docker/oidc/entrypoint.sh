@@ -19,18 +19,10 @@ exec_perms_sync() {
   echo "Permissions sync complete."
 }
 
-exec_index_schema_apply() {
-  if [ -n "${PAPERMERGE__SEARCH__URL}" ]; then
-    echo "Applying search index schema..."
-    cd /core_app && uv run pm index-schema apply
-    echo "Index schema applied."
-  fi
-}
 
 exec_init() {
   exec_migrate
   exec_perms_sync
-  exec_index_schema_apply
 }
 
 case $CMD in

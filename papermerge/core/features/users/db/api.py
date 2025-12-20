@@ -7,7 +7,7 @@ from passlib.hash import pbkdf2_sha256
 from sqlalchemy import select, func, and_, or_, update
 from sqlalchemy.orm import selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import NoResultFound, IntegrityError
+from sqlalchemy.exc import NoResultFound
 
 from papermerge.core.utils.tz import utc_now
 from papermerge.core import orm, schema

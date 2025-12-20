@@ -13,7 +13,6 @@ export const FILTERS = [
   "cat:", // Category
   "tag:",
   "md:",
-  "title:",
   "created_at:",
   "created_by:",
   "updated_at:",

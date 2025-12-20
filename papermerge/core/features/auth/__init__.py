@@ -61,12 +61,15 @@ async def get_current_user(
     user = None
     total_scopes = []
     if token:  # token found
+        logger.debug("Non empty token found")
         token_data: types.TokenData = extract_token_data(token)
+        logger.debug(f"Token data: {token_data=}")
 
         if token_data is not None:
             try:
                 user = await usr_dbapi.get_user(db_session, token_data.username)
             except NoResultFound:
+                logger.debug("No user found. Creating user from token data")
                 # create normal user
                 user = await usr_dbapi.create_user(
                     db_session,

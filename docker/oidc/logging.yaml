@@ -7,13 +7,13 @@ formatters:
 
 handlers:
   console:
-    level: INFO
+    level: DEBUG
     class: logging.StreamHandler
     formatter: verbose
 
 loggers:
   papermerge:
-    level: INFO
+    level: DEBUG
     handlers: [console]
     propagate: no
   uvicorn:

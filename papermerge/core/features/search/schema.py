@@ -30,6 +30,11 @@ class NumericOperator(str, Enum):
     LTE = "lte"  # <=
 
 
+class OwnerOperator(str, Enum):
+    EQ = "eq"
+    NE = "ne"
+
+
 class CustomFieldOperator(str, Enum):
     """Comparison operators for filters"""
     # Equality
@@ -72,6 +77,7 @@ class TagOperator(str, Enum):
 class CategoryOperator(str, Enum):
     ANY = "any"
     NOT = "not"
+
 
 
 class SortBy(str, Enum):
@@ -268,15 +274,20 @@ class CustomFieldFilter(BaseModel):
         return cleaned
 
 
-class OwnerFilter(BaseModel):
+class OwnerValue(BaseModel):
     type: Optional[OwnerType] = Field(
         OwnerType.USER,
         description="Filter by document owner type"
     )
-    name: Optional[str] = Field(
+    id: Optional[UUID] = Field(
         None,
-        description="Filter by document owner name"
+        description="Filter by document owner ID"
     )
+
+
+class OwnerFilter(BaseModel):
+    operator: OwnerOperator
+    value: OwnerValue
 
 
 class CreatedAtFilter(BaseModel):
@@ -341,7 +352,7 @@ class SearchFilters(BaseModel):
         description="Custom field filters (AND logic between filters)"
     )
 
-    owner: Optional[OwnerFilter] = Field(
+    owner: Optional[List[OwnerFilter]] = Field(
         None,
         description="Owner of the document"
     )

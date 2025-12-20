@@ -1,5 +1,5 @@
 import type {CustomFieldType} from "@/features/custom-fields/types"
-import {CustomFieldDataType} from "@/types"
+import {CustomFieldDataType, Owner} from "@/types"
 
 export interface LexerResult {
   filters: string[]
@@ -31,6 +31,7 @@ export type MultiSelectOperator = "any" | "all" | "not"
 
 // operator for custom field of type "select"
 export type SelectOperator = "eq" | "ne" | "ie" | "ine"
+export type OwnerOperator = "eq" | "ne"
 
 export type CategoryOperator = "any" | "not"
 
@@ -65,7 +66,7 @@ export interface BasicFilter {
   type: FilterType
   raw?: string
   operator?: string
-  value?: string | number
+  value?: string | number | Owner
   values?: string[]
 }
 
@@ -117,6 +118,11 @@ export interface UpdatedByFilter extends BasicFilter {
   value?: string
 }
 
+export interface OwnerFilter extends BasicFilter {
+  type: "owner"
+  value?: Owner
+}
+
 export type Filter =
   | FreeTextFilter
   | CategoryFilter
@@ -126,6 +132,7 @@ export type Filter =
   | UpdatedAtFilter
   | CreatedByFilter
   | UpdatedByFilter
+  | OwnerFilter
 
 export type SuggestionType =
   | "filter"

@@ -19,7 +19,9 @@ from sqlalchemy.orm import aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.features.document.db import orm as doc_orm
-from papermerge.core.features.search.schema import TagOperator, CategoryOperator
+from papermerge.core.features.search.schema import TagOperator, \
+    CategoryOperator, \
+    OwnerOperator
 from papermerge.core import orm, schema
 from papermerge.core.features.search import schema as search_schema
 from papermerge.core.features.search.db.orm import DocumentSearchIndex
@@ -368,6 +370,26 @@ async def search_documents(
         if updated_by_filters:
             base_query = base_query.where(and_(*updated_by_filters))
             count_query = count_query.where(and_(*updated_by_filters))
+
+    # =========================================================================
+    # Apply owner filter
+    # =========================================================================
+    if params.filters and params.filters.owner:
+        owner_conditions = []
+
+        for f in params.filters.owner:
+            if f.operator == OwnerOperator.EQ:
+                owner_conditions.append(
+                    DocumentSearchIndex.owner_id == f.value.id
+                )
+            else:
+                owner_conditions.append(
+                    DocumentSearchIndex.owner_id != f.value.id
+                )
+
+        if owner_conditions:
+            base_query = base_query.where(and_(*owner_conditions))
+            count_query = count_query.where(and_(*owner_conditions))
 
     # Note: We'll apply sorting later, after getting distinct document IDs
 

@@ -32,6 +32,7 @@ export interface UseOwnerSelectorReturn {
 export interface OwnerSelectorViewProps {
   value: Owner | null
   label?: string
+  withLabel?: boolean
   isLoading: boolean
   activeTab: string
   userOptions: OwnerOption[]
@@ -48,4 +49,5 @@ export interface OwnerSelectorContainerProps {
   value: Owner | null
   onChange: (owner: Owner) => void
   label?: string
+  withLabel?: boolean
 }

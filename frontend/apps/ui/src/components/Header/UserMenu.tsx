@@ -25,10 +25,20 @@ export default function UserMenu() {
   const {t} = useTranslation()
 
   const onSignOutClicked = () => {
-    Cookies.remove("access_token")
-    let a = document.createElement("a")
-    a.href = "/login"
-    a.click()
+    const config = (window as any).__PAPERMERGE_RUNTIME_CONFIG__
+    const authType = config?.auth_type || "standard"
+
+    if (authType === "oidc") {
+      // OIDC logout: redirect to OAuth2-Proxy's logout endpoint
+      // This will clear OAuth2-Proxy session and perform OIDC logout
+      window.location.href = "/oauth2/sign_out"
+    } else {
+      // Standard auth: clear cookie and redirect to login
+      Cookies.remove("access_token")
+      let a = document.createElement("a")
+      a.href = "/login"
+      a.click()
+    }
   }
   if (status == "loading") {
     return <>Loading...</>

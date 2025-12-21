@@ -84,6 +84,8 @@ services:
       # Pass JWT token to upstream
       - --pass-access-token=true
       - --set-authorization-header=true
+      # Allow logout redirects
+      - --whitelist-domain=localhost:8080
     extra_hosts:
       - "localhost:host-gateway"
     ports:

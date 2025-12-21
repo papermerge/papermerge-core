@@ -38,7 +38,15 @@ authentication using Keycloak as the identity provider.
 
 ## Quick Start
 
+
+### 0. Project Root
+
+Run all docker compose commands from project root i.e. from the same folder
+where `pyproject.toml`, `uv.lock` are.
+
 ### 1. Generate Cookie Secret
+
+From the project root run:
 
 ```bash
 export OAUTH2_COOKIE_SECRET=$(openssl rand -base64 32)
@@ -49,6 +57,10 @@ echo "OAUTH2_COOKIE_SECRET=$OAUTH2_COOKIE_SECRET" > .env
 
 ```bash
 docker compose up -d
+```
+
+```bash
+docker compose -f docker/oidc/-compose.yml --env-file .env up --build
 ```
 
 ### 3. Wait for Initialization

@@ -1,14 +1,7 @@
 # Papermerge Core - OIDC/Remote Auth Version
 # This image contains only Papermerge backend + frontend without any built-in authentication.
-# Authentication is expected to be provided by an external OIDC provider through
-# a reverse proxy that sets Remote-User, Remote-Groups, Remote-Roles headers.
-#
-# Uses:
-#   - uv for Python package management
-#   - PostgreSQL 17 (no SQLite support)
-#   - Python 3.14
-
-FROM node:22 AS frontend_build
+# Authentication is expected to be provided by an external OIDC provider
+FROM node:24 AS frontend_build
 
 RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
@@ -25,12 +18,6 @@ RUN corepack enable && \
 FROM python:3.14-slim-bookworm AS papermerge_core
 
 ENV CORE_APP=/core_app
-ENV PAPERMERGE__MAIN__API_PREFIX=""
-ENV PAPERMERGE__OCR__LANG_CODES="deu,eng,ron"
-ENV PAPERMERGE__OCR__DEFAULT_LANG_CODE="deu"
-ENV PAPERMERGE__OCR__AUTOMATIC="false"
-# Enable remote authentication mode by default for OIDC
-ENV PAPERMERGE__AUTH__REMOTE="true"
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \

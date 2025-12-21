@@ -1,7 +1,7 @@
 # Docker Compose for Papermerge with Keycloak OIDC Authentication
 #
 # Architecture:
-#   User -> OAuth2-Proxy (OIDC auth) -> Papermerge Core (receives Remote-* headers)
+#   User -> OAuth2-Proxy (OIDC auth) -> Papermerge Core
 #                  |
 #              Keycloak (Identity Provider)
 #
@@ -9,8 +9,9 @@
 #   1. Generate a cookie secret: openssl rand -base64 32
 #   2. Copy .env.example to .env and set OAUTH2_COOKIE_SECRET
 #
-# Usage:
-#   docker compose up -d
+# Usage (from project root):
+#   cd <project root>
+#   docker compose -f docker/oidc/docker-compose.yml --env-file .env up -d
 #
 # Access:
 #   - Papermerge: http://localhost:8080

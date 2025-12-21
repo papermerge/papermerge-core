@@ -19,10 +19,17 @@ exec_perms_sync() {
   echo "Permissions sync complete."
 }
 
+exec_create_roles() {
+  echo "Creating standard roles..."
+  cd /core_app && uv run pm roles create-standard-roles
+  echo "Standard roles ready."
+}
+
 
 exec_init() {
   exec_migrate
   exec_perms_sync
+  exec_create_roles
 }
 
 case $CMD in

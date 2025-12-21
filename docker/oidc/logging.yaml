@@ -5,7 +5,7 @@ formatters:
   verbose:
     format: '%(levelname)s %(asctime)s %(module)s %(message)s'
   debug:
-    format: '%(levelname)s %(asctime)s %(module)s %(funcName)s %(message)s'
+    format: '%(levelname)s %(asctime)s %(name)s:%(funcName)s: %(message)s'
 
 handlers:
   console_debug:
@@ -19,6 +19,10 @@ handlers:
 
 loggers:
   papermerge:
+    level: DEBUG
+    handlers: [console_debug, console]
+    propagate: no
+  papermerge.core:
     level: DEBUG
     handlers: [console_debug, console]
     propagate: no

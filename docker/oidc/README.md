@@ -59,8 +59,16 @@ echo "OAUTH2_COOKIE_SECRET=$OAUTH2_COOKIE_SECRET" > .env
 docker compose up -d
 ```
 
+Some more fancy commands:
+
 ```bash
-docker compose -f docker/oidc/-compose.yml --env-file .env up --build
+docker compose -f docker/oidc/docker-compose.yml --env-file .env up --build
+```
+
+With logs redirect:
+
+```bash
+ docker compose -f docker/oidc/docker-compose.yml --env-file .env up --build 2>&1 | tee compose.log
 ```
 
 ### 3. Wait for Initialization

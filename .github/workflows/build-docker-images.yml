@@ -34,9 +34,9 @@ jobs:
         with:
           images: papermerge/papermerge
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/0.') }}
+            type=pep440,pattern={{version}}
+            type=pep440,pattern={{major}}.{{minor}}
+            type=pep440,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/0.') }}
             type=raw,value=latest,enable=${{ !contains(github.ref_name, 'a') && !contains(github.ref_name, 'b') && !contains(github.ref_name, 'rc') }}
       - name: Docker metadata for OIDC image
         id: meta_oidc
@@ -44,9 +44,9 @@ jobs:
         with:
           images: papermerge/papermerge
           tags: |
-            type=semver,pattern={{version}},suffix=-oidc
-            type=semver,pattern={{major}}.{{minor}},suffix=-oidc
-            type=semver,pattern={{major}},suffix=-oidc,enable=${{ !startsWith(github.ref, 'refs/tags/0.') }}
+            type=pep440,pattern={{version}},suffix=-oidc
+            type=pep440,pattern={{major}}.{{minor}},suffix=-oidc
+            type=pep440,pattern={{major}},suffix=-oidc,enable=${{ !startsWith(github.ref, 'refs/tags/0.') }}
             type=raw,value=latest-oidc,enable=${{ !contains(github.ref_name, 'a') && !contains(github.ref_name, 'b') && !contains(github.ref_name, 'rc') }}
       - name: Build standard image
         uses: docker/build-push-action@v6

@@ -35,12 +35,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install uv and env2js
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
     mv /root/.local/bin/uv /usr/local/bin/uv && \
-    mv /root/.local/bin/uvx /usr/local/bin/uvx && \
-    curl -L -o /bin/env2js https://github.com/papermerge/env2js/releases/download/0.2/env2js.amd64 && \
-    chmod +x /bin/env2js
+    mv /root/.local/bin/uvx /usr/local/bin/uvx
 
 # Install env2js for runtime config generation
-RUN curl -L -o /bin/env2js https://github.com/papermerge/env2js/releases/download/0.2/env2js.amd64 && \
+RUN curl -L -o /bin/env2js https://github.com/papermerge/env2js/releases/download/0.4/env2js.amd64 && \
     chmod +x /bin/env2js
 
 # Copy dependency files first for better caching

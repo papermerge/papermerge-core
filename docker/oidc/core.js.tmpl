@@ -1,6 +1,10 @@
 window.__PAPERMERGE_RUNTIME_CONFIG__ = {
   ocr__lang_codes: "{{ .PAPERMERGE__OCR__LANG_CODES }}",
   ocr__default_lang_code: "{{ .PAPERMERGE__OCR__DEFAULT_LANG_CODE }}",
-  ocr__automatic: {{ .PAPERMERGE__OCR__AUTOMATIC }},
-  auth_type: "oidc"
+  auth_type: "oidc",
+  // OIDC Logout Configuration
+  // These are used to construct the proper logout URL for the OIDC provider
+  oidc_logout_url: "{{ .PAPERMERGE__AUTH__OIDC_LOGOUT_URL }}",
+  oidc_client_id: "{{ .PAPERMERGE__AUTH__OIDC_CLIENT_ID }}",
+  post_logout_redirect_uri: "{{ .PAPERMERGE__AUTH__POST_LOGOUT_REDIRECT_URI }}"
 }

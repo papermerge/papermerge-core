@@ -214,5 +214,5 @@ docker/oidc/
 
 ```bash
 # From project root
-docker build -f docker/oidc/Dockerfile -t papermerge/papermerge:oidc .
+docker build --no-cache -f docker/oidc/Dockerfile -t papermerge/papermerge:oidc .
 ```

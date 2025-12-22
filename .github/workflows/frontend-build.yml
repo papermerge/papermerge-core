@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
 
   push:
+  # Won't trigger this GH action when pushing tags
+    branches:
+      - '**'
     paths:
       - 'papermerge/**'
       - 'frontend/apps/ui/**'

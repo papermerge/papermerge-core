@@ -120,10 +120,6 @@ Pre-configured test users:
 |----------|-------------|----------|
 | `OAUTH2_COOKIE_SECRET` | Secret for session cookies | Yes |
 | `PAPERMERGE__DATABASE__URL` | PostgreSQL connection string | Yes |
-| `PAPERMERGE__AUTH__REMOTE` | Enable remote auth | Yes (default: true) |
-| `PAPERMERGE__AUTH__REMOTE_USER_HEADER` | Username header | No (default: Remote-User) |
-| `PAPERMERGE__AUTH__REMOTE_EMAIL_HEADER` | Email header | No (default: Remote-Email) |
-| `PAPERMERGE__AUTH__REMOTE_GROUPS_HEADER` | Groups header | No (default: Remote-Groups) |
 
 ### Keycloak Customization
 

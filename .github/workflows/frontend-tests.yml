@@ -2,6 +2,9 @@ name: Frontend Tests
 
 on:
   push:
+    branches:
+      # Won't trigger this GH action when pushing tags
+      - '**'
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-tests.yml'

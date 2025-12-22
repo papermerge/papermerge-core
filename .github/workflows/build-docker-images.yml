@@ -1,0 +1,66 @@
+name: Build Docker Images
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+a[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+b[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+a[0-9]+'
+      - '[0-9]+.[0-9]+b[0-9]+'
+      - '[0-9]+.[0-9]+rc[0-9]+'
+      - '[0-9]+.[0-9]+'
+      - '[0-9]+'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Docker metadata for standard image
+        id: meta_standard
+        uses: docker/metadata-action@v5
+        with:
+          images: papermerge/papermerge
+          tags: |
+            type=pep440,pattern={{version}}
+            type=pep440,pattern={{major}}.{{minor}}
+            type=pep440,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/0.') }}
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, 'a') && !contains(github.ref_name, 'b') && !contains(github.ref_name, 'rc') }}
+      - name: Docker metadata for OIDC image
+        id: meta_oidc
+        uses: docker/metadata-action@v5
+        with:
+          images: papermerge/papermerge
+          tags: |
+            type=pep440,pattern={{version}},suffix=-oidc
+            type=pep440,pattern={{major}}.{{minor}},suffix=-oidc
+            type=pep440,pattern={{major}},suffix=-oidc,enable=${{ !startsWith(github.ref, 'refs/tags/0.') }}
+            type=raw,value=latest-oidc,enable=${{ !contains(github.ref_name, 'a') && !contains(github.ref_name, 'b') && !contains(github.ref_name, 'rc') }}
+      - name: Build standard image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ${{ steps.meta_standard.outputs.tags }}
+          labels: ${{ steps.meta_standard.outputs.labels }}
+          file: docker/standard/Dockerfile
+          platforms: linux/amd64
+      - name: Build OIDC image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ${{ steps.meta_oidc.outputs.tags }}
+          labels: ${{ steps.meta_oidc.outputs.labels }}
+          file: docker/oidc/Dockerfile
+          platforms: linux/amd64

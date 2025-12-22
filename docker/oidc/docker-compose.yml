@@ -84,8 +84,10 @@ services:
       # Pass JWT token to upstream
       - --pass-access-token=true
       - --set-authorization-header=true
-      # Allow logout redirects
+      # Allow logout redirects to both app and OIDC provider
+      # IMPORTANT: Must include the OIDC provider domain for logout to work
       - --whitelist-domain=localhost:8080
+      - --whitelist-domain=localhost:9090
     extra_hosts:
       - "localhost:host-gateway"
     ports:
@@ -103,6 +105,11 @@ services:
     environment:
       PAPERMERGE__DATABASE__URL: postgresql://papermerge:papermerge@postgres:5432/papermerge
       PAPERMERGE__MAIN__LOGGING_CFG: /app/logging.yaml
+      # OIDC Logout Configuration
+      # Set these to match your OIDC provider's logout endpoint
+      PAPERMERGE__AUTH__OIDC_LOGOUT_URL: http://localhost:9090/realms/papermerge/protocol/openid-connect/logout
+      PAPERMERGE__AUTH__POST_LOGOUT_REDIRECT_URI: http://localhost:8080
+      PAPERMERGE__AUTH__OIDC_CLIENT_ID: papermerge
     volumes:
       - papermerge_media:/app/media
       - ./logging.yaml:/app/logging.yaml

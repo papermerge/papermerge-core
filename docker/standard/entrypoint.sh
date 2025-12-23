@@ -2,41 +2,37 @@
 
 CMD="$1"
 
-mkdir -p /db  # default database is /db/db.sqlite3
-
 if [ -z $CMD ]; then
   echo "No command specified"
   exit 1
 fi
 
+# Auto-generate secret key if not provided (for non-production use)
+if [ -z "${PAPERMERGE__SECURITY__SECRET_KEY}" ]; then
+  echo "WARNING: PAPERMERGE__SECURITY__SECRET_KEY not set. Auto-generating a random key."
+  echo "This is NOT suitable for production. Please set PAPERMERGE__SECURITY__SECRET_KEY explicitly."
+  export PAPERMERGE__SECURITY__SECRET_KEY=$(head -c 32 /dev/urandom | base64 | tr -d '+/=' | head -c 64)
+  echo "Generated secret key: ${PAPERMERGE__SECURITY__SECRET_KEY:0:16}... (truncated for display)"
+fi
+
 exec_migrate() {
-  cd /core_app && poetry run task migrate
+  cd /core_app && uv run task migrate
 }
 
 exec_perms_sync() {
-  cd /core_app && poetry run paper-cli perms sync
+  cd /core_app && uv run paper-cli perms sync
 }
 
 
 exec_createsuperuser() {
-  cd /auth_server_app && poetry run auth-cli users create --superuser
+  cd /auth_server_app && uv run auth-cli users create --superuser
 }
 
-exec_index_schema_apply() {
-  echo "exec_index_schema_apply"
-  if [ -n "${PAPERMERGE__SEARCH__URL}" ]; then
-    # PAPERMERGE__SEARCH__URL has non-empty value
-    echo "PAPERMERGE__SEARCH__URL=${PAPERMERGE__SEARCH__URL}"
-    echo "Applying index schema..."
-    cd /core_app && poetry run paper-cli index-schema apply
-  fi
-}
 
 exec_init() {
   exec_migrate
   exec_perms_sync
   exec_createsuperuser
-  exec_index_schema_apply
 }
 
 rm -f /etc/nginx/nginx.conf

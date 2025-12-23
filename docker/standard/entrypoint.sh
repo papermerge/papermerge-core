@@ -7,12 +7,34 @@ if [ -z $CMD ]; then
   exit 1
 fi
 
+# Map short aliases to full environment variable names
+if [ -n "${PM_PASS}" ] && [ -z "${PAPERMERGE__AUTH__PASSWORD}" ]; then
+  echo "Using PM_PASS for PAPERMERGE__AUTH__PASSWORD"
+  export PAPERMERGE__AUTH__PASSWORD="${PM_PASS}"
+fi
+
+if [ -n "${PM_DB}" ] && [ -z "${PAPERMERGE__DATABASE__URL}" ]; then
+  echo "Using PM_DB for PAPERMERGE__DATABASE__URL"
+  export PAPERMERGE__DATABASE__URL="${PM_DB}"
+fi
+
 # Auto-generate secret key if not provided (for non-production use)
 if [ -z "${PAPERMERGE__SECURITY__SECRET_KEY}" ]; then
   echo "WARNING: PAPERMERGE__SECURITY__SECRET_KEY not set. Auto-generating a random key."
   echo "This is NOT suitable for production. Please set PAPERMERGE__SECURITY__SECRET_KEY explicitly."
   export PAPERMERGE__SECURITY__SECRET_KEY=$(head -c 32 /dev/urandom | base64 | tr -d '+/=' | head -c 64)
   echo "Generated secret key: ${PAPERMERGE__SECURITY__SECRET_KEY:0:16}... (truncated for display)"
+fi
+
+# Set default auth username and email if not provided
+if [ -z "${PAPERMERGE__AUTH__USERNAME}" ]; then
+  echo "PAPERMERGE__AUTH__USERNAME not set. Using default: admin"
+  export PAPERMERGE__AUTH__USERNAME="admin"
+fi
+
+if [ -z "${PAPERMERGE__AUTH__EMAIL}" ]; then
+  echo "PAPERMERGE__AUTH__EMAIL not set. Using default: admin@example.com"
+  export PAPERMERGE__AUTH__EMAIL="admin@example.com"
 fi
 
 exec_migrate() {

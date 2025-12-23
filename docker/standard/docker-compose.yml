@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: papermerge
+      POSTGRES_PASSWORD: papermerge
+      POSTGRES_DB: papermerge
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U papermerge" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  papermerge:
+    build:
+      context: ../..
+      dockerfile: docker/standard/Dockerfile
+    ports:
+      - "7000:80"
+    environment:
+      PAPERMERGE__AUTH__PASSWORD: admin
+      PAPERMERGE__DATABASE__URL: postgresql://papermerge:papermerge@postgres:5432/papermerge
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - papermerge_data:/core_app/media
+
+volumes:
+  postgres_data:
+  papermerge_data:

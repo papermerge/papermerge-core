@@ -1,7 +1,5 @@
-import asyncio
 from typing import Sequence
 
-from prompt_toolkit import prompt
 from typing_extensions import Annotated
 import typer
 from rich.console import Console
@@ -9,7 +7,7 @@ from rich.table import Table
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 
-from papermerge.core import orm, schema
+from papermerge.core import orm, schema, const
 from papermerge.core.db.engine import AsyncSessionLocal
 from papermerge.core.features.users.db import api as usr_dbapi
 from papermerge.core.utils.cli import async_command
@@ -69,6 +67,34 @@ async def create_user_cmd(
     else:
         console.print(
             f"User [bold]{username}[/bold] successfully created", style="green"
+        )
+
+
+@app.command(name="create_system_user")
+@async_command
+async def create_user_cmd():
+    """Create system user
+
+    System user is special user who own resources created by background tasks
+    and initialization scripts
+    """
+    email = "system@local"
+
+    async with AsyncSessionLocal() as db_session:
+        user, error = await usr_dbapi.create_user(
+            db_session,
+            username="system",
+            password="-",
+            is_superuser=True,
+            email=email,
+            user_id=const.SYSTEM_USER_ID
+        )
+
+    if error:
+        console.print(error, style="red")
+    else:
+        console.print(
+            f"User [bold]system user[/bold] successfully created", style="green"
         )
 
 

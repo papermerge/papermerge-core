@@ -25,7 +25,6 @@ exec_create_roles() {
   echo "Standard roles ready."
 }
 
-
 exec_init() {
   exec_migrate
   exec_perms_sync

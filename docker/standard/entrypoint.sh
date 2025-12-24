@@ -31,7 +31,13 @@ exec_migrate() {
 }
 
 exec_perms_sync() {
-  cd /core_app && uv run paper-cli perms sync
+  cd /core_app && uv run pm perms sync
+}
+
+exec_create_roles() {
+  echo "Creating standard roles..."
+  cd /core_app && uv run pm roles create-standard-roles
+  echo "Standard roles ready."
 }
 
 
@@ -43,11 +49,9 @@ exec_createsuperuser() {
 exec_init() {
   exec_migrate
   exec_perms_sync
+  exec_create_roles
   exec_createsuperuser
 }
-
-rm -f /etc/nginx/nginx.conf
-rm -f /etc/papermerge/supervisord.conf
 
 if [[ -n "${NODE_NAME}" ]]; then
   # if NODE_NAME is present it means worker runs inside k8s cluster
@@ -71,14 +75,6 @@ if [[ -n "${NODE_NAME}" ]]; then
   echo "PAPERMERGE__MAIN__S3_PREVIEW_QUEUE_NAME queue name set to: $PAPERMERGE__MAIN__S3_PREVIEW_QUEUE_NAME"
 fi
 
-if [[ -z "${PAPERMERGE__AUTH__REMOTE}" ]]; then
-  ln -s /etc/papermerge/supervisord.default.conf /etc/papermerge/supervisord.conf
-  ln -s /etc/nginx/nginx.default.conf /etc/nginx/nginx.conf
-else
-  ln -s /etc/papermerge/supervisord.remote.conf /etc/papermerge/supervisord.conf
-  ln -s /etc/nginx/nginx.remote.conf /etc/nginx/nginx.conf
-fi
-
 case $CMD in
   init)
     exec_init
@@ -91,17 +87,13 @@ case $CMD in
     ;;
   server)
     exec_init
-    # TODO: replace roco with env2js
-    roco > /usr/share/nginx/html/auth_server/papermerge-runtime-config.js
+    /bin/env2js -f /core_app/core.js.tmpl  > /usr/share/nginx/html/auth_server/papermerge-runtime-config.js
     # Once user options endpoint is implemented, following two lines will removed
     /bin/env2js -f /core_app/core.js.tmpl > /usr/share/nginx/html/ui/papermerge-runtime-config.js
     sed -i '/Papermerge/a  <script type="module" src="/papermerge-runtime-config.js"></script>' /usr/share/nginx/html/ui/index.html
     exec /usr/bin/supervisord -c /etc/papermerge/supervisord.conf
     ;;
   server_without_init)
-    # TODO: replace roco with env2js
-    roco > /usr/share/nginx/html/auth_server/papermerge-runtime-config.js
-    # Once user options endpoint is implemented, following two lines will removed
     /bin/env2js -f /core_app/core.js.tmpl > /usr/share/nginx/html/ui/papermerge-runtime-config.js
     sed -i '/Papermerge/a  <script type="module" src="/papermerge-runtime-config.js"></script>' /usr/share/nginx/html/ui/index.html
     exec /usr/bin/supervisord -c /etc/papermerge/supervisord.conf

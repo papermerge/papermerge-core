@@ -16,6 +16,7 @@ from sqlalchemy import select, text, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from papermerge.core.const import SYSTEM_USER_ID
 from papermerge.core.types import MimeType
 from papermerge.core import schema
 from papermerge.core.utils.tz import utc_now
@@ -516,18 +517,31 @@ async def login_as(db_session):
 @pytest.fixture()
 async def system_user(db_session: AsyncSession) -> orm.User:
     """
-    Retrieve the system user with special ID.
-    System user is created in setup_database and used for resources created
-    in tests where no explicit user is logged in.
+    Retrieve or create the system user with special ID.
+    System user owns resources created by background tasks
+    and initialization scripts.
     """
-    from papermerge.core.const import SYSTEM_USER_ID
-
-    # Retrieve system user from database
     stmt = select(orm.User).where(orm.User.id == SYSTEM_USER_ID)
     result = await db_session.execute(stmt)
-    system_user = result.scalar_one()
+    user = result.scalar_one_or_none()
 
-    return system_user
+    if user is None:
+        user = orm.User(
+            id=SYSTEM_USER_ID,
+            username="system",
+            email="system@local",
+            password="-",
+            is_superuser=True,
+            is_active=False,
+            is_staff=False,
+            created_by=SYSTEM_USER_ID,
+            updated_by=SYSTEM_USER_ID,
+        )
+        db_session.add(user)
+        await db_session.commit()
+        await db_session.refresh(user)
+
+    return user
 
 
 @pytest.fixture()

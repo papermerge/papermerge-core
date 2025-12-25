@@ -4,7 +4,6 @@ RETURNS TRIGGER AS $$
 DECLARE
     current_user_id uuid;
 BEGIN
-    -- Get the user_id from the session context
     BEGIN
         current_user_id := current_setting('app.user_id', true)::uuid;
     EXCEPTION
@@ -12,21 +11,22 @@ BEGIN
             current_user_id := NULL;
     END;
 
-    -- Handle INSERT operations
     IF TG_OP = 'INSERT' THEN
-        -- Set created_by to the current user from context
-        NEW.created_by := current_user_id;
-        -- Also set updated_by for consistency (since it's a new record)
-        NEW.updated_by := current_user_id;
+        -- Only set if not already provided
+        IF NEW.created_by IS NULL THEN
+            NEW.created_by := current_user_id;
+        END IF;
+        IF NEW.updated_by IS NULL THEN
+            NEW.updated_by := current_user_id;
+        END IF;
         RETURN NEW;
     END IF;
 
-    -- Handle UPDATE operations
     IF TG_OP = 'UPDATE' THEN
-        -- Don't allow changing created_by on updates
         NEW.created_by := OLD.created_by;
-        -- Set updated_by to the current user from context
-        NEW.updated_by := current_user_id;
+        IF NEW.updated_by IS NULL THEN
+            NEW.updated_by := current_user_id;
+        END IF;
         RETURN NEW;
     END IF;
 

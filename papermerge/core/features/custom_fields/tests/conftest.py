@@ -11,7 +11,7 @@ from papermerge.core import types
 
 
 @pytest.fixture
-async def make_custom_field_select(db_session: AsyncSession, user):
+async def make_custom_field_select(db_session: AsyncSession, user, system_user):
     """
     Create a custom field of type "select"
     """
@@ -21,12 +21,13 @@ async def make_custom_field_select(db_session: AsyncSession, user):
         owner: Owner,
     ) -> orm.CustomField:
         config = cf_types.SelectFieldConfig(options=options)
-
         cf = orm.CustomField(
             id=uuid.uuid4(),
             name=name,
             type_handler="select",
             config=config.to_config_dict(),
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
         db_session.add(cf)
         await db_session.flush()

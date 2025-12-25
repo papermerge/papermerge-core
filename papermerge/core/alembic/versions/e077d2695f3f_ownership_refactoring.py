@@ -299,8 +299,6 @@ def upgrade() -> None:
     # =========================================================================
     # STEP 7: Drop old columns and constraints
     # =========================================================================
-    print("Cleaning up old schema...")
-
     # CUSTOM FIELDS
     op.drop_index('ix_custom_fields_group_id', table_name='custom_fields')
     op.drop_index('ix_custom_fields_user_id', table_name='custom_fields')
@@ -308,7 +306,6 @@ def upgrade() -> None:
     op.drop_constraint('custom_fields_group_id_fkey', 'custom_fields', type_='foreignkey')
     op.drop_column('custom_fields', 'group_id')
     op.drop_column('custom_fields', 'user_id')
-    print("  ✓ Cleaned custom_fields")
 
     # DOCUMENT TYPES
     op.drop_constraint('unique document type per group', 'document_types', type_='unique')
@@ -317,7 +314,6 @@ def upgrade() -> None:
     op.drop_constraint('document_types_group_id_fkey', 'document_types', type_='foreignkey')
     op.drop_column('document_types', 'group_id')
     op.drop_column('document_types', 'user_id')
-    print("  ✓ Cleaned document_types")
 
     # NODES
     op.drop_constraint('unique title per parent per group', 'nodes', type_='unique')
@@ -326,7 +322,6 @@ def upgrade() -> None:
     op.drop_constraint('nodes_group_id_fkey', 'nodes', type_='foreignkey')
     op.drop_column('nodes', 'group_id')
     op.drop_column('nodes', 'user_id')
-    print("  ✓ Cleaned nodes")
 
     # TAGS
     op.drop_constraint('unique tag name per group', 'tags', type_='unique')
@@ -337,9 +332,6 @@ def upgrade() -> None:
     op.drop_column('tags', 'user_id')
     print("  ✓ Cleaned tags")
 
-    print("\n" + "="*60)
-    print("✅ MIGRATION COMPLETED SUCCESSFULLY")
-    print("="*60)
 
 
 def downgrade() -> None:

@@ -14,6 +14,7 @@ from papermerge.core.features.custom_fields import types as cf_types
 async def test_count_referenced_option_of_cf_type_select(
     db_session: AsyncSession,
     user,
+    system_user,
     make_custom_field_select,
 ):
     """
@@ -46,7 +47,11 @@ async def test_count_referenced_option_of_cf_type_select(
         owner_type=types.OwnerType.USER,
         owner_id=user.id
     )
-    doc_type = await dt_dbapi.create_document_type(db_session, data=dt_data)
+    doc_type = await dt_dbapi.create_document_type(
+        db_session,
+        data=dt_data,
+        created_by=system_user.id,
+    )
 
     # Create document
     doc1 = orm.Document(

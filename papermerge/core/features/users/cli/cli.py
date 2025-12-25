@@ -4,13 +4,14 @@ from typing_extensions import Annotated
 import typer
 from rich.console import Console
 from rich.table import Table
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
-from papermerge.core import orm, schema
+from papermerge.core import orm, schema, const
 from papermerge.core.db.engine import AsyncSessionLocal
 from papermerge.core.features.users.db import api as usr_dbapi
 from papermerge.core.utils.cli import async_command
+from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 
 app = typer.Typer(help="Users management")
 console = Console()
@@ -50,23 +51,31 @@ async def create_user_cmd(
     superuser: bool = False,
 ):
     """Create user"""
+    user = None
     if email is None:
         email = f"{username}@example.com"
 
     async with AsyncSessionLocal() as db_session:
-        try:
-            user = await usr_dbapi.create_user(
-                db_session,
-                username=username,
-                password=password,
-                is_superuser=superuser,
-                email=email,
-            )
-        except IntegrityError:
-            console.print(f"User {username} already exists", style="yellow")
-        except Exception:
-            console.print_exception()
-            raise SystemExit(1)
+        async with AsyncAuditContext(
+            db_session,
+            user_id=const.SYSTEM_USER_ID,
+            username=const.SYSTEM_USER_USERNAME
+        ):
+            try:
+                await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
+                user = await usr_dbapi.create_user(
+                    db_session,
+                    username=username,
+                    password=password,
+                    is_superuser=superuser,
+                    email=email,
+                    created_by=const.SYSTEM_USER_ID
+                )
+            except IntegrityError:
+                console.print(f"User {username} already exists", style="yellow")
+            except Exception:
+                console.print_exception()
+                raise SystemExit(1)
 
     if user:
         console.print(
@@ -74,7 +83,7 @@ async def create_user_cmd(
         )
 
 
-@app.command(name="create_system_user")
+@app.command(name="create-system-user")
 @async_command
 async def create_user_cmd():
     """Create system user
@@ -83,21 +92,30 @@ async def create_user_cmd():
     and initialization scripts
     """
     email = "system@local"
+    user = None
 
     async with AsyncSessionLocal() as db_session:
-        try:
-            user = await usr_dbapi.create_user(
-                db_session,
-                username="system",
-                password="-",
-                is_superuser=True,
-                email=email,
-            )
-        except IntegrityError:
-            console.print("System user already exists", style="yellow")
-        except Exception:
-            console.print_exception()
-            raise SystemExit(1)
+        async with AsyncAuditContext(
+            db_session,
+            user_id=const.SYSTEM_USER_ID,
+            username=const.SYSTEM_USER_USERNAME
+        ):
+            try:
+                await db_session.execute(text("SET CONSTRAINTS ALL DEFERRED"))
+                user = await usr_dbapi.create_user(
+                    db_session,
+                    username=const.SYSTEM_USER_USERNAME,
+                    password="-",
+                    is_superuser=True,
+                    email=email,
+                    user_id=const.SYSTEM_USER_ID,
+                    created_by=const.SYSTEM_USER_ID
+                )
+            except IntegrityError:
+                console.print("System user already exists", style="yellow")
+            except Exception:
+                console.print_exception()
+                raise SystemExit(1)
 
     if user is not None:
         console.print(

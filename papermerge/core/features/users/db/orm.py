@@ -51,13 +51,13 @@ class User(Base):
     )
 
     # created by NULL only for "system user"
-    created_by: Mapped[UUID] = mapped_column(
-        ForeignKey("users.id", ondelete="SET NULL"),
+    created_by: Mapped[UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="RESTRICT", deferrable=True, initially='DEFERRED'),
         nullable=True
     )
     # updated_by NULL only for "system user"
-    updated_by: Mapped[UUID] = mapped_column(
-        ForeignKey("users.id", ondelete="SET NULL"),
+    updated_by: Mapped[UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="RESTRICT", deferrable=True, initially='DEFERRED'),
         nullable=True
     )
     deleted_by: Mapped[UUID | None] = mapped_column(

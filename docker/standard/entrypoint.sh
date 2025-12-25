@@ -35,7 +35,7 @@ exec_perms_sync() {
 }
 
 exec_create_system_user() {
-  cd /core_app && uv run pm users create_system_user
+  cd /core_app && uv run pm users create-system-user
 }
 
 exec_create_standard_roles() {

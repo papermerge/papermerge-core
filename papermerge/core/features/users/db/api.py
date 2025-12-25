@@ -508,11 +508,6 @@ async def create_user(
     role_ids = role_ids or []
     _user_id = user_id or uuid.uuid4()
 
-    await special_folders_api.create_special_folders_for_user(
-        db_session,
-        _user_id
-    )
-
     user = orm.User(
         id=_user_id,
         username=username,
@@ -525,6 +520,11 @@ async def create_user(
     )
     db_session.add(user)
     await db_session.flush()
+
+    await special_folders_api.create_special_folders_for_user(
+        db_session,
+        _user_id
+    )
 
     if group_ids:
         groups_result = await db_session.execute(

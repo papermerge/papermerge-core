@@ -31,12 +31,12 @@ class AuditColumns:
 
     # Audit user foreign keys
     created_by: Mapped[UUID] = mapped_column(
-        ForeignKey("users.id", ondelete="SET NULL"),
-        nullable=True
+        ForeignKey("users.id", ondelete="RESTRICT", deferrable=True, initially='DEFERRED'),
+        nullable=False
     )
     updated_by: Mapped[UUID] = mapped_column(
-        ForeignKey("users.id", ondelete="SET NULL"),
-        nullable=True
+        ForeignKey("users.id", ondelete="RESTRICT", deferrable=True, initially='DEFERRED'),
+        nullable=False
     )
     deleted_by: Mapped[UUID | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"),

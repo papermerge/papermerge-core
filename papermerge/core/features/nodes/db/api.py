@@ -391,7 +391,9 @@ async def update_node(
 
 
 async def create_folder(
-    db_session: AsyncSession, attrs: schema.NewFolder
+    db_session: AsyncSession,
+    attrs: schema.NewFolder,
+    created_by: uuid.UUID
 ) -> Tuple[schema.FolderShort | None, schema.Error | None]:
     error = None
     folder_id = attrs.id or uuid.uuid4()
@@ -407,6 +409,8 @@ async def create_folder(
         title=attrs.title,
         parent_id=attrs.parent_id,
         ctype="folder",
+        created_by=created_by,
+        updated_by=created_by,
     )
     await ownership_api.set_owner(
         db_session,

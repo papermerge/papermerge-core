@@ -37,8 +37,9 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger: Ensure user has special folders after insert
-CREATE TRIGGER ensure_user_special_folders_after_insert
+CREATE CONSTRAINT TRIGGER ensure_user_special_folders_after_insert
 AFTER INSERT ON users
+DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
 EXECUTE FUNCTION check_user_special_folders();
 

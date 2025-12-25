@@ -203,7 +203,8 @@ async def test__positive__custom_fields_all_route_with_group_id_param(
     make_custom_field_v2,
     auth_api_client: AuthTestClient,
     user,
-    make_group
+    make_group,
+    system_user
 ):
     """In this scenario current user belongs to the
     group provided as parameter and there are two custom fields
@@ -228,7 +229,12 @@ async def test__positive__custom_fields_all_route_with_group_id_param(
         name=f"CF Research 2", type_handler="text", group_id=group.id
     )
 
-    user_group = orm.UserGroup(user_id=user.id, group_id=group.id)
+    user_group = orm.UserGroup(
+        user_id=user.id,
+        group_id=group.id,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
     db_session.add(user_group)
 
     await db_session.commit()

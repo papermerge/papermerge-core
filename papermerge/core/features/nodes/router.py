@@ -126,7 +126,11 @@ async def create_folder(
         user_id=user.id,
         username=user.username
     ):
-        created_node, error = await nodes_dbapi.create_folder(db_session, new_folder)
+        created_node, error = await nodes_dbapi.create_folder(
+            db_session,
+            new_folder,
+            created_by=user.id
+        )
 
     if error:
         raise HTTPException(status_code=400, detail=error.model_dump())

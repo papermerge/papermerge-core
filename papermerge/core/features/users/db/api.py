@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
 
 from papermerge.core.utils.tz import utc_now
-from papermerge.core import orm, schema
+from papermerge.core import orm, schema, const
 from papermerge.core.utils.misc import is_valid_uuid
 from papermerge.core.features.auth import scopes
 from papermerge.core.schemas import error as err_schema
@@ -495,6 +495,7 @@ async def create_user(
     is_superuser: bool = False,
     is_active: bool = False,
     user_id: uuid.UUID | None = None,
+    created_by: uuid.UUID = const.SYSTEM_USER_ID
 ) ->  orm.User:
     """
     Create a new user with special folders.
@@ -502,14 +503,10 @@ async def create_user(
     REMOVED: No longer requires SET CONSTRAINTS ALL DEFERRED
     The circular dependency has been eliminated!
     """
+
     group_ids = group_ids or []
     role_ids = role_ids or []
     _user_id = user_id or uuid.uuid4()
-
-    await special_folders_api.create_special_folders_for_user(
-        db_session,
-        _user_id
-    )
 
     user = orm.User(
         id=_user_id,
@@ -518,9 +515,16 @@ async def create_user(
         password=password,
         is_superuser=is_superuser,
         is_active=is_active,
+        created_by=created_by,
+        updated_by=created_by,
     )
     db_session.add(user)
     await db_session.flush()
+
+    await special_folders_api.create_special_folders_for_user(
+        db_session,
+        _user_id
+    )
 
     if group_ids:
         groups_result = await db_session.execute(
@@ -536,7 +540,12 @@ async def create_user(
             raise ValueError(f"Groups not found or inactive: {missing_group_ids}")
 
         for group in groups:
-            user_group = orm.UserGroup(user_id=user.id, group_id=group.id)
+            user_group = orm.UserGroup(
+                user_id=user.id,
+                group_id=group.id,
+                created_by=created_by,
+                updated_by=created_by,
+            )
             db_session.add(user_group)
 
     if role_ids:
@@ -553,7 +562,12 @@ async def create_user(
             raise ValueError(f"Roles not found or inactive: {missing_role_ids}")
 
         for role in roles:
-            user_role = orm.UserRole(user_id=user.id, role_id=role.id)
+            user_role = orm.UserRole(
+                user_id=user.id,
+                role_id=role.id,
+                created_by=created_by,
+                updated_by=created_by,
+            )
             db_session.add(user_role)
 
     await db_session.commit()
@@ -600,6 +614,8 @@ async def update_user(
 
     # Update groups - Handle soft delete properly
     if attrs.group_ids is not None:
+        from papermerge.core.const import SYSTEM_USER_ID
+
         # Soft delete existing user_groups by setting deleted_at
         for existing_user_group in user.user_groups:
             if existing_user_group.deleted_at is None:  # Only mark active ones as deleted
@@ -611,11 +627,18 @@ async def update_user(
             new_groups = list((await db_session.execute(stmt)).scalars().all())
 
             for group in new_groups:
-                new_user_group = orm.UserGroup(user=user, group=group)
+                new_user_group = orm.UserGroup(
+                    user=user,
+                    group=group,
+                    created_by=SYSTEM_USER_ID,
+                    updated_by=SYSTEM_USER_ID,
+                )
                 db_session.add(new_user_group)
 
     # Update roles - Handle soft delete properly
     if attrs.role_ids is not None:
+        from papermerge.core.const import SYSTEM_USER_ID
+
         # Soft delete existing user_roles by setting deleted_at
         for existing_user_role in user.user_roles:
             if existing_user_role.deleted_at is None:  # Only mark active ones as deleted
@@ -627,7 +650,12 @@ async def update_user(
             new_roles = list((await db_session.execute(stmt)).scalars().all())
 
             for role in new_roles:
-                new_user_role = orm.UserRole(user=user, role=role)
+                new_user_role = orm.UserRole(
+                    user=user,
+                    role=role,
+                    created_by=SYSTEM_USER_ID,
+                    updated_by=SYSTEM_USER_ID,
+                )
                 db_session.add(new_user_role)
 
     try:

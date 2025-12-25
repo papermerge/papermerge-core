@@ -13,14 +13,20 @@ async def test_upload_document_to_group_home(
     make_user,
     make_group,
     login_as,
-    pdf_file: DocumentTestFileType
+    pdf_file: DocumentTestFileType,
+    system_user
 ):
     """
     Documents uploaded in group's home will be automatically owned by the group
     """
     group = await make_group("hr", with_special_folders=True)
     user = await make_user("john")
-    user_group = orm.UserGroup(user=user, group=group)
+    user_group = orm.UserGroup(
+        user=user,
+        group=group,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
     db_session.add(user_group)
     await db_session.commit()
 
@@ -59,13 +65,18 @@ async def test_upload_document_to_group_home(
 
 
 async def test_move_document_one_doc_from_private_to_group(
-    db_session: AsyncSession, make_user, make_group, make_document, login_as
+    db_session: AsyncSession, make_user, make_group, make_document, login_as, system_user
 ):
     group = await make_group("hr", with_special_folders=True)
     user = await make_user("john")
     doc = await make_document("cv.title", user=user, parent=user.home_folder)
 
-    user_group = orm.UserGroup(user=user, group=group)
+    user_group = orm.UserGroup(
+        user=user,
+        group=group,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
     db_session.add(user_group)
     await db_session.commit()
 
@@ -87,11 +98,16 @@ async def test_move_document_one_doc_from_private_to_group(
 
 
 async def test_move_document_one_doc_from_group_to_private(
-    db_session: AsyncSession, make_user, make_group, make_document, login_as
+    db_session: AsyncSession, make_user, make_group, make_document, login_as, system_user
 ):
     group = await make_group("hr", with_special_folders=True)
     user = await make_user("john")
-    user_group = orm.UserGroup(user=user, group=group)
+    user_group = orm.UserGroup(
+        user=user,
+        group=group,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
     db_session.add(user_group)
     doc = await make_document("cv.title", parent=group.home_folder, user=user)
 
@@ -122,7 +138,7 @@ async def test_move_document_one_doc_from_group_to_private(
 
 
 async def test_move_nested_nodes_from_private_to_group(
-    db_session: AsyncSession, make_user, make_group, make_document, make_folder, login_as
+    db_session: AsyncSession, make_user, make_group, make_document, make_folder, login_as, system_user
 ):
     group = await make_group("hr", with_special_folders=True)
     user = await make_user("john")
@@ -131,7 +147,12 @@ async def test_move_nested_nodes_from_private_to_group(
     folder_2 = await make_folder("folder_2", user=user, parent=folder_1)
     doc = await make_document("cv.title", user=user, parent=folder_2)
 
-    user_group = orm.UserGroup(user=user, group=group)
+    user_group = orm.UserGroup(
+        user=user,
+        group=group,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
     db_session.add(user_group)
 
     await db_session.commit()
@@ -160,7 +181,7 @@ async def test_move_nested_nodes_from_private_to_group(
 
 
 async def test_move_nested_nodes_from_group_to_private(
-    db_session: AsyncSession, make_user, make_group, make_document, make_folder, login_as
+    db_session: AsyncSession, make_user, make_group, make_document, make_folder, login_as, system_user
 ):
     group = await make_group("hr", with_special_folders=True)
     user = await make_user("john")
@@ -169,7 +190,12 @@ async def test_move_nested_nodes_from_group_to_private(
     folder_2 = await make_folder("folder_2", group=group, parent=folder_1)
     doc = await make_document("cv.title", parent=folder_2, user=user)
 
-    user_group = orm.UserGroup(user=user, group=group)
+    user_group = orm.UserGroup(
+        user=user,
+        group=group,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
     db_session.add(user_group)
 
     await db_session.commit()

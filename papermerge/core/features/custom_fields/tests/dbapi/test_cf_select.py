@@ -55,6 +55,8 @@ async def test_count_referenced_option_of_cf_type_select(
         title="task-1.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     doc2 = orm.Document(
         id=uuid.uuid4(),
@@ -62,6 +64,8 @@ async def test_count_referenced_option_of_cf_type_select(
         title="task-2.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     doc3 = orm.Document(
         id=uuid.uuid4(),
@@ -69,6 +73,8 @@ async def test_count_referenced_option_of_cf_type_select(
         title="task-3.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     db_session.add_all([doc1, doc2, doc3])
     await db_session.flush()
@@ -172,6 +178,8 @@ async def test_migrate_option_values_of_cf_type_select(
         title="task-1.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     doc2 = orm.Document(
         id=uuid.uuid4(),
@@ -179,6 +187,8 @@ async def test_migrate_option_values_of_cf_type_select(
         title="task-2.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     doc3 = orm.Document(
         id=uuid.uuid4(),
@@ -186,6 +196,8 @@ async def test_migrate_option_values_of_cf_type_select(
         title="task-3.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     db_session.add_all([doc1, doc2, doc3])
     await db_session.flush()
@@ -301,6 +313,8 @@ async def test_migrate_option_values_of_cf_type_multiselect(
         title="policy-1.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     doc2 = orm.Document(
         id=uuid.uuid4(),
@@ -308,6 +322,8 @@ async def test_migrate_option_values_of_cf_type_multiselect(
         title="policy-2.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     doc3 = orm.Document(
         id=uuid.uuid4(),
@@ -315,6 +331,8 @@ async def test_migrate_option_values_of_cf_type_multiselect(
         title="policy-3.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     db_session.add_all([doc1, doc2, doc3])
     await db_session.flush()
@@ -548,6 +566,8 @@ async def _create_doc_with_prio_cf(db_session, user, make_cf_select):
         title="task-1.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     db_session.add(doc)
     await db_session.flush()

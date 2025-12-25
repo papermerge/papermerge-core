@@ -89,6 +89,8 @@ async def test_get_option_usage_counts_with_single_option(
         title="task-1.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     doc2 = orm.Document(
         id=uuid.uuid4(),
@@ -96,6 +98,8 @@ async def test_get_option_usage_counts_with_single_option(
         title="task-2.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     db_session.add_all([doc1, doc2])
     await db_session.flush()
@@ -174,6 +178,8 @@ async def test_get_option_usage_counts_with_multiple_options(
         title="task-1.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     doc2 = orm.Document(
         id=uuid.uuid4(),
@@ -181,6 +187,8 @@ async def test_get_option_usage_counts_with_multiple_options(
         title="task-2.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     doc3 = orm.Document(
         id=uuid.uuid4(),
@@ -188,6 +196,8 @@ async def test_get_option_usage_counts_with_multiple_options(
         title="task-3.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     db_session.add_all([doc1, doc2, doc3])
     await db_session.flush()
@@ -322,6 +332,8 @@ async def test_update_custom_field_with_migration_select(
         title="task-1.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     doc2 = orm.Document(
         id=uuid.uuid4(),
@@ -329,6 +341,8 @@ async def test_update_custom_field_with_migration_select(
         title="task-2.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     db_session.add_all([doc1, doc2])
     await db_session.flush()
@@ -433,6 +447,8 @@ async def test_update_custom_field_with_migration_multiselect(
         title="policy-1.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     doc2 = orm.Document(
         id=uuid.uuid4(),
@@ -440,6 +456,8 @@ async def test_update_custom_field_with_migration_multiselect(
         title="policy-2.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     db_session.add_all([doc1, doc2])
     await db_session.flush()
@@ -541,6 +559,8 @@ async def test_update_custom_field_no_migration_when_values_unchanged(
         title="task-1.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     db_session.add(doc1)
     await db_session.flush()
@@ -634,6 +654,8 @@ async def test_update_custom_field_migration_multiple_values(
         title="task-1.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     doc2 = orm.Document(
         id=uuid.uuid4(),
@@ -641,6 +663,8 @@ async def test_update_custom_field_migration_multiple_values(
         title="task-2.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     doc3 = orm.Document(
         id=uuid.uuid4(),
@@ -648,6 +672,8 @@ async def test_update_custom_field_migration_multiple_values(
         title="task-3.pdf",
         document_type_id=doc_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     db_session.add_all([doc1, doc2, doc3])
     await db_session.flush()

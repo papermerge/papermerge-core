@@ -2,15 +2,16 @@ import uuid
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import func, String
+from sqlalchemy import func, String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.dialects.postgresql import TIMESTAMP
 
-from papermerge.core.db.audit_cols import AuditColumns
+from papermerge.core.utils.tz import utc_now
 from papermerge.core.db.base import Base
 from papermerge.core import constants as const
 
 
-class User(Base, AuditColumns):
+class User(Base):
     __tablename__ = "users"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, insert_default=uuid.uuid4)
@@ -22,6 +23,52 @@ class User(Base, AuditColumns):
     is_superuser: Mapped[bool] = mapped_column(default=False)
     is_staff: Mapped[bool] = mapped_column(default=False)
     is_active: Mapped[bool] = mapped_column(default=False)
+
+    ### User does not use AuditColumns mixin because the mixin mandates
+    # that `created_by`/`updated_by` will be NOT NULL. However, "system user"
+    # cannot create itself -> for system user `created_by`/`updated_by` must
+    # be set to NULL -> for `users` table the `created_by`/`updated_by` are
+    # defined to allow NULL values.
+
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True),
+        default=utc_now,
+        nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True),
+        default=utc_now,
+        onupdate=func.now(),
+        nullable=False
+    )
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        TIMESTAMP(timezone=True),
+        nullable=True
+    )
+    archived_at: Mapped[datetime | None] = mapped_column(
+        TIMESTAMP(timezone=True),
+        nullable=True
+    )
+
+    # created by NULL only for "system user"
+    created_by: Mapped[UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="RESTRICT", deferrable=True, initially='DEFERRED'),
+        nullable=True
+    )
+    # updated_by NULL only for "system user"
+    updated_by: Mapped[UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="RESTRICT", deferrable=True, initially='DEFERRED'),
+        nullable=True
+    )
+    deleted_by: Mapped[UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
+    )
+    archived_by: Mapped[UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
 
     special_folders: Mapped[list["SpecialFolder"]] = relationship(
         "SpecialFolder",

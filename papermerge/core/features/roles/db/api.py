@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from papermerge.core.utils.tz import utc_now
-from papermerge.core import schema, orm
+from papermerge.core import schema, orm, const
 from papermerge.core.features.auth import scopes
 
 logger = logging.getLogger(__name__)
@@ -278,9 +278,11 @@ async def create_role(
     db_session: AsyncSession,
     name: str,
     scopes: list[str],
-    exists_ok: bool = False
+    exists_ok: bool = False,
+    created_by: uuid.UUID = const.SYSTEM_USER_ID,
 ) -> Tuple[schema.Role | None, str | None]:
     """Creates a role with given scopes"""
+
 
     stmt_total_permissions = select(func.count(orm.Permission.id))
     perms_count = (await db_session.execute(stmt_total_permissions)).scalar()
@@ -307,7 +309,14 @@ async def create_role(
         error = f"Unknown permission scopes: {', '.join(missing)}"
         return None, error
 
-    role = orm.Role(name=name, permissions=perms)
+    role = orm.Role(
+        name=name,
+        permissions=perms,
+        created_by=created_by,
+        updated_by=created_by,
+        created_at=utc_now(),
+        updated_at=utc_now()
+    )
     db_session.add(role)
     try:
         await db_session.commit()

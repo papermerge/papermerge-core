@@ -13,7 +13,7 @@ import uuid
 import pytest
 
 from papermerge.core import orm
-from papermerge.core.types import OwnerType, ResourceType, NodeResource, Owner
+from papermerge.core.types import OwnerType, NodeResource, Owner
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.custom_fields import schema as cf_schema
 from papermerge.core.features.document_types.db import api as dt_dbapi
@@ -70,6 +70,8 @@ async def test_multiselect_field_with_valid_values(
         title="Employee-Handbook.pdf",
         document_type_id=document_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     db_session.add(doc)
     await db_session.flush()
@@ -150,6 +152,8 @@ async def test_multiselect_field_with_invalid_value(
         title="Employee-Handbook.pdf",
         document_type_id=document_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id
     )
     db_session.add(doc)
     await db_session.flush()

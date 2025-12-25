@@ -4,7 +4,7 @@ Generic single-database configuration.
 Create initial migration:
 
 ```
-  $ alembic revision --autogenerate -m "Initial migration"
+    $ alembic revision --autogenerate -m "Initial migration"
 ```
 
 Run migration:

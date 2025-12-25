@@ -5,7 +5,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 from sqlalchemy import select
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, IntegrityError
 
 from papermerge.core import orm, schema, const
 from papermerge.core.db.engine import AsyncSessionLocal
@@ -81,20 +81,24 @@ async def create_user_cmd():
     email = "system@local"
 
     async with AsyncSessionLocal() as db_session:
-        user, error = await usr_dbapi.create_user(
-            db_session,
-            username="system",
-            password="-",
-            is_superuser=True,
-            email=email,
-            user_id=const.SYSTEM_USER_ID
-        )
+        try:
+            user = await usr_dbapi.create_user(
+                db_session,
+                username="system",
+                password="-",
+                is_superuser=True,
+                email=email,
+                user_id=const.SYSTEM_USER_ID
+            )
+        except IntegrityError:
+            console.print("System user already exists", style="yellow")
+        except Exception:
+            console.print_exception()
+            raise SystemExit(1)
 
-    if error:
-        console.print(error, style="red")
-    else:
+    if user is not None:
         console.print(
-            f"User [bold]system user[/bold] successfully created", style="green"
+            "User [bold]system user[/bold] successfully created", style="green"
         )
 
 

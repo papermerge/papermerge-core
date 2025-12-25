@@ -146,6 +146,7 @@ async def create_role(
             db_session,
             name=pyrole.name,
             scopes=pyrole.scopes,
+            created_by=user.id
         )
     if error:
         if "already exists" in error.lower():

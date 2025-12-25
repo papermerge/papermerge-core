@@ -185,6 +185,7 @@ async def test_update_group_id_field_in_document_type(
     db_session: AsyncSession,
     make_document_type,
     make_group,
+    system_user
 ):
     """
     Update group_id field of document type.
@@ -196,7 +197,12 @@ async def test_update_group_id_field_in_document_type(
     group: orm.Group = await make_group("Familly", with_special_folders=True)
 
 
-    user_group = orm.UserGroup(user=user, group=group)
+    user_group = orm.UserGroup(
+        user=user,
+        group=group,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
     db_session.add(user_group)
 
     await db_session.commit()
@@ -314,7 +320,8 @@ async def test__positive__document_types_all_route_with_group_id_param(
     make_document_type,
     auth_api_client: AuthTestClient,
     user,
-    make_group
+    make_group,
+    system_user
 ):
     """In this scenario current user belongs to the
     group provided as parameter and there are two document types
@@ -332,7 +339,12 @@ async def test__positive__document_types_all_route_with_group_id_param(
     await make_document_type(name=f"Research 2", group_id=group.id)
 
     # user belongs to 'research' group
-    user_group = orm.UserGroup(user=user, group=group)
+    user_group = orm.UserGroup(
+        user=user,
+        group=group,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
     db_session.add(user_group)
     await db_session.commit()
 

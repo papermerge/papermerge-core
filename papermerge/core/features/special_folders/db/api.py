@@ -31,6 +31,8 @@ async def create_special_folders_for_user(
     Returns:
         Dictionary with 'home' and 'inbox' keys mapping to folder IDs
     """
+    from papermerge.core.const import SYSTEM_USER_ID
+
     owner = types.Owner.create_from(user_id=user_id)
     home_id = uuid.uuid4()
     inbox_id = uuid.uuid4()
@@ -41,12 +43,16 @@ async def create_special_folders_for_user(
         title=constants.HOME_TITLE,
         ctype=constants.CTYPE_FOLDER,
         lang="xxx",
+        created_by=SYSTEM_USER_ID,
+        updated_by=SYSTEM_USER_ID,
     )
     inbox_folder = orm.Folder(
         id=inbox_id,
         title=constants.INBOX_TITLE,
         ctype=constants.CTYPE_FOLDER,
         lang="xxx",
+        created_by=SYSTEM_USER_ID,
+        updated_by=SYSTEM_USER_ID,
     )
 
     db_session.add(home_folder)
@@ -103,6 +109,8 @@ async def create_special_folders_for_group(
     Returns:
         Dictionary with 'home' and 'inbox' keys mapping to folder IDs
     """
+    from papermerge.core.const import SYSTEM_USER_ID
+
     owner = types.Owner.create_from(group_id=group_id)
     home_id = uuid.uuid4()
     inbox_id = uuid.uuid4()
@@ -113,12 +121,16 @@ async def create_special_folders_for_group(
         title=constants.HOME_TITLE,
         ctype=constants.CTYPE_FOLDER,
         lang="xxx",
+        created_by=SYSTEM_USER_ID,
+        updated_by=SYSTEM_USER_ID,
     )
     inbox_folder = orm.Folder(
         id=inbox_id,
         title=constants.INBOX_TITLE,
         ctype=constants.CTYPE_FOLDER,
         lang="xxx",
+        created_by=SYSTEM_USER_ID,
+        updated_by=SYSTEM_USER_ID,
     )
 
     db_session.add(home_folder)

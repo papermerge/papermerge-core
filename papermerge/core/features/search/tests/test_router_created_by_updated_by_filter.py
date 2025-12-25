@@ -8,13 +8,24 @@ async def test_very_basic_created_by_filtering(
     db_session: db.AsyncSession,
     make_user,
     make_group,
-    make_document
+    make_document,
+    system_user
 ):
     team: orm.Group = await make_group("The Team")
     john: orm.User = await make_user("john")
     luke: orm.User = await make_user("luke")
-    user_group1 = orm.UserGroup(user=john, group=team)
-    user_group2 = orm.UserGroup(user=luke, group=team)
+    user_group1 = orm.UserGroup(
+        user=john,
+        group=team,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
+    user_group2 = orm.UserGroup(
+        user=luke,
+        group=team,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
     db_session.add_all([user_group1, user_group2])
     await db_session.commit()
 
@@ -71,7 +82,8 @@ async def test_very_basic_updated_by_filtering(
     db_session: db.AsyncSession,
     make_user,
     make_group,
-    make_document
+    make_document,
+    system_user
 ):
     # =================================================================
     # Create a Group of 3 users: john, luke and diana.
@@ -80,9 +92,24 @@ async def test_very_basic_updated_by_filtering(
     john: orm.User = await make_user("john")
     luke: orm.User = await make_user("luke")
     diana: orm.User = await make_user("diana")
-    user_group1 = orm.UserGroup(user=john, group=team)
-    user_group2 = orm.UserGroup(user=luke, group=team)
-    user_group3 = orm.UserGroup(user=diana, group=team)
+    user_group1 = orm.UserGroup(
+        user=john,
+        group=team,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
+    user_group2 = orm.UserGroup(
+        user=luke,
+        group=team,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
+    user_group3 = orm.UserGroup(
+        user=diana,
+        group=team,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
     db_session.add_all([user_group1, user_group2, user_group3])
     await db_session.commit()
 

@@ -502,6 +502,8 @@ async def create_user(
     REMOVED: No longer requires SET CONSTRAINTS ALL DEFERRED
     The circular dependency has been eliminated!
     """
+    from papermerge.core.const import SYSTEM_USER_ID
+
     group_ids = group_ids or []
     role_ids = role_ids or []
     _user_id = user_id or uuid.uuid4()
@@ -536,7 +538,12 @@ async def create_user(
             raise ValueError(f"Groups not found or inactive: {missing_group_ids}")
 
         for group in groups:
-            user_group = orm.UserGroup(user_id=user.id, group_id=group.id)
+            user_group = orm.UserGroup(
+                user_id=user.id,
+                group_id=group.id,
+                created_by=SYSTEM_USER_ID,
+                updated_by=SYSTEM_USER_ID,
+            )
             db_session.add(user_group)
 
     if role_ids:
@@ -553,7 +560,12 @@ async def create_user(
             raise ValueError(f"Roles not found or inactive: {missing_role_ids}")
 
         for role in roles:
-            user_role = orm.UserRole(user_id=user.id, role_id=role.id)
+            user_role = orm.UserRole(
+                user_id=user.id,
+                role_id=role.id,
+                created_by=SYSTEM_USER_ID,
+                updated_by=SYSTEM_USER_ID,
+            )
             db_session.add(user_role)
 
     await db_session.commit()
@@ -600,6 +612,8 @@ async def update_user(
 
     # Update groups - Handle soft delete properly
     if attrs.group_ids is not None:
+        from papermerge.core.const import SYSTEM_USER_ID
+
         # Soft delete existing user_groups by setting deleted_at
         for existing_user_group in user.user_groups:
             if existing_user_group.deleted_at is None:  # Only mark active ones as deleted
@@ -611,11 +625,18 @@ async def update_user(
             new_groups = list((await db_session.execute(stmt)).scalars().all())
 
             for group in new_groups:
-                new_user_group = orm.UserGroup(user=user, group=group)
+                new_user_group = orm.UserGroup(
+                    user=user,
+                    group=group,
+                    created_by=SYSTEM_USER_ID,
+                    updated_by=SYSTEM_USER_ID,
+                )
                 db_session.add(new_user_group)
 
     # Update roles - Handle soft delete properly
     if attrs.role_ids is not None:
+        from papermerge.core.const import SYSTEM_USER_ID
+
         # Soft delete existing user_roles by setting deleted_at
         for existing_user_role in user.user_roles:
             if existing_user_role.deleted_at is None:  # Only mark active ones as deleted
@@ -627,7 +648,12 @@ async def update_user(
             new_roles = list((await db_session.execute(stmt)).scalars().all())
 
             for role in new_roles:
-                new_user_role = orm.UserRole(user=user, role=role)
+                new_user_role = orm.UserRole(
+                    user=user,
+                    role=role,
+                    created_by=SYSTEM_USER_ID,
+                    updated_by=SYSTEM_USER_ID,
+                )
                 db_session.add(new_user_role)
 
     try:

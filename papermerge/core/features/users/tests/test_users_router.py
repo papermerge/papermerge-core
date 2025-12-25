@@ -221,7 +221,8 @@ async def test_get_user_groups(
     login_as,
     db_session: AsyncSession,
     make_group,
-    make_user
+    make_user,
+    system_user
 ):
     user: orm.User = await make_user("david")
     group_dev: orm.Group = await make_group("development")
@@ -230,8 +231,8 @@ async def test_get_user_groups(
 
     db_session.add_all(
         [
-            orm.UserGroup(user=user, group=group_dev),
-            orm.UserGroup(user=user, group=group_leads)
+            orm.UserGroup(user=user, group=group_dev, created_by=system_user.id, updated_by=system_user.id),
+            orm.UserGroup(user=user, group=group_leads, created_by=system_user.id, updated_by=system_user.id)
         ]
     )
     await db_session.commit()

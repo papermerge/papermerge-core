@@ -75,7 +75,7 @@ def mock_media_root_env(monkeypatch):
 
 
 @pytest.fixture()
-def make_folder(db_session: AsyncSession):
+def make_folder(db_session: AsyncSession, system_user):
     async def _maker(
         title: str,
         parent: orm.Folder,
@@ -99,6 +99,8 @@ def make_folder(db_session: AsyncSession):
             lang="de",
             parent_id=parent.id,
             ctype="folder",  # Make sure ctype is set
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
 
         db_session.add(folder)
@@ -233,7 +235,7 @@ def make_document_with_pages(db_session: AsyncSession):
 
 
 @pytest.fixture()
-def make_document_version(db_session: AsyncSession):
+def make_document_version(db_session: AsyncSession, system_user):
     async def _maker(
         page_count: int,
         user: orm.User,
@@ -261,6 +263,8 @@ def make_document_version(db_session: AsyncSession):
             title=f"Document {doc_id}",
             parent_id=user.home_folder_id,
             lang=lang,
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
         db_session.add(db_doc)
         await db_session.flush()
@@ -287,7 +291,7 @@ def make_document_version(db_session: AsyncSession):
 
 
 @pytest.fixture()
-def make_page(db_session: AsyncSession, user: orm.User):
+def make_page(db_session: AsyncSession, user: orm.User, system_user):
     def _make():
         db_pages = []
         for number in range(1, 4):
@@ -302,6 +306,8 @@ def make_page(db_session: AsyncSession, user: orm.User):
             user_id=user.id,
             parent_id=user.home_folder_id,
             lang="de",
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
         db_doc_ver = orm.DocumentVersion(pages=db_pages, document=db_doc)
         db_session.add(db_doc)
@@ -327,6 +333,8 @@ def get_app_with_routes():
 
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database():
+    from papermerge.core.const import SYSTEM_USER_ID
+
     async with engine.begin() as conn:
         # Drop tables in reverse dependency order
         tables_to_drop = ["nodes", "users", "users_roles", "roles"]  # Add other tables as needed
@@ -337,6 +345,23 @@ async def setup_database():
                 pass
 
         await conn.run_sync(Base.metadata.create_all)
+
+    # Create system user after tables are created
+    async with AsyncSession(engine) as session:
+        system_user = orm.User(
+            id=SYSTEM_USER_ID,
+            username="system",
+            email="system@papermerge.local",
+            first_name="System",
+            last_name="User",
+            is_superuser=True,
+            is_active=True,
+            password="",  # System user doesn't need a password
+            created_by=None,  # System user creates itself
+            updated_by=None,
+        )
+        session.add(system_user)
+        await session.commit()
 
     yield
 
@@ -489,6 +514,23 @@ async def login_as(db_session):
 
 
 @pytest.fixture()
+async def system_user(db_session: AsyncSession) -> orm.User:
+    """
+    Retrieve the system user with special ID.
+    System user is created in setup_database and used for resources created
+    in tests where no explicit user is logged in.
+    """
+    from papermerge.core.const import SYSTEM_USER_ID
+
+    # Retrieve system user from database
+    stmt = select(orm.User).where(orm.User.id == SYSTEM_USER_ID)
+    result = await db_session.execute(stmt)
+    system_user = result.scalar_one()
+
+    return system_user
+
+
+@pytest.fixture()
 async def user(make_user) -> orm.User:
     return await make_user(username="random")
 
@@ -611,7 +653,7 @@ async def document_type_zdf(db_session: AsyncSession, user, make_custom_field_v2
 
 
 @pytest.fixture
-def make_document_zdf(db_session: AsyncSession, document_type_zdf):
+def make_document_zdf(db_session: AsyncSession, document_type_zdf, system_user):
     async def _make_receipt(title: str, user: orm.User):
         doc = orm.Document(
             id=uuid.uuid4(),
@@ -619,6 +661,8 @@ def make_document_zdf(db_session: AsyncSession, document_type_zdf):
             title=title,
             document_type_id=document_type_zdf.id,
             parent_id=user.home_folder_id,
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
         db_session.add(doc)
         await db_session.flush()
@@ -636,7 +680,7 @@ def make_document_zdf(db_session: AsyncSession, document_type_zdf):
 
 
 @pytest.fixture
-def make_document_salary(db_session: AsyncSession, document_type_salary):
+def make_document_salary(db_session: AsyncSession, document_type_salary, system_user):
     """
     UPDATED: Create document and set ownership
     """
@@ -654,6 +698,8 @@ def make_document_salary(db_session: AsyncSession, document_type_salary):
             document_type_id=document_type_salary.id,
             parent_id=parent_id,
             lang="deu",
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
         db_session.add(doc)
         await db_session.flush()
@@ -759,7 +805,7 @@ def make_document_type(db_session, user):
 
 
 @pytest.fixture
-def make_document_receipt(db_session: AsyncSession, document_type_groceries):
+def make_document_receipt(db_session: AsyncSession, document_type_groceries, system_user):
     async def _make_receipt(
         title: str,
         user: orm.User,
@@ -787,6 +833,8 @@ def make_document_receipt(db_session: AsyncSession, document_type_groceries):
             document_type_id=document_type_groceries.id,
             parent_id=parent_id,
             lang="deu",
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
 
         db_session.add(doc)
@@ -807,7 +855,7 @@ def make_document_receipt(db_session: AsyncSession, document_type_groceries):
 
 
 @pytest.fixture
-def make_document_salary(db_session: AsyncSession, document_type_salary):
+def make_document_salary(db_session: AsyncSession, document_type_salary, system_user):
     async def _make_salary(title: str, user: orm.User, parent=None):
         if parent is None:
             parent_id = user.home_folder_id
@@ -823,6 +871,8 @@ def make_document_salary(db_session: AsyncSession, document_type_salary):
             document_type_id=document_type_salary.id,
             parent_id=parent_id,
             lang="deu",
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
 
         db_session.add(doc)
@@ -835,7 +885,7 @@ def make_document_salary(db_session: AsyncSession, document_type_salary):
 
 
 @pytest.fixture
-def make_document_tax(db_session: AsyncSession, document_type_tax):
+def make_document_tax(db_session: AsyncSession, document_type_tax, system_user):
     async def _make_tax(title: str, user: orm.User, parent=None):
         if parent is None:
             parent_id = user.home_folder_id
@@ -850,6 +900,8 @@ def make_document_tax(db_session: AsyncSession, document_type_tax):
             document_type_id=document_type_tax.id,
             parent_id=parent_id,
             lang="deu",
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
 
         db_session.add(doc)
@@ -869,7 +921,7 @@ def make_document_tax(db_session: AsyncSession, document_type_tax):
 
 
 @pytest.fixture()
-async def make_group(db_session: AsyncSession):
+async def make_group(db_session: AsyncSession, system_user):
     """Create test group, optionally with special folders and members"""
     async def _maker(
         name: str,
@@ -882,6 +934,8 @@ async def make_group(db_session: AsyncSession):
         group = orm.Group(
             id=group_id,
             name=name,
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
         db_session.add(group)
         await db_session.flush()
@@ -899,6 +953,8 @@ async def make_group(db_session: AsyncSession):
                 user_group = UserGroup(
                     user_id=user.id,
                     group_id=group_id,
+                    created_by=system_user.id,
+                    updated_by=system_user.id,
                 )
                 db_session.add(user_group)
 
@@ -911,7 +967,7 @@ async def make_group(db_session: AsyncSession):
 
 
 @pytest.fixture()
-def make_role(db_session, make_user, random_string):
+def make_role(db_session, system_user):
     async def _maker(
         name: str,
         scopes: list[str] | None = None,
@@ -920,17 +976,17 @@ def make_role(db_session, make_user, random_string):
         if scopes is None:
             scopes = []
 
-        if user is None:
-            user = await make_user(username=random_string())
+        # Use system_user by default if no user is provided
+        creator_id = user.id if user else system_user.id
 
         stmt = select(orm.Permission).where(orm.Permission.codename.in_(scopes))
         perms = (await db_session.execute(stmt)).scalars().all()
         role = orm.Role(
             name=name,
             permissions=perms,
-            created_by=user.id,
+            created_by=creator_id,
             created_at=utc_now(),
-            updated_by=user.id,
+            updated_by=creator_id,
             updated_at=utc_now()
         )
         db_session.add(role)
@@ -1058,7 +1114,7 @@ async def make_tag_with_owner(db_session: AsyncSession):
 
 
 @pytest.fixture
-async def make_node_with_owner(db_session: AsyncSession):
+async def make_node_with_owner(db_session: AsyncSession, system_user):
     """
     NEW: Create node (folder/document) with ownership
     """
@@ -1076,6 +1132,8 @@ async def make_node_with_owner(db_session: AsyncSession):
                 title=title,
                 ctype=ctype,
                 parent_id=parent_id,
+                created_by=system_user.id,
+                updated_by=system_user.id,
                 **kwargs
             )
         else:
@@ -1084,6 +1142,8 @@ async def make_node_with_owner(db_session: AsyncSession):
                 title=title,
                 ctype=ctype,
                 parent_id=parent_id,
+                created_by=system_user.id,
+                updated_by=system_user.id,
                 **kwargs
             )
 
@@ -1106,7 +1166,8 @@ async def make_node_with_owner(db_session: AsyncSession):
 @pytest.fixture
 def make_document_with_numeric_cf(
     db_session: AsyncSession,
-    make_custom_field_v2
+    make_custom_field_v2,
+    system_user
 ):
     """
     Create a document of a specific type with one numeric custom field.
@@ -1213,6 +1274,8 @@ def make_document_with_numeric_cf(
             document_type_id=document_type.id,
             parent_id=parent_id,
             lang="deu",
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
         db_session.add(doc)
         await db_session.flush()

@@ -215,7 +215,7 @@ async def test_delete_tag_which_has_associated_document(
 
 
 async def test__positive__tags_all_route_with_group_id_param(
-    db_session: AsyncSession, make_tag, auth_api_client: AuthTestClient, user, make_group
+    db_session: AsyncSession, make_tag, auth_api_client: AuthTestClient, user, make_group, system_user
 ):
     """In this scenario current user belongs to the
     group provided as parameter and there are two tags
@@ -232,7 +232,12 @@ async def test__positive__tags_all_route_with_group_id_param(
     await make_tag(name="tag research 2", group_id=group.id)
 
     # user belongs to 'research' group
-    user_group = orm.UserGroup(user=user, group=group)
+    user_group = orm.UserGroup(
+        user=user,
+        group=group,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
     db_session.add(user_group)
     await db_session.commit()
 

@@ -7,7 +7,8 @@ async def test_very_basic_owner_filtering_by_group(
     db_session: db.AsyncSession,
     make_user,
     make_group,
-    make_document
+    make_document,
+    system_user
 ):
     """Test filtering documents by group owner
 
@@ -25,8 +26,18 @@ async def test_very_basic_owner_filtering_by_group(
     john: orm.User = await make_user("john")
 
     # John belongs both to Alpha and Beta teams
-    user_group1 = orm.UserGroup(user=john, group=team_alpha)
-    user_group2 = orm.UserGroup(user=john, group=team_beta)
+    user_group1 = orm.UserGroup(
+        user=john,
+        group=team_alpha,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
+    user_group2 = orm.UserGroup(
+        user=john,
+        group=team_beta,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
     db_session.add_all([user_group1, user_group2])
     await db_session.commit()
 

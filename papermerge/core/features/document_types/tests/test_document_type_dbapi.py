@@ -14,14 +14,19 @@ from papermerge.core.features.users import schema as users_schema
 
 
 async def test_get_document_types_by_owner_without_pagination(
-    db_session: AsyncSession, make_document_type, user, make_group
+    db_session: AsyncSession, make_document_type, user, make_group, system_user
 ):
     family: orm.Group = await make_group("Family")
     await make_document_type(name="Family Shopping", group_id=family.id)
     await make_document_type(name="Bills", group_id=family.id)
     await make_document_type(name="My Private", user=user)
 
-    user_group = orm.UserGroup(user_id=user.id, group_id=family.id)
+    user_group = orm.UserGroup(
+        user_id=user.id,
+        group_id=family.id,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
     db_session.add(user_group)
     await db_session.commit()
 
@@ -138,6 +143,8 @@ async def test_custom_fields_returned_in_defined_order(
         title="Document-1.pdf",
         document_type_id=document_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id,
     )
     doc2 = orm.Document(
         id=uuid.uuid4(),
@@ -145,6 +152,8 @@ async def test_custom_fields_returned_in_defined_order(
         title="Document-2.pdf",
         document_type_id=document_type.id,
         parent_id=user.home_folder_id,
+        created_by=user.id,
+        updated_by=user.id,
     )
     db_session.add(doc1)
     db_session.add(doc2)

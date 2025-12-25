@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from papermerge.core import orm, schema, dbapi
 
 
-async def test_get_user_group_homes(db_session: AsyncSession, make_user, make_group):
+async def test_get_user_group_homes(db_session: AsyncSession, make_user, make_group, system_user):
     """
     In this scenario user belong to one group (familly)
     and group "familly" has special_folders
@@ -12,7 +12,12 @@ async def test_get_user_group_homes(db_session: AsyncSession, make_user, make_gr
     user: orm.User = await make_user("momo", is_superuser=False)
     group: orm.Group = await make_group("Familly", with_special_folders=True)
 
-    user_group = orm.UserGroup(user=user, group=group)
+    user_group = orm.UserGroup(
+        user=user,
+        group=group,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
     db_session.add(user_group)
 
     await db_session.commit()
@@ -25,7 +30,7 @@ async def test_get_user_group_homes(db_session: AsyncSession, make_user, make_gr
     assert momo_group_homes[0].home_id
 
 
-async def test_get_user_group_homes_with_two_groups(db_session: AsyncSession, make_user, make_group):
+async def test_get_user_group_homes_with_two_groups(db_session: AsyncSession, make_user, make_group, system_user):
     """
     In this scenario user belong to three groups.
     Two groups have special folders and one does not.
@@ -37,9 +42,9 @@ async def test_get_user_group_homes_with_two_groups(db_session: AsyncSession, ma
     g2: orm.Group = await make_group("g2", with_special_folders=True)
     g3_no_home: orm.Group = await make_group("g3_no_home", with_special_folders=False)
 
-    user_group_1 = orm.UserGroup(user=user, group=g1)
-    user_group_2 = orm.UserGroup(user=user, group=g2)
-    user_group_3 = orm.UserGroup(user=user, group=g3_no_home)
+    user_group_1 = orm.UserGroup(user=user, group=g1, created_by=system_user.id, updated_by=system_user.id)
+    user_group_2 = orm.UserGroup(user=user, group=g2, created_by=system_user.id, updated_by=system_user.id)
+    user_group_3 = orm.UserGroup(user=user, group=g3_no_home, created_by=system_user.id, updated_by=system_user.id)
     db_session.add_all([user_group_1, user_group_2, user_group_3])
 
     await db_session.commit()
@@ -75,7 +80,8 @@ async def test_user_delete(db_session: AsyncSession, make_user):
         orm.User.deleted_at.is_(None)
     )
     deleted_users_count = (await db_session.execute(stmt)).scalar()
-    assert deleted_users_count == 1
+    # Should have 2 users: current_user + system_user
+    assert deleted_users_count == 2
 
 
 async def test_user_update(db_session: AsyncSession, make_user):
@@ -164,12 +170,17 @@ async def test_change_password(db_session: AsyncSession, make_user):
     assert updated_user.password != initial_password
 
 
-async def test__positive__user_belongs_to(db_session: AsyncSession, make_user, make_group):
+async def test__positive__user_belongs_to(db_session: AsyncSession, make_user, make_group, system_user):
     """In this scenario user belong to one group (familly)"""
     user: orm.User = await make_user("momo", is_superuser=False)
     group: orm.Group = await make_group("familly")
 
-    user_group = orm.UserGroup(user=user, group=group)
+    user_group = orm.UserGroup(
+        user=user,
+        group=group,
+        created_by=system_user.id,
+        updated_by=system_user.id,
+    )
     db_session.add(user_group)
 
     await db_session.commit()
@@ -188,7 +199,8 @@ async def test__negative__user_belongs_to(db_session: AsyncSession, make_user, m
 async def test_get_user_groups(
     db_session: AsyncSession,
     make_user,
-    make_group
+    make_group,
+    system_user
 ):
     user: orm.User = await make_user("david")
     group_dev: orm.Group = await make_group("development")
@@ -197,8 +209,8 @@ async def test_get_user_groups(
 
     db_session.add_all(
         [
-            orm.UserGroup(user=user, group=group_dev),
-            orm.UserGroup(user=user, group=group_leads)
+            orm.UserGroup(user=user, group=group_dev, created_by=system_user.id, updated_by=system_user.id),
+            orm.UserGroup(user=user, group=group_leads, created_by=system_user.id, updated_by=system_user.id)
         ]
     )
     await db_session.commit()

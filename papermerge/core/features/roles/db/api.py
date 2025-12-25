@@ -281,6 +281,7 @@ async def create_role(
     exists_ok: bool = False
 ) -> Tuple[schema.Role | None, str | None]:
     """Creates a role with given scopes"""
+    from papermerge.core.const import SYSTEM_USER_ID
 
     stmt_total_permissions = select(func.count(orm.Permission.id))
     perms_count = (await db_session.execute(stmt_total_permissions)).scalar()
@@ -307,7 +308,14 @@ async def create_role(
         error = f"Unknown permission scopes: {', '.join(missing)}"
         return None, error
 
-    role = orm.Role(name=name, permissions=perms)
+    role = orm.Role(
+        name=name,
+        permissions=perms,
+        created_by=SYSTEM_USER_ID,
+        updated_by=SYSTEM_USER_ID,
+        created_at=utc_now(),
+        updated_at=utc_now()
+    )
     db_session.add(role)
     try:
         await db_session.commit()

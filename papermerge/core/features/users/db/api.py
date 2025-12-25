@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
 
 from papermerge.core.utils.tz import utc_now
-from papermerge.core import orm, schema
+from papermerge.core import orm, schema, const
 from papermerge.core.utils.misc import is_valid_uuid
 from papermerge.core.features.auth import scopes
 from papermerge.core.schemas import error as err_schema
@@ -495,6 +495,7 @@ async def create_user(
     is_superuser: bool = False,
     is_active: bool = False,
     user_id: uuid.UUID | None = None,
+    created_by: uuid.UUID = const.SYSTEM_USER_ID
 ) ->  orm.User:
     """
     Create a new user with special folders.
@@ -502,7 +503,6 @@ async def create_user(
     REMOVED: No longer requires SET CONSTRAINTS ALL DEFERRED
     The circular dependency has been eliminated!
     """
-    from papermerge.core.const import SYSTEM_USER_ID
 
     group_ids = group_ids or []
     role_ids = role_ids or []
@@ -520,6 +520,8 @@ async def create_user(
         password=password,
         is_superuser=is_superuser,
         is_active=is_active,
+        created_by=created_by,
+        updated_by=created_by,
     )
     db_session.add(user)
     await db_session.flush()
@@ -541,8 +543,8 @@ async def create_user(
             user_group = orm.UserGroup(
                 user_id=user.id,
                 group_id=group.id,
-                created_by=SYSTEM_USER_ID,
-                updated_by=SYSTEM_USER_ID,
+                created_by=created_by,
+                updated_by=created_by,
             )
             db_session.add(user_group)
 
@@ -563,8 +565,8 @@ async def create_user(
             user_role = orm.UserRole(
                 user_id=user.id,
                 role_id=role.id,
-                created_by=SYSTEM_USER_ID,
-                updated_by=SYSTEM_USER_ID,
+                created_by=created_by,
+                updated_by=created_by,
             )
             db_session.add(user_role)
 

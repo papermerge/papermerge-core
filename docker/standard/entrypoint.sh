@@ -38,15 +38,14 @@ exec_create_system_user() {
   cd /core_app && uv run pm users create_system_user
 }
 
-exec_create_roles() {
+exec_create_standard_roles() {
   echo "Creating standard roles..."
   cd /core_app && uv run pm roles create-standard-roles
   echo "Standard roles ready."
 }
 
-
 exec_createsuperuser() {
-  cd /auth_server_app && uv run auth-cli users create --superuser
+  cd /core_app && uv run pm users create --superuser
 }
 
 
@@ -54,7 +53,7 @@ exec_init() {
   exec_migrate
   exec_perms_sync
   exec_create_system_user
-  exec_create_roles
+  exec_create_standard_roles
   exec_createsuperuser
 }
 

@@ -1440,6 +1440,7 @@ async def set_doc_ver_lang(
     db_session: AsyncSession,
     doc_ver_id: uuid.UUID,
     lang: str,
+    updated_by: uuid.UUID,
 ):
     doc_ver = await db_session.get(orm.DocumentVersion, doc_ver_id)
     if doc_ver is None:
@@ -1447,6 +1448,8 @@ async def set_doc_ver_lang(
 
     doc_ver.lang = lang
     doc_ver.updated_at = utc_now()  # Python-side, affected by freeze_time
+    doc_ver.updated_by = updated_by
+
     await db_session.commit()
 
     return lang

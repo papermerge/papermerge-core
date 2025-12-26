@@ -777,7 +777,7 @@ def token():
 
 
 @pytest.fixture()
-def make_document_type(db_session, user):
+def make_document_type(db_session, user, system_user):
     """
     UPDATED: Create document type with ownership
     """
@@ -802,8 +802,8 @@ def make_document_type(db_session, user):
             id=uuid.uuid4(),
             path_template=path_template,
             name=name,
-            created_by=user.id,
-            updated_by=user.id,
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
         db_session.add(dt)
         await db_session.flush()

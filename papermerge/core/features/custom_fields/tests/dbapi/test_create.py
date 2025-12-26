@@ -1,3 +1,4 @@
+from core.features.conftest import system_user
 from papermerge.core.types import OwnerType
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.custom_fields import schema as cf_schema
@@ -15,13 +16,12 @@ async def test_create_text_field(db_session, user):
         },
         owner_type=OwnerType.USER,
         owner_id=user.id,
-        created_by=user.id,
-        updated_by=user.id
     )
 
     field = await cf_dbapi.create_custom_field(
         db_session,
         data=field_data,
+        created_by=user.id
     )
 
     assert field.name == "Notes"
@@ -53,13 +53,12 @@ async def test_create_monetary_field_with_config(db_session, user):
         },
         owner_type=OwnerType.USER,
         owner_id=user.id,
-        created_by=user.id,
-        updated_by=user.id
     )
 
     field = await cf_dbapi.create_custom_field(
         db_session,
-        data=field_data
+        data=field_data,
+        created_by=user.id
     )
 
     assert field.name == "Invoice Total"
@@ -78,13 +77,12 @@ async def test_create_field_for_group(db_session, make_group, system_user):
         config={},
         owner_type=OwnerType.GROUP,
         owner_id=group.id,
-        created_by=system_user.id,
-        updated_by=system_user.id
     )
 
     field = await cf_dbapi.create_custom_field(
         db_session,
-        data=field_data
+        data=field_data,
+        created_by=system_user.id
     )
 
     assert field.name == "Department Code"
@@ -100,13 +98,12 @@ async def test_create_date_field(db_session, user):
         config={"format": "YYYY-MM-DD"},
         owner_type=OwnerType.USER,
         owner_id=user.id,
-        created_by=user.id,
-        updated_by=user.id
     )
 
     field = await cf_dbapi.create_custom_field(
         db_session,
         data=field_data,
+        created_by=user.id
     )
 
     assert field.type_handler == "date"
@@ -126,14 +123,13 @@ async def test_create_select_field_with_two_options(db_session, user):
             ]
         },
         owner_type=OwnerType.USER,
-        owner_id=user.id,
-        created_by=user.id,
-        updated_by=user.id
+        owner_id=user.id
     )
 
     field = await cf_dbapi.create_custom_field(
         db_session,
         data=field_data,
+        created_by=user.id
     )
 
     assert field.name == "Subscription"
@@ -176,14 +172,13 @@ async def test_create_multiselect_field_with_two_options(db_session, user):
             ]
         },
         owner_type=OwnerType.USER,
-        owner_id=user.id,
-        created_by=user.id,
-        updated_by=user.id
+        owner_id=user.id
     )
 
     field = await cf_dbapi.create_custom_field(
         db_session,
         data=field_data,
+        created_by=user.id
     )
 
     assert field.name == "Categories"

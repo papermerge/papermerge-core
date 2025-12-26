@@ -133,6 +133,7 @@ async def get_custom_fields_without_pagination(
 async def create_custom_field(
     session: AsyncSession,
     data: schema.CreateCustomField,
+    created_by: uuid.UUID
 ) -> schema.CustomField:
     """
     Create a new custom field
@@ -187,8 +188,8 @@ async def create_custom_field(
         name=data.name,
         type_handler=data.type_handler,
         config=config_dict,
-        created_by=data.created_by,
-        updated_by=data.updated_by
+        created_by=created_by,
+        updated_by=created_by
     )
 
     session.add(field)

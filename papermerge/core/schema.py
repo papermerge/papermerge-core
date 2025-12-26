@@ -38,7 +38,8 @@ from .features.document.schema import (
     DocumentsByTypeParams,
     DocumentEx,
     DocVerLang,
-    UpdateDocVerLang
+    UpdateDocVerLang,
+    DocumentLang
 )
 from .features.users.schema import User, UserSimple, UserEx, CreateUser, UserDetails, UpdateUser, ChangeUserPassword, UserHomes, UserInboxes, UserHome, UserInbox
 from .features.custom_fields.schema import (
@@ -121,6 +122,7 @@ __all__ = [
     'CustomFieldWithValue',
     'CustomFieldDetails',
     'DocumentCFV',
+    'DocumentLang',
     'CFV',
     'DocumentCustomFieldsUpdate',
     'ExtractPagesIn',

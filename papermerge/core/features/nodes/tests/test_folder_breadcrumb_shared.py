@@ -47,6 +47,7 @@ async def test_folder_breadcrumb_shared_user_sees_truncated_path(
         node_ids=[flights.id],
         role_ids=[role.id],
         owner_id=john.id,
+        created_by=john.id
     )
 
     result = await nodes_dbapi.get_folder(
@@ -83,6 +84,7 @@ async def test_folder_breadcrumb_nested_in_shared_folder(
         node_ids=[flights.id],
         role_ids=[role.id],
         owner_id=john.id,
+        created_by=john.id
     )
 
     result = await nodes_dbapi.get_folder(
@@ -116,6 +118,7 @@ async def test_folder_breadcrumb_shared_via_group(
         node_ids=[flights.id],
         role_ids=[role.id],
         owner_id=john.id,
+        created_by=john.id
     )
 
     result = await nodes_dbapi.get_folder(

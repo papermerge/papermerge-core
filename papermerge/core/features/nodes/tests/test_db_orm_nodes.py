@@ -256,6 +256,7 @@ async def test_get_node_tags_node_is_a_document(db_session: AsyncSession, make_d
         db_session,
         node_id=doc.id,
         tags=["tag1", "tag2"],
+        created_by=user.id
     )
     # act
     tags, error = await dbapi.get_node_tags(db_session, node_id=doc.id, user_id=user.id)
@@ -274,6 +275,7 @@ async def test_get_node_tags_node_is_a_folder(db_session: AsyncSession, make_fol
         db_session,
         node_id=folder.id,
         tags=["tag1", "tag2"],
+        created_by=user.id
     )
     # act
     tags, error = await dbapi.get_node_tags(db_session, node_id=folder.id, user_id=user.id)

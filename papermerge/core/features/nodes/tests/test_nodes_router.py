@@ -266,7 +266,8 @@ async def test_assign_tags_to_tagged_folder(
     receipts = await make_folder(title="Receipts", user=u, parent=u.inbox_folder)
 
     await nodes_dbapi.assign_node_tags(
-        db_session, node_id=receipts.id, tags=["important", "unpaid"]
+        db_session, node_id=receipts.id, tags=["important", "unpaid"],
+        created_by=u.id
     )
     payload = ["paid", "important"]
     response = await auth_api_client.post(
@@ -312,7 +313,8 @@ async def test_assign_tags_to_document(
     d1 = await make_document(title="invoice.pdf", user=u, parent=u.home_folder)
 
     await nodes_dbapi.assign_node_tags(
-        db_session, node_id=d1.id, tags=["important", "unpaid"]
+        db_session, node_id=d1.id, tags=["important", "unpaid"],
+        created_by=u.id
     )
 
     payload = ["xyz"]
@@ -355,7 +357,7 @@ async def test_append_tags_to_folder(
     u = auth_api_client.user
     receipts = await make_folder(title="Receipts", user=u, parent=u.inbox_folder)
     await nodes_dbapi.assign_node_tags(
-        db_session, node_id=receipts.id, tags=["important"]
+        db_session, node_id=receipts.id, tags=["important"], created_by=u.id
     )
     payload = ["paid"]
     response = await auth_api_client.patch(
@@ -396,6 +398,7 @@ async def test_remove_tags_from_folder(
         db_session,
         node_id=receipts.id,
         tags=["important", "paid", "receipt", "bakery"],
+        created_by=u.id
     )
     payload = ["important"]
     response = await auth_api_client.delete(
@@ -431,10 +434,12 @@ async def test_home_with_two_tagged_nodes(
     home = u.home_folder
 
     await nodes_dbapi.assign_node_tags(
-        db_session, node_id=folder.id, tags=["folder_a", "folder_b"]
+        db_session, node_id=folder.id, tags=["folder_a", "folder_b"],
+        created_by=u.id
     )
     await nodes_dbapi.assign_node_tags(
-        db_session, node_id=doc.id, tags=["doc_a", "doc_b"]
+        db_session, node_id=doc.id, tags=["doc_a", "doc_b"],
+        created_by=u.id
     )
 
     response = await auth_api_client.get(f"/nodes/{home.id}")
@@ -540,7 +545,8 @@ async def test_delete_tagged_folder(make_folder, db_session: AsyncSession, user,
     await nodes_dbapi.assign_node_tags(
         db_session,
         node_id=folder.id,
-        tags=["tag1", "tag2"]
+        tags=["tag1", "tag2"],
+        created_by=user.id,
     )
 
     # Delete folder via API
@@ -570,6 +576,7 @@ async def test_delete_tagged_document(make_document, db_session: AsyncSession, u
         db_session,
         node_id=doc.id,
         tags=["tag1", "tag2"],
+        created_by=user.id
     )
 
     # Delete document via API
@@ -599,6 +606,7 @@ async def test_get_node_tags_router_when_node_is_folder(
         db_session,
         node_id=folder.id,
         tags=["tag1", "tag2"],
+        created_by=user.id
     )
 
     response = await auth_api_client.get(f"/nodes/{folder.id}/tags")
@@ -618,6 +626,7 @@ async def test_get_node_tags_router_when_node_is_document(
         db_session,
         node_id=node.id,
         tags=["tag1", "tag2"],
+        created_by=user.id
     )
 
     response = await auth_api_client.get(f"/nodes/{node.id}/tags")

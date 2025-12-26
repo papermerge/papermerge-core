@@ -233,7 +233,8 @@ def make_document_with_pages(db_session: AsyncSession):
                 content=io.BytesIO(content),
                 file_name="three-pages.pdf",
                 size=size,
-                content_type=ContentType.APPLICATION_PDF,
+                content_type=MimeType.application_pdf,
+                created_by=user.id,
             )
         return doc
 

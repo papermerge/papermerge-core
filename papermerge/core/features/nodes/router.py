@@ -368,7 +368,7 @@ async def assign_node_tags(
             username=user.username
         ):
             node = await nodes_dbapi.assign_node_tags(
-                db_session, node_id=node_id, tags=tags
+                db_session, node_id=node_id, tags=tags, created_by=user.id
             )
     except EntityNotFound:
         await db_session.rollback()

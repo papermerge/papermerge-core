@@ -14,7 +14,9 @@ async def test_create_text_field(db_session, user):
             "multiline": False
         },
         owner_type=OwnerType.USER,
-        owner_id=user.id
+        owner_id=user.id,
+        created_by=user.id,
+        updated_by=user.id
     )
 
     field = await cf_dbapi.create_custom_field(
@@ -50,7 +52,9 @@ async def test_create_monetary_field_with_config(db_session, user):
             "precision": 2
         },
         owner_type=OwnerType.USER,
-        owner_id=user.id
+        owner_id=user.id,
+        created_by=user.id,
+        updated_by=user.id
     )
 
     field = await cf_dbapi.create_custom_field(
@@ -64,7 +68,7 @@ async def test_create_monetary_field_with_config(db_session, user):
     assert field.config["precision"] == 2
 
 
-async def test_create_field_for_group(db_session, make_group):
+async def test_create_field_for_group(db_session, make_group, system_user):
     """Create custom field owned by a group"""
     group = await make_group("Accounting")
 
@@ -73,7 +77,9 @@ async def test_create_field_for_group(db_session, make_group):
         type_handler="text",
         config={},
         owner_type=OwnerType.GROUP,
-        owner_id=group.id
+        owner_id=group.id,
+        created_by=system_user.id,
+        updated_by=system_user.id
     )
 
     field = await cf_dbapi.create_custom_field(
@@ -93,7 +99,9 @@ async def test_create_date_field(db_session, user):
         type_handler="date",
         config={"format": "YYYY-MM-DD"},
         owner_type=OwnerType.USER,
-        owner_id=user.id
+        owner_id=user.id,
+        created_by=user.id,
+        updated_by=user.id
     )
 
     field = await cf_dbapi.create_custom_field(
@@ -118,7 +126,9 @@ async def test_create_select_field_with_two_options(db_session, user):
             ]
         },
         owner_type=OwnerType.USER,
-        owner_id=user.id
+        owner_id=user.id,
+        created_by=user.id,
+        updated_by=user.id
     )
 
     field = await cf_dbapi.create_custom_field(
@@ -166,7 +176,9 @@ async def test_create_multiselect_field_with_two_options(db_session, user):
             ]
         },
         owner_type=OwnerType.USER,
-        owner_id=user.id
+        owner_id=user.id,
+        created_by=user.id,
+        updated_by=user.id
     )
 
     field = await cf_dbapi.create_custom_field(

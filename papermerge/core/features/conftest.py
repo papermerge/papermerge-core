@@ -123,7 +123,7 @@ def make_folder(db_session: AsyncSession, system_user):
 
 
 @pytest.fixture
-def make_document(db_session: AsyncSession):
+def make_document(db_session: AsyncSession, system_user):
     async def _maker(
         title: str,
         parent: orm.Folder,
@@ -140,6 +140,10 @@ def make_document(db_session: AsyncSession):
         if user is not None:
             attrs["created_by"] = user.id
             attrs["updated_by"] = user.id
+        else:
+            attrs["created_by"] = system_user.id
+            attrs["updated_by"] = system_user.id
+
 
         doc, _ = await doc_dbapi.create_document(
             db_session,
@@ -1020,7 +1024,7 @@ def random_string():
 
 
 @pytest.fixture
-def make_custom_field_v2(db_session: AsyncSession, user):
+def make_custom_field_v2(db_session: AsyncSession, user, system_user):
     """
     UPDATED: Create custom field with ownership instead of user_id/group_id
     """
@@ -1047,7 +1051,9 @@ def make_custom_field_v2(db_session: AsyncSession, user):
             id=uuid.uuid4(),
             name=name,
             type_handler=type_handler,
-            config=config
+            config=config,
+            created_by=system_user.id,
+            updated_by=system_user.id
         )
         db_session.add(cf)
         await db_session.flush()

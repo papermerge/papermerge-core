@@ -187,6 +187,8 @@ async def create_custom_field(
         name=data.name,
         type_handler=data.type_handler,
         config=config_dict,
+        created_by=data.created_by,
+        updated_by=data.updated_by
     )
 
     session.add(field)

@@ -477,7 +477,6 @@ async def create_document(
     attrs: schema.NewDocument,
     mime_type: MimeType
 ) -> Tuple[schema.Document | None, schema.Error | None]:
-
     error = None
     doc_id = attrs.id or uuid.uuid4()
 
@@ -536,6 +535,8 @@ async def create_document(
         lang=attrs.lang,
         mime_type=mime_type,
         short_description="Original",
+        created_by=attrs.created_by,
+        updated_by=attrs.updated_by
     )
 
     db_session.add(doc)

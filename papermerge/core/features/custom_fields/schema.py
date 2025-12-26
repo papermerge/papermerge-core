@@ -121,6 +121,8 @@ class CreateCustomField(BaseModel):
     config: dict[str, Any] = Field(default_factory=dict)
     owner_type: OwnerType | None = None
     owner_id: UUID | None = None
+    created_by: UUID
+    updated_by: UUID
 
     model_config = ConfigDict(from_attributes=True)
 

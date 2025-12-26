@@ -65,7 +65,7 @@ WORKDIR /app
 
 # Copy application config (papermerge module is already in site-packages)
 COPY alembic.ini ./
-COPY papermerge/core/alembic ./papermerge/core/alembic
+COPY papermerge/core/ ./papermerge/core/
 COPY pyproject.toml README.md LICENSE ./
 
 # Copy Docker configuration files

@@ -23,6 +23,7 @@ async def test_basic(db_session: AsyncSession, make_user, make_group, make_folde
         node_ids=[receipts.id],
         role_ids=[role.id],
         owner_id=john.id,
+        created_by=john.id
     )
 
     await sn_dbapi.create_shared_nodes(
@@ -31,6 +32,7 @@ async def test_basic(db_session: AsyncSession, make_user, make_group, make_folde
         node_ids=[receipts.id],
         role_ids=[role.id],
         owner_id=john.id,
+        created_by=john.id
     )
 
     access_details = await sn_dbapi.get_shared_node_access_details(
@@ -105,6 +107,7 @@ async def test_remove_group_access(db_session: AsyncSession, make_user, make_gro
         node_ids=[receipts.id],
         role_ids=[role.id],
         owner_id=john.id,
+        created_by=john.id
     )
 
     access_details = await sn_dbapi.get_shared_node_access_details(

@@ -46,6 +46,7 @@ async def create_shared_nodes(
     node_ids: list[uuid.UUID],
     role_ids: list[uuid.UUID],
     owner_id: uuid.UUID,
+    created_by: uuid.UUID,
     user_ids: list[uuid.UUID] | None = None,
     group_ids: list[uuid.UUID] | None = None,
 ) -> Tuple[list[sn_schema.SharedNode] | None, str | None]:
@@ -66,6 +67,8 @@ async def create_shared_nodes(
                         role_id=role_id,
                         group_id=None,
                         owner_id=owner_id,
+                        created_by=created_by,
+                        updated_by=created_by
                     )
                 )
         for group_id in group_ids:
@@ -77,6 +80,8 @@ async def create_shared_nodes(
                         role_id=role_id,
                         group_id=group_id,
                         owner_id=owner_id,
+                        created_by=created_by,
+                        updated_by=created_by,
                     )
                 )
 

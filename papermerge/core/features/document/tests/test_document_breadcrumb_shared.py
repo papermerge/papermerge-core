@@ -48,6 +48,7 @@ async def test_document_breadcrumb_shared_user_sees_truncated_path(
         node_ids=[flights.id],
         role_ids=[role.id],
         owner_id=john.id,
+        created_by=john.id
     )
 
     result = await doc_dbapi.get_doc(db_session, id=doc.id, user_id=dora.id)
@@ -83,6 +84,7 @@ async def test_document_breadcrumb_nested_in_shared_folder(
         node_ids=[flights.id],
         role_ids=[role.id],
         owner_id=john.id,
+        created_by=john.id
     )
 
     result = await doc_dbapi.get_doc(db_session, id=doc.id, user_id=dora.id)

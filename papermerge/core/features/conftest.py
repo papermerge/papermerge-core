@@ -198,7 +198,8 @@ def make_document_from_resource(make_document, db_session: AsyncSession):
                 content=io.BytesIO(content),
                 file_name=resource,
                 size=size,
-                content_type=ContentType.APPLICATION_PDF,
+                content_type=MimeType.application_pdf,
+                created_by=user.id,
             )
 
         return doc
@@ -285,7 +286,9 @@ def make_document_version(db_session: AsyncSession, system_user):
             pages=db_pages,
             document=db_doc,
             lang=lang,
-            mime_type=mime_type
+            mime_type=mime_type,
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
         db_session.add(db_doc_ver)
         await db_session.commit()
@@ -609,7 +612,9 @@ async def document_type_groceries(db_session: AsyncSession, user, make_custom_fi
     # Create document type WITHOUT user parameter
     dt = orm.DocumentType(
         id=uuid.uuid4(),
-        name="groceries"
+        name="groceries",
+        created_by=user.id,
+        updated_by=user.id,
     )
     db_session.add(dt)
     await db_session.flush()
@@ -795,7 +800,9 @@ def make_document_type(db_session, user):
         dt = orm.DocumentType(
             id=uuid.uuid4(),
             path_template=path_template,
-            name=name
+            name=name,
+            created_by=user.id,
+            updated_by=user.id,
         )
         db_session.add(dt)
         await db_session.flush()

@@ -2009,16 +2009,16 @@ __metadata:
     commander: "workspace:*"
     eslint: "npm:^9.39.2"
     eslint-plugin-react-hooks: "npm:^7.0.1"
-    eslint-plugin-react-refresh: "npm:^0.4.25"
+    eslint-plugin-react-refresh: "npm:^0.4.26"
     globals: "npm:^16.5.0"
     kommon: "workspace:*"
     react: "npm:^19.2.3"
     react-dom: "npm:^19.2.3"
-    react-router: "npm:^7.10.1"
+    react-router: "npm:^7.11.0"
     typescript: "npm:^5.9.3"
     typescript-eslint: "npm:^8.50.0"
     vite: "npm:^7.3.0"
-    vite-tsconfig-paths: "npm:^6.0.1"
+    vite-tsconfig-paths: "npm:^6.0.3"
   languageName: unknown
   linkType: soft
 
@@ -2355,12 +2355,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react-refresh@npm:^0.4.25":
-  version: 0.4.25
-  resolution: "eslint-plugin-react-refresh@npm:0.4.25"
+"eslint-plugin-react-refresh@npm:^0.4.26":
+  version: 0.4.26
+  resolution: "eslint-plugin-react-refresh@npm:0.4.26"
   peerDependencies:
     eslint: ">=8.40"
-  checksum: 10c0/432fcfc4a802c1a925bba4f4266e6dbcebb6b451456aeff8fc40e55a111ba7f522886e3fae8fc23bc2a3478223f01de4064eef7808be6363dcb4353769a0f031
+  checksum: 10c0/11c2b25b7a7025e621b02970c4cf3815b0b77486027df9f8bb731cc52972156804fd163b0f99404b33e36a3c60cd1a1be8199ba64c66b5276da3173bbb5ab6e7
   languageName: node
   linkType: hard
 
@@ -2834,14 +2834,14 @@ __metadata:
     "@vitejs/plugin-react": "npm:^5.1.2"
     eslint: "npm:^9.39.2"
     eslint-plugin-react-hooks: "npm:^7.0.1"
-    eslint-plugin-react-refresh: "npm:^0.4.25"
+    eslint-plugin-react-refresh: "npm:^0.4.26"
     globals: "npm:^16.5.0"
     react: "npm:^19.2.3"
     react-dom: "npm:^19.2.3"
     typescript: "npm:~5.9.3"
     typescript-eslint: "npm:^8.50.0"
     vite: "npm:^7.3.0"
-    vite-tsconfig-paths: "npm:^6.0.1"
+    vite-tsconfig-paths: "npm:^6.0.3"
   languageName: unknown
   linkType: soft
 
@@ -2974,10 +2974,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"immer@npm:^11.0.1":
-  version: 11.0.1
-  resolution: "immer@npm:11.0.1"
-  checksum: 10c0/d505c1aa6d5d7ff03196e0a508af2853839eb1a3d5af51d55ca5815c46981b74765faf357fbd276b151109b07dd6b564077be92b0247b0a4effa78130166030d
+"immer@npm:^11.1.0":
+  version: 11.1.0
+  resolution: "immer@npm:11.1.0"
+  checksum: 10c0/cc1f14037534802a662f0113d80b4695685d789b84ab4a56a241a384df32f57f12332d1643fa3b3cc7a2504b076efb07aead08732796c8e019569d95b8b7f1cd
   languageName: node
   linkType: hard
 
@@ -3182,16 +3182,16 @@ __metadata:
     clsx: "npm:^2.1.1"
     eslint: "npm:^9.39.2"
     eslint-plugin-react-hooks: "npm:^7.0.1"
-    eslint-plugin-react-refresh: "npm:^0.4.25"
+    eslint-plugin-react-refresh: "npm:^0.4.26"
     globals: "npm:^16.5.0"
     kommon: "workspace:*"
     react: "npm:^19.2.3"
     react-dom: "npm:^19.2.3"
-    react-router: "npm:^7.10.1"
+    react-router: "npm:^7.11.0"
     typescript: "npm:^5.9.3"
     typescript-eslint: "npm:^8.50.0"
     vite: "npm:^7.3.0"
-    vite-tsconfig-paths: "npm:^6.0.1"
+    vite-tsconfig-paths: "npm:^6.0.3"
   languageName: unknown
   linkType: soft
 
@@ -3806,21 +3806,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom@npm:^7.10.1":
-  version: 7.10.1
-  resolution: "react-router-dom@npm:7.10.1"
+"react-router-dom@npm:^7.11.0":
+  version: 7.11.0
+  resolution: "react-router-dom@npm:7.11.0"
   dependencies:
-    react-router: "npm:7.10.1"
+    react-router: "npm:7.11.0"
   peerDependencies:
     react: ">=18"
     react-dom: ">=18"
-  checksum: 10c0/e0d0f8176974567321ae6eda319064e4207339b930422cc5efb4e39214e065a698f3c706a9fdb41a4e6e0a1f79c91fe1122a5a960eb30430aaed34a658e336ed
+  checksum: 10c0/0e8061fe0ef7915cc411dd92f5f41109f6343b6abef36571b08ff231365bf61f52364bea128d1c964e9b8eb19426c9bd21923df0b3e1bb993d21bd2b7440fb49
   languageName: node
   linkType: hard
 
-"react-router@npm:7.10.1, react-router@npm:^7.10.1":
-  version: 7.10.1
-  resolution: "react-router@npm:7.10.1"
+"react-router@npm:7.11.0, react-router@npm:^7.11.0":
+  version: 7.11.0
+  resolution: "react-router@npm:7.11.0"
   dependencies:
     cookie: "npm:^1.0.1"
     set-cookie-parser: "npm:^2.6.0"
@@ -3830,7 +3830,7 @@ __metadata:
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: 10c0/e114a319603ccf0394f616f954ee3f53bec04636a2f13383b1e941b8fa6c1c64b71b60527e3db8e7f971dcfaaeb9a82bd7c2ddd884a718694e589403e6975d52
+  checksum: 10c0/eb3693d63d1c52221a3449de5db170e2fa9e00536b011998b17f8a277f8b5e89b752d104dbbeb4ee3d474f8e4570167db00293b4510f63277e5e6658c5dab22b
   languageName: node
   linkType: hard
 
@@ -4020,9 +4020,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:^1.96.0":
-  version: 1.96.0
-  resolution: "sass@npm:1.96.0"
+"sass@npm:^1.97.1":
+  version: 1.97.1
+  resolution: "sass@npm:1.97.1"
   dependencies:
     "@parcel/watcher": "npm:^2.4.1"
     chokidar: "npm:^4.0.0"
@@ -4033,7 +4033,7 @@ __metadata:
       optional: true
   bin:
     sass: sass.js
-  checksum: 10c0/a932054bcee6935757417af6072d31b65ce3557798a53351b3e1369d7f06e24b0ec211e1617bdaaee998b429a44bf0f52acd240fd47f88422d5bc241eeb71672
+  checksum: 10c0/c389d5d6405869b49fa2291e8328500fe7936f3b72136bc2c338bee6e7fec936bb9a48d77a1310dea66aa4669ba74ae6b82a112eb32521b9b36d740138a39ea0
   languageName: node
   linkType: hard
 
@@ -4355,7 +4355,7 @@ __metadata:
     i18next-chained-backend: "npm:^4.6.2"
     i18next-localstorage-backend: "npm:^4.3.1"
     i18next-xhr-backend: "npm:^3.2.2"
-    immer: "npm:^11.0.1"
+    immer: "npm:^11.1.0"
     js-cookie: "npm:^3.0.5"
     kommon: "workspace:*"
     pdfjs-dist: "npm:^5.4.449"
@@ -4364,15 +4364,15 @@ __metadata:
     react-dom: "npm:^19.2.3"
     react-i18next: "npm:^16.5.0"
     react-redux: "npm:^9.2.0"
-    react-router: "npm:^7.10.1"
-    react-router-dom: "npm:^7.10.1"
-    sass: "npm:^1.96.0"
+    react-router: "npm:^7.11.0"
+    react-router-dom: "npm:^7.11.0"
+    sass: "npm:^1.97.1"
     typescript: "npm:^5.9.3"
     use-immer: "npm:^0.11.0"
     viewer: "workspace:*"
     vite: "npm:^7.3.0"
     vite-plugin-static-copy: "npm:^3.1.4"
-    vite-tsconfig-paths: "npm:^6.0.1"
+    vite-tsconfig-paths: "npm:^6.0.3"
   languageName: unknown
   linkType: soft
 
@@ -4528,17 +4528,17 @@ __metadata:
     clsx: "npm:^2.1.1"
     eslint: "npm:^9.39.2"
     eslint-plugin-react-hooks: "npm:^7.0.1"
-    eslint-plugin-react-refresh: "npm:^0.4.25"
+    eslint-plugin-react-refresh: "npm:^0.4.26"
     globals: "npm:^16.5.0"
     kommon: "workspace:*"
     react: "npm:^19.2.3"
     react-dom: "npm:^19.2.3"
-    react-router: "npm:^7.10.1"
+    react-router: "npm:^7.11.0"
     typescript: "npm:^5.9.3"
     typescript-eslint: "npm:^8.50.0"
     viewer: "workspace:*"
     vite: "npm:^7.3.0"
-    vite-tsconfig-paths: "npm:^6.0.1"
+    vite-tsconfig-paths: "npm:^6.0.3"
   languageName: unknown
   linkType: soft
 
@@ -4570,9 +4570,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-tsconfig-paths@npm:^6.0.1":
-  version: 6.0.1
-  resolution: "vite-tsconfig-paths@npm:6.0.1"
+"vite-tsconfig-paths@npm:^6.0.3":
+  version: 6.0.3
+  resolution: "vite-tsconfig-paths@npm:6.0.3"
   dependencies:
     debug: "npm:^4.1.1"
     globrex: "npm:^0.1.2"
@@ -4582,7 +4582,7 @@ __metadata:
   peerDependenciesMeta:
     vite:
       optional: true
-  checksum: 10c0/c0702f1d2b9d2e3e6ebb44d8e9c27b17b1102e86946ab54b6bbd290419b134e84df4e451b55db973bc97d9de5689df6f67e479633df20244aa0c62ffd0b16e43
+  checksum: 10c0/75cfe470f1ec0e776b2aec1d2e71316d5e1214f485fce7daaed4e4789d6f667881fb85d98129b6463a5b70c7524ef258b401c4871ed8b6318ac45cc892ee778a
   languageName: node
   linkType: hard
 

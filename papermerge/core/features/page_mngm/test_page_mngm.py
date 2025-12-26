@@ -9,8 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from papermerge.core.features.conftest import make_document_from_resource
 from papermerge.core import orm, schema
 from papermerge.core.tests.resource_file import ResourceFile
-from papermerge.core.types import ResourceType
-from papermerge.core import constants
+from papermerge.core.types import ResourceType, MimeType
 from papermerge.core.features.page_mngm.db import api as page_mngm_dbapi
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.ownership.db import api as ownership_api
@@ -107,7 +106,8 @@ async def test_copy_without_pages(user, make_document, db_session: AsyncSession)
             content=io.BytesIO(content),
             file_name="three-pages.pdf",
             size=size,
-            content_type=constants.ContentType.APPLICATION_PDF,
+            content_type=MimeType.application_pdf,
+            created_by=user.id
         )
 
     orig_doc_ver = update_src.versions[0]
@@ -168,7 +168,8 @@ async def test_extract_two_pages_to_folder_all_pages_in_one_doc(
             content=io.BytesIO(content),
             file_name="three-pages.pdf",
             size=size,
-            content_type=constants.ContentType.APPLICATION_PDF,
+            content_type=MimeType.application_pdf,
+            created_by=user.id
         )
 
     src_ver = src.versions[0]
@@ -222,7 +223,8 @@ async def test_extract_two_pages_to_folder_each_page_in_separate_doc(
             content=io.BytesIO(content),
             file_name="three-pages.pdf",
             size=size,
-            content_type=constants.ContentType.APPLICATION_PDF,
+            content_type=MimeType.application_pdf,
+            created_by=user.id
         )
 
     src_ver = src.versions[0]

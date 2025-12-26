@@ -33,7 +33,6 @@ from papermerge.core import orm, dbapi
 from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core import config
-from papermerge.core.constants import ContentType
 from papermerge.core.types import OwnerType, ResourceType, NodeResource, \
     TagResource, DocumentTypeResource, Owner
 from papermerge.core.features.ownership.db import api as ownership_api
@@ -175,7 +174,8 @@ async def three_pages_pdf(make_document, db_session: AsyncSession, user) -> doc_
             content=io.BytesIO(content),
             file_name="three-pages.pdf",
             size=size,
-            content_type=ContentType.APPLICATION_PDF,
+            content_type=MimeType.application_pdf,
+            created_by=user.id
         )
 
     return doc

@@ -169,6 +169,7 @@ async def test_delete_tag_which_has_associated_folder(
         db_session,
         node_id=folder.id,
         tags=["important"],
+        created_by=user.id
     )
 
     # delete tagged folder
@@ -196,6 +197,7 @@ async def test_delete_tag_which_has_associated_document(
         db_session,
         node_id=doc.id,
         tags=["important"],
+        created_by=user.id
     )
 
     # delete tagged folder

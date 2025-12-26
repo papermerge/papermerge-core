@@ -11,7 +11,6 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.types import MimeType
-from papermerge.core.constants import ContentType
 from papermerge.core.features.custom_fields.db import orm as cf_orm
 from papermerge.core.features.document import schema
 from papermerge.core.features.document.db import api as dbapi
@@ -30,7 +29,11 @@ async def test_get_doc_last_ver(db_session: AsyncSession, make_document, user):
     )
     assert len(doc.versions) == 1
 
-    await dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
+    await dbapi.version_bump(
+        db_session,
+        doc_id=doc.id,
+        user_id=user.id
+    )
     await dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
     await dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
     await dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
@@ -520,7 +523,8 @@ async def test_document_version_bump_from_pages(db_session: AsyncSession, make_d
             content=io.BytesIO(content),
             file_name="three-pages.pdf",
             size=size,
-            content_type=ContentType.APPLICATION_PDF,
+            content_type=MimeType.application_pdf,
+            created_by=user.id
         )
 
     src_last_ver = await dbapi.get_last_doc_ver(db_session, doc_id=src.id)
@@ -585,7 +589,8 @@ async def test_document_upload_pdf(make_document, user, db_session: AsyncSession
             content=io.BytesIO(content),
             file_name="three-pages.pdf",
             size=size,
-            content_type=ContentType.APPLICATION_PDF,
+            content_type=MimeType.application_pdf,
+            created_by=user.id
         )
 
     stmt = (
@@ -627,7 +632,8 @@ async def test_document_upload_png(make_document, user, db_session: AsyncSession
             content=io.BytesIO(content),
             file_name="one-page.png",
             size=size,
-            content_type="image/png",
+            content_type=MimeType.image_png,
+            created_by=user.id
         )
 
     stmt = (
@@ -669,6 +675,7 @@ async def test_document_upload_txt(make_document, user, db_session: AsyncSession
             file_name="dummy.txt",
             size=size,
             content_type="text/plain",
+            created_by=user.id
         )
 
     assert fresh_doc is None

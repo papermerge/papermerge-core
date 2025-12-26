@@ -74,6 +74,7 @@ async def test_has_node_perm_basic_positive(make_user, make_folder, db_session: 
         node_ids=[receipts.id],
         role_ids=[role.id],
         owner_id=john.id,
+        created_by=john.id
     )
 
     has_access = await has_node_perm(
@@ -110,6 +111,7 @@ async def test_has_node_perm_recursive_nodes(
         node_ids=[receipts.id],
         role_ids=[role.id],
         owner_id=john.id,
+        created_by=john.id
     )
 
     shared_nodes = [receipts.id, descendant_f1.id, descendant_d1.id, grandchild_d1.id]

@@ -477,7 +477,6 @@ async def create_document(
     attrs: schema.NewDocument,
     mime_type: MimeType
 ) -> Tuple[schema.Document | None, schema.Error | None]:
-
     error = None
     doc_id = attrs.id or uuid.uuid4()
 
@@ -536,6 +535,8 @@ async def create_document(
         lang=attrs.lang,
         mime_type=mime_type,
         short_description="Original",
+        created_by=attrs.created_by,
+        updated_by=attrs.updated_by
     )
 
     db_session.add(doc)
@@ -626,7 +627,9 @@ async def version_bump(
         page_count=page_count,
         short_description=short_description,
         lang=last_ver.lang,
-        mime_type=MimeType.application_pdf
+        mime_type=MimeType.application_pdf,
+        created_by=user_id,
+        updated_by=user_id
     )
 
     db_session.add(db_new_doc_ver)
@@ -799,6 +802,7 @@ async def create_next_version(
     file_name,
     file_size,
     content_type: MimeType,
+    created_by: uuid.UUID,
     short_description=None,
 ) -> orm.DocumentVersion:
     stmt = (
@@ -817,6 +821,8 @@ async def create_next_version(
             document_id=doc.id,
             number=len(doc.versions) + 1,
             lang=doc.lang,
+            created_by=created_by,
+            updated_by=created_by,
         )
 
     document_version.file_name = file_name
@@ -839,6 +845,7 @@ async def upload(
     size: int,
     file_name: str,
     content_type: MimeType,
+    created_by: uuid.UUID,
 ) -> Tuple[schema.Document | None, schema.Error | None]:
 
     doc = await db_session.get(orm.Document, document_id)
@@ -860,7 +867,8 @@ async def upload(
             doc=doc,
             file_name=file_name,
             file_size=size,
-            content_type=content_type
+            content_type=content_type,
+            created_by=created_by
         )
 
         pdf_ver = await create_next_version(
@@ -869,7 +877,8 @@ async def upload(
             file_name=f"{file_name}.pdf",
             file_size=len(pdf_content),
             short_description=f"{file_type(content_type)} -> pdf",
-            content_type=content_type
+            content_type=content_type,
+            created_by=created_by
         )
         await copy_file(src=content, dst=abs_docver_path(orig_ver.id, orig_ver.file_name))
 
@@ -900,7 +909,8 @@ async def upload(
             doc=doc,
             file_name=file_name,
             file_size=size,
-            content_type=content_type
+            content_type=content_type,
+            created_by=created_by
         )
         await copy_file(src=content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
 
@@ -1430,6 +1440,7 @@ async def set_doc_ver_lang(
     db_session: AsyncSession,
     doc_ver_id: uuid.UUID,
     lang: str,
+    updated_by: uuid.UUID,
 ):
     doc_ver = await db_session.get(orm.DocumentVersion, doc_ver_id)
     if doc_ver is None:
@@ -1437,6 +1448,8 @@ async def set_doc_ver_lang(
 
     doc_ver.lang = lang
     doc_ver.updated_at = utc_now()  # Python-side, affected by freeze_time
+    doc_ver.updated_by = updated_by
+
     await db_session.commit()
 
     return lang

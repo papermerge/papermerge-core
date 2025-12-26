@@ -5,11 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import orm
 from papermerge.core.features.ownership.db import api as ownership_api
-from papermerge.core.types import OwnerType, ResourceType, TagResource, Owner
+from papermerge.core.types import OwnerType, TagResource, Owner
 
 
 @pytest.fixture()
-def make_tag(db_session: AsyncSession):
+def make_tag(db_session: AsyncSession, system_user):
     async def _maker(
         name: str,
         user: orm.User | None = None,
@@ -30,6 +30,8 @@ def make_tag(db_session: AsyncSession):
             name=name,
             bg_color=bg_color,
             fg_color=fg_color,
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
         db_session.add(db_tag)
         await db_session.flush()

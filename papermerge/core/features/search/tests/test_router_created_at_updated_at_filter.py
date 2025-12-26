@@ -119,6 +119,7 @@ async def test_updated_at_1_microsecond_diff(
             db_session=db_session,
             doc_ver_id=doc1_ver.id,
             lang=DocumentLang.spa,
+            updated_by=user.id
         )
 
     with freeze_time("2025-12-16T14:00:00.001Z"):
@@ -127,6 +128,7 @@ async def test_updated_at_1_microsecond_diff(
             db_session=db_session,
             doc_ver_id=doc2_ver.id,
             lang=DocumentLang.spa,
+            updated_by=user.id
         )
 
     payload = {

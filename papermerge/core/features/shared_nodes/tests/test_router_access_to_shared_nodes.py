@@ -35,6 +35,7 @@ async def test_1_get_basic_access_to_shared_nodes(
         node_ids=[receipts.id],
         role_ids=[role.id],
         owner_id=john.id,
+        created_by=john.id
     )
     # Act / David retrieves shared nodes
     response = await auth_api_client.get(f"/shared-nodes")
@@ -77,6 +78,7 @@ async def test_2_retrieve_shared_nodes_with_filter(
         node_ids=[receipts.id, accounting.id],
         role_ids=[role.id],
         owner_id=john.id,
+        created_by=john.id
     )
     # Act / David retrieves shared nodes with applied filter
     response = await auth_api_client.get("/shared-nodes?filter_free_text=receipts")
@@ -123,6 +125,7 @@ async def test_3_paginated_nodes_are_returned_with_is_shared_flag_set_correctly(
         node_ids=[receipts.id],
         role_ids=[role.id],
         owner_id=john.id,
+        created_by=john.id
     )
     api_client = await login_as(john)
     response = await api_client.get(f"/nodes/{john.home_folder.id}")
@@ -186,6 +189,7 @@ async def test_5_paginated_for_nodes_shared_multiple_times(
         node_ids=[receipts.id],
         role_ids=[role1.id],
         owner_id=john.id,
+        created_by=john.id
     )
     # share 2 (with maria, role2)
     await dbapi.create_shared_nodes(
@@ -194,6 +198,7 @@ async def test_5_paginated_for_nodes_shared_multiple_times(
         node_ids=[receipts.id],
         role_ids=[role2.id],
         owner_id=john.id,
+        created_by=john.id
     )
 
     api_client = await login_as(john)

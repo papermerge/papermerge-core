@@ -232,6 +232,7 @@ async def set_doc_ver_lang(
                 db_session,
                 doc_ver_id=doc_ver_id,
                 lang=payload.lang,
+                updated_by=user.id
             )
     except NoResultFound:
         raise exc.HTTP404NotFound()

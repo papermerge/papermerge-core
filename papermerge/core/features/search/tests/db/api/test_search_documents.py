@@ -117,7 +117,8 @@ async def test_search_documents_by_one_tag(
     await nodes_dbapi.assign_node_tags(
         db_session,
         node_id=doc.id,
-        tags=["green"]
+        tags=["green"],
+        created_by=user.id
     )
 
     params = search_schema.SearchQueryParams(
@@ -181,19 +182,22 @@ async def test_search_documents_that_has_all_tags(
     await nodes_dbapi.assign_node_tags(
         db_session,
         node_id=doc.id,
-        tags=["green", "blue"]
+        tags=["green", "blue"],
+        created_by=user.id
     )
 
     await nodes_dbapi.assign_node_tags(
         db_session,
         node_id=d1.id,
-        tags=["green"]
+        tags=["green"],
+        created_by=user.id
     )
 
     await nodes_dbapi.assign_node_tags(
         db_session,
         node_id=d2.id,
-        tags=["blue"]
+        tags=["blue"],
+        created_by=user.id
     )
 
     params = search_schema.SearchQueryParams(
@@ -256,13 +260,15 @@ async def test_search_documents_that_has_any_tags(
     await nodes_dbapi.assign_node_tags(
         db_session,
         node_id=doc.id,
-        tags=["green", "blue"]
+        tags=["green", "blue"],
+        created_by=user.id
     )
 
     await nodes_dbapi.assign_node_tags(
         db_session,
         node_id=dblue.id,
-        tags=["blue"]
+        tags=["blue"],
+        created_by=user.id
     )
 
     params = search_schema.SearchQueryParams(
@@ -335,19 +341,22 @@ async def test_tags_not(
     await nodes_dbapi.assign_node_tags(
         db_session,
         node_id=doc.id,
-        tags=["green"]
+        tags=["green"],
+        created_by=user.id
     )
 
     await nodes_dbapi.assign_node_tags(
         db_session,
         node_id=d1.id,
-        tags=["deleted"]
+        tags=["deleted"],
+        created_by=user.id
     )
 
     await nodes_dbapi.assign_node_tags(
         db_session,
         node_id=d2.id,
-        tags=["archived"]
+        tags=["archived"],
+        created_by=user.id
     )
 
     params = search_schema.SearchQueryParams(

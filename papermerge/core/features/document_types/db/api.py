@@ -1,20 +1,28 @@
+
 import logging
 import math
 import uuid
 from typing import Optional, Dict, Any
 from itertools import groupby
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func, Sequence, case
+from sqlalchemy import select, and_, or_
+from sqlalchemy.orm import selectinload, aliased
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import NoResultFound
 
 from papermerge.core.db.exceptions import DependenciesExist
 from papermerge.core import schema, orm, types
 from papermerge.core import constants as const
+from papermerge.core.const import SYSTEM_USER_ID
 from papermerge.core.tasks import send_task
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.utils.tz import utc_now
 from papermerge.core.features.document_types import schema as dt_schema
+from papermerge.core.features.ownership.db.orm import Ownership
+from papermerge.core.types import OwnerType, ResourceType
+from papermerge.core.db.exceptions import ResourceAccessDenied
 from .orm import DocumentType
 
 logger = logging.getLogger(__name__)
@@ -398,7 +406,8 @@ async def document_type_cf_count(session: AsyncSession, document_type_id: uuid.U
 
 async def create_document_type(
     session: AsyncSession,
-    data: schema.CreateDocumentType
+    data: schema.CreateDocumentType,
+    created_by: uuid.UUID = SYSTEM_USER_ID,
 ) -> orm.DocumentType:
 
     is_unique = await ownership_api.check_name_unique_for_owner(
@@ -423,6 +432,8 @@ async def create_document_type(
         id=uuid.uuid4(),
         name=data.name,
         path_template=data.path_template,
+        created_by=created_by,
+        updated_by=created_by,
     )
 
     try:
@@ -453,16 +464,6 @@ async def create_document_type(
     return dtype
 
 
-import uuid
-from sqlalchemy import select, and_, or_
-from sqlalchemy.orm import selectinload, aliased
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import NoResultFound
-
-from papermerge.core import orm, schema
-from papermerge.core.features.ownership.db.orm import Ownership
-from papermerge.core.types import OwnerType, ResourceType
-from papermerge.core.db.exceptions import ResourceAccessDenied
 
 
 async def get_document_type(

@@ -3,18 +3,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from papermerge.core import dbapi
 
 
-async def test_group_create(db_session: AsyncSession):
-    group = await dbapi.create_group(db_session, "G1")
+async def test_group_create(db_session: AsyncSession, system_user):
+    group = await dbapi.create_group(db_session, "G1", created_by=system_user.id)
     group_details = await dbapi.get_group(db_session, group_id=group.id)
 
     assert group_details.name == "G1"
 
 
-async def test_create_group_with_special_folders(db_session: AsyncSession):
+async def test_create_group_with_special_folders(db_session: AsyncSession, system_user):
     group = await dbapi.create_group(
         db_session,
         "G1wSP",
-        with_special_folders=True
+        with_special_folders=True,
+        created_by=system_user.id
     )
     group_details = await dbapi.get_group(db_session, group_id=group.id)
 

@@ -293,6 +293,7 @@ async def upload_document(
             content=io.BytesIO(content),
             file_name=file.filename or title,
             content_type=mime_type,
+            created_by=user.id
         )
 
         if upload_error:

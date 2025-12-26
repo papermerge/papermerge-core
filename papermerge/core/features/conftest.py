@@ -16,6 +16,7 @@ from sqlalchemy import select, text, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from papermerge.core.const import SYSTEM_USER_ID
 from papermerge.core.types import MimeType
 from papermerge.core import schema
 from papermerge.core.utils.tz import utc_now
@@ -32,7 +33,6 @@ from papermerge.core import orm, dbapi
 from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
 from papermerge.core import config
-from papermerge.core.constants import ContentType
 from papermerge.core.types import OwnerType, ResourceType, NodeResource, \
     TagResource, DocumentTypeResource, Owner
 from papermerge.core.features.ownership.db import api as ownership_api
@@ -122,7 +122,7 @@ def make_folder(db_session: AsyncSession, system_user):
 
 
 @pytest.fixture
-def make_document(db_session: AsyncSession):
+def make_document(db_session: AsyncSession, system_user):
     async def _maker(
         title: str,
         parent: orm.Folder,
@@ -139,6 +139,10 @@ def make_document(db_session: AsyncSession):
         if user is not None:
             attrs["created_by"] = user.id
             attrs["updated_by"] = user.id
+        else:
+            attrs["created_by"] = system_user.id
+            attrs["updated_by"] = system_user.id
+
 
         doc, _ = await doc_dbapi.create_document(
             db_session,
@@ -170,7 +174,8 @@ async def three_pages_pdf(make_document, db_session: AsyncSession, user) -> doc_
             content=io.BytesIO(content),
             file_name="three-pages.pdf",
             size=size,
-            content_type=ContentType.APPLICATION_PDF,
+            content_type=MimeType.application_pdf,
+            created_by=user.id
         )
 
     return doc
@@ -193,7 +198,8 @@ def make_document_from_resource(make_document, db_session: AsyncSession):
                 content=io.BytesIO(content),
                 file_name=resource,
                 size=size,
-                content_type=ContentType.APPLICATION_PDF,
+                content_type=MimeType.application_pdf,
+                created_by=user.id,
             )
 
         return doc
@@ -227,7 +233,8 @@ def make_document_with_pages(db_session: AsyncSession):
                 content=io.BytesIO(content),
                 file_name="three-pages.pdf",
                 size=size,
-                content_type=ContentType.APPLICATION_PDF,
+                content_type=MimeType.application_pdf,
+                created_by=user.id,
             )
         return doc
 
@@ -280,7 +287,9 @@ def make_document_version(db_session: AsyncSession, system_user):
             pages=db_pages,
             document=db_doc,
             lang=lang,
-            mime_type=mime_type
+            mime_type=mime_type,
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
         db_session.add(db_doc_ver)
         await db_session.commit()
@@ -516,18 +525,31 @@ async def login_as(db_session):
 @pytest.fixture()
 async def system_user(db_session: AsyncSession) -> orm.User:
     """
-    Retrieve the system user with special ID.
-    System user is created in setup_database and used for resources created
-    in tests where no explicit user is logged in.
+    Retrieve or create the system user with special ID.
+    System user owns resources created by background tasks
+    and initialization scripts.
     """
-    from papermerge.core.const import SYSTEM_USER_ID
-
-    # Retrieve system user from database
     stmt = select(orm.User).where(orm.User.id == SYSTEM_USER_ID)
     result = await db_session.execute(stmt)
-    system_user = result.scalar_one()
+    user = result.scalar_one_or_none()
 
-    return system_user
+    if user is None:
+        user = orm.User(
+            id=SYSTEM_USER_ID,
+            username="system",
+            email="system@local",
+            password="-",
+            is_superuser=True,
+            is_active=False,
+            is_staff=False,
+            created_by=SYSTEM_USER_ID,
+            updated_by=SYSTEM_USER_ID,
+        )
+        db_session.add(user)
+        await db_session.commit()
+        await db_session.refresh(user)
+
+    return user
 
 
 @pytest.fixture()
@@ -591,7 +613,9 @@ async def document_type_groceries(db_session: AsyncSession, user, make_custom_fi
     # Create document type WITHOUT user parameter
     dt = orm.DocumentType(
         id=uuid.uuid4(),
-        name="groceries"
+        name="groceries",
+        created_by=user.id,
+        updated_by=user.id,
     )
     db_session.add(dt)
     await db_session.flush()
@@ -753,7 +777,7 @@ def token():
 
 
 @pytest.fixture()
-def make_document_type(db_session, user):
+def make_document_type(db_session, user, system_user):
     """
     UPDATED: Create document type with ownership
     """
@@ -777,7 +801,9 @@ def make_document_type(db_session, user):
         dt = orm.DocumentType(
             id=uuid.uuid4(),
             path_template=path_template,
-            name=name
+            name=name,
+            created_by=system_user.id,
+            updated_by=system_user.id,
         )
         db_session.add(dt)
         await db_session.flush()
@@ -1006,7 +1032,7 @@ def random_string():
 
 
 @pytest.fixture
-def make_custom_field_v2(db_session: AsyncSession, user):
+def make_custom_field_v2(db_session: AsyncSession, user, system_user):
     """
     UPDATED: Create custom field with ownership instead of user_id/group_id
     """
@@ -1033,7 +1059,9 @@ def make_custom_field_v2(db_session: AsyncSession, user):
             id=uuid.uuid4(),
             name=name,
             type_handler=type_handler,
-            config=config
+            config=config,
+            created_by=system_user.id,
+            updated_by=system_user.id
         )
         db_session.add(cf)
         await db_session.flush()

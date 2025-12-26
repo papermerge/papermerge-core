@@ -159,7 +159,8 @@ async def create_custom_field(
         ):
             ret = await dbapi.create_custom_field(
                 db_session,
-                data=data
+                data=data,
+                created_by=user.id
             )
     except ValueError as e:
         await db_session.rollback()

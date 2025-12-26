@@ -375,8 +375,9 @@ async def get_groups_without_pagination(db_session: AsyncSession) -> list[schema
 async def create_group(
     db_session: AsyncSession,
     name: str,
+    created_by: uuid.UUID,
     with_special_folders: bool = False,
-    exists_ok: bool = False
+    exists_ok: bool = False,
 ) -> schema.Group:
     """
     Create a new group, optionally with special folders.
@@ -398,6 +399,8 @@ async def create_group(
     group = orm.Group(
         id=group_id,
         name=name,
+        created_by=created_by,
+        updated_by=created_by,
     )
     db_session.add(group)
     await db_session.flush()

@@ -439,6 +439,7 @@ async def assign_node_tags(
     db_session: AsyncSession,
     node_id: uuid.UUID,
     tags: list[str],
+    created_by: uuid.UUID,
 ) -> orm.Node:
     """Will assign tags with given name to the node
 
@@ -486,7 +487,7 @@ async def assign_node_tags(
     # Create new tags if they don't exist (with same owner as node)
     for name in tags:
         if name not in existing_db_tags_names:
-            new_tag = orm.Tag(name=name)
+            new_tag = orm.Tag(name=name, created_by=created_by, updated_by=created_by)
             db_session.add(new_tag)
             await db_session.flush()
 

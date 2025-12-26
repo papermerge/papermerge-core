@@ -19,16 +19,22 @@ exec_perms_sync() {
   echo "Permissions sync complete."
 }
 
-exec_create_roles() {
+exec_create_standard_roles() {
   echo "Creating standard roles..."
   pm roles create-standard-roles
   echo "Standard roles ready."
 }
 
+exec_create_system_user() {
+  pm users create-system-user
+}
+
+
 exec_init() {
   exec_migrate
   exec_perms_sync
-  exec_create_roles
+  exec_create_system_user
+  exec_create_standard_roles
 }
 
 case $CMD in

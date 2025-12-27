@@ -4,8 +4,14 @@ disable_existing_loggers: false
 formatters:
   verbose:
     format: '%(levelname)s %(asctime)s %(module)s %(message)s'
+  debug:
+    format: '%(levelname)s %(asctime)s %(name)s:%(funcName)s: %(message)s'
 
 handlers:
+  console_debug:
+    level: DEBUG
+    class: logging.StreamHandler
+    formatter: debug
   console:
     level: INFO
     class: logging.StreamHandler
@@ -13,9 +19,14 @@ handlers:
 
 loggers:
   auth_server:
+    level: DEBUG
+    handlers: [ console_debug, console ]
+    propagate: no
+  papermerge.core:
+    level: DEBUG
+    handlers: [ console_debug, console ]
+    propagate: no
+  uvicorn:
     level: INFO
-    handlers: [console]
-  papermerge.search.tasks:
-    level: INFO
-    handlers: [console]
+    handlers: [ console ]
     propagate: no

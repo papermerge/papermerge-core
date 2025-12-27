@@ -45,7 +45,7 @@ exec_create_standard_roles() {
 }
 
 exec_createsuperuser() {
-  cd /core_app && uv run pm users create --superuser
+  cd /auth_server_app && uv run auth-cli users create --superuser
 }
 
 

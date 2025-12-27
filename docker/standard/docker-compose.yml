@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:17
@@ -25,11 +23,13 @@ services:
       PAPERMERGE__AUTH__PASSWORD: admin
       PAPERMERGE__AUTH__USERNAME: admin
       PAPERMERGE__DATABASE__URL: postgresql://papermerge:papermerge@postgres:5432/papermerge
+      PAPERMERGE__MAIN__LOGGING_CFG: /core_app/logging.yaml
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
       - papermerge_data:/core_app/media
+      - ./logging.yaml:/core_app/logging.yaml
 
 volumes:
   postgres_data:

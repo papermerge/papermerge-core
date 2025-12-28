@@ -45,5 +45,5 @@ jobs:
           uv run alembic upgrade head
           uv run pytest
         env:
-          PM_DB_URL: 'postgresql://pmguser:pmgpass@localhost:5432/test_pmgdb'
+          PM_DB_URL: 'postgresql://pm:pm@localhost:5432/pmdb'
           PM_API_PREFIX: ''

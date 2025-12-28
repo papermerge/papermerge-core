@@ -52,7 +52,7 @@ RUN apk add --no-cache \
     libmagic
 
 # Download env2js
-RUN curl -L -o /bin/env2js https://github.com/papermerge/env2js/releases/download/0.4/env2js.amd64 && \
+RUN curl -L -o /bin/env2js https://github.com/papermerge/env2js/releases/download/0.5/env2js.amd64 && \
     chmod +x /bin/env2js
 
 # Copy installed Python packages from build stage

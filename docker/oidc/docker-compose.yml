@@ -10,8 +10,8 @@
 #   2. Copy .env.example to .env and set OAUTH2_COOKIE_SECRET
 #
 # Usage (from project root):
-#   cd <project root>
-#   docker compose -f docker/oidc/docker-compose.yml --env-file .env up -d
+#   cd <project root>/docker/oidc
+#   docker compose up -d
 #
 # Access:
 #   - Papermerge: http://localhost:8080
@@ -96,20 +96,19 @@ services:
       - keycloak
       - papermerge
 
-  # Papermerge Core - Document Management System (OIDC edition, no built-in auth)
   papermerge:
     build:
       context: ../..
       dockerfile: docker/oidc/Dockerfile
     restart: unless-stopped
     environment:
-      PM_DB_URL: postgresql://papermerge:papermerge@postgres:5432/papermerge
+      PM_DB_URL: postgresql://pm:pm@postgres:5432/pmdb
       PM_LOG_CONFIG: /app/log_config.yaml
       # OIDC Logout Configuration
       # Set these to match your OIDC provider's logout endpoint
       PM_OIDC_LOGOUT_URL: http://localhost:9090/realms/papermerge/protocol/openid-connect/logout
       PM_POST_LOGOUT_REDIRECT_URI: http://localhost:8080
-      PM_AUTH__OIDC_CLIENT_ID: papermerge
+      PM_OIDC_CLIENT_ID: papermerge
     volumes:
       - papermerge_media:/app/media
       - ./log_config.yaml:/app/log_config.yaml

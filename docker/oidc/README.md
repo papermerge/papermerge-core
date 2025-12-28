@@ -164,48 +164,6 @@ oauth2-proxy:
     - --client-secret=your-client-secret
 ```
 
-## Files
-
-```
-docker/oidc/
-├── Dockerfile              # Papermerge image (uv, Python 3.14, no auth)
-├── docker-compose.yml      # Complete stack
-├── entrypoint.sh           # Container startup script
-├── init-db.sql             # PostgreSQL initialization
-├── logging.yaml            # Python logging config
-├── core.js.tmpl            # Frontend runtime config template
-├── .env.example            # Environment template
-├── README.md               # This file
-├── bundles/
-│   ├── nginx/
-│   │   └── nginx.conf      # Nginx reverse proxy config
-│   └── supervisor/
-│       └── supervisord.conf
-└── keycloak/
-    └── realm-export.json   # Pre-configured Keycloak realm
-```
-
-## Troubleshooting
-
-### "Unauthorized" Error
-
-1. Check OAuth2-Proxy logs: `docker compose logs oauth2-proxy`
-2. Verify Keycloak is ready: `docker compose logs keycloak`
-3. Ensure redirect URL matches
-
-### User Not Created in Papermerge
-
-1. Check headers are being forwarded:
-   ```bash
-   docker compose exec papermerge curl -H "Remote-User: test" localhost:8000/api/users/me
-   ```
-2. Verify `PAPERMERGE__AUTH__REMOTE=true`
-
-### Database Connection Issues
-
-1. Ensure PostgreSQL is healthy: `docker compose ps`
-2. Check connection string in logs: `docker compose logs papermerge`
-
 ## Building the Image
 
 ```bash

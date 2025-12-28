@@ -14,7 +14,7 @@ class FileServer(str, Enum):
 
 class Settings(BaseSettings):
     db_url: PostgresDsn
-    log_config: Path | None = Path("/app/log_config.yml")
+    log_config: Path | None = Path("/app/log_config.yaml")
     api_prefix: str = ''  # e.g. '/api', '/api/v1/'
     default_lang: DocumentLang = DocumentLang.deu
 

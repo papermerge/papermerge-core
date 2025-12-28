@@ -104,15 +104,15 @@ services:
     restart: unless-stopped
     environment:
       PM_DB_URL: postgresql://papermerge:papermerge@postgres:5432/papermerge
-      PAPERMERGE__MAIN__LOGGING_CFG: /app/logging.yaml
+      PM_LOG_CONFIG: /app/log_config.yaml
       # OIDC Logout Configuration
       # Set these to match your OIDC provider's logout endpoint
-      PAPERMERGE__AUTH__OIDC_LOGOUT_URL: http://localhost:9090/realms/papermerge/protocol/openid-connect/logout
-      PAPERMERGE__AUTH__POST_LOGOUT_REDIRECT_URI: http://localhost:8080
-      PAPERMERGE__AUTH__OIDC_CLIENT_ID: papermerge
+      PM_OIDC_LOGOUT_URL: http://localhost:9090/realms/papermerge/protocol/openid-connect/logout
+      PM_POST_LOGOUT_REDIRECT_URI: http://localhost:8080
+      PM_AUTH__OIDC_CLIENT_ID: papermerge
     volumes:
       - papermerge_media:/app/media
-      - ./logging.yaml:/app/logging.yaml
+      - ./log_config.yaml:/app/log_config.yaml
     depends_on:
       postgres:
         condition: service_healthy

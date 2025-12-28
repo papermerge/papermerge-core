@@ -70,9 +70,9 @@ COPY pyproject.toml README.md LICENSE ./
 
 # Copy Docker configuration files
 COPY docker/oidc/entrypoint.sh /entrypoint.sh
-COPY docker/oidc/bundles/supervisor/supervisord.conf /app/supervisord.conf
-COPY docker/oidc/bundles/nginx/nginx.conf /etc/nginx/nginx.conf
-COPY docker/oidc/logging.yaml /app/logging.yaml
+COPY docker/oidc/supervisord.conf /app/supervisord.conf
+COPY docker/oidc/nginx.conf /etc/nginx/nginx.conf
+COPY docker/oidc/log_config.yaml /app/log_config.yaml
 COPY docker/oidc/core.js.tmpl ./
 
 RUN chmod +x /entrypoint.sh

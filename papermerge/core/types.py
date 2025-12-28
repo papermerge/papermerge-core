@@ -173,7 +173,7 @@ class BreadcrumbRootType(str, Enum):
 
 
 class DocumentLang(str, Enum):
-    """ISO 639-3 language codes for document OCR languages"""
+    """ISO 639-3 language codes"""
     sqi = "sqi"  # Albanian
     bel = "bel"  # Belarusian
     bos = "bos"  # Bosnian

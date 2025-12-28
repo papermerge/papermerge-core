@@ -69,7 +69,7 @@ def mock_media_root_env(monkeypatch):
         def new_get_settings():
             return settings
 
-        settings.papermerge__main__media_root = tmpdirname
+        settings.media_root = tmpdirname
         monkeypatch.setattr(config, "get_settings", new_get_settings)
         yield
 

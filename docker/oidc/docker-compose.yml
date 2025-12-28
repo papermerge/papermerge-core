@@ -33,7 +33,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -103,7 +103,7 @@ services:
       dockerfile: docker/oidc/Dockerfile
     restart: unless-stopped
     environment:
-      PAPERMERGE__DATABASE__URL: postgresql://papermerge:papermerge@postgres:5432/papermerge
+      PM_DB_URL: postgresql://papermerge:papermerge@postgres:5432/papermerge
       PAPERMERGE__MAIN__LOGGING_CFG: /app/logging.yaml
       # OIDC Logout Configuration
       # Set these to match your OIDC provider's logout endpoint

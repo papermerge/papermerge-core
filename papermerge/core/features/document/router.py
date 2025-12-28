@@ -218,7 +218,7 @@ async def upload_document(
 
     # Use user's default language if not specified
     if lang is None:
-        default_value = config.papermerge__main__default_document_lang
+        default_value = config.default_lang
         # take value from user preferences if present or from
         # global application config otherwise
         lang = user.preferences.document_default_lang or default_value
@@ -249,7 +249,7 @@ async def upload_document(
             detail=f"File is corrupted or invalid: {e}"
         )
 
-    max_file_size = config.papermerge__main__max_file_size_mb * 1024 * 1024
+    max_file_size = config.max_file_size_mb * 1024 * 1024
     if len(content) > max_file_size:
         raise HTTPException(
             status_code=413,  # Payload Too Large
@@ -599,7 +599,7 @@ async def get_document_doc_thumbnail_status(
         db_session, doc_ids=doc_ids
     )
 
-    fserver = config.papermerge__main__file_server
+    fserver = config.file_server
     if fserver == FileServer.S3.value:
         if len(doc_ids_not_yet_considered) > 0:
             for doc_id in doc_ids_not_yet_considered:

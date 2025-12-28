@@ -14,7 +14,7 @@ from papermerge.core.routers.scopes import router as scopes_router
 from papermerge.core.openapi import create_custom_openapi_generator
 
 config = get_settings()
-prefix = config.papermerge__main__api_prefix
+prefix = config.api_prefix
 app = FastAPI(title="Papermerge DMS REST API", version=__version__)
 
 app.add_middleware(

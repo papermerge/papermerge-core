@@ -38,7 +38,6 @@ authentication using Keycloak as the identity provider.
 
 ## Quick Start
 
-
 ### 0. Project Root
 
 Run all docker compose commands from project root i.e. from the same folder
@@ -85,19 +84,19 @@ docker compose logs -f
 
 ### 4. Access
 
-| Service | URL | Credentials |
-|---------|-----|-------------|
-| Papermerge | http://localhost:8080 | (via Keycloak) |
-| Keycloak Admin | http://localhost:9090 | admin / admin |
+| Service        | URL                   | Credentials    |
+|----------------|-----------------------|----------------|
+| Papermerge     | http://localhost:8080 | (via Keycloak) |
+| Keycloak Admin | http://localhost:9090 | admin / admin  |
 
 ### 5. Login
 
 Pre-configured test users:
 
-| Username | Password | Role | Description |
-|----------|----------|------|-------------|
-| admin | admin | admin | Full administrator |
-| demo | demo | user | Regular user |
+| Username | Password | Role  | Description        |
+|----------|----------|-------|--------------------|
+| admin    | admin    | admin | Full administrator |
+| demo     | demo     | user  | Regular user       |
 
 ## How It Works
 
@@ -106,9 +105,9 @@ Pre-configured test users:
 3. If no session, redirects to Keycloak login
 4. After login, Keycloak redirects back to OAuth2-Proxy
 5. OAuth2-Proxy creates session and forwards requests with headers:
-   - `X-Forwarded-User`: Username
-   - `X-Forwarded-Email`: Email
-   - `X-Forwarded-Groups`: Groups (comma-separated)
+    - `X-Forwarded-User`: Username
+    - `X-Forwarded-Email`: Email
+    - `X-Forwarded-Groups`: Groups (comma-separated)
 6. Papermerge reads these headers via `RemoteUserScheme`
 7. Users are auto-created on first login
 
@@ -116,10 +115,10 @@ Pre-configured test users:
 
 ### Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `OAUTH2_COOKIE_SECRET` | Secret for session cookies | Yes |
-| `PAPERMERGE__DATABASE__URL` | PostgreSQL connection string | Yes |
+| Variable               | Description                  | Required |
+|------------------------|------------------------------|----------|
+| `OAUTH2_COOKIE_SECRET` | Secret for session cookies   | Yes      |
+| `PM_DB_URL`            | PostgreSQL connection string | Yes      |
 
 ### Keycloak Customization
 
@@ -139,7 +138,8 @@ docker compose cp keycloak:/tmp/export/papermerge-realm.json \
 
 ## Using with Other OIDC Providers
 
-This Papermerge image works with any OIDC provider. Just replace Keycloak with your provider.
+This Papermerge image works with any OIDC provider. Just replace Keycloak with your
+provider.
 
 ### Authentik
 

@@ -12,7 +12,7 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 
-DATABASE_URL = os.environ.get("PAPERMERGE__DATABASE__URL")
+DATABASE_URL = os.environ.get("PM_DB_URL")
 
 # revision identifiers, used by Alembic.
 revision: str = "1a5a9bffcad4"

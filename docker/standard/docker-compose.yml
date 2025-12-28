@@ -22,7 +22,7 @@ services:
     environment:
       PAPERMERGE__AUTH__PASSWORD: admin
       PAPERMERGE__AUTH__USERNAME: admin
-      PAPERMERGE__DATABASE__URL: postgresql://papermerge:papermerge@postgres:5432/papermerge
+      PM_DB_URL: postgresql://papermerge:papermerge@postgres:5432/papermerge
       PAPERMERGE__MAIN__LOGGING_CFG: /core_app/logging.yaml
     depends_on:
       postgres:

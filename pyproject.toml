@@ -84,7 +84,7 @@ sign_url = "papermerge.core.cli.cf_sign_url:app"
 use_vars = true
 
 [tool.taskipy.variables]
-env_vars = "PAPERMERGE__MAIN__API_PREFIX=''"
+env_vars = "PM_API_PREFIX=''"
 
 [tool.taskipy.tasks]
 test = { cmd = "{env_vars} pytest", cwd = "." }

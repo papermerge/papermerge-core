@@ -25,7 +25,7 @@ def rsa_signer(message):
         )
         return private_key.sign(message, padding.PKCS1v15(), hashes.SHA1())
 
-    _kpath = settings.papermerge__main__cf_sign_url_private_key
+    _kpath = settings.cf_sign_url_private_key
     if _kpath is None:
         raise ValueError(
             "Missing CF_SIGN_URL_PRIVATE_KEY setting"
@@ -62,7 +62,7 @@ def sign_url(url: str, valid_for: int = 600):
     :param valid_for: number of seconds the url will be valid for, defaults
         to 600 (i.e. 10 minutes)
     """
-    key_id = settings.papermerge__main__cf_sign_url_key_id
+    key_id = settings.cf_sign_url_key_id
 
     if key_id is None:
         raise ValueError(

@@ -38,16 +38,12 @@ authentication using Keycloak as the identity provider.
 
 ## Quick Start
 
-### 0. Project Root
-
-Run all docker compose commands from project root i.e. from the same folder
-where `pyproject.toml`, `uv.lock` are.
-
 ### 1. Generate Cookie Secret
 
 From the project root run:
 
 ```bash
+cd <project root>/docker/oidc/
 export OAUTH2_COOKIE_SECRET=$(openssl rand -base64 32)
 echo "OAUTH2_COOKIE_SECRET=$OAUTH2_COOKIE_SECRET" > .env
 ```
@@ -55,19 +51,22 @@ echo "OAUTH2_COOKIE_SECRET=$OAUTH2_COOKIE_SECRET" > .env
 ### 2. Start Services
 
 ```bash
+cd <project root>/docker/oidc/
 docker compose up -d
 ```
 
 Some more fancy commands:
 
 ```bash
-docker compose -f docker/oidc/docker-compose.yml --env-file .env up --build
+cd <project root>/docker/oidc/
+docker compose up --build
 ```
 
 With logs redirect:
 
 ```bash
- docker compose -f docker/oidc/docker-compose.yml --env-file .env up --build 2>&1 | tee compose.log
+cd <project root>/docker/oidc/
+ docker compose up --build 2>&1 | tee compose.log
 ```
 
 ### 3. Wait for Initialization
@@ -76,9 +75,11 @@ Keycloak takes 1-2 minutes to initialize and import the realm.
 
 ```bash
 # Check status
+cd <project root>/docker/oidc/
 docker compose ps
 
 # View logs
+cd <project root>/docker/oidc/
 docker compose logs -f
 ```
 
@@ -167,6 +168,6 @@ oauth2-proxy:
 ## Building the Image
 
 ```bash
-# From project root
-docker build --no-cache -f docker/oidc/Dockerfile -t papermerge/papermerge:oidc .
+cd <project root>/docker/oidc/
+docker compose build papermerge --no-cache
 ```

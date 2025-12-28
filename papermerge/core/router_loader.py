@@ -45,7 +45,7 @@ def discover_routers(features_path: Path) -> List[tuple[APIRouter, str]]:
                     )
                     if hasattr(module, 'router'):
                         routers.append((module.router, f"{feature_name}_{router_module_name}"))
-            except Exception:
+            except Exception as e:
                 logger.debug(e)
 
     return routers

@@ -39,8 +39,8 @@ from .features.document.schema import (
     DocumentEx,
     DocVerLang,
     UpdateDocVerLang,
-    DocumentLang
 )
+from .types import DocumentLang
 from .features.users.schema import User, UserSimple, UserEx, CreateUser, UserDetails, UpdateUser, ChangeUserPassword, UserHomes, UserInboxes, UserHome, UserInbox
 from .features.custom_fields.schema import (
     CustomFieldShort,

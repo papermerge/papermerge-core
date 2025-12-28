@@ -21,9 +21,9 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_PASSWORD: pmgpass
-          POSTGRES_USER: pmguser
-          POSTGRES_DB: test_pmgdb
+          POSTGRES_PASSWORD: pm
+          POSTGRES_USER: pm
+          POSTGRES_DB: pmdb
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -45,5 +45,5 @@ jobs:
           uv run alembic upgrade head
           uv run pytest
         env:
-          PAPERMERGE__DATABASE__URL: 'postgresql://pmguser:pmgpass@localhost:5432/test_pmgdb'
-          PAPERMERGE__MAIN__API_PREFIX: ''
+          PM_DB_URL: 'postgresql://pm:pm@localhost:5432/pmdb'
+          PM_API_PREFIX: ''

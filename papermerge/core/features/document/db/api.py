@@ -1036,7 +1036,7 @@ async def get_doc_version_download_url(
     db_session: AsyncSession,
     doc_ver_id: uuid.UUID
 ) -> schema.DownloadURL:
-    file_server = settings.papermerge__main__file_server
+    file_server = settings.file_server
     if file_server == config.FileServer.LOCAL:
         url = f"/api/document-versions/{doc_ver_id}/download"
         return schema.DownloadURL(downloadURL=url)
@@ -1248,7 +1248,7 @@ async def get_docs_thumbnail_img_status(
     IDs for which image preview field has value NULL i.e. was not considered yet
     or maybe was reseted.
     """
-    fserver = settings.papermerge__main__file_server
+    fserver = settings.file_server
 
     stmt = select(
         orm.Document.id.label("doc_id"),

@@ -170,3 +170,45 @@ class BreadcrumbRootType(str, Enum):
     HOME = "home"
     INBOX = "inbox"
     SHARED = "shared"
+
+
+class DocumentLang(str, Enum):
+    """ISO 639-3 language codes"""
+    sqi = "sqi"  # Albanian
+    bel = "bel"  # Belarusian
+    bos = "bos"  # Bosnian
+    bul = "bul"  # Bulgarian
+    cat = "cat"  # Catalan
+    hrv = "hrv"  # Croatian
+    ces = "ces"  # Czech
+    dan = "dan"  # Danish
+    nld = "nld"  # Dutch
+    eng = "eng"  # English
+    est = "est"  # Estonian
+    fin = "fin"  # Finnish
+    fra = "fra"  # French
+    glg = "glg"  # Galician
+    deu = "deu"  # German
+    ell = "ell"  # Greek
+    hun = "hun"  # Hungarian
+    isl = "isl"  # Icelandic
+    gle = "gle"  # Irish
+    ita = "ita"  # Italian
+    lav = "lav"  # Latvian
+    lit = "lit"  # Lithuanian
+    ltz = "ltz"  # Luxembourgish
+    mkd = "mkd"  # Macedonian
+    mlt = "mlt"  # Maltese
+    nor = "nor"  # Norwegian
+    pol = "pol"  # Polish
+    por = "por"  # Portuguese
+    ron = "ron"  # Romanian
+    rus = "rus"  # Russian
+    srp = "srp"  # Serbian
+    slk = "slk"  # Slovak
+    slv = "slv"  # Slovenian
+    spa = "spa"  # Spanish
+    swe = "swe"  # Swedish
+    ukr = "ukr"  # Ukrainian
+    cym = "cym"  # Welsh
+    eus = "eus"  # Basque

@@ -11,7 +11,7 @@ from alembic import context
 config = context.config
 section = config.config_ini_section
 config.set_section_option(
-    section, "PAPERMERGE__DATABASE__URL", os.environ.get("PAPERMERGE__DATABASE__URL")
+    section, "PM_DB_URL", os.environ.get("PM_DB_URL")
 )
 
 # Interpret the config file for Python logging.

@@ -13,7 +13,7 @@ settings = config.get_settings()
 
 PREVIEW_IMAGE_MAP = {
     # size name        : size in pixels
-    ImagePreviewSize.sm: settings.papermerge__preview__page_size_sm,
+    ImagePreviewSize.sm: settings.preview_page_size_sm,
 }
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ def gen_doc_thumbnail(
         pdf_path=pdf_path,
         output_folder=thb_path.parent,
         page_number=page_number,
-        size_px=settings.papermerge__preview__page_size_sm,
+        size_px=settings.preview_page_size_sm,
         size_name=ImagePreviewSize.sm.value,
     )
 

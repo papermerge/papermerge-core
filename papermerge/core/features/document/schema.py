@@ -19,6 +19,7 @@ from papermerge.core.features.custom_fields.schema import (
 from papermerge.core.types import (
     CFNameType,
     CFValueType,
+    DocumentLang,
     ImagePreviewStatus,
     ImagePreviewSize,
 )
@@ -242,7 +243,7 @@ class DocumentVersion(BaseModel):
 
     @field_validator("download_url", mode="before")
     def download_url_validator(cls, _, info):
-        file_server = settings.papermerge__main__file_server
+        file_server = settings.file_server
         if file_server == config.FileServer.S3:
             return s3.doc_ver_signed_url(info.data['id'], info.data['file_name'])
 
@@ -279,7 +280,7 @@ class DocumentBase(BaseModel):
 
     @field_validator("thumbnail_url", mode="before")
     def thumbnail_url_validator(cls, value, info):
-        file_server = settings.papermerge__main__file_server
+        file_server = settings.file_server
         if file_server == config.FileServer.LOCAL:
             return f"/api/thumbnails/{info.data['id']}"
 
@@ -535,48 +536,6 @@ class DocumentEx(DocumentBase):
     updated_by: ByUser | None = None
     ocr: bool = True
     ocr_status: OCRStatusEnum = OCRStatusEnum.unknown
-
-
-class DocumentLang(str, Enum):
-    """ISO 639-3 language codes for document OCR languages"""
-    sqi = "sqi"  # Albanian
-    bel = "bel"  # Belarusian
-    bos = "bos"  # Bosnian
-    bul = "bul"  # Bulgarian
-    cat = "cat"  # Catalan
-    hrv = "hrv"  # Croatian
-    ces = "ces"  # Czech
-    dan = "dan"  # Danish
-    nld = "nld"  # Dutch
-    eng = "eng"  # English
-    est = "est"  # Estonian
-    fin = "fin"  # Finnish
-    fra = "fra"  # French
-    glg = "glg"  # Galician
-    deu = "deu"  # German
-    ell = "ell"  # Greek
-    hun = "hun"  # Hungarian
-    isl = "isl"  # Icelandic
-    gle = "gle"  # Irish
-    ita = "ita"  # Italian
-    lav = "lav"  # Latvian
-    lit = "lit"  # Lithuanian
-    ltz = "ltz"  # Luxembourgish
-    mkd = "mkd"  # Macedonian
-    mlt = "mlt"  # Maltese
-    nor = "nor"  # Norwegian
-    pol = "pol"  # Polish
-    por = "por"  # Portuguese
-    ron = "ron"  # Romanian
-    rus = "rus"  # Russian
-    srp = "srp"  # Serbian
-    slk = "slk"  # Slovak
-    slv = "slv"  # Slovenian
-    spa = "spa"  # Spanish
-    swe = "swe"  # Swedish
-    ukr = "ukr"  # Ukrainian
-    cym = "cym"  # Welsh
-    eus = "eus"  # Basque
 
 
 class DocVerLang(BaseModel):

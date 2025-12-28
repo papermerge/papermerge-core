@@ -5,8 +5,6 @@ from celery import shared_task
 from papermerge.celery_app import app as celery_app
 from papermerge.core.utils.decorators import if_redis_present
 
-#from papermerge.core.models import User
-
 logger = logging.getLogger(__name__)
 
 

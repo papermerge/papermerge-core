@@ -10,8 +10,8 @@
 #   2. Copy .env.example to .env and set OAUTH2_COOKIE_SECRET
 #
 # Usage (from project root):
-#   cd <project root>
-#   docker compose -f docker/oidc/docker-compose.yml --env-file .env up -d
+#   cd <project root>/docker/oidc
+#   docker compose up -d
 #
 # Access:
 #   - Papermerge: http://localhost:8080
@@ -33,7 +33,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -96,23 +96,22 @@ services:
       - keycloak
       - papermerge
 
-  # Papermerge Core - Document Management System (OIDC edition, no built-in auth)
   papermerge:
     build:
       context: ../..
       dockerfile: docker/oidc/Dockerfile
     restart: unless-stopped
     environment:
-      PAPERMERGE__DATABASE__URL: postgresql://papermerge:papermerge@postgres:5432/papermerge
-      PAPERMERGE__MAIN__LOGGING_CFG: /app/logging.yaml
+      PM_DB_URL: postgresql://pm:pm@postgres:5432/pmdb
+      PM_LOG_CONFIG: /app/log_config.yaml
       # OIDC Logout Configuration
       # Set these to match your OIDC provider's logout endpoint
-      PAPERMERGE__AUTH__OIDC_LOGOUT_URL: http://localhost:9090/realms/papermerge/protocol/openid-connect/logout
-      PAPERMERGE__AUTH__POST_LOGOUT_REDIRECT_URI: http://localhost:8080
-      PAPERMERGE__AUTH__OIDC_CLIENT_ID: papermerge
+      PM_OIDC_LOGOUT_URL: http://localhost:9090/realms/papermerge/protocol/openid-connect/logout
+      PM_POST_LOGOUT_REDIRECT_URI: http://localhost:8080
+      PM_OIDC_CLIENT_ID: papermerge
     volumes:
       - papermerge_media:/app/media
-      - ./logging.yaml:/app/logging.yaml
+      - ./log_config.yaml:/app/log_config.yaml
     depends_on:
       postgres:
         condition: service_healthy

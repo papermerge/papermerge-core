@@ -38,17 +38,12 @@ authentication using Keycloak as the identity provider.
 
 ## Quick Start
 
-
-### 0. Project Root
-
-Run all docker compose commands from project root i.e. from the same folder
-where `pyproject.toml`, `uv.lock` are.
-
 ### 1. Generate Cookie Secret
 
 From the project root run:
 
 ```bash
+cd <project root>/docker/oidc/
 export OAUTH2_COOKIE_SECRET=$(openssl rand -base64 32)
 echo "OAUTH2_COOKIE_SECRET=$OAUTH2_COOKIE_SECRET" > .env
 ```
@@ -56,19 +51,22 @@ echo "OAUTH2_COOKIE_SECRET=$OAUTH2_COOKIE_SECRET" > .env
 ### 2. Start Services
 
 ```bash
+cd <project root>/docker/oidc/
 docker compose up -d
 ```
 
 Some more fancy commands:
 
 ```bash
-docker compose -f docker/oidc/docker-compose.yml --env-file .env up --build
+cd <project root>/docker/oidc/
+docker compose up --build
 ```
 
 With logs redirect:
 
 ```bash
- docker compose -f docker/oidc/docker-compose.yml --env-file .env up --build 2>&1 | tee compose.log
+cd <project root>/docker/oidc/
+ docker compose up --build 2>&1 | tee compose.log
 ```
 
 ### 3. Wait for Initialization
@@ -77,27 +75,29 @@ Keycloak takes 1-2 minutes to initialize and import the realm.
 
 ```bash
 # Check status
+cd <project root>/docker/oidc/
 docker compose ps
 
 # View logs
+cd <project root>/docker/oidc/
 docker compose logs -f
 ```
 
 ### 4. Access
 
-| Service | URL | Credentials |
-|---------|-----|-------------|
-| Papermerge | http://localhost:8080 | (via Keycloak) |
-| Keycloak Admin | http://localhost:9090 | admin / admin |
+| Service        | URL                   | Credentials    |
+|----------------|-----------------------|----------------|
+| Papermerge     | http://localhost:8080 | (via Keycloak) |
+| Keycloak Admin | http://localhost:9090 | admin / admin  |
 
 ### 5. Login
 
 Pre-configured test users:
 
-| Username | Password | Role | Description |
-|----------|----------|------|-------------|
-| admin | admin | admin | Full administrator |
-| demo | demo | user | Regular user |
+| Username | Password | Role  | Description        |
+|----------|----------|-------|--------------------|
+| admin    | admin    | admin | Full administrator |
+| demo     | demo     | user  | Regular user       |
 
 ## How It Works
 
@@ -106,9 +106,9 @@ Pre-configured test users:
 3. If no session, redirects to Keycloak login
 4. After login, Keycloak redirects back to OAuth2-Proxy
 5. OAuth2-Proxy creates session and forwards requests with headers:
-   - `X-Forwarded-User`: Username
-   - `X-Forwarded-Email`: Email
-   - `X-Forwarded-Groups`: Groups (comma-separated)
+    - `X-Forwarded-User`: Username
+    - `X-Forwarded-Email`: Email
+    - `X-Forwarded-Groups`: Groups (comma-separated)
 6. Papermerge reads these headers via `RemoteUserScheme`
 7. Users are auto-created on first login
 
@@ -116,10 +116,10 @@ Pre-configured test users:
 
 ### Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `OAUTH2_COOKIE_SECRET` | Secret for session cookies | Yes |
-| `PAPERMERGE__DATABASE__URL` | PostgreSQL connection string | Yes |
+| Variable               | Description                  | Required |
+|------------------------|------------------------------|----------|
+| `OAUTH2_COOKIE_SECRET` | Secret for session cookies   | Yes      |
+| `PM_DB_URL`            | PostgreSQL connection string | Yes      |
 
 ### Keycloak Customization
 
@@ -139,7 +139,8 @@ docker compose cp keycloak:/tmp/export/papermerge-realm.json \
 
 ## Using with Other OIDC Providers
 
-This Papermerge image works with any OIDC provider. Just replace Keycloak with your provider.
+This Papermerge image works with any OIDC provider. Just replace Keycloak with your
+provider.
 
 ### Authentik
 
@@ -164,51 +165,9 @@ oauth2-proxy:
     - --client-secret=your-client-secret
 ```
 
-## Files
-
-```
-docker/oidc/
-├── Dockerfile              # Papermerge image (uv, Python 3.14, no auth)
-├── docker-compose.yml      # Complete stack
-├── entrypoint.sh           # Container startup script
-├── init-db.sql             # PostgreSQL initialization
-├── logging.yaml            # Python logging config
-├── core.js.tmpl            # Frontend runtime config template
-├── .env.example            # Environment template
-├── README.md               # This file
-├── bundles/
-│   ├── nginx/
-│   │   └── nginx.conf      # Nginx reverse proxy config
-│   └── supervisor/
-│       └── supervisord.conf
-└── keycloak/
-    └── realm-export.json   # Pre-configured Keycloak realm
-```
-
-## Troubleshooting
-
-### "Unauthorized" Error
-
-1. Check OAuth2-Proxy logs: `docker compose logs oauth2-proxy`
-2. Verify Keycloak is ready: `docker compose logs keycloak`
-3. Ensure redirect URL matches
-
-### User Not Created in Papermerge
-
-1. Check headers are being forwarded:
-   ```bash
-   docker compose exec papermerge curl -H "Remote-User: test" localhost:8000/api/users/me
-   ```
-2. Verify `PAPERMERGE__AUTH__REMOTE=true`
-
-### Database Connection Issues
-
-1. Ensure PostgreSQL is healthy: `docker compose ps`
-2. Check connection string in logs: `docker compose logs papermerge`
-
 ## Building the Image
 
 ```bash
-# From project root
-docker build --no-cache -f docker/oidc/Dockerfile -t papermerge/papermerge:oidc .
+cd <project root>/docker/oidc/
+docker compose build papermerge --no-cache
 ```

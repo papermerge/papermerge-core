@@ -4,8 +4,8 @@ from .redis_client import Client as RedisClient
 
 settings = config.get_settings()
 
-redis_url = settings.papermerge__redis__url
-cache_enabled = settings.papermerge__main__cache_enabled
+redis_url = str(settings.redis_url)
+cache_enabled = settings.cache_enabled
 
 if redis_url and cache_enabled:
     client = RedisClient(redis_url)

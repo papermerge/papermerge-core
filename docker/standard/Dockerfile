@@ -11,8 +11,8 @@ RUN corepack enable && \
     yarn install --immutable && \
     yarn workspace ui build
 
-FROM papermerge/auth-server:1.2.0a4 AS auth_server
-#FROM auth:1.2 AS auth_server
+#FROM papermerge/auth-server:1.2.0a4 AS auth_server
+FROM auth:1.2 AS auth_server
 FROM python:3.14-alpine AS papermerge_core
 
 ENV CORE_APP=/core_app
@@ -41,7 +41,7 @@ WORKDIR ${CORE_APP}
 RUN uv sync
 
 COPY docker/standard/entrypoint.sh /entrypoint.sh
-COPY docker/standard/supervisord.conf docker/standard/logging.yaml /etc/papermerge/
+COPY docker/standard/supervisord.conf docker/standard/log_config.yaml /core_app/
 COPY docker/standard/nginx.conf /etc/nginx/
 COPY docker/standard/core.js.tmpl alembic.ini ${CORE_APP}/
 

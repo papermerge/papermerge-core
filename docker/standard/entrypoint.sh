@@ -8,22 +8,22 @@ if [ -z $CMD ]; then
 fi
 
 # Auto-generate secret key if not provided (for non-production use)
-if [ -z "${PAPERMERGE__SECURITY__SECRET_KEY}" ]; then
-  echo "WARNING: PAPERMERGE__SECURITY__SECRET_KEY not set. Auto-generating a random key."
-  echo "This is NOT suitable for production. Please set PAPERMERGE__SECURITY__SECRET_KEY explicitly."
-  export PAPERMERGE__SECURITY__SECRET_KEY=$(head -c 32 /dev/urandom | base64 | tr -d '+/=' | head -c 64)
-  echo "Generated secret key: ${PAPERMERGE__SECURITY__SECRET_KEY:0:16}... (truncated for display)"
+if [ -z "${PM_SECRET_KEY}" ]; then
+  echo "WARNING: PM_SECRET_KEY not set. Auto-generating a random key."
+  echo "This is NOT suitable for production. Please set PM_SECRET_KEY explicitly."
+  export PM_SECRET_KEY=$(head -c 32 /dev/urandom | base64 | tr -d '+/=' | head -c 64)
+  echo "Generated secret key: ${PM_SECRET_KEY:0:16}... (truncated for display)"
 fi
 
 # Set default auth username and email if not provided
-if [ -z "${PAPERMERGE__AUTH__USERNAME}" ]; then
-  echo "PAPERMERGE__AUTH__USERNAME not set. Using default: admin"
-  export PAPERMERGE__AUTH__USERNAME="admin"
+if [ -z "${PM_USERNAME}" ]; then
+  echo "PM_USERNAME not set. Using default: admin"
+  export PM_USERNAME="admin"
 fi
 
-if [ -z "${PAPERMERGE__AUTH__EMAIL}" ]; then
-  echo "PAPERMERGE__AUTH__EMAIL not set. Using default: admin@example.com"
-  export PAPERMERGE__AUTH__EMAIL="admin@example.com"
+if [ -z "${PM_EMAIL}" ]; then
+  echo "PM_EMAIL not set. Using default: admin@example.com"
+  export PM_EMAIL="admin@example.com"
 fi
 
 exec_migrate() {
@@ -95,12 +95,12 @@ case $CMD in
     # Once user options endpoint is implemented, following two lines will removed
     /bin/env2js -f /core_app/core.js.tmpl > /usr/share/nginx/html/ui/papermerge-runtime-config.js
     sed -i '/Papermerge/a  <script type="module" src="/papermerge-runtime-config.js"></script>' /usr/share/nginx/html/ui/index.html
-    exec /usr/bin/supervisord -c /etc/papermerge/supervisord.conf
+    exec /usr/bin/supervisord -c /core_app/supervisord.conf
     ;;
   server_without_init)
     /bin/env2js -f /core_app/core.js.tmpl > /usr/share/nginx/html/ui/papermerge-runtime-config.js
     sed -i '/Papermerge/a  <script type="module" src="/papermerge-runtime-config.js"></script>' /usr/share/nginx/html/ui/index.html
-    exec /usr/bin/supervisord -c /etc/papermerge/supervisord.conf
+    exec /usr/bin/supervisord -c /core_app/supervisord.conf
     ;;
   create_token.sh)
     exec create_token.sh "$2"

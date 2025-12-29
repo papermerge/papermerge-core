@@ -2,9 +2,9 @@ services:
   postgres:
     image: postgres:17
     environment:
-      POSTGRES_USER: papermerge
-      POSTGRES_PASSWORD: papermerge
-      POSTGRES_DB: papermerge
+      POSTGRES_USER: pm
+      POSTGRES_PASSWORD: pm
+      POSTGRES_DB: pmdb
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -20,16 +20,16 @@ services:
     ports:
       - "7000:80"
     environment:
-      PAPERMERGE__AUTH__PASSWORD: admin
-      PAPERMERGE__AUTH__USERNAME: admin
-      PM_DB_URL: postgresql://papermerge:papermerge@postgres:5432/papermerge
-      PAPERMERGE__MAIN__LOGGING_CFG: /core_app/logging.yaml
+      PM_PASSWORD: admin
+      PM_USERNAME: admin
+      PM_DB_URL: postgresql://pm:pm@postgres:5432/pmdb
+      PM_LOG_CONFIG: /core_app/log_config.yaml
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
       - papermerge_data:/core_app/media
-      - ./logging.yaml:/core_app/logging.yaml
+      - ./log_config.yaml:/core_app/log_config.yaml
 
 volumes:
   postgres_data:

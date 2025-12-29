@@ -20,6 +20,7 @@ from .multiselect import MultiSelectTypeHandler
 from .url import URLTypeHandler
 from .email import EmailTypeHandler
 from .yearmonth import YearMonthTypeHandler
+from .short_text import ShortTextTypeHandler
 
 
 __all__ = [
@@ -30,6 +31,7 @@ __all__ = [
     'ValidationResult',
     # Built-in handlers
     'TextTypeHandler',
+    'ShortTextTypeHandler',
     'IntegerTypeHandler',
     'NumberTypeHandler',
     'BooleanTypeHandler',

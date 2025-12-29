@@ -7,7 +7,7 @@ import {useAutoSaveCustomField} from "./useAutoSaveCustomField"
 /**
  * Text custom field input with auto-save
  */
-export function TextField({
+export function LongTextField({
   customField,
   documentId,
   disabled = false
@@ -17,7 +17,8 @@ export function TextField({
 
   const {save, saveStatus, error} = useAutoSaveCustomField({
     documentId,
-    fieldId: customField.custom_field.id
+    fieldId: customField.custom_field.id,
+    debounce_delay_ms: 4000
   })
 
   const label = customField?.custom_field?.name ?? ""
@@ -52,4 +53,4 @@ export function TextField({
   )
 }
 
-export default TextField
+export default LongTextField

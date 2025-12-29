@@ -40,7 +40,6 @@ class Settings(BaseSettings):
     def async_db_url(self) -> str:
         return str(self.db_url).replace("postgresql://", "postgresql+asyncpg://", 1)
 
-
     model_config = SettingsConfigDict(env_prefix='pm_')
 
 

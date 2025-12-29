@@ -12,6 +12,12 @@ export function getCustomFieldTypes(t?: TFunction): ComboboxItem[] {
       label: t?.("customFieldType.text", {defaultValue: "Text"}) || "Text"
     },
     {
+      value: "short_text",
+      label:
+        t?.("customFieldType.short_text", {defaultValue: "Short Text"}) ||
+        "Short Text"
+    },
+    {
       value: "boolean",
       label:
         t?.("customFieldType.boolean", {defaultValue: "Yes/No"}) || "Yes/No"

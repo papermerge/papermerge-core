@@ -9,7 +9,14 @@ export function getCustomFieldTypes(t?: TFunction): ComboboxItem[] {
     },
     {
       value: "text",
-      label: t?.("customFieldType.text", {defaultValue: "Text"}) || "Text"
+      label:
+        t?.("customFieldType.text", {defaultValue: "Long Text"}) || "Long Text"
+    },
+    {
+      value: "short_text",
+      label:
+        t?.("customFieldType.short_text", {defaultValue: "Short Text"}) ||
+        "Short Text"
     },
     {
       value: "boolean",

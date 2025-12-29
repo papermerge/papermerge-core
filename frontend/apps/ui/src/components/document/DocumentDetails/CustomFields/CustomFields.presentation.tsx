@@ -3,10 +3,11 @@ import {useTranslation} from "react-i18next"
 import {BooleanField} from "./BooleanField"
 import {CategorySelect} from "./CategorySelect"
 import {DateField} from "./DateField"
+import LongTextField from "./LongTextField"
 import {MonetaryField} from "./MonetaryField"
 import {MultiSelectField} from "./MultiSelectField"
 import {SelectField} from "./SelectField"
-import {TextField} from "./TextField"
+import ShortTextField from "./ShortTextField"
 import type {CustomFieldsPresentationProps} from "./types"
 import {YearMonthField} from "./YearMonthField"
 
@@ -114,13 +115,18 @@ function CustomFieldInput({customField, documentId}: CustomFieldInputProps) {
       )
 
     case "text":
+      return <LongTextField customField={customField} documentId={documentId} />
+
+    case "short_text":
     case "integer":
     case "number":
     case "url":
     case "email":
     default:
       // Use TextField for text-like types
-      return <TextField customField={customField} documentId={documentId} />
+      return (
+        <ShortTextField customField={customField} documentId={documentId} />
+      )
   }
 }
 

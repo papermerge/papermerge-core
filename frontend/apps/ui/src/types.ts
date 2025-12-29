@@ -298,6 +298,7 @@ export type RoleUpdate = Pick<Role, "id" | "name" | "scopes">
 export type CustomFieldDataType =
   | "date"
   | "text"
+  | "short_text"
   | "boolean"
   | "int"
   | "number"

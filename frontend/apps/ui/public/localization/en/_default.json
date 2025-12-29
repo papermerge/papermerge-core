@@ -373,7 +373,8 @@
   },
   "customFieldType": {
     "date": "Date",
-    "text": "Text",
+    "text": "Long Text",
+    "short_text": "Short Text",
     "boolean": "Yes/No",
     "int": "Integer",
     "float": "Decimal",

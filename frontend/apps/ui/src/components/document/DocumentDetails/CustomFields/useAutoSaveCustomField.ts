@@ -6,11 +6,12 @@ import type {
   UseAutoSaveCustomFieldReturn
 } from "./types"
 
-const DEBOUNCE_DELAY_MS = 500
+const DEFAULT_DEBOUNCE_DELAY_MS = 500
 
 interface UseAutoSaveCustomFieldArgs {
   documentId: string
   fieldId: string
+  debounce_delay_ms?: number
 }
 
 /**
@@ -25,7 +26,8 @@ interface UseAutoSaveCustomFieldArgs {
  */
 export function useAutoSaveCustomField({
   documentId,
-  fieldId
+  fieldId,
+  debounce_delay_ms = DEFAULT_DEBOUNCE_DELAY_MS
 }: UseAutoSaveCustomFieldArgs): UseAutoSaveCustomFieldReturn {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle")
   const [error, setError] = useState<string | null>(null)
@@ -100,7 +102,7 @@ export function useAutoSaveCustomField({
                 : "Failed to save"
           setError(errorMessage)
         }
-      }, DEBOUNCE_DELAY_MS)
+      }, debounce_delay_ms)
     },
     [documentId, fieldId, updateCustomFields]
   )

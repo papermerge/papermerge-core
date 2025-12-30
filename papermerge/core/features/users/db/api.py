@@ -55,6 +55,16 @@ async def get_user(db_session: AsyncSession, user_id_or_username: str) -> schema
     return model_user
 
 
+async def get_user_by_id(
+    db_session: AsyncSession,
+    user_id: uuid.UUID,
+) -> orm.User:
+    """Get user by ID."""
+    stmt = select(orm.User).where(orm.User.id == user_id)
+    result = await db_session.execute(stmt)
+    return result.scalar_one()
+
+
 async def get_user_groups(
     db_session: AsyncSession, user_id: uuid.UUID
 ) -> list[orm.Group]:

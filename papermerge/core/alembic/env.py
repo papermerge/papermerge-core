@@ -36,6 +36,7 @@ from papermerge.core.features.preferences.db.orm import SystemPreferences, UserP
 from papermerge.core.features.special_folders.db.orm import SpecialFolder # noqa
 from papermerge.core.features.ownership.db.orm import Ownership  # noqa
 from papermerge.core.features.search.db.orm import DocumentSearchIndex  # noqa
+from papermerge.core.features.api_tokens.db.orm import APIToken  # noqa
 
 target_metadata = Base.metadata
 

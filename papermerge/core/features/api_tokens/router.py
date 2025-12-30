@@ -9,6 +9,7 @@ from papermerge.core.features.api_tokens import schema
 from papermerge.core.features.api_tokens.db import api as dbapi
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.users.schema import User
+from papermerge.core.types import PaginatedResponse
 
 router = APIRouter(prefix="/tokens", tags=["tokens"])
 
@@ -68,20 +69,62 @@ async def create_token(
 
 @router.get(
     "",
-    response_model=list[schema.APITokenResponse],
-    summary="List your API tokens",
+    response_model=PaginatedResponse[schema.APITokenResponse],
+    summary="List your API tokens (paginated)",
     description="""
-List all API tokens for the current user.
+List all API tokens for the current user with pagination support.
+
+Note: Token values are not included - only metadata like name, prefix,
+creation date, and last usage.
+
+**Pagination:** Use `page_number` and `page_size` query parameters.
+**Sorting:** Use `sort_by` and `sort_direction` query parameters.
+**Filtering:** Use `filter_free_text` to search by token name.
+""",
+)
+async def list_tokens(
+    params: schema.TokenQueryParams = Depends(),
+    user: User = Depends(get_current_user),
+    db_session: AsyncSession = Depends(get_db),
+) -> PaginatedResponse[schema.APITokenResponse]:
+    """List all API tokens for the current user (paginated)."""
+    result = await dbapi.get_user_tokens_paginated(
+        db_session,
+        user_id=user.id,
+        page_number=params.page_number,
+        page_size=params.page_size,
+        sort_by=params.sort_by,
+        sort_direction=params.sort_direction,
+        filter_free_text=params.filter_free_text,
+    )
+
+    # Convert ORM objects to response schema
+    items = [schema.APITokenResponse.from_orm_with_scopes(t) for t in result.items]
+
+    return PaginatedResponse(
+        items=items,
+        page_number=result.page_number,
+        page_size=result.page_size,
+        num_pages=result.num_pages,
+    )
+
+
+@router.get(
+    "/all",
+    response_model=list[schema.APITokenResponse],
+    summary="List all your API tokens (without pagination)",
+    description="""
+List all API tokens for the current user without pagination.
 
 Note: Token values are not included - only metadata like name, prefix,
 creation date, and last usage.
 """,
 )
-async def list_tokens(
+async def list_all_tokens(
     user: User = Depends(get_current_user),
     db_session: AsyncSession = Depends(get_db),
 ) -> list[schema.APITokenResponse]:
-    """List all API tokens for the current user."""
+    """List all API tokens for the current user (non-paginated)."""
     tokens = await dbapi.get_user_tokens(db_session, user.id)
     return [schema.APITokenResponse.from_orm_with_scopes(t) for t in tokens]
 

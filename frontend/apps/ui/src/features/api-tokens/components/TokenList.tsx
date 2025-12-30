@@ -1,120 +1,28 @@
-import {
-  ActionIcon,
-  Alert,
-  Badge,
-  Button,
-  CopyButton,
-  Group,
-  Loader,
-  Stack,
-  Table,
-  Text,
-  Tooltip
-} from "@mantine/core"
-import {useDisclosure} from "@mantine/hooks"
-import {
-  IconCheck,
-  IconCopy,
-  IconKey,
-  IconPlus,
-  IconTrash
-} from "@tabler/icons-react"
-import {useTranslation} from "react-i18next"
-
-import {
-  useDeleteAPITokenMutation,
-  useGetAPITokensQuery
-} from "@/features/api-tokens/apiSlice"
+import {useAppSelector} from "@/app/hooks"
+import {useDeleteAPITokenMutation} from "@/features/api-tokens/apiSlice"
 import type {APIToken} from "@/features/api-tokens/types"
+import {usePanel} from "@/features/ui/hooks/usePanel"
+import {selectPanelSelectedIDs} from "@/features/ui/panelRegistry"
+import {Alert, Button, Group, Loader, Stack, Text} from "@mantine/core"
+import {useDisclosure} from "@mantine/hooks"
+import {IconKey, IconPlus} from "@tabler/icons-react"
+import type {SortState} from "kommon"
+import {DataTable, TablePagination} from "kommon"
+import {useMemo} from "react"
+import {useTranslation} from "react-i18next"
+import useTokenTable from "../hooks/useTokenTable"
+import useVisibleColumns from "../hooks/useVisibleColumns"
+import tokenColumns from "./columns"
 import CreateTokenModal from "./CreateTokenModal"
-
-function formatDate(dateString: string | null): string {
-  if (!dateString) return "—"
-  return new Date(dateString).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  })
-}
-
-function TokenRow({token, onDelete}: {token: APIToken; onDelete: () => void}) {
-  const {t} = useTranslation()
-  const isExpired =
-    token.expires_at && new Date(token.expires_at) < new Date()
-
-  return (
-    <Table.Tr style={{opacity: isExpired ? 0.5 : 1}}>
-      <Table.Td>
-        <Group gap="xs">
-          <IconKey size={16} />
-          <Text fw={500}>{token.name}</Text>
-          {isExpired && (
-            <Badge color="red" size="xs">
-              {t("api_tokens.expired", {defaultValue: "Expired"})}
-            </Badge>
-          )}
-        </Group>
-      </Table.Td>
-      <Table.Td>
-        <Text c="dimmed" ff="monospace" size="sm">
-          pm_{token.token_prefix}...
-        </Text>
-      </Table.Td>
-      <Table.Td>
-        {token.scopes ? (
-          <Group gap={4}>
-            {token.scopes.slice(0, 3).map(scope => (
-              <Badge key={scope} size="xs" variant="light">
-                {scope}
-              </Badge>
-            ))}
-            {token.scopes.length > 3 && (
-              <Badge size="xs" variant="light">
-                +{token.scopes.length - 3}
-              </Badge>
-            )}
-          </Group>
-        ) : (
-          <Text c="dimmed" size="sm">
-            {t("api_tokens.all_permissions", {defaultValue: "All permissions"})}
-          </Text>
-        )}
-      </Table.Td>
-      <Table.Td>
-        <Text size="sm">{formatDate(token.created_at)}</Text>
-      </Table.Td>
-      <Table.Td>
-        <Text size="sm">
-          {token.expires_at
-            ? formatDate(token.expires_at)
-            : t("api_tokens.never", {defaultValue: "Never"})}
-        </Text>
-      </Table.Td>
-      <Table.Td>
-        <Text size="sm" c="dimmed">
-          {token.last_used_at
-            ? formatDate(token.last_used_at)
-            : t("api_tokens.never_used", {defaultValue: "Never used"})}
-        </Text>
-      </Table.Td>
-      <Table.Td>
-        <Tooltip
-          label={t("api_tokens.revoke", {defaultValue: "Revoke token"})}
-        >
-          <ActionIcon color="red" variant="subtle" onClick={onDelete}>
-            <IconTrash size={16} />
-          </ActionIcon>
-        </Tooltip>
-      </Table.Td>
-    </Table.Tr>
-  )
-}
 
 export default function TokenList() {
   const {t} = useTranslation()
-  const {data: tokens, isLoading, error} = useGetAPITokensQuery()
+  const {panelId, actions} = usePanel()
+  const selectedRowIDs = useAppSelector(s => selectPanelSelectedIDs(s, panelId))
+  const selectedRowsSet = new Set(selectedRowIDs || [])
+
+  const {data, isLoading, isFetching, isError, error, queryParams} =
+    useTokenTable()
   const [deleteToken] = useDeleteAPITokenMutation()
   const [createModalOpened, {open: openCreateModal, close: closeCreateModal}] =
     useDisclosure(false)
@@ -132,6 +40,28 @@ export default function TokenList() {
     }
   }
 
+  const columns = useMemo(() => tokenColumns({t, onDelete: handleDelete}), [t])
+  const visibleColumns = useVisibleColumns(columns)
+
+  const handleSortChange = (value: SortState) => {
+    actions.updateSorting(value)
+  }
+
+  const handleSelectionChange = (newSelection: Set<string>) => {
+    const arr = Array.from(newSelection)
+    actions.setSelection(arr)
+  }
+
+  const handlePageSizeChange = (newValue: number) => {
+    actions.updatePagination({pageSize: newValue})
+  }
+
+  const handlePageNumberChange = (pageNumber: number) => {
+    actions.updatePagination({pageNumber})
+  }
+
+  const getRowId = (row: APIToken) => row.id
+
   if (isLoading) {
     return (
       <Stack align="center" p="xl">
@@ -140,7 +70,7 @@ export default function TokenList() {
     )
   }
 
-  if (error) {
+  if (isError) {
     return (
       <Alert color="red" title={t("common.error", {defaultValue: "Error"})}>
         {t("api_tokens.load_error", {
@@ -150,61 +80,24 @@ export default function TokenList() {
     )
   }
 
-  return (
-    <Stack>
-      <Group justify="space-between">
-        <div>
-          <Text size="lg" fw={500}>
-            {t("api_tokens.title", {defaultValue: "API Tokens"})}
-          </Text>
-          <Text size="sm" c="dimmed">
-            {t("api_tokens.description", {
-              defaultValue:
-                "Personal access tokens for CLI tools, scripts, and integrations"
-            })}
-          </Text>
-        </div>
-        <Button leftSection={<IconPlus size={16} />} onClick={openCreateModal}>
-          {t("api_tokens.create", {defaultValue: "Create Token"})}
-        </Button>
-      </Group>
+  // Empty state - show when no tokens exist at all
+  if (!data || data.items.length === 0) {
+    return (
+      <Stack>
+        <Group justify="space-between">
+          <div>
+            <Text size="lg" fw={500}>
+              {t("api_tokens.title", {defaultValue: "API Tokens"})}
+            </Text>
+            <Text size="sm" c="dimmed">
+              {t("api_tokens.description", {
+                defaultValue:
+                  "Personal access tokens for CLI tools, scripts, and integrations"
+              })}
+            </Text>
+          </div>
+        </Group>
 
-      {tokens && tokens.length > 0 ? (
-        <Table striped highlightOnHover>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>
-                {t("api_tokens.name", {defaultValue: "Name"})}
-              </Table.Th>
-              <Table.Th>
-                {t("api_tokens.token", {defaultValue: "Token"})}
-              </Table.Th>
-              <Table.Th>
-                {t("api_tokens.scopes", {defaultValue: "Scopes"})}
-              </Table.Th>
-              <Table.Th>
-                {t("api_tokens.created", {defaultValue: "Created"})}
-              </Table.Th>
-              <Table.Th>
-                {t("api_tokens.expires", {defaultValue: "Expires"})}
-              </Table.Th>
-              <Table.Th>
-                {t("api_tokens.last_used", {defaultValue: "Last Used"})}
-              </Table.Th>
-              <Table.Th></Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {tokens.map(token => (
-              <TokenRow
-                key={token.id}
-                token={token}
-                onDelete={() => handleDelete(token.id)}
-              />
-            ))}
-          </Table.Tbody>
-        </Table>
-      ) : (
         <Alert color="gray">
           <Stack align="center" gap="md">
             <IconKey size={48} opacity={0.5} />
@@ -229,7 +122,67 @@ export default function TokenList() {
             </Button>
           </Stack>
         </Alert>
-      )}
+
+        <CreateTokenModal
+          opened={createModalOpened}
+          onClose={closeCreateModal}
+        />
+      </Stack>
+    )
+  }
+
+  return (
+    <Stack m={"md"} w={"100%"}>
+      <Group>
+        <Button
+          leftSection={<IconPlus size={16} />}
+          onClick={openCreateModal}
+          color={"teal"}
+          variant="filled"
+        >
+          {t("api_tokens.create", {defaultValue: "Create Token"})}
+        </Button>
+        <div>
+          <Text size="lg" fw={500}>
+            {t("api_tokens.title", {defaultValue: "API Tokens"})}
+          </Text>
+          <Text size="sm" c="dimmed">
+            {t("api_tokens.description", {
+              defaultValue:
+                "Personal access tokens for CLI tools, scripts, and integrations"
+            })}
+          </Text>
+        </div>
+      </Group>
+
+      <DataTable
+        data={data.items}
+        columns={visibleColumns}
+        sorting={{
+          column: queryParams.sort_by,
+          direction: queryParams.sort_direction || null
+        }}
+        onSortChange={handleSortChange}
+        loading={isLoading || isFetching}
+        emptyMessage={t("api_tokens.empty", {
+          defaultValue: "No API tokens found"
+        })}
+        withCheckbox={true}
+        selectedRows={selectedRowsSet}
+        onSelectionChange={handleSelectionChange}
+        getRowId={getRowId}
+        withSecondaryPanelTriggerColumn={false}
+      />
+
+      <TablePagination
+        currentPage={data.page_number || 1}
+        totalPages={data.num_pages || 0}
+        pageSize={data.page_size || 15}
+        onPageChange={handlePageNumberChange}
+        onPageSizeChange={handlePageSizeChange}
+        totalItems={data.items.length}
+        t={t}
+      />
 
       <CreateTokenModal opened={createModalOpened} onClose={closeCreateModal} />
     </Stack>

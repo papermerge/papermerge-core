@@ -1,6 +1,8 @@
 from datetime import datetime
+from typing import Literal, Optional
 from uuid import UUID
 
+from fastapi import Query
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -94,3 +96,37 @@ class APITokenDeleted(BaseModel):
     id: UUID
     name: str
     message: str = "Token successfully revoked"
+
+
+class TokenQueryParams(BaseModel):
+    """Query parameters for paginated token listing."""
+
+    # Pagination parameters
+    page_size: int = Query(
+        15,
+        ge=1,
+        le=100,
+        description="Number of items per page"
+    )
+    page_number: int = Query(
+        1,
+        ge=1,
+        description="Page number (1-based)"
+    )
+
+    # Sorting parameters
+    sort_by: Optional[str] = Query(
+        None,
+        pattern="^(id|name|created_at|expires_at|last_used_at)$",
+        description="Column to sort by: id, name, created_at, expires_at, last_used_at"
+    )
+    sort_direction: Optional[Literal["asc", "desc"]] = Query(
+        None,
+        description="Sort direction: asc or desc"
+    )
+
+    # Filter parameters
+    filter_free_text: Optional[str] = Query(
+        None,
+        description="Filter by name (partial match)"
+    )

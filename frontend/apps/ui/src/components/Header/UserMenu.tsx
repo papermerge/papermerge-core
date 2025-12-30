@@ -1,22 +1,23 @@
-import type { User } from "@/types.ts"
-import { Group, Menu, UnstyledButton } from "@mantine/core"
+import type {User} from "@/types.ts"
+import {Group, Menu, UnstyledButton} from "@mantine/core"
 import {
   IconApi,
   IconChevronRight,
+  IconKey,
   IconLogout,
   IconSettings,
   IconUser
 } from "@tabler/icons-react"
 import Cookies from "js-cookie"
-import { useSelector } from "react-redux"
-import { Link } from "react-router"
+import {useSelector} from "react-redux"
+import {Link} from "react-router"
 
 import {
   selectCurrentUser,
   selectCurrentUserError,
   selectCurrentUserStatus
 } from "@/slices/currentUser.ts"
-import { useTranslation } from "react-i18next"
+import {useTranslation} from "react-i18next"
 
 interface RuntimeConfig {
   auth_type?: string
@@ -125,6 +126,14 @@ export default function UserMenu() {
           <Group>
             <IconApi />
             <a href="/docs">{t("extra.rest_api")}</a>
+          </Group>
+        </Menu.Item>
+        <Menu.Item>
+          <Group>
+            <IconKey />
+            <Link to="/api-tokens">
+              {t("api_tokens.menu_item", {defaultValue: "API Tokens"})}
+            </Link>
           </Group>
         </Menu.Item>
         <Menu.Divider />

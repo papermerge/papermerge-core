@@ -35,6 +35,7 @@ import {MyPreferences} from "./features/preferences/components"
 
 import {AccessForbidden, NotFound, UnprocessableContent} from "@/pages/errors"
 
+import APITokensPage from "@/features/api-tokens/pages/List"
 import {loader as auditLogDetailsLoader} from "@/features/audit/pages/Details"
 import {loader as auditLogsListLoader} from "@/features/audit/pages/List"
 import {loader as customFieldsLoader} from "@/features/custom-fields/pages/Details"
@@ -188,6 +189,10 @@ const router = createBrowserRouter([
       {
         path: "/preferences/me",
         element: <MyPreferences />
+      },
+      {
+        path: "/api-tokens",
+        element: <APITokensPage />
       },
       {
         path: ERRORS_403_ACCESS_FORBIDDEN,

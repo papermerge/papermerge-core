@@ -15,10 +15,11 @@ export {useCustomFields} from "./useCustomFields"
 // Field component exports
 export {BooleanField} from "./BooleanField"
 export {DateField} from "./DateField"
-export {TextField} from "./LongTextField"
+export {LongTextField} from "./LongTextField"
 export {MonetaryField} from "./MonetaryField"
 export {MultiSelectField} from "./MultiSelectField"
 export {SelectField} from "./SelectField"
+export {ShortTextField} from "./ShortTextField"
 export {YearMonthField} from "./YearMonthField"
 
 // Utility component exports

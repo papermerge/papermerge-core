@@ -62,6 +62,7 @@ export const apiSlice = createApi({
     "UserGroups",
     "User",
     "Tag",
+    "APIToken",
     "Node",
     "SharedNode",
     "SharedNodeAccessDetails",

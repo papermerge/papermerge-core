@@ -1,15 +1,11 @@
-"""
-Tests for API Tokens (PAT) feature.
-"""
-import pytest
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
+import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.features.api_tokens.db import api as dbapi
-from papermerge.core.features.api_tokens.db.orm import APIToken
 from papermerge.core.features.users.db.orm import User
 
 

@@ -14,7 +14,8 @@ import logging
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, Request, status
-from fastapi.security import OAuth2PasswordBearer, SecurityScopes
+from fastapi.security import OAuth2PasswordBearer, SecurityScopes, HTTPBearer, \
+    HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import NoResultFound
 
@@ -26,9 +27,11 @@ from papermerge.core.features.auth.remote_scheme import RemoteUserScheme
 from papermerge.core.features.auth import scopes
 from papermerge.core.utils import base64
 from papermerge.core.db.engine import get_db
-
 # Import PAT validation
-from papermerge.core.features.api_tokens.db.api import is_pat_token, validate_token
+from papermerge.core.features.api_tokens.db.api import is_pat_token, \
+    validate_token
+
+logger = logging.getLogger(__name__)
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="auth/token/",
@@ -37,8 +40,21 @@ oauth2_scheme = OAuth2PasswordBearer(
 )
 
 remote_user_scheme = RemoteUserScheme()
+http_bearer_scheme = HTTPBearer(
+    auto_error=False,
+    description="Enter your Personal Access Token (PAT): pm_xxxxx...",
+)
 
-logger = logging.getLogger(__name__)
+
+async def get_token_from_request(
+    bearer_auth: HTTPAuthorizationCredentials | None = Depends(http_bearer_scheme),
+) -> str | None:
+    """
+    Extract token from HTTP Bearer scheme.
+    """
+    if bearer_auth and bearer_auth.credentials:
+        return bearer_auth.credentials
+    return None
 
 
 def extract_token_data(token: str) -> types.TokenData | None:
@@ -272,7 +288,7 @@ async def get_current_user(
     security_scopes: SecurityScopes,
     request: Request,
     remote_user: users_schema.RemoteUser | None = Depends(remote_user_scheme),
-    token: str | None = Depends(oauth2_scheme),
+    token: str | None = Depends(get_token_from_request),
     db_session: AsyncSession = Depends(get_db),
 ) -> users_schema.User:
     """

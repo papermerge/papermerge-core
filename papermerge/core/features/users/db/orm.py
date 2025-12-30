@@ -69,7 +69,6 @@ class User(Base):
         nullable=True
     )
 
-
     special_folders: Mapped[list["SpecialFolder"]] = relationship(
         "SpecialFolder",
         primaryjoin=(
@@ -95,6 +94,12 @@ class User(Base):
         "UserGroup",
         back_populates="user",
         foreign_keys="UserGroup.user_id"
+    )
+
+    api_tokens: Mapped[list["APIToken"]] = relationship(
+        "APIToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
 
     @property

@@ -1,4 +1,4 @@
-FROM node:24-alpine AS frontend_build
+FROM node:25-alpine AS frontend_build
 # ensure all packages are up-to-date
 RUN apk update && apk upgrade && rm -rf /var/cache/apk/*
 

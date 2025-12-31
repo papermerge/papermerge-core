@@ -360,6 +360,15 @@ function getPermissionTree(txt?: I18NPermissionTree) {
         {value: "system_preference.view", label: "View"},
         {value: "system_preference.update", label: "Update"}
       ]
+    },
+    {
+      value: "api_token",
+      label: "API Tokens",
+      children: [
+        {value: "api_token.view", label: "View"},
+        {value: "api_token.create", label: "Create"},
+        {value: "api_token.delete", label: "Delete"}
+      ]
     }
   ]
   return PERMISSIONS_TREE

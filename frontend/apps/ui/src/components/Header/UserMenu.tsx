@@ -12,6 +12,8 @@ import Cookies from "js-cookie"
 import {useSelector} from "react-redux"
 import {Link} from "react-router"
 
+import {useAuth} from "@/app/hooks/useAuth"
+import {API_TOKEN_CREATE} from "@/scopes"
 import {
   selectCurrentUser,
   selectCurrentUserError,
@@ -31,6 +33,8 @@ export default function UserMenu() {
   const error = useSelector(selectCurrentUserError)
   const user = useSelector(selectCurrentUser) as User
   const {t} = useTranslation()
+  const {hasPermission} = useAuth()
+  const showCreateAPIMenuItem = hasPermission(API_TOKEN_CREATE)
 
   const onSignOutClicked = () => {
     const config: RuntimeConfig =
@@ -128,14 +132,16 @@ export default function UserMenu() {
             <a href="/docs">{t("extra.rest_api")}</a>
           </Group>
         </Menu.Item>
-        <Menu.Item>
-          <Group>
-            <IconKey />
-            <Link to="/api-tokens">
-              {t("api_tokens.menu_item", {defaultValue: "API Tokens"})}
-            </Link>
-          </Group>
-        </Menu.Item>
+        {showCreateAPIMenuItem && (
+          <Menu.Item>
+            <Group>
+              <IconKey />
+              <Link to="/api-tokens">
+                {t("api_tokens.menu_item", {defaultValue: "API Tokens"})}
+              </Link>
+            </Group>
+          </Menu.Item>
+        )}
         <Menu.Divider />
         <Menu.Item>
           <Group>

@@ -2,9 +2,8 @@ import {useAppSelector} from "@/app/hooks"
 import type {APIToken} from "@/features/api-tokens/types"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {selectPanelSelectedIDs} from "@/features/ui/panelRegistry"
-import {Alert, Button, Group, Loader, Stack, Text} from "@mantine/core"
+import {Alert, Group, Loader, Stack, Text} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
-import {IconKey, IconPlus} from "@tabler/icons-react"
 import type {SortState} from "kommon"
 import {DataTable, TablePagination} from "kommon"
 import {useMemo} from "react"
@@ -21,8 +20,7 @@ export default function TokenList() {
   const selectedRowIDs = useAppSelector(s => selectPanelSelectedIDs(s, panelId))
   const selectedRowsSet = new Set(selectedRowIDs || [])
 
-  const {data, isLoading, isFetching, isError, error, queryParams} =
-    useTokenTable()
+  const {data, isLoading, isFetching, isError, queryParams} = useTokenTable()
 
   const [createModalOpened, {open: openCreateModal, close: closeCreateModal}] =
     useDisclosure(false)
@@ -67,20 +65,6 @@ export default function TokenList() {
     )
   }
 
-  // Empty state - show when no tokens exist at all
-  if (!data || data.items.length === 0) {
-    return (
-      <Stack m={"md"} w={"100%"}>
-        <Header />
-        <EmptyTable openCreateModal={openCreateModal} />
-        <CreateTokenModal
-          opened={createModalOpened}
-          onClose={closeCreateModal}
-        />
-      </Stack>
-    )
-  }
-
   return (
     <Stack m={"md"} w={"100%"}>
       <Header />
@@ -88,7 +72,7 @@ export default function TokenList() {
       <ActionButtons onNewToken={openCreateModal} />
 
       <DataTable
-        data={data.items}
+        data={data?.items || []}
         columns={visibleColumns}
         sorting={{
           column: queryParams.sort_by,
@@ -107,12 +91,12 @@ export default function TokenList() {
       />
 
       <TablePagination
-        currentPage={data.page_number || 1}
-        totalPages={data.num_pages || 0}
-        pageSize={data.page_size || 15}
+        currentPage={data?.page_number || 1}
+        totalPages={data?.num_pages || 0}
+        pageSize={data?.page_size || 15}
         onPageChange={handlePageNumberChange}
         onPageSizeChange={handlePageSizeChange}
-        totalItems={data.items.length}
+        totalItems={data?.items.length}
         t={t}
       />
 
@@ -135,36 +119,5 @@ function Header() {
         })}
       </Text>
     </Group>
-  )
-}
-
-interface ArgsEmptyTable {
-  openCreateModal: () => void
-}
-
-function EmptyTable({openCreateModal}: ArgsEmptyTable) {
-  const {t} = useTranslation()
-  return (
-    <Alert color="gray">
-      <Stack align="center" gap="md">
-        <IconKey size={48} opacity={0.5} />
-        <Text>
-          {t("api_tokens.empty", {
-            defaultValue: "No API tokens yet"
-          })}
-        </Text>
-        <Text size="sm" c="dimmed">
-          {t("api_tokens.empty_hint", {
-            defaultValue:
-              "Create a token to access the Papermerge API from CLI tools or scripts"
-          })}
-        </Text>
-        <Button leftSection={<IconPlus size={16} />} onClick={openCreateModal}>
-          {t("api_tokens.create_first", {
-            defaultValue: "Create Your First Token"
-          })}
-        </Button>
-      </Stack>
-    </Alert>
   )
 }

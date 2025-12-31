@@ -1,14 +1,11 @@
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, HTTPException, status, Depends
 
-from papermerge.core.db.engine import get_db
+from papermerge.core import db, scopes
 from papermerge.core.features.api_tokens import schema
 from papermerge.core.features.api_tokens.db import api as dbapi
-from papermerge.core.features.auth import get_current_user
-from papermerge.core.features.users.schema import User
 from papermerge.core.types import PaginatedResponse
 
 router = APIRouter(prefix="/tokens", tags=["tokens"])
@@ -37,8 +34,8 @@ Optionally, you can:
 )
 async def create_token(
     data: schema.APITokenCreate,
-    user: User = Depends(get_current_user),
-    db_session: AsyncSession = Depends(get_db),
+    user: scopes.CreateAPIToken,
+    db_session: db.DBRouterAsyncSession,
 ) -> schema.APITokenCreated:
     """Create a new API token for the current user."""
 
@@ -83,9 +80,9 @@ creation date, and last usage.
 """,
 )
 async def list_tokens(
+    user: scopes.ViewAPIToken,
+    db_session: db.DBRouterAsyncSession,
     params: schema.TokenQueryParams = Depends(),
-    user: User = Depends(get_current_user),
-    db_session: AsyncSession = Depends(get_db),
 ) -> PaginatedResponse[schema.APITokenResponse]:
     """List all API tokens for the current user (paginated)."""
     result = await dbapi.get_user_tokens_paginated(
@@ -108,27 +105,6 @@ async def list_tokens(
         num_pages=result.num_pages,
     )
 
-
-@router.get(
-    "/all",
-    response_model=list[schema.APITokenResponse],
-    summary="List all your API tokens (without pagination)",
-    description="""
-List all API tokens for the current user without pagination.
-
-Note: Token values are not included - only metadata like name, prefix,
-creation date, and last usage.
-""",
-)
-async def list_all_tokens(
-    user: User = Depends(get_current_user),
-    db_session: AsyncSession = Depends(get_db),
-) -> list[schema.APITokenResponse]:
-    """List all API tokens for the current user (non-paginated)."""
-    tokens = await dbapi.get_user_tokens(db_session, user.id)
-    return [schema.APITokenResponse.from_orm_with_scopes(t) for t in tokens]
-
-
 @router.get(
     "/{token_id}",
     response_model=schema.APITokenResponse,
@@ -137,8 +113,8 @@ async def list_all_tokens(
 )
 async def get_token(
     token_id: UUID,
-    user: User = Depends(get_current_user),
-    db_session: AsyncSession = Depends(get_db),
+    user: scopes.ViewAPIToken,
+    db_session: db.DBRouterAsyncSession,
 ) -> schema.APITokenResponse:
     """Get details of a specific token."""
     api_token = await dbapi.get_token_by_id(db_session, token_id, user.id)
@@ -164,8 +140,8 @@ This action cannot be undone.
 )
 async def delete_token(
     token_id: UUID,
-    user: User = Depends(get_current_user),
-    db_session: AsyncSession = Depends(get_db),
+    user: scopes.DeleteAPIToken,
+    db_session: db.DBRouterAsyncSession,
 ) -> schema.APITokenDeleted:
     """Revoke an API token."""
     # Get token first to return its name in response

@@ -244,7 +244,7 @@ class TestAPIEndpoints:
 
         response = await auth_api_client.get("/tokens")
 
-        assert response.status_code == 200
+        assert response.status_code == 200, response.json()
         data = response.json()
 
         assert data['items'][0]["name"] == "Token 1"

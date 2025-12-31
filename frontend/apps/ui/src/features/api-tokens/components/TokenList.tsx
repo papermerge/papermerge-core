@@ -12,6 +12,7 @@ import {useMemo} from "react"
 import {useTranslation} from "react-i18next"
 import useTokenTable from "../hooks/useTokenTable"
 import useVisibleColumns from "../hooks/useVisibleColumns"
+import ActionButtons from "./ActionButtons"
 import tokenColumns from "./columns"
 import CreateTokenModal from "./CreateTokenModal"
 
@@ -134,14 +135,7 @@ export default function TokenList() {
   return (
     <Stack m={"md"} w={"100%"}>
       <Group>
-        <Button
-          leftSection={<IconPlus size={16} />}
-          onClick={openCreateModal}
-          color={"teal"}
-          variant="filled"
-        >
-          {t("api_tokens.create", {defaultValue: "Create Token"})}
-        </Button>
+        <ActionButtons onNewToken={openCreateModal} />
         <div>
           <Text size="lg" fw={500}>
             {t("api_tokens.title", {defaultValue: "API Tokens"})}

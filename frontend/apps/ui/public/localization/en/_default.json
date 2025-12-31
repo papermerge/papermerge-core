@@ -697,6 +697,16 @@
     "your_token": "Your new token",
     "save_warning": "Make sure to copy your token now. You won't be able to see it again!",
     "usage_hint": "Use this token in the Authorization header:",
-    "create_hint": "The token will have access to all your permissions. You can revoke it at any time."
+    "create_hint": "The token will have access to all your permissions. You can revoke it at any time.",
+    "delete.title": "Delete API Token(s)",
+    "delete.description": "Are you sure you want to delete selected API Tokens?"
+  },
+  "tokenColumns": {
+    "name": "Name",
+    "token": "Token",
+    "id": "ID",
+    "expires_at": "Expires",
+    "created_at": "Created",
+    "last_used_at": "Last Used"
   }
 }

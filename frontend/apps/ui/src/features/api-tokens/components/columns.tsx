@@ -19,7 +19,7 @@ export default function tokenColumns(
   const columns: ColumnConfig<APIToken>[] = [
     {
       key: "name",
-      label: t?.("tokenColumns.name") || "Name",
+      label: t?.("tokenColumns.name", {defaultValue: "Name"}) || "Name",
       sortable: true,
       filterable: true,
       width: 200,
@@ -43,7 +43,7 @@ export default function tokenColumns(
     },
     {
       key: "token_prefix",
-      label: t?.("tokenColumns.token") || "Token",
+      label: t?.("tokenColumns.token", {defaultValue: "Token"}) || "Token",
       sortable: false,
       filterable: false,
       visible: true,
@@ -57,7 +57,7 @@ export default function tokenColumns(
     },
     {
       key: "id",
-      label: t?.("tokenColumns.id") || "ID",
+      label: t?.("tokenColumns.id", {defaultValue: "ID"}) || "ID",
       sortable: true,
       filterable: true,
       visible: false,
@@ -66,43 +66,9 @@ export default function tokenColumns(
       render: value => <TruncatedTextWithCopy value={value as string} />
     },
     {
-      key: "scopes",
-      label: t?.("tokenColumns.scopes") || "Scopes",
-      sortable: false,
-      filterable: false,
-      visible: true,
-      width: 200,
-      minWidth: 150,
-      render: value => {
-        const scopes = value as string[] | null
-        if (scopes && scopes.length > 0) {
-          return (
-            <Group gap={4}>
-              {scopes.slice(0, 3).map(scope => (
-                <Badge key={scope} size="xs" variant="light">
-                  {scope}
-                </Badge>
-              ))}
-              {scopes.length > 3 && (
-                <Badge size="xs" variant="light">
-                  +{scopes.length - 3}
-                </Badge>
-              )}
-            </Group>
-          )
-        }
-        return (
-          <Text c="dimmed" size="sm">
-            {t?.("api_tokens.all_permissions", {
-              defaultValue: "All permissions"
-            }) || "All permissions"}
-          </Text>
-        )
-      }
-    },
-    {
       key: "created_at",
-      label: t?.("tokenColumns.created_at") || "Created",
+      label:
+        t?.("tokenColumns.created_at", {defaultValue: "Created"}) || "Created",
       sortable: true,
       filterable: true,
       visible: true,
@@ -112,7 +78,8 @@ export default function tokenColumns(
     },
     {
       key: "expires_at",
-      label: t?.("tokenColumns.expires_at") || "Expires",
+      label:
+        t?.("tokenColumns.expires_at", {defaultValue: "Expires"}) || "Expires",
       sortable: true,
       filterable: true,
       visible: true,
@@ -131,7 +98,9 @@ export default function tokenColumns(
     },
     {
       key: "last_used_at",
-      label: t?.("tokenColumns.last_used_at") || "Last Used",
+      label:
+        t?.("tokenColumns.last_used_at", {defaultValue: "Last Used"}) ||
+        "Last Used",
       sortable: true,
       filterable: true,
       visible: true,

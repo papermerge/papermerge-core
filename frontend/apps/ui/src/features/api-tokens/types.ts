@@ -28,3 +28,21 @@ export interface DeleteAPITokenResponse {
   name: string
   message: string
 }
+
+/**
+ * Query parameters for paginated token listing
+ */
+export interface TokenQueryParams {
+  page_number?: number
+  page_size?: number
+  sort_by?: SortBy
+  sort_direction?: "asc" | "desc" | null
+  filter_free_text?: string
+}
+
+export type SortBy =
+  | "id"
+  | "name"
+  | "created_at"
+  | "expires_at"
+  | "last_used_at"

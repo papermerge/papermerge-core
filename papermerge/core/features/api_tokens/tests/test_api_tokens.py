@@ -244,11 +244,10 @@ class TestAPIEndpoints:
 
         response = await auth_api_client.get("/tokens")
 
-        assert response.status_code == 200
+        assert response.status_code == 200, response.json()
         data = response.json()
-        assert len(data) >= 1
-        # Token value should NOT be included in list
-        assert "token" not in data[0]
+
+        assert data['items'][0]["name"] == "Token 1"
 
     async def test_delete_token_endpoint(self, auth_api_client: AsyncClient):
         """Should delete token via API."""

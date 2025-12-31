@@ -21,6 +21,7 @@ class ScopeCategory(Enum):
     SHARED_NODE = "shared_node"
     AUDIT_LOG = "audit_log"
     SYSTEM_PREFERENCE = "system_preference"
+    API_TOKEN = "api_token"
 
 
 class Action(Enum):
@@ -133,6 +134,11 @@ class Scopes:
     # System preferences
     SYSTEM_PREFERENCE_VIEW = "system_preference.view"
     SYSTEM_PREFERENCE_UPDATE = "system_preference.update"
+
+    # API Tokens
+    API_TOKEN_VIEW = "api_token.view"
+    API_TOKEN_CREATE = "api_token.create"
+    API_TOKEN_DELETE = "api_token.delete"
 
     @classmethod
     def all_scopes(cls) -> Set[str]:

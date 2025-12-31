@@ -71,6 +71,11 @@ USER_SCOPES = [
     scopes.OCRLANG_VIEW,
     # User (own profile only)
     scopes.USER_ME,
+
+    # API Tokens
+    scopes.API_TOKEN_VIEW,
+    scopes.API_TOKEN_CREATE,
+    scopes.API_TOKEN_DELETE,
 ]
 
 VIEWER_SCOPES = [

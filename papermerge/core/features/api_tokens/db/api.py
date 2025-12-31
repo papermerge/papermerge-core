@@ -6,12 +6,14 @@ Provides CRUD operations for Personal Access Tokens.
 import hashlib
 import secrets
 from datetime import datetime, timezone
+from typing import Literal
 from uuid import UUID
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.features.api_tokens.db.orm import APIToken
+from papermerge.core.types import PaginatedResponse
 
 # Token prefix for easy identification
 TOKEN_PREFIX = "pm_"
@@ -119,7 +121,7 @@ async def get_user_tokens(
     user_id: UUID,
 ) -> list[APIToken]:
     """
-    Get all API tokens for a user.
+    Get all API tokens for a user (non-paginated).
 
     Args:
         db_session: Database session
@@ -135,6 +137,74 @@ async def get_user_tokens(
     )
     result = await db_session.execute(stmt)
     return list(result.scalars().all())
+
+
+async def get_user_tokens_paginated(
+    db_session: AsyncSession,
+    user_id: UUID,
+    page_number: int = 1,
+    page_size: int = 15,
+    sort_by: str | None = None,
+    sort_direction: Literal["asc", "desc"] | None = None,
+    filter_free_text: str | None = None,
+) -> PaginatedResponse[APIToken]:
+    """
+    Get paginated API tokens for a user.
+
+    Args:
+        db_session: Database session
+        user_id: User's ID
+        page_number: Page number (1-based)
+        page_size: Number of items per page
+        sort_by: Column to sort by
+        sort_direction: Sort direction (asc or desc)
+        filter_free_text: Filter by name (partial match)
+
+    Returns:
+        PaginatedResponse containing APIToken objects
+    """
+    # Base query
+    base_query = select(APIToken).where(APIToken.user_id == user_id)
+
+    # Apply text filter
+    if filter_free_text:
+        base_query = base_query.where(
+            APIToken.name.ilike(f"%{filter_free_text}%")
+        )
+
+    # Count total items
+    count_stmt = select(func.count()).select_from(base_query.subquery())
+    total_result = await db_session.execute(count_stmt)
+    total_items = total_result.scalar() or 0
+
+    # Apply sorting
+    if sort_by:
+        sort_column = getattr(APIToken, sort_by, APIToken.created_at)
+        if sort_direction == "asc":
+            base_query = base_query.order_by(sort_column.asc())
+        else:
+            base_query = base_query.order_by(sort_column.desc())
+    else:
+        # Default sort by created_at desc
+        base_query = base_query.order_by(APIToken.created_at.desc())
+
+    # Apply pagination
+    offset = (page_number - 1) * page_size
+    base_query = base_query.offset(offset).limit(page_size)
+
+    # Execute query
+    result = await db_session.execute(base_query)
+    items = list(result.scalars().all())
+
+    # Calculate number of pages
+    num_pages = (total_items + page_size - 1) // page_size if total_items > 0 else 0
+
+    return PaginatedResponse(
+        items=items,
+        page_number=page_number,
+        page_size=page_size,
+        num_pages=num_pages,
+    )
 
 
 async def get_token_by_id(

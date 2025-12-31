@@ -48,6 +48,9 @@ export const DOCUMENT_TYPE_DELETE = "document_type.delete"
 export const AUDIT_LOG_VIEW = "audit_log.view"
 export const SYSTEM_PREFERENCE_VIEW = "system_preference.view"
 export const SYSTEM_PREFERENCE_UPDATE = "system_preference.update"
+export const API_TOKEN_CREATE = "api_token.create"
+export const API_TOKEN_DELETE = "api_token.delete"
+export const API_TOKEN_VIEW = "api_token.view"
 
 export const ALL_PERMS = [
   DOCUMENT_DOWNLOAD,
@@ -89,5 +92,8 @@ export const ALL_PERMS = [
   NODE_DELETE,
   TASK_OCR,
   OCRLANG_VIEW,
-  AUDIT_LOG_VIEW
+  AUDIT_LOG_VIEW,
+  API_TOKEN_CREATE,
+  API_TOKEN_VIEW,
+  API_TOKEN_DELETE
 ]

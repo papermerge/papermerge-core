@@ -1,21 +1,16 @@
 import TimestampZ from "@/components/Timestampz"
 import TruncatedTextWithCopy from "@/components/TruncatedTextWithCopy"
 import type {APIToken} from "@/features/api-tokens/types"
-import {ActionIcon, Badge, Group, Text, Tooltip} from "@mantine/core"
-import {IconKey, IconTrash} from "@tabler/icons-react"
+import {Badge, Group, Text} from "@mantine/core"
+import {IconKey} from "@tabler/icons-react"
 import {TFunction} from "i18next"
 import type {ColumnConfig} from "kommon"
 
-type TokenColumnsOptions = {
+interface Args {
   t?: TFunction
-  onDelete?: (tokenId: string) => void
 }
 
-export default function tokenColumns(
-  options: TokenColumnsOptions = {}
-): ColumnConfig<APIToken>[] {
-  const {t, onDelete} = options
-
+export default function tokenColumns({t}: Args): ColumnConfig<APIToken>[] {
   const columns: ColumnConfig<APIToken>[] = [
     {
       key: "name",
@@ -116,36 +111,6 @@ export default function tokenColumns(
           )
         }
         return <TimestampZ value={value as string} />
-      }
-    },
-    {
-      key: "actions" as keyof APIToken,
-      label: "",
-      sortable: false,
-      filterable: false,
-      visible: true,
-      width: 60,
-      minWidth: 60,
-      render: (_value, row) => {
-        return (
-          <Tooltip
-            label={
-              t?.("api_tokens.revoke", {defaultValue: "Revoke token"}) ||
-              "Revoke token"
-            }
-          >
-            <ActionIcon
-              color="red"
-              variant="subtle"
-              onClick={e => {
-                e.stopPropagation()
-                onDelete?.(row.id)
-              }}
-            >
-              <IconTrash size={16} />
-            </ActionIcon>
-          </Tooltip>
-        )
       }
     }
   ]

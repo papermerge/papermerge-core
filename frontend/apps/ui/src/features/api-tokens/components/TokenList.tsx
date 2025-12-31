@@ -1,5 +1,4 @@
 import {useAppSelector} from "@/app/hooks"
-import {useDeleteAPITokenMutation} from "@/features/api-tokens/apiSlice"
 import type {APIToken} from "@/features/api-tokens/types"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {selectPanelSelectedIDs} from "@/features/ui/panelRegistry"
@@ -24,24 +23,11 @@ export default function TokenList() {
 
   const {data, isLoading, isFetching, isError, error, queryParams} =
     useTokenTable()
-  const [deleteToken] = useDeleteAPITokenMutation()
+
   const [createModalOpened, {open: openCreateModal, close: closeCreateModal}] =
     useDisclosure(false)
 
-  const handleDelete = async (tokenId: string) => {
-    if (
-      window.confirm(
-        t("api_tokens.confirm_delete", {
-          defaultValue:
-            "Are you sure you want to revoke this token? This action cannot be undone."
-        })
-      )
-    ) {
-      await deleteToken(tokenId)
-    }
-  }
-
-  const columns = useMemo(() => tokenColumns({t, onDelete: handleDelete}), [t])
+  const columns = useMemo(() => tokenColumns({t}), [t])
   const visibleColumns = useVisibleColumns(columns)
 
   const handleSortChange = (value: SortState) => {
@@ -84,46 +70,9 @@ export default function TokenList() {
   // Empty state - show when no tokens exist at all
   if (!data || data.items.length === 0) {
     return (
-      <Stack>
-        <Group justify="space-between">
-          <div>
-            <Text size="lg" fw={500}>
-              {t("api_tokens.title", {defaultValue: "API Tokens"})}
-            </Text>
-            <Text size="sm" c="dimmed">
-              {t("api_tokens.description", {
-                defaultValue:
-                  "Personal access tokens for CLI tools, scripts, and integrations"
-              })}
-            </Text>
-          </div>
-        </Group>
-
-        <Alert color="gray">
-          <Stack align="center" gap="md">
-            <IconKey size={48} opacity={0.5} />
-            <Text>
-              {t("api_tokens.empty", {
-                defaultValue: "No API tokens yet"
-              })}
-            </Text>
-            <Text size="sm" c="dimmed">
-              {t("api_tokens.empty_hint", {
-                defaultValue:
-                  "Create a token to access the Papermerge API from CLI tools or scripts"
-              })}
-            </Text>
-            <Button
-              leftSection={<IconPlus size={16} />}
-              onClick={openCreateModal}
-            >
-              {t("api_tokens.create_first", {
-                defaultValue: "Create Your First Token"
-              })}
-            </Button>
-          </Stack>
-        </Alert>
-
+      <Stack m={"md"} w={"100%"}>
+        <Header />
+        <EmptyTable openCreateModal={openCreateModal} />
         <CreateTokenModal
           opened={createModalOpened}
           onClose={closeCreateModal}
@@ -134,20 +83,9 @@ export default function TokenList() {
 
   return (
     <Stack m={"md"} w={"100%"}>
-      <Group>
-        <ActionButtons onNewToken={openCreateModal} />
-        <div>
-          <Text size="lg" fw={500}>
-            {t("api_tokens.title", {defaultValue: "API Tokens"})}
-          </Text>
-          <Text size="sm" c="dimmed">
-            {t("api_tokens.description", {
-              defaultValue:
-                "Personal access tokens for CLI tools, scripts, and integrations"
-            })}
-          </Text>
-        </div>
-      </Group>
+      <Header />
+
+      <ActionButtons onNewToken={openCreateModal} />
 
       <DataTable
         data={data.items}
@@ -180,5 +118,53 @@ export default function TokenList() {
 
       <CreateTokenModal opened={createModalOpened} onClose={closeCreateModal} />
     </Stack>
+  )
+}
+
+function Header() {
+  const {t} = useTranslation()
+  return (
+    <Group>
+      <Text size="lg" fw={500}>
+        {t("api_tokens.title", {defaultValue: "API Tokens"})}
+      </Text>
+      <Text size="sm" c="dimmed">
+        {t("api_tokens.description", {
+          defaultValue:
+            "Personal access tokens for CLI tools, scripts, and integrations"
+        })}
+      </Text>
+    </Group>
+  )
+}
+
+interface ArgsEmptyTable {
+  openCreateModal: () => void
+}
+
+function EmptyTable({openCreateModal}: ArgsEmptyTable) {
+  const {t} = useTranslation()
+  return (
+    <Alert color="gray">
+      <Stack align="center" gap="md">
+        <IconKey size={48} opacity={0.5} />
+        <Text>
+          {t("api_tokens.empty", {
+            defaultValue: "No API tokens yet"
+          })}
+        </Text>
+        <Text size="sm" c="dimmed">
+          {t("api_tokens.empty_hint", {
+            defaultValue:
+              "Create a token to access the Papermerge API from CLI tools or scripts"
+          })}
+        </Text>
+        <Button leftSection={<IconPlus size={16} />} onClick={openCreateModal}>
+          {t("api_tokens.create_first", {
+            defaultValue: "Create Your First Token"
+          })}
+        </Button>
+      </Stack>
+    </Alert>
   )
 }

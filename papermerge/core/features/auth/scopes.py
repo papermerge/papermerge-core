@@ -21,6 +21,7 @@ class ScopeCategory(Enum):
     SHARED_NODE = "shared_node"
     AUDIT_LOG = "audit_log"
     SYSTEM_PREFERENCE = "system_preference"
+    API_TOKEN = "api_token"
 
 
 class Action(Enum):

@@ -2,18 +2,15 @@ import os
 
 from celery import Celery
 
-PREFIX = os.environ.get("PAPERMERGE__MAIN__PREFIX", None)
-broker_url = os.environ.get("PAPERMERGE__REDIS__URL", None)
+PREFIX = os.environ.get("PM_PREFIX", None)
+broker_url = os.environ.get("PM_REDIS_URL", None)
 
 if broker_url:
     app = Celery("papermerge", broker=broker_url)
 else:
     app = Celery("papermerge")
 
-# Workaround celery's bug:
-# https://github.com/celery/celery/issues/4296
-# Without this options, if broker is down, the celery
-# will loop forever in apply_async.
+
 app.conf.broker_transport_options = {
     "max_retries": 3,
     "interval_start": 0,
@@ -31,16 +28,16 @@ def prefixed(name: str) -> str:
 
 def s3_queue_name() -> str:
     """
-    User can override S3 queue name by setting PAPERMERGE__MAIN__S3_QUEUE_NAME
+    User can override S3 queue name by setting PM_S3_QUEUE_NAME
 
     Depending on the scenarios, s3 queue name may look like:
 
     - s3: there is no prefix and no override
     - demo_s3: there is a prefix
-    - s3_demo_node4: user has overridden PAPERMERGE__MAIN__S3_QUEUE_NAME with
+    - s3_demo_node4: user has overridden PM_S3_QUEUE_NAME with
         queue name specific to the k8s node.
     """
-    name = os.environ.get("PAPERMERGE__MAIN__S3_QUEUE_NAME", None)
+    name = os.environ.get("PM_S3_QUEUE_NAME", None)
     if name is not None:
         return name
 
@@ -50,7 +47,7 @@ def s3_queue_name() -> str:
 def s3preview_queue_name() -> str:
     """
     User can override S3 preview queue name by setting
-    PAPERMERGE__MAIN__S3_PREVIEW_QUEUE_NAME
+    PM_S3_PREVIEW_QUEUE_NAME
 
     Depending on the scenarios, s3 queue name may look like:
 
@@ -60,7 +57,7 @@ def s3preview_queue_name() -> str:
         PAPERMERGE__MAIN__S3_PREVIEW_QUEUE_NAME with queue name specific
         to the k8s node.
     """
-    name = os.environ.get("PAPERMERGE__MAIN__S3_PREVIEW_QUEUE_NAME", None)
+    name = os.environ.get("PM_S3_PREVIEW_QUEUE_NAME", None)
     if name is not None:
         return name
 

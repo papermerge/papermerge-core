@@ -59,18 +59,17 @@ Documentation = "https://docs.papermerge.io/"
 Repository = "https://github.com/papermerge/papermerge-core"
 Issues = "https://github.com/ciur/papermerge/issues"
 
-[project.optional-dependencies]
-aws_s3 = [
-    "botocore",
-    "boto3",
-    "cryptography",
-]
-
 [dependency-groups]
 dev = [
     "freezegun>=1.5.5",
     "pytest",
     "pytest-asyncio",
+]
+
+aws_s3 = [
+    "botocore",
+    "boto3",
+    "cryptography",
 ]
 
 

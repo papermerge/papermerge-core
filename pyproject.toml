@@ -76,7 +76,7 @@ aws_s3 = [
 [project.scripts]
 pm = "papermerge.cli:main"
 docs = "papermerge.core.cli.docs:app"
-sign_url = "papermerge.core.cli.cf_sign_url:app"
+sign_url = "papermerge.storage.cli.sign_url:app"
 
 
 [tool.taskipy.settings]

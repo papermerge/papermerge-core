@@ -1,4 +1,4 @@
-FROM node:25-alpine AS frontend_build
+FROM node:24-alpine AS frontend_build
 # ensure all packages are up-to-date
 RUN apk update && apk upgrade && rm -rf /var/cache/apk/*
 
@@ -38,7 +38,7 @@ COPY uv.lock pyproject.toml README.md LICENSE ${CORE_APP}/
 COPY ./papermerge ${CORE_APP}/papermerge/
 
 WORKDIR ${CORE_APP}
-RUN uv sync
+RUN uv sync --no-dev --extra cloud_storage
 
 COPY docker/standard/entrypoint.sh /entrypoint.sh
 COPY docker/standard/supervisord.conf docker/standard/log_config.yaml /core_app/

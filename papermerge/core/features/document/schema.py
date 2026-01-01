@@ -244,7 +244,7 @@ class DocumentVersion(BaseModel):
     @field_validator("download_url", mode="before")
     def download_url_validator(cls, _, info):
         file_server = settings.file_server
-        if file_server == config.FileServer.S3:
+        if file_server in (config.FileServer.S3, config.FileServer.R2):
             return s3.doc_ver_signed_url(info.data['id'], info.data['file_name'])
 
         return f"/api/document-versions/{info.data['id']}/download"
@@ -284,19 +284,15 @@ class DocumentBase(BaseModel):
         if file_server == config.FileServer.LOCAL:
             return f"/api/thumbnails/{info.data['id']}"
 
-        # if it is not local, then it is s3 + CDN/cloudfront
+        # Handle both S3/CloudFront and R2
         if (
-            "preview_status" in info.data
-            and info.data["preview_status"] == ImagePreviewStatus.ready
+                "preview_status" in info.data
+                and info.data["preview_status"] == ImagePreviewStatus.ready
         ):
-            if file_server == config.FileServer.S3:
-                # give client back signed URL only in case preview image
-                # was successfully uploaded to S3 backend.
-                # `preview_status` is set to ready/failed by s3 worker
-                # after preview image upload to s3 succeeds/fails
-                return s3.doc_thumbnail_signed_url(info.data["id"])
+            if file_server in (config.FileServer.S3, config.FileServer.R2):
+                return s3.doc_thumbnail_signed_url(info.data['id'])
 
-        return None
+        return f"/api/thumbnails/{info.data['id']}"
 
     # Config
     model_config = ConfigDict(from_attributes=True)

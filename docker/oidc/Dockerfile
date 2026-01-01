@@ -32,6 +32,7 @@ COPY papermerge/ ./papermerge/
 # Install uv, dependencies, and application to system Python
 RUN pip install --no-cache-dir uv && \
     uv pip install --system --no-cache -r <(uv export --frozen --no-dev) && \
+    uv pip install --system --no-cache ".[cloud_storage]" && \
     pip install --no-cache-dir . --no-deps
 
 

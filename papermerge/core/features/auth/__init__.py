@@ -11,7 +11,6 @@ the api_tokens table. They provide a simple way for CLI tools and scripts
 to authenticate without browser-based OIDC flows.
 """
 import logging
-from uuid import UUID
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes, HTTPBearer, \
@@ -108,7 +107,7 @@ def extract_token_data(token: str) -> types.TokenData | None:
     token_scopes = data.get("scopes", [])
     groups = data.get("groups", [])
     roles = data.get("roles", [])
-    username = data.get("preferred_username", None)
+    username = data.get("preferred_username", None) or data.get("email")
     email = data.get("email", None)
 
     logger.debug(f"Extracted username={username}, email={email}, groups={groups}")
@@ -210,7 +209,6 @@ async def _authenticate_with_jwt(
             db_session,
             username=token_data.username,
             email=token_data.email,
-            user_id=UUID(token_data.user_id),
             password="-",
         )
 
@@ -223,7 +221,7 @@ async def _authenticate_with_jwt(
     if len(token_data.roles) > 0:
         role_scopes = await usr_dbapi.get_user_scopes_from_roles(
             db_session,
-            user_id=UUID(token_data.user_id),
+            user_id=user.id,
             roles=token_data.roles,
         )
         total_scopes.extend(role_scopes)

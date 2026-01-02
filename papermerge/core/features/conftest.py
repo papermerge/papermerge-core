@@ -11,7 +11,6 @@ from uuid import UUID
 import pytest
 from httpx import AsyncClient
 from httpx import ASGITransport
-from fastapi import FastAPI
 from sqlalchemy import select, text, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -28,7 +27,7 @@ from papermerge.core.db.engine import engine, get_db
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.features.document import schema as doc_schema
 from papermerge.core.features.custom_fields.schema import CustomFieldType
-from papermerge.core.router_loader import discover_routers
+from papermerge.core.tests import utils as test_utils
 from papermerge.core import orm, dbapi
 from papermerge.core import utils
 from papermerge.core.tests.types import AuthTestClient
@@ -328,18 +327,6 @@ def make_page(db_session: AsyncSession, user: orm.User, system_user):
     return _make
 
 
-def get_app_with_routes():
-    app = FastAPI()
-
-    features_path = Path(__file__).parent.parent
-    routers = discover_routers(features_path)
-
-    for router, feature_name in routers:
-        app.include_router(router, prefix="")
-
-    return app
-
-
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database():
     from papermerge.core.const import SYSTEM_USER_ID
@@ -413,7 +400,7 @@ async def db_session():
 @pytest.fixture()
 async def api_client(db_session):
     """Unauthenticated REST API client"""
-    app = get_app_with_routes()
+    app = test_utils.get_app_with_routes()
 
     def override_get_db():
         yield db_session
@@ -430,7 +417,7 @@ async def api_client(db_session):
 @pytest.fixture()
 async def auth_api_client(db_session, user: orm.User):
     """Authenticated REST API client"""
-    app = get_app_with_routes()
+    app = test_utils.get_app_with_routes()
 
     def override_get_db():
         yield db_session
@@ -468,7 +455,7 @@ async def make_api_client(make_user, db_session):
 
     async def _make(username: str):
         user = await make_user(username=username)  # Await the make_user call
-        app = get_app_with_routes()
+        app = test_utils.get_app_with_routes()
 
         middle_part = utils.base64.encode(
             {
@@ -497,7 +484,7 @@ async def login_as(db_session):
         yield db_session
 
     async def _make(user):
-        app = get_app_with_routes()
+        app = test_utils.get_app_with_routes()
         app.dependency_overrides[get_db] = override_get_db
 
         middle_part = utils.base64.encode(

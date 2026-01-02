@@ -8,6 +8,7 @@ from papermerge.core.router_loader import discover_routers
 def get_app_with_routes():
     app = FastAPI()
 
+    # path to `<project-root>/papermerge/core` folder
     core_path = Path(__file__).parent.parent
     routers = discover_routers(core_path)
 

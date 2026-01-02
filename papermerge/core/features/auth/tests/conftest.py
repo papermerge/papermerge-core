@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from httpx import AsyncClient, ASGITransport
 
 from papermerge.core.db.engine import get_db
-from papermerge.core.tests.utils import get_app_with_routes
+from papermerge.core.tests import utils as test_utils
 
 
 def encode_jwt_payload(payload: dict) -> str:
@@ -39,7 +39,7 @@ async def zitadel_login_as(db_session: AsyncSession):
 
     @asynccontextmanager
     async def _make(email_address: str):
-        app = get_app_with_routes()
+        app = test_utils.get_app_with_routes()
         app.dependency_overrides[get_db] = override_get_db
 
         # note that `preferred_username` is missing

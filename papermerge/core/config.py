@@ -15,6 +15,8 @@ class FileServer(str, Enum):
 
 class Settings(BaseSettings):
     db_url: PostgresDsn
+    # Connect to DB via SSL
+    db_ssl: bool = False
     log_config: Path | None = Path("/app/log_config.yaml")
     api_prefix: str = ''
     default_lang: DocumentLang = DocumentLang.deu

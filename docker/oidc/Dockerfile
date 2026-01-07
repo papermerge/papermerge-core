@@ -64,6 +64,16 @@ COPY --from=python_build /usr/local/bin/uvicorn /usr/local/bin/uvicorn
 
 WORKDIR /app
 
+RUN mkdir -p /var/lib/nginx/logs \
+             /var/lib/nginx/tmp/client_body \
+             /var/lib/nginx/tmp/proxy \
+             /var/lib/nginx/tmp/fastcgi \
+             /var/lib/nginx/tmp/uwsgi \
+             /var/lib/nginx/tmp/scgi \
+             /var/log/nginx \
+             /var/cache/nginx && \
+    chmod -R 755 /var/lib/nginx /var/log/nginx /var/cache/nginx
+
 # Copy application config (papermerge module is already in site-packages)
 COPY alembic.ini ./
 COPY papermerge/core/ ./papermerge/core/

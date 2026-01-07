@@ -60,6 +60,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
+          no-cache: true
           tags: ${{ steps.meta_oidc.outputs.tags }}
           labels: ${{ steps.meta_oidc.outputs.labels }}
           file: docker/oidc/Dockerfile

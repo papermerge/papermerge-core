@@ -10,7 +10,11 @@ COPY frontend/ .
 RUN corepack enable && \
     yarn set version 4.9.2 && \
     yarn install --immutable && \
-    yarn workspace ui build
+    yarn workspace ui build && \
+    echo "=== BUILD COMPLETE - Checking output ===" && \
+    ls -la /build/apps/ui/dist/ && \
+    echo "=== Files in dist ===" && \
+    find /build/apps/ui/dist -type f
 
 
 # Stage 2: Python dependencies build

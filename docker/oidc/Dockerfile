@@ -85,6 +85,8 @@ RUN chmod +x /entrypoint.sh
 # Copy frontend build artifacts
 COPY --from=frontend_build /build/apps/ui/dist/ /usr/share/nginx/html/ui
 
+RUN chown -R 1000:1000 /usr/share/nginx/html/ui
+
 EXPOSE 8080
 
 ENTRYPOINT ["/entrypoint.sh"]

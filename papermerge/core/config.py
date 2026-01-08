@@ -46,6 +46,13 @@ class Settings(BaseSettings):
     # Multitenant prefix
     prefix: str = ''
 
+    # Remote user config
+    remote_user_header: str = "X-Forwarded-User"
+    remote_groups_header: str = "X-Forwarded-Groups"
+    remote_roles_header: str = "X-Forwarded-Roles"
+    remote_name_header: str = "X-Forwarded-Name"
+    remote_email_header: str = "X-Forwarded-Email"
+
     @computed_field
     @property
     def async_db_url(self) -> str:

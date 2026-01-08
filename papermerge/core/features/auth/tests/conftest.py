@@ -69,3 +69,27 @@ async def zitadel_login_as(db_session: AsyncSession):
         app.dependency_overrides.clear()
 
     return _make
+
+
+@pytest.fixture
+async def login_with_remote(db_session: AsyncSession):
+    def override_get_db():
+        yield db_session
+
+    @asynccontextmanager
+    async def _make(headers):
+        app = test_utils.get_app_with_routes()
+        app.dependency_overrides[get_db] = override_get_db
+
+        transport = ASGITransport(app=app)
+
+        async with AsyncClient(
+            transport=transport,
+            base_url="http://test",
+            headers=headers
+        ) as client:
+            yield client
+
+        app.dependency_overrides.clear()
+
+    return _make

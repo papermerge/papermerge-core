@@ -246,7 +246,6 @@ async def _authenticate_with_remote_user(
     Returns the user if authentication succeeds, None otherwise.
     """
     logger.debug(f"Attempting Remote-User authentication for {remote_user.username}")
-
     # Get or create user
     try:
         user = await usr_dbapi.get_user(db_session, remote_user.username)

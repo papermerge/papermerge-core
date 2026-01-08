@@ -8,10 +8,10 @@ class RemoteUserScheme:
 
     async def __call__(self, request: Request) -> schema.RemoteUser | None:
         user_header_name = settings.remote_user_header
-        groups_header_name = settings.remote_user_groups_header
-        roles_header_name = settings.remote_user_roles_header
-        name_header_name = settings.remote_user_name_header
-        email_header_name = settings.remote_user_email_header
+        groups_header_name = settings.remote_groups_header
+        roles_header_name = settings.remote_roles_header
+        name_header_name = settings.remote_name_header
+        email_header_name = settings.remote_email_header
 
         username = request.headers.get(user_header_name)
         groups = request.headers.get(groups_header_name, "")

@@ -2591,7 +2591,7 @@ __metadata:
     kommon: "workspace:*"
     react: "npm:^19.2.3"
     react-dom: "npm:^19.2.3"
-    react-router: "npm:^7.11.0"
+    react-router: "npm:^7.12.0"
     typescript: "npm:^5.9.3"
     typescript-eslint: "npm:^8.50.1"
     vite: "npm:^7.3.0"
@@ -4036,7 +4036,7 @@ __metadata:
     kommon: "workspace:*"
     react: "npm:^19.2.3"
     react-dom: "npm:^19.2.3"
-    react-router: "npm:^7.11.0"
+    react-router: "npm:^7.12.0"
     typescript: "npm:^5.9.3"
     typescript-eslint: "npm:^8.50.1"
     vite: "npm:^7.3.0"
@@ -4770,7 +4770,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:7.11.0, react-router@npm:^7.11.0":
+"react-router@npm:7.11.0":
   version: 7.11.0
   resolution: "react-router@npm:7.11.0"
   dependencies:
@@ -4783,6 +4783,22 @@ __metadata:
     react-dom:
       optional: true
   checksum: 10c0/eb3693d63d1c52221a3449de5db170e2fa9e00536b011998b17f8a277f8b5e89b752d104dbbeb4ee3d474f8e4570167db00293b4510f63277e5e6658c5dab22b
+  languageName: node
+  linkType: hard
+
+"react-router@npm:^7.12.0":
+  version: 7.12.0
+  resolution: "react-router@npm:7.12.0"
+  dependencies:
+    cookie: "npm:^1.0.1"
+    set-cookie-parser: "npm:^2.6.0"
+  peerDependencies:
+    react: ">=18"
+    react-dom: ">=18"
+  peerDependenciesMeta:
+    react-dom:
+      optional: true
+  checksum: 10c0/abde366f716cb3961a5a390c278375c0591bace5773e1b4420001f0a913b4dd53d490e7dea866acebcac2c0fa07378aa83702769d449449027406ed517a8ea00
   languageName: node
   linkType: hard
 
@@ -5462,7 +5478,7 @@ __metadata:
     react-dom: "npm:^19.2.3"
     react-i18next: "npm:^16.5.0"
     react-redux: "npm:^9.2.0"
-    react-router: "npm:^7.11.0"
+    react-router: "npm:^7.12.0"
     react-router-dom: "npm:^7.11.0"
     sass: "npm:^1.97.1"
     typescript: "npm:^5.9.3"
@@ -5646,7 +5662,7 @@ __metadata:
     kommon: "workspace:*"
     react: "npm:^19.2.3"
     react-dom: "npm:^19.2.3"
-    react-router: "npm:^7.11.0"
+    react-router: "npm:^7.12.0"
     typescript: "npm:^5.9.3"
     typescript-eslint: "npm:^8.50.1"
     viewer: "workspace:*"

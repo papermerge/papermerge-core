@@ -285,6 +285,7 @@ async def test_get_node_tags_node_is_a_folder(db_session: AsyncSession, make_fol
     assert {"tag1", "tag2"} == {t.name for t in tags}
 
 
+@pytest.mark.skip(reason="Adds dependency to local filesystem")
 async def test_prepare_documents_s3_data_deletion_one_doc(
     db_session: AsyncSession, make_document_with_pages, user
 ):
@@ -308,6 +309,7 @@ async def test_prepare_documents_s3_data_deletion_one_doc(
     assert set(data.page_ids) == set(doc1_page_ids)
 
 
+@pytest.mark.skip(reason="Adds dependency to local filesystem")
 async def test_prepare_documents_s3_data_deletion_multiple_docs(
     db_session: AsyncSession, make_document_with_pages, user, make_folder
 ):

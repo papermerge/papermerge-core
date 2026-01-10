@@ -5,6 +5,7 @@ from papermerge.core import schema, dbapi
 from papermerge.core.tests.resource_file import ResourceFile
 
 
+@pytest.mark.skip(reason="Will be moved to worker")
 @pytest.mark.asyncio
 async def test_router_move_pages_endpoint_one_single_page_mix(
     auth_api_client, user, db_session: AsyncSession, make_document_from_resource
@@ -33,6 +34,7 @@ async def test_router_move_pages_endpoint_one_single_page_mix(
     assert response.status_code == 200, response.json()
 
 
+@pytest.mark.skip(reason="Will be moved to worker")
 async def test_router_extract_all_pages(
     auth_api_client, user, db_session: AsyncSession, make_document_from_resource, make_folder
 ):

@@ -1,13 +1,16 @@
+import logging
 from datetime import timedelta
 from pathlib import Path
 from urllib.parse import quote
 from uuid import UUID
 
+from fastapi import UploadFile
 from botocore.signers import CloudFrontSigner
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 
+from papermerge.storage.exc import StorageUploadError, FileTooLargeError
 from papermerge.core.config import get_settings
 from papermerge.core.cache import client as cache
 from papermerge.core.utils.tz import utc_now
@@ -18,6 +21,7 @@ from papermerge.storage.base import StorageBackend
 PEM_PRIVATE_KEY_STRING = "pem-private-key-string"
 PEM_PRIVATE_KEY_TTL = 600
 
+logger = logging.getLogger(__name__)
 
 class CloudFrontBackend(StorageBackend):
     """AWS CloudFront storage backend using RSA-signed URLs."""
@@ -25,6 +29,7 @@ class CloudFrontBackend(StorageBackend):
     def __init__(self):
         self.settings = get_settings()
         self._validate_settings()
+        self._client = None
 
     def _validate_settings(self):
         if not self.settings.cf_sign_url_key_id:
@@ -33,6 +38,38 @@ class CloudFrontBackend(StorageBackend):
             raise ValueError("CF_SIGN_URL_PRIVATE_KEY is not configured")
         if not self.settings.cf_domain:
             raise ValueError("CF_DOMAIN is not configured")
+
+
+    async def upload_file(
+        self,
+        file: UploadFile,
+        object_key: str,
+        content_type: str,
+        max_file_size: int
+    ) -> int:
+        """Stream file to R2"""
+        content = await file.read()
+
+        if len(content) > max_file_size:
+            raise FileTooLargeError(
+                f"File size {len(content)} exceeds maximum {max_file_size}"
+            )
+
+        # Add prefix if configured
+        full_key = str(self.prefix / object_key) if self.prefix else object_key
+
+        try:
+            self.client.put_object(
+                Bucket=self.bucket_name,
+                Key=full_key,
+                Body=content,
+                ContentType=content_type
+            )
+            logger.info(f"Uploaded file to AWS S3: {full_key}")
+            return len(content)
+        except Exception as e:
+            logger.error(f"AWS S3 upload failed for {full_key}: {e}")
+            raise StorageUploadError(f"Upload failed: {e}")
 
     def _rsa_signer(self, message: bytes) -> bytes:
         """RSA signer for CloudFront URLs."""

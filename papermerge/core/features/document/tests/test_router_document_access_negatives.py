@@ -42,28 +42,6 @@ async def test_get_cf(make_user, make_document, login_as):
     assert response.status_code == 403, response.json()
 
 
-async def test_upload_file(make_user, make_document, login_as):
-    """
-    User B should not be able to upload file in user's A private docs
-    """
-    user_a = await make_user("user_a", is_superuser=True)
-    user_b = await make_user("user_b", is_superuser=True)
-    doc = await make_document("doc.pdf", parent=user_a.home_folder, user=user_a)
-
-    user_b_api_client = await login_as(user_b)
-
-    pdf_path = RESOURCES / "three-pages.pdf"
-    with open(pdf_path, "rb") as file:
-        file_content = file.read()
-
-    response = await user_b_api_client.post(
-        f"/documents/{doc.id}/upload",
-        files={"file": ("test.pdf", file_content, "application/pdf")},
-    )
-
-    assert response.status_code == 403, response.json()
-
-
 async def test_get_document_details(make_user, make_document, login_as):
     """
     User B should not be able to retrieve details of user's A private doc

@@ -16,3 +16,6 @@
 node_modules/
 .vscode/
 .env.development.local
+
+dist
+dist/

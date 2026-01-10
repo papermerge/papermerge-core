@@ -17,7 +17,7 @@ from .features.users.db.api import (
 )
 from .features.document.db.api import (
     get_last_doc_ver,
-    upload,
+    save_upload_metadata,
     get_doc_ver,
     get_documents,
     get_doc,
@@ -94,7 +94,7 @@ __all__ = [
     "get_document_custom_field_values",
     "update_document_custom_field_values",
     "get_docs_count_by_type",
-    "upload",
+    "save_upload_metadata",
     "get_docs_thumbnail_img_status",
     "create_document_type",
     "get_document_types",

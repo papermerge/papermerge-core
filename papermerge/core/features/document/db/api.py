@@ -36,17 +36,13 @@ from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.types import OwnerType, ResourceType, ImagePreviewStatus, \
     MimeType
 from papermerge.core.features.document import s3
-from papermerge.core.utils.misc import copy_file
-from papermerge.core import schema, orm, constants, tasks
+from papermerge.core import schema, orm
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.document.schema import Category, Tag
 from papermerge.core.features.custom_fields import schema as cf_schema
 from papermerge.core.features.custom_fields.cf_types.registry import \
     TypeRegistry
 from papermerge.core.db.common import get_ancestors, get_node_owner
-from papermerge.core.pathlib import (
-    abs_docver_path,
-)
 from papermerge.core import types
 from papermerge.core import config
 
@@ -475,7 +471,8 @@ async def get_documents_by_type_paginated(
 async def create_document(
     db_session: AsyncSession,
     attrs: schema.NewDocument,
-    mime_type: MimeType
+    mime_type: MimeType,
+    document_version_id: uuid.UUID | None = None,
 ) -> Tuple[schema.Document | None, schema.Error | None]:
     error = None
     doc_id = attrs.id or uuid.uuid4()
@@ -526,7 +523,7 @@ async def create_document(
     )
 
     doc_ver = orm.DocumentVersion(
-        id=uuid.uuid4(),
+        id=document_version_id or uuid.uuid4(),
         document_id=doc_id,
         number=1,
         file_name=attrs.file_name,
@@ -804,6 +801,7 @@ async def create_next_version(
     content_type: MimeType,
     created_by: uuid.UUID,
     short_description=None,
+    document_version_id: uuid.UUID = None,
 ) -> orm.DocumentVersion:
     stmt = (
         select(orm.DocumentVersion)
@@ -817,7 +815,7 @@ async def create_next_version(
 
     if not document_version:
         document_version = orm.DocumentVersion(
-            id=uuid.uuid4(),
+            id=document_version_id or uuid.uuid4(),
             document_id=doc.id,
             number=len(doc.versions) + 1,
             lang=doc.lang,
@@ -838,7 +836,7 @@ async def create_next_version(
     return document_version
 
 
-async def upload(
+async def save_upload_metadata(
     db_session: AsyncSession,
     document_id: uuid.UUID,
     content: io.BytesIO,
@@ -846,6 +844,7 @@ async def upload(
     file_name: str,
     content_type: MimeType,
     created_by: uuid.UUID,
+    document_version_id: uuid.UUID = None,
 ) -> Tuple[schema.Document | None, schema.Error | None]:
 
     doc = await db_session.get(orm.Document, document_id)
@@ -868,7 +867,8 @@ async def upload(
             file_name=file_name,
             file_size=size,
             content_type=content_type,
-            created_by=created_by
+            created_by=created_by,
+            document_version_id=document_version_id,
         )
 
         pdf_ver = await create_next_version(
@@ -880,9 +880,6 @@ async def upload(
             content_type=content_type,
             created_by=created_by
         )
-        await copy_file(src=content, dst=abs_docver_path(orig_ver.id, orig_ver.file_name))
-
-        await copy_file(src=pdf_content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
 
         page_count = get_pdf_page_count(pdf_content)
         orig_ver.page_count = page_count
@@ -910,9 +907,9 @@ async def upload(
             file_name=file_name,
             file_size=size,
             content_type=content_type,
-            created_by=created_by
+            created_by=created_by,
+            document_version_id=document_version_id
         )
-        await copy_file(src=content, dst=abs_docver_path(pdf_ver.id, pdf_ver.file_name))
 
         page_count = get_pdf_page_count(content)
 
@@ -944,24 +941,7 @@ async def upload(
     doc_with_relations = result.scalar_one()
     validated_model = schema.Document.model_validate(doc_with_relations)
 
-    if orig_ver:
-        # non PDF document
-        # here `orig_ver` means - version which is not a PDF
-        # may be Jpg, PNG or TIFF
-        tasks.send_task(
-            constants.S3_WORKER_ADD_DOC_VER,
-            kwargs={"doc_ver_ids": [str(orig_ver.id)]},
-            route_name="s3",
-        )
-
-    tasks.send_task(
-        constants.S3_WORKER_ADD_DOC_VER,
-        kwargs={"doc_ver_ids": [str(pdf_ver.id)]},
-        route_name="s3",
-    )
-
     return validated_model, None
-
 
 
 async def get_doc(

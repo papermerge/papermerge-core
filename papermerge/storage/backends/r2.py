@@ -1,14 +1,17 @@
 import logging
 from uuid import UUID
+from typing import Tuple
 
 import boto3
 from botocore.client import Config
 from botocore.exceptions import ClientError
+from fastapi import UploadFile
 
 from papermerge.core.config import get_settings
 from papermerge.core import pathlib as plib
 from papermerge.core.types import ImagePreviewSize
 from papermerge.storage.base import StorageBackend
+from papermerge.storage.exc import StorageUploadError, FileTooLargeError
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +35,8 @@ class R2Backend(StorageBackend):
             raise ValueError("R2_ACCESS_KEY_ID is not configured")
         if not self.settings.r2_secret_access_key:
             raise ValueError("R2_SECRET_ACCESS_KEY is not configured")
-        if not self.settings.r2_bucket_name:
-            raise ValueError("R2_BUCKET_NAME is not configured")
+        if not self.settings.bucket_name:
+            raise ValueError("BUCKET_NAME is not configured")
 
     @property
     def client(self):
@@ -48,6 +51,37 @@ class R2Backend(StorageBackend):
                 region_name='auto',  # Required by SDK but not used by R2
             )
         return self._client
+
+    async def upload_file(
+        self,
+        file: UploadFile,
+        object_key: str,
+        content_type: str,
+        max_file_size: int
+    ) -> Tuple[int, bytes]:
+        """Stream file to R2"""
+        content = await file.read()
+
+        if len(content) > max_file_size:
+            raise FileTooLargeError(
+                f"File size {len(content)} exceeds maximum {max_file_size}"
+            )
+
+        # Add prefix if configured
+        full_key = str(self.prefix / object_key) if self.prefix else object_key
+
+        try:
+            self.client.put_object(
+                Bucket=self.bucket_name,
+                Key=full_key,
+                Body=content,
+                ContentType=content_type
+            )
+            logger.info(f"Uploaded file to R2: {full_key}")
+            return len(content), content
+        except Exception as e:
+            logger.error(f"R2 upload failed for {full_key}: {e}")
+            raise StorageUploadError(f"Upload failed: {e}")
 
     def _build_object_key(self, resource_path) -> str:
         """Build the S3 object key with optional prefix."""

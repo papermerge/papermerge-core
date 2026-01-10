@@ -9,6 +9,7 @@ UpdateCustomFields: type[User] = require_scopes(Scopes.CUSTOM_FIELD_UPDATE)
 ViewNode: type[User] = require_scopes(Scopes.NODE_VIEW)
 UpdateNode: type[User] = require_scopes(Scopes.NODE_UPDATE)
 DownloadDocument: type[User] = require_scopes(Scopes.DOCUMENT_DOWNLOAD)
+UploadDocument: type[User] = require_scopes(Scopes.DOCUMENT_UPLOAD, Scopes.NODE_CREATE)
 ViewAPIToken: type[User] = require_scopes(Scopes.API_TOKEN_VIEW)
 CreateAPIToken: type[User] = require_scopes(Scopes.API_TOKEN_CREATE)
 DeleteAPIToken: type[User] = require_scopes(Scopes.API_TOKEN_DELETE)
@@ -21,6 +22,7 @@ __all__ = [
     "ViewNode",
     "UpdateNode",
     "DownloadDocument",
+    "UploadDocument",
     "ViewAPIToken",
     "CreateAPIToken",
     "DeleteAPIToken",

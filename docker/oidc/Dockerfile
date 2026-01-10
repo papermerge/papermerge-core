@@ -10,7 +10,11 @@ COPY frontend/ .
 RUN corepack enable && \
     yarn set version 4.9.2 && \
     yarn install --immutable && \
-    yarn workspace ui build
+    yarn workspace ui build && \
+    echo "=== BUILD COMPLETE - Checking output ===" && \
+    ls -la /build/apps/ui/dist/ && \
+    echo "=== Files in dist ===" && \
+    find /build/apps/ui/dist -type f
 
 
 # Stage 2: Python dependencies build
@@ -81,7 +85,9 @@ RUN chmod +x /entrypoint.sh
 # Copy frontend build artifacts
 COPY --from=frontend_build /build/apps/ui/dist/ /usr/share/nginx/html/ui
 
-EXPOSE 80
+RUN chown -R 1000:1000 /usr/share/nginx/html/ui
+
+EXPOSE 8080
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["server"]

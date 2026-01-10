@@ -5,7 +5,7 @@ from pathlib import Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import dbapi, schema
-from papermerge.core.tests.types import AuthTestClient
+from papermerge.core.tests.types import AuthTestClient, DocumentTestFileType
 from papermerge.core.tests.resource_file import ResourceFile
 
 DIR_ABS_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -13,14 +13,20 @@ RESOURCES = Path(DIR_ABS_PATH) / "resources"
 
 
 async def test_download_document_version(
-    auth_api_client, make_document_from_resource, user, db_session: AsyncSession
+    auth_api_client,
+    make_document_from_resource,
+    user,
+    db_session: AsyncSession,
+    pdf_file: DocumentTestFileType
 ):
-    doc = await make_document_from_resource(
-        resource=ResourceFile.THREE_PAGES, user=user, parent=user.home_folder
+    resp = await auth_api_client.post(
+        "/documents/upload",
+        files={"file": pdf_file.as_upload_tuple()}
     )
+    assert resp.status_code == 201, resp.json()
+    data = resp.json()
 
-    last_ver = await dbapi.get_last_doc_ver(db_session, doc_id=doc.id)
-
+    last_ver = await dbapi.get_last_doc_ver(db_session, doc_id=data['id'])
     response = await auth_api_client.get(f"/document-versions/{last_ver.id}/download")
     assert response.status_code == 200
 
@@ -104,6 +110,7 @@ async def test_set_doc_ver_lang(
     auth_api_client: AuthTestClient,
     make_document_version,
     user,
+    pdf_file: DocumentTestFileType,
     db_session: AsyncSession
 ):
     """Test setting lang attribute of a document version"""

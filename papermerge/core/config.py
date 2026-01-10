@@ -39,12 +39,19 @@ class Settings(BaseSettings):
     r2_account_id: str | None = None
     r2_access_key_id: str | None = None
     r2_secret_access_key: str | None = None
-    r2_bucket_name: str | None = None
+    bucket_name: str | None = None
 
     preview_page_size_sm: int = Field(gt=0, default=200)
 
     # Multitenant prefix
     prefix: str = ''
+
+    # Remote user config
+    remote_user_header: str = "X-Forwarded-User"
+    remote_groups_header: str = "X-Forwarded-Groups"
+    remote_roles_header: str = "X-Forwarded-Roles"
+    remote_name_header: str = "X-Forwarded-Name"
+    remote_email_header: str = "X-Forwarded-Email"
 
     @computed_field
     @property

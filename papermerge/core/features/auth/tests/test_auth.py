@@ -12,7 +12,7 @@ async def test_get_current_user(token):
 
 
 async def test_remote_based_authentication(montaigne: User, api_client: AsyncClient):
-    response = await api_client.get("/users/me", headers={"Remote-User": "montaigne"})
+    response = await api_client.get("/users/me", headers={"X-Forwarded-User": "montaigne"})
     assert response.status_code == 200
 
 

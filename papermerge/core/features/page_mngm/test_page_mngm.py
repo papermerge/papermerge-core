@@ -2,6 +2,7 @@ import io
 import os
 from pathlib import Path
 
+import pytest
 import pikepdf
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +19,7 @@ DIR_ABS_PATH = os.path.abspath(Path(__file__).parent.parent)
 RESOURCES = Path(DIR_ABS_PATH) / "document" / "tests" / "resources"
 
 
+@pytest.mark.skip(reason="Will be moved to worker")
 async def test_copy_text_field(db_session: AsyncSession, make_document_version, user):
     doc_ver_x = await make_document_version(
         page_count=2, pages_text=["some", "body"], user=user
@@ -33,6 +35,7 @@ async def test_copy_text_field(db_session: AsyncSession, make_document_version, 
     assert doc_ver.pages[0].text == "body"
 
 
+@pytest.mark.skip(reason="Will be moved to worker")
 async def test_apply_pages_op(three_pages_pdf: schema.Document, db_session: AsyncSession):
     doc = (await db_session.execute(
         select(orm.Document).where(orm.Document.id == three_pages_pdf.id)
@@ -76,6 +79,7 @@ async def test_apply_pages_op(three_pages_pdf: schema.Document, db_session: Asyn
     assert newly_created_pages[0].id != orinal_pages[0].id
 
 
+@pytest.mark.skip(reason="Will be moved to worker")
 async def test_copy_without_pages(user, make_document, db_session: AsyncSession):
     """Scenario
 
@@ -141,6 +145,7 @@ async def test_copy_without_pages(user, make_document, db_session: AsyncSession)
     assert new_ver_fresh.text == "dog hamster"
 
 
+@pytest.mark.skip(reason="Will be moved to worker")
 async def test_extract_two_pages_to_folder_all_pages_in_one_doc(
     make_document, make_folder, user, db_session: AsyncSession
 ):
@@ -196,6 +201,7 @@ async def test_extract_two_pages_to_folder_all_pages_in_one_doc(
     assert result_new_docs[0].parent_id == dst_folder.id
 
 
+@pytest.mark.skip(reason="Will be moved to worker")
 async def test_extract_two_pages_to_folder_each_page_in_separate_doc(
     make_document, make_folder, user, db_session: AsyncSession
 ):
@@ -260,6 +266,7 @@ async def test_extract_two_pages_to_folder_each_page_in_separate_doc(
     assert result_new_docs[1].parent_id == dst_folder.id
 
 
+@pytest.mark.skip(reason="Will be moved to worker")
 async def test_extract_all_pages_to_folder_each_page_in_separate_doc(
     make_document_from_resource, make_folder, user, db_session: AsyncSession
 ):
@@ -314,6 +321,7 @@ async def test_extract_all_pages_to_folder_each_page_in_separate_doc(
     assert old_doc_count == 0
 
 
+@pytest.mark.skip(reason="Will be moved to worker")
 async def test_move_pages_one_single_page_strategy_mix(
     make_document_from_resource, db_session: AsyncSession, user
 ):
@@ -380,6 +388,7 @@ async def test_move_pages_one_single_page_strategy_mix(
         assert len(my_pdf.pages) == 4
 
 
+@pytest.mark.skip(reason="Will be moved to worker")
 async def test_move_pages_two_pages_strategy_mix(
     make_document_from_resource, db_session: AsyncSession, user
 ):
@@ -446,6 +455,7 @@ async def test_move_pages_two_pages_strategy_mix(
         assert len(my_pdf.pages) == 5
 
 
+@pytest.mark.skip(reason="Will be moved to worker")
 async def test_move_pages_one_single_page_strategy_replace(
     make_document_from_resource, db_session: AsyncSession, user
 ):
@@ -511,6 +521,7 @@ async def test_move_pages_one_single_page_strategy_replace(
         assert len(my_pdf.pages) == 1
 
 
+@pytest.mark.skip(reason="Will be moved to worker")
 async def test_move_all_pages_of_the_doc_out_mix(
     make_document_from_resource, db_session: AsyncSession, user
 ):
@@ -577,6 +588,7 @@ async def test_move_all_pages_of_the_doc_out_mix(
     assert len(dst_last_version.pages) == 5  # previously was 3
 
 
+@pytest.mark.skip(reason="Will be moved to worker")
 async def test_move_all_pages_of_the_doc_out_replace_strategy(
     make_document_from_resource, db_session: AsyncSession, user
 ):

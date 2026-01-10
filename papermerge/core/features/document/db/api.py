@@ -471,7 +471,8 @@ async def get_documents_by_type_paginated(
 async def create_document(
     db_session: AsyncSession,
     attrs: schema.NewDocument,
-    mime_type: MimeType
+    mime_type: MimeType,
+    document_version_id: uuid.UUID | None = None,
 ) -> Tuple[schema.Document | None, schema.Error | None]:
     error = None
     doc_id = attrs.id or uuid.uuid4()
@@ -522,7 +523,7 @@ async def create_document(
     )
 
     doc_ver = orm.DocumentVersion(
-        id=uuid.uuid4(),
+        id=document_version_id or uuid.uuid4(),
         document_id=doc_id,
         number=1,
         file_name=attrs.file_name,
@@ -800,6 +801,7 @@ async def create_next_version(
     content_type: MimeType,
     created_by: uuid.UUID,
     short_description=None,
+    document_version_id: uuid.UUID = None,
 ) -> orm.DocumentVersion:
     stmt = (
         select(orm.DocumentVersion)
@@ -813,7 +815,7 @@ async def create_next_version(
 
     if not document_version:
         document_version = orm.DocumentVersion(
-            id=uuid.uuid4(),
+            id=document_version_id or uuid.uuid4(),
             document_id=doc.id,
             number=len(doc.versions) + 1,
             lang=doc.lang,
@@ -842,6 +844,7 @@ async def save_upload_metadata(
     file_name: str,
     content_type: MimeType,
     created_by: uuid.UUID,
+    document_version_id: uuid.UUID = None,
 ) -> Tuple[schema.Document | None, schema.Error | None]:
 
     doc = await db_session.get(orm.Document, document_id)
@@ -864,7 +867,8 @@ async def save_upload_metadata(
             file_name=file_name,
             file_size=size,
             content_type=content_type,
-            created_by=created_by
+            created_by=created_by,
+            document_version_id=document_version_id,
         )
 
         pdf_ver = await create_next_version(
@@ -903,7 +907,8 @@ async def save_upload_metadata(
             file_name=file_name,
             file_size=size,
             content_type=content_type,
-            created_by=created_by
+            created_by=created_by,
+            document_version_id=document_version_id
         )
 
         page_count = get_pdf_page_count(content)

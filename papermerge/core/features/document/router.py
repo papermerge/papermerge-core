@@ -225,6 +225,7 @@ async def upload_document(
 
     # Generate document ID early (needed for R2 object key)
     doc_id = document_id if document_id is not None else uuid.uuid4()
+    document_version_id = uuid.uuid4()
 
     # ============================================================
     # Validate file WITHOUT reading entire content
@@ -267,7 +268,10 @@ async def upload_document(
 
     storage = get_storage_backend()
 
-    object_key = str(pathlib.docver_path(doc_id, file_name=file.filename))
+    object_key = str(pathlib.docver_path(
+        document_version_id,
+        file_name=file.filename)
+    )
 
     try:
         actual_file_size, content = await storage.upload_file(
@@ -303,7 +307,12 @@ async def upload_document(
         username=user.username
     ):
         # Step 1: Create document node
-        created_node, error = await doc_dbapi.create_document(db_session, new_document, mime_type=mime_type)
+        created_node, error = await doc_dbapi.create_document(
+            db_session,
+            new_document,
+            mime_type=mime_type,
+            document_version_id=document_version_id
+        )
 
         if error:
             await storage.delete_file(object_key)
@@ -317,7 +326,8 @@ async def upload_document(
             content=io.BytesIO(content),
             file_name=file.filename or title,
             content_type=mime_type,
-            created_by=user.id
+            created_by=user.id,
+            document_version_id=document_version_id,
         )
 
         if upload_error:

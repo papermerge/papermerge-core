@@ -191,7 +191,7 @@ def make_document_from_resource(make_document, db_session: AsyncSession):
         with open(PDF_PATH, "rb") as file:
             content = file.read()
             size = os.stat(PDF_PATH).st_size
-            await doc_dbapi.upload(
+            await doc_dbapi.save_upload_metadata(
                 db_session,
                 document_id=doc.id,
                 content=io.BytesIO(content),

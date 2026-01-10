@@ -1,6 +1,7 @@
 from uuid import UUID
 import logging
 from typing import Tuple
+from pathlib import Path
 
 from fastapi import UploadFile
 
@@ -27,7 +28,7 @@ class LocalBackend(StorageBackend):
         max_file_size: int
     ) -> Tuple[int, bytes]:
         """Save file to local filesystem"""
-        file_path = self.settings.media_root / object_key
+        file_path = self.settings.media_root / Path(object_key)
         file_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Read and validate size

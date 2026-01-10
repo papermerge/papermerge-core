@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     r2_account_id: str | None = None
     r2_access_key_id: str | None = None
     r2_secret_access_key: str | None = None
-    r2_bucket_name: str | None = None
+    bucket_name: str | None = None
 
     preview_page_size_sm: int = Field(gt=0, default=200)
 

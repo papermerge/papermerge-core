@@ -2,6 +2,7 @@ import io
 import logging
 import uuid
 from typing import Any
+from pathlib import Path
 
 from fastapi import (
     APIRouter,
@@ -223,14 +224,22 @@ async def upload_document(
         # global application config otherwise
         lang = user.preferences.document_default_lang or default_value
 
-    # Read file content
-    content = await file.read()
-    client_content_type=file.headers.get("content-type")
+    # Generate document ID early (needed for R2 object key)
+    doc_id = document_id if document_id is not None else uuid.uuid4()
+
+    # ============================================================
+    # Validate file WITHOUT reading entire content
+    # ============================================================
+    # Read only first chunk for mime type detection
+    first_chunk = await file.read(8192)  # Read 8KB for magic number detection
+    await file.seek(0)  # Reset file pointer
+
+    client_content_type = file.headers.get("content-type")
 
     # Detect and validate mime type
     try:
         mime_type = detect_and_validate_mime_type(
-            content,
+            first_chunk,
             file.filename,
             client_content_type=client_content_type,
             validate_structure=True  # Always validate for uploads
@@ -241,7 +250,6 @@ async def upload_document(
             status_code=400,
             detail=f"Unsupported file type: {e}"
         )
-
     except InvalidFileError as e:
         logger.warning(f"Invalid file structure for '{file.filename}': {e}")
         raise HTTPException(
@@ -250,14 +258,33 @@ async def upload_document(
         )
 
     max_file_size = config.max_file_size_mb * 1024 * 1024
-    if len(content) > max_file_size:
+    if file.size > max_file_size:
         raise HTTPException(
             status_code=413,  # Payload Too Large
             detail=f"File too large. Maximum size is {max_file_size / (1024*1024)}MB"
         )
+    from papermerge.storage import base, exc
+    storage = base.get_storage_backend()
+
+    file_extension = Path(file.filename).suffix
+    object_key = f"documents/{doc_id}/v1/original{file_extension}"
+
+    try:
+        actual_file_size = await storage.upload_file(
+            file=file,
+            object_key=object_key,
+            content_type=mime_type,
+            max_file_size=max_file_size
+        )
+    except exc.FileTooLargeError as e:
+        raise HTTPException(status_code=413, detail=str(e))
+    except exc.StorageUploadError as e:
+        logger.error(f"Storage upload failed for document {doc_id}: {e}")
+        raise HTTPException(status_code=500, detail="File upload failed")
 
     # Create document node
     new_document = schema.NewDocument(
+        id=doc_id,
         title=title,
         lang=lang,
         parent_id=parent_id,
@@ -283,6 +310,7 @@ async def upload_document(
         created_node, error = await doc_dbapi.create_document(db_session, new_document, mime_type=mime_type)
 
         if error:
+            await storage.delete_file(object_key)
             raise HTTPException(status_code=400, detail=error.model_dump())
 
         # Step 2: Upload file content
@@ -301,78 +329,6 @@ async def upload_document(
                 db_session, node_ids=[created_node.id], user_id=user.id
             )
             raise HTTPException(status_code=400, detail=upload_error.model_dump())
-
-    return doc
-
-
-@router.post(
-    "/{document_id}/upload",
-    deprecated=True,
-    responses={
-        status.HTTP_403_FORBIDDEN: {
-            "description": f"No `{scopes.DOCUMENT_UPLOAD}` permission on the node",
-            "content": OPEN_API_GENERIC_JSON_DETAIL,
-        }
-    },
-)
-async def upload_file(
-    document_id: uuid.UUID,
-    file: UploadFile,
-    user: require_scopes(scopes.DOCUMENT_UPLOAD),
-    db_session: AsyncSession = Depends(get_db),
-) -> schema.Document:
-    """
-
-    **DEPRECATED** use `POST /api/documents/upload` instead
-
-    Uploads document's file.
-
-    Document model must be created beforehand via `POST /nodes` endpoint
-    provided with `ctype` = `document`.
-
-    In order to upload file cURL:
-
-        $ ls
-        booking.pdf
-
-        $ curl <server url>/documents/<uuid>/upload
-        --form "file=@booking.pdf;type=application/pdf"
-        -H "Authorization: Bearer <your token>"
-
-    Note that `file=` is important and must be exactly that, it is the name
-    of the field in `multipart/form-data`. In other words, something like
-    '--form "data=@booking.pdf..." won't work.
-    The uploaded file is encoded as `multipart/form-data` and is sent
-    in POST request body.
-
-    Obviously you can upload files directly via swagger UI.
-    """
-    content = file.file.read()
-
-    if not await dbapi_common.has_node_perm(
-        db_session,
-        node_id=document_id,
-        codename=scopes.DOCUMENT_UPLOAD,
-        user_id=user.id,
-    ):
-        raise exc.HTTP403Forbidden()
-
-    async with AsyncAuditContext(
-            db_session,
-            user_id=user.id,
-            username=user.username
-    ):
-        doc, error = await dbapi.upload(
-            db_session,
-            document_id=document_id,
-            size=file.size,
-            content=io.BytesIO(content),
-            file_name=file.filename,
-            content_type=file.headers.get("content-type"),
-        )
-
-    if error:
-        raise HTTPException(status_code=400, detail=error.model_dump())
 
     return doc
 

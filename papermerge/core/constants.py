@@ -1,5 +1,3 @@
-from enum import Enum
-
 INBOX_TITLE = "inbox"
 HOME_TITLE = "home"
 CTYPE_FOLDER = "folder"
@@ -14,7 +12,6 @@ OCR = "ocr"
 PREVIEWS = "previews"
 DEFAULT_TAG_BG_COLOR = "#c41fff"
 DEFAULT_TAG_FG_COLOR = "#ffffff"
-S3_WORKER_ADD_DOC_VER = "s3_worker_add_doc_vers"
 S3_WORKER_REMOVE_DOC_VER = "s3_worker_remove_doc_vers"
 S3_WORKER_REMOVE_DOC_THUMBNAIL = "s3_worker_remove_doc_thumbnail"
 # bulk remove of docs thumbnails
@@ -46,4 +43,3 @@ USERNAME_MAX_LENGTH = 150
 EMAIL_MAX_LENGTH = 254  # RFC 5321 standard
 PASSWORD_MAX_LENGTH = 255  # Sufficient for hashed passwords
 NAME_MAX_LENGTH = 100  # Reasonable for first/last names
-

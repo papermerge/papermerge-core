@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
+from fastapi import UploadFile
+
 from papermerge.core.types import ImagePreviewSize
 
 
@@ -35,6 +37,17 @@ class StorageBackend(ABC):
         """Generate a signed URL for downloading a document version."""
         pass
 
+    @abstractmethod
+    async def upload_file(
+        self,
+        file: UploadFile,
+        object_key: str,
+        content_type: str,
+        max_file_size: int
+    ) -> int:
+        """Upload file and return actual size in bytes"""
+        pass
+
 
 def get_storage_backend() -> StorageBackend:
     """
@@ -52,7 +65,5 @@ def get_storage_backend() -> StorageBackend:
         from papermerge.storage.backends.r2 import R2Backend
         return R2Backend()
     else:
-        raise ValueError(
-            f"No cloud storage backend for file_server={settings.file_server}. "
-            "Cloud storage backends are only available for S3 and R2."
-        )
+        from papermerge.storage.backends.local import LocalBackend
+        return LocalBackend()

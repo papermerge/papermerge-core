@@ -1,17 +1,12 @@
-import io
+import logging
 import logging
 import math
-import aiofiles
-import aiofiles.os
-from pathlib import Path
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-
 from papermerge.core import constants
 from papermerge.core.exceptions import InvalidDateFormat
-
 
 logger = logging.getLogger(__name__)
 
@@ -109,29 +104,3 @@ def float2str(value: float | str | None) -> Optional[str]:
         month = math.ceil(fraction * 100)
 
     return f"{year}-{month:02d}"
-
-
-async def copy_file(src: Path | io.BytesIO | bytes, dst: Path):
-    """Copy source file to destination"""
-    logger.debug(f"copying {src} to {dst}")
-
-    if not dst.parent.exists():
-        await aiofiles.os.makedirs(dst.parent, exist_ok=True)
-
-    if isinstance(src, Path):
-        logger.debug(f"{src} is a Path instance")
-        # For file-to-file copying, read and write asynchronously
-        async with aiofiles.open(src, "rb") as src_file:
-            async with aiofiles.open(dst, "wb") as dst_file:
-                content = await src_file.read()
-                await dst_file.write(content)
-    elif isinstance(src, io.BytesIO):
-        async with aiofiles.open(dst, "wb") as f:
-            await f.write(src.getvalue())
-    elif isinstance(src, bytes):
-        async with aiofiles.open(dst, "wb") as f:
-            await f.write(src)
-    else:
-        raise ValueError(
-            f"src ({src}) is neither instance of Path, io.BytesIO, nor bytes"
-        )

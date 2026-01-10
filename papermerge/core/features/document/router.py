@@ -2,7 +2,6 @@ import io
 import logging
 import uuid
 from typing import Any
-from pathlib import Path
 
 from fastapi import (
     APIRouter,
@@ -24,7 +23,7 @@ from papermerge.core.features.auth import scopes
 from papermerge.core.features.document.schema import (
     DocumentTypeArg,
 )
-from papermerge.core import schema
+from papermerge.core import schema, pathlib
 from papermerge.core.config import get_settings, FileServer
 from papermerge.core.tasks import send_task
 from papermerge.core.features.nodes.db import api as nodes_dbapi
@@ -263,22 +262,23 @@ async def upload_document(
             status_code=413,  # Payload Too Large
             detail=f"File too large. Maximum size is {max_file_size / (1024*1024)}MB"
         )
-    from papermerge.storage import base, exc
-    storage = base.get_storage_backend()
+    from papermerge.storage.base import get_storage_backend
+    from papermerge.storage.exc import StorageUploadError, FileTooLargeError
 
-    file_extension = Path(file.filename).suffix
-    object_key = f"documents/{doc_id}/v1/original{file_extension}"
+    storage = get_storage_backend()
+
+    object_key = str(pathlib.docver_path(doc_id, file_name=file.filename))
 
     try:
-        actual_file_size = await storage.upload_file(
+        actual_file_size, content = await storage.upload_file(
             file=file,
             object_key=object_key,
             content_type=mime_type,
             max_file_size=max_file_size
         )
-    except exc.FileTooLargeError as e:
+    except FileTooLargeError as e:
         raise HTTPException(status_code=413, detail=str(e))
-    except exc.StorageUploadError as e:
+    except StorageUploadError as e:
         logger.error(f"Storage upload failed for document {doc_id}: {e}")
         raise HTTPException(status_code=500, detail="File upload failed")
 
@@ -297,10 +297,6 @@ async def upload_document(
         updated_by=user.id
     )
 
-    if document_id is not None:
-        # custom document ID
-        new_document.id = document_id
-
     async with AsyncAuditContext(
         db_session,
         user_id=user.id,
@@ -314,7 +310,7 @@ async def upload_document(
             raise HTTPException(status_code=400, detail=error.model_dump())
 
         # Step 2: Upload file content
-        doc, upload_error = await dbapi.upload(
+        doc, upload_error = await dbapi.save_upload_metadata(
             db_session,
             document_id=created_node.id,
             size=file.size or 0,

@@ -1,3 +1,4 @@
+from typing import Tuple
 from abc import ABC, abstractmethod
 from uuid import UUID
 
@@ -44,7 +45,7 @@ class StorageBackend(ABC):
         object_key: str,
         content_type: str,
         max_file_size: int
-    ) -> int:
+    ) -> Tuple[int, bytes]:
         """Upload file and return actual size in bytes"""
         pass
 

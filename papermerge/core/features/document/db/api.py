@@ -834,7 +834,7 @@ async def create_next_version(
     return document_version
 
 
-async def upload(
+async def save_upload_metadata(
     db_session: AsyncSession,
     document_id: uuid.UUID,
     content: io.BytesIO,
@@ -937,7 +937,6 @@ async def upload(
     validated_model = schema.Document.model_validate(doc_with_relations)
 
     return validated_model, None
-
 
 
 async def get_doc(

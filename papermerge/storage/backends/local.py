@@ -1,5 +1,6 @@
 from uuid import UUID
 import logging
+from typing import Tuple
 
 from fastapi import UploadFile
 
@@ -24,7 +25,7 @@ class LocalBackend(StorageBackend):
         object_key: str,
         content_type: str,
         max_file_size: int
-    ) -> int:
+    ) -> Tuple[int, bytes]:
         """Save file to local filesystem"""
         file_path = self.settings.media_root / object_key
         file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -42,8 +43,7 @@ class LocalBackend(StorageBackend):
             f.write(content)
 
         logger.info(f"Saved file to local storage: {file_path}")
-        return len(content)
-
+        return len(content), content
 
     def sign_url(self, url: str, valid_for = 600):
         pass

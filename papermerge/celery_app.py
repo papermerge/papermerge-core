@@ -73,4 +73,6 @@ app.conf.task_routes = {
     "s3preview": {"queue": s3preview_queue_name()},
     "ocr": {"queue": prefixed("ocr")},
     "path_tmpl": {"queue": prefixed("path_tmpl")},
+    # Document processing queue (conversion, page counting)
+    "document.process_upload": {"queue": prefixed("document_processing")},
 }

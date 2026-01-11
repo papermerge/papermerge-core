@@ -1,6 +1,5 @@
 import logging
 from uuid import UUID
-from typing import Tuple
 
 import boto3
 from botocore.client import Config
@@ -58,7 +57,7 @@ class R2Backend(StorageBackend):
         object_key: str,
         content_type: str,
         max_file_size: int
-    ) -> Tuple[int, bytes]:
+    ) -> int:
         """Stream file to R2"""
         content = await file.read()
 
@@ -78,7 +77,7 @@ class R2Backend(StorageBackend):
                 ContentType=content_type
             )
             logger.info(f"Uploaded file to R2: {full_key}")
-            return len(content), content
+            return len(content)  # Only return size, not content
         except Exception as e:
             logger.error(f"R2 upload failed for {full_key}: {e}")
             raise StorageUploadError(f"Upload failed: {e}")

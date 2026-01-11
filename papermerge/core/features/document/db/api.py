@@ -470,7 +470,7 @@ async def create_document(
     attrs: schema.NewDocument,
     mime_type: MimeType,
     document_version_id: uuid.UUID | None = None,
-) -> Tuple[schema.Document | None, schema.Error | None]:
+) -> orm.Document:
     error = None
     doc_id = attrs.id or uuid.uuid4()
 

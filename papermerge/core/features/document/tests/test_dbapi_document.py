@@ -1,5 +1,4 @@
 import os
-import io
 from datetime import date as Date
 from decimal import Decimal
 from pathlib import Path
@@ -521,7 +520,6 @@ async def test_document_version_bump_from_pages(db_session: AsyncSession, make_d
         await dbapi.save_upload_metadata(
             db_session=db_session,
             document_id=src.id,
-            content=io.BytesIO(content),
             file_name="three-pages.pdf",
             size=size,
             content_type=MimeType.application_pdf,
@@ -629,7 +627,6 @@ async def test_document_upload_png(make_document, user, db_session: AsyncSession
         _, error = await dbapi.save_upload_metadata(
             db_session,
             document_id=doc.id,
-            content=io.BytesIO(content),
             file_name="one-page.png",
             size=size,
             content_type=MimeType.image_png,
@@ -669,7 +666,6 @@ async def test_document_upload_txt(make_document, user, db_session: AsyncSession
         fresh_doc, error = await dbapi.save_upload_metadata(
             db_session,
             document_id=doc.id,
-            content=io.BytesIO(content),
             file_name="dummy.txt",
             size=size,
             content_type="text/plain",

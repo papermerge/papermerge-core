@@ -902,12 +902,14 @@ dependencies = [
     { name = "uvicorn" },
 ]
 
-[package.dev-dependencies]
-aws-s3 = [
+[package.optional-dependencies]
+cloud-storage = [
     { name = "boto3" },
     { name = "botocore" },
     { name = "cryptography" },
 ]
+
+[package.dev-dependencies]
 dev = [
     { name = "freezegun" },
     { name = "pytest" },
@@ -919,7 +921,10 @@ requires-dist = [
     { name = "aiofiles" },
     { name = "alembic" },
     { name = "asyncpg" },
+    { name = "boto3", marker = "extra == 'cloud-storage'" },
+    { name = "botocore", marker = "extra == 'cloud-storage'" },
     { name = "celery", extras = ["gevent", "redis"] },
+    { name = "cryptography", marker = "extra == 'cloud-storage'" },
     { name = "fastapi", extras = ["standard"] },
     { name = "img2pdf" },
     { name = "passlib" },
@@ -938,13 +943,9 @@ requires-dist = [
     { name = "uritemplate" },
     { name = "uvicorn" },
 ]
+provides-extras = ["cloud-storage"]
 
 [package.metadata.requires-dev]
-aws-s3 = [
-    { name = "boto3" },
-    { name = "botocore" },
-    { name = "cryptography" },
-]
 dev = [
     { name = "freezegun", specifier = ">=1.5.5" },
     { name = "pytest" },

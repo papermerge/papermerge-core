@@ -116,11 +116,11 @@ export function getDefaultHeaders(): Record<string, string> {
 
   if (remote_user) {
     headers = {
-      "Remote-User": remote_user,
-      "Remote-Groups": remote_groups || "",
-      "Remote-Roles": remote_roles || "",
-      "Remote-Email": remote_email || "",
-      "Remote-Name": remote_name || ""
+      "X-Forwarded-User": remote_user,
+      "X-Forwarded-Groups": remote_groups || "",
+      "X-Forwarded-Roles": remote_roles || "",
+      "X-Forwarded-Email": remote_email || "",
+      "X-Forwarded-Name": remote_name || ""
     }
   }
 

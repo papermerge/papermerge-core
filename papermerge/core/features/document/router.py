@@ -242,7 +242,7 @@ async def upload_document(
             first_chunk,
             file.filename,
             client_content_type=client_content_type,
-            validate_structure=True  # Always validate for uploads
+            validate_structure=False
         )
     except UnsupportedFileTypeError as e:
         logger.warning(f"Unsupported file type for '{file.filename}': {e}")

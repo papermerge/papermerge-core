@@ -939,6 +939,7 @@ async def save_upload_metadata(
 
     result = await db_session.execute(stmt)
     doc_with_relations = result.scalar_one()
+
     validated_model = schema.Document.model_validate(doc_with_relations)
 
     return validated_model, None

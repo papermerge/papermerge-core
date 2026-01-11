@@ -1,5 +1,5 @@
-import { getDefaultHeaders } from "@/utils"
-import { createSlice } from "@reduxjs/toolkit"
+import {getDefaultHeaders} from "@/utils"
+import {createSlice} from "@reduxjs/toolkit"
 import Cookies from "js-cookie"
 
 const COOKIE_NAME = "access_token"
@@ -31,20 +31,20 @@ const authSlice = createSlice({
       const headers = getDefaultHeaders()
       const token = Cookies.get(COOKIE_NAME)
 
-      if (headers["Remote-User"]) {
-        state.remote_user = headers["Remote-User"]
+      if (headers["X-Forwarded-User"]) {
+        state.remote_user = headers["X-Forwarded-User"]
       }
 
-      if (headers["Remote-Groups"]) {
-        state.remote_groups = headers["Remote-Groups"]
+      if (headers["X-Forwarded-Groups"]) {
+        state.remote_groups = headers["X-Forwarded-Groups"]
       }
 
-      if (headers["Remote-Roles"]) {
-        state.remote_roles = headers["Remote-Roles"]
+      if (headers["X-Forwarded-Roles"]) {
+        state.remote_roles = headers["X-Forwarded-Roles"]
       }
 
-      if (headers["Remote-Email"]) {
-        state.remote_email = headers["Remote-Email"]
+      if (headers["X-Forwarded-Email"]) {
+        state.remote_email = headers["X-Forwarded-Email"]
       }
 
       if (headers["Remote-Name"]) {

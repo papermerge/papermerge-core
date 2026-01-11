@@ -28,19 +28,19 @@ const baseQuery = fetchBaseQuery({
     }
 
     if (remote_user) {
-      headers.set("Remote-User", remote_user)
+      headers.set("X-Forwarded-User", remote_user)
     }
     if (remote_groups) {
-      headers.set("Remote-Groups", remote_groups)
+      headers.set("X-Forwarded-Groups", remote_groups)
     }
     if (remote_roles) {
-      headers.set("Remote-Roles", remote_roles)
+      headers.set("X-Forwarded-Roles", remote_roles)
     }
     if (remote_name) {
-      headers.set("Remote-Name", remote_name)
+      headers.set("X-Forwarded-Name", remote_name)
     }
     if (remote_email) {
-      headers.set("Remote-Email", remote_email)
+      headers.set("X-Forwarded-Email", remote_email)
     }
 
     headers.set("Content-Type", "application/json")

@@ -21,7 +21,7 @@ from papermerge.core.types import (
     CFValueType,
     DocumentLang,
     ImagePreviewStatus,
-    ImagePreviewSize,
+    ImagePreviewSize, DocumentProcessingStatus,
 )
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core import config
@@ -320,6 +320,12 @@ class DocumentNode(DocumentBase):
 
 class Document(DocumentNode):
     versions: list[DocumentVersion] = Field(default_factory=list)
+
+
+class DocumentUploadResponse(BaseModel):
+    id: UUID
+    title: str
+    processing_status: DocumentProcessingStatus
 
 
 class DocumentShort(DocumentBase):

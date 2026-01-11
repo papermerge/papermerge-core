@@ -25,7 +25,6 @@ from papermerge.core.features.document.schema import (
 from papermerge.core import schema, pathlib
 from papermerge.core.config import get_settings, FileServer
 from papermerge.core.tasks import send_task
-from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.db import common as dbapi_common
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
@@ -160,6 +159,7 @@ async def get_document_custom_field_values(
 @router.post(
     "/upload",
     status_code=201,
+    response_model=schema.DocumentUploadResponse,
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": f"No `{scopes.NODE_CREATE}` or `{scopes.DOCUMENT_UPLOAD}` permission",
@@ -176,7 +176,7 @@ async def upload_document(
     ocr: bool = Form(False),
     lang: str | None = Form(None),
     db_session: AsyncSession = Depends(get_db),
-) -> schema.Document:
+):
     """
     Creates a document model and uploads file in same time.
 
@@ -291,7 +291,7 @@ async def upload_document(
         title=title,
         lang=lang,
         parent_id=parent_id,
-        size=actual_file_size,  # Use actual size from upload
+        size=0,
         page_count=0,
         ocr=ocr,
         file_name=file.filename or title,
@@ -305,43 +305,20 @@ async def upload_document(
         user_id=user.id,
         username=user.username
     ):
-        # Step 1: Create document node
-        created_node, error = await doc_dbapi.create_document(
-            db_session,
-            new_document,
-            mime_type=mime_type,
-            document_version_id=document_version_id
-        )
 
-        if error:
-            # Cleanup: delete uploaded file from storage
-            try:
-                await storage.delete_file(object_key)
-            except Exception as e:
-                logger.warning(f"Failed to cleanup uploaded file {object_key}: {e}")
-            raise HTTPException(status_code=400, detail=error.model_dump())
-
-        # Step 2: Save metadata (no content, no processing)
-        doc, upload_error = await dbapi.save_upload_metadata(
-            db_session,
-            document_id=created_node.id,
-            size=actual_file_size,
-            file_name=file.filename or title,
-            content_type=mime_type,
-            created_by=user.id,
-            document_version_id=document_version_id,
-        )
-
-        if upload_error:
-            await nodes_dbapi.delete_nodes(
-                db_session, node_ids=[created_node.id], user_id=user.id
+        try:
+            doc = await doc_dbapi.create_document(
+                db_session,
+                new_document,
+                mime_type=mime_type,
+                document_version_id=document_version_id
             )
-            # Cleanup uploaded file
+        except Exception as ex:
             try:
                 await storage.delete_file(object_key)
-            except Exception as e:
-                logger.warning(f"Failed to cleanup uploaded file {object_key}: {e}")
-            raise HTTPException(status_code=400, detail=upload_error.model_dump())
+            except Exception as clean_ex:
+                logger.warning(f"Failed to cleanup uploaded file {object_key}: {clean_ex}")
+            raise HTTPException(status_code=400, detail=str(e))
 
     # Step 3: Queue async worker task for processing
     # Worker will:

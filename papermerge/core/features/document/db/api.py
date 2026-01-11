@@ -18,7 +18,7 @@ from sqlalchemy import (
     or_,
     case
 )
-from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import joinedload, selectinload, aliased
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -539,70 +539,18 @@ async def create_document(
     db_session.add(doc)
     db_session.add(doc_ver)
 
-    try:
-        await db_session.flush()
+    await db_session.flush()
 
-        # Set ownership
-        await ownership_api.set_owner(
-            session=db_session,
-            resource=types.NodeResource(id=doc_id),
-            owner=types.Owner(owner_type=owner_type, owner_id=owner_id),
-        )
-
-        await db_session.commit()
-
-    except IntegrityError as e:
-        await db_session.rollback()
-        stre = str(e)
-        # postgres unique integrity error
-        if "unique" in stre and "title" in stre:
-            attr_err = schema.AttrError(
-                name="title",
-                message="Within a folder title must be unique"
-            )
-            error = schema.Error(attrs=[attr_err])
-        # sqlite unique integrity error
-        elif "UNIQUE" in stre and ".title" in stre:
-            attr_err = schema.AttrError(
-                name="title",
-                message="Within a folder title must be unique"
-            )
-            error = schema.Error(attrs=[attr_err])
-        else:
-            error = schema.Error(messages=[stre])
-
-        return None, error
-
-    # Load the document with relationships
-    stmt = select(orm.Document).options(
-        selectinload(orm.Document.tags),
-        selectinload(orm.Document.versions).selectinload(orm.DocumentVersion.pages)
-    ).where(orm.Document.id == doc_id)
-
-    result = await db_session.execute(stmt)
-    doc_with_relations = result.scalar_one_or_none()
-
-    if doc_with_relations:
-        # Get owner details for the response
-        owner_details = await ownership_api.get_owner_details(
-            session=db_session,
-            resource_type=ResourceType.NODE,
-            resource_id=doc_id
-        )
-
-        # Set owner_name for backward compatibility (if schema still has it)
-        if hasattr(doc_with_relations, 'owner_name'):
-            doc_with_relations.owner_name = owner_details.name
-
-        return schema.Document.model_validate(doc_with_relations), error
-
-    # Shouldn't reach here, but handle it
-    attr_err = schema.AttrError(
-        name="title",
-        message="Document creation failed"
+    # Set ownership
+    await ownership_api.set_owner(
+        session=db_session,
+        resource=types.NodeResource(id=doc_id),
+        owner=types.Owner(owner_type=owner_type, owner_id=owner_id),
     )
-    error = schema.Error(attrs=[attr_err])
-    return None, error
+
+    await db_session.commit()
+
+    return doc
 
 
 async def version_bump(
@@ -837,13 +785,13 @@ async def create_next_version(
 
 
 async def save_upload_metadata(
-        db_session: AsyncSession,
-        document_id: uuid.UUID,
-        size: int,
-        file_name: str,
-        content_type: MimeType,
-        created_by: uuid.UUID,
-        document_version_id: uuid.UUID = None,
+    db_session: AsyncSession,
+    document_id: uuid.UUID,
+    size: int,
+    file_name: str,
+    content_type: MimeType,
+    created_by: uuid.UUID,
+    document_version_id: uuid.UUID = None,
 ) -> Tuple[schema.Document | None, schema.Error | None]:
     """
     Save upload metadata for document version.

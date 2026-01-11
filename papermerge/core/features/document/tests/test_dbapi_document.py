@@ -587,7 +587,6 @@ async def test_document_upload_pdf(make_document, user, db_session: AsyncSession
         await dbapi.save_upload_metadata(
             db_session,
             document_id=doc.id,
-            content=io.BytesIO(content),
             file_name="three-pages.pdf",
             size=size,
             content_type=MimeType.application_pdf,

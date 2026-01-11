@@ -531,6 +531,7 @@ async def create_document(
         page_count=0,
         lang=attrs.lang,
         mime_type=mime_type,
+        is_original=True,
         short_description="Original",
         created_by=attrs.created_by,
         updated_by=attrs.updated_by

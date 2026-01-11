@@ -3,18 +3,24 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core import orm, schema, dbapi
 from papermerge.core.features.nodes.db import api as nodes_dbapi
-from papermerge.core.tests.resource_file import ResourceFile
 from papermerge.core.tests.types import DocumentTestFileType
 
 
 async def test_get_document_details(
-    auth_api_client, make_document_from_resource, user, db_session: AsyncSession
+    auth_api_client,
+    pdf_file: DocumentTestFileType,
+    user,
+    db_session: AsyncSession
 ):
-    doc = await make_document_from_resource(
-        resource=ResourceFile.THREE_PAGES, user=user, parent=user.home_folder
+    resp = await auth_api_client.post(
+        "/documents/upload",
+        files={"file": pdf_file.as_upload_tuple()}
     )
+    assert resp.status_code == 201, resp.json()
 
-    response = await auth_api_client.get(f"/documents/{doc.id}")
+    data = resp.json()
+
+    response = await auth_api_client.get(f"/documents/{data['id']}")
     assert response.status_code == 200, response.json()
 
 

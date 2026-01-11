@@ -273,7 +273,7 @@ async def upload_document(
     )
 
     try:
-        actual_file_size = await storage.upload_file(
+        await storage.upload_file(
             file=file,
             object_key=object_key,
             content_type=mime_type,
@@ -285,26 +285,25 @@ async def upload_document(
         logger.error(f"Storage upload failed for document {doc_id}: {e}")
         raise HTTPException(status_code=500, detail="File upload failed")
 
-    # Create document node
-    new_document = schema.NewDocument(
-        id=doc_id,
-        title=title,
-        lang=lang,
-        parent_id=parent_id,
-        size=0,
-        page_count=0,
-        ocr=ocr,
-        file_name=file.filename or title,
-        ctype="document",
-        created_by=user.id,
-        updated_by=user.id
-    )
-
     async with AsyncAuditContext(
         db_session,
         user_id=user.id,
         username=user.username
     ):
+
+        new_document = schema.NewDocument(
+            id=doc_id,
+            title=title,
+            lang=lang,
+            parent_id=parent_id,
+            size=0,
+            page_count=0,
+            ocr=ocr,
+            file_name=file.filename or title,
+            ctype="document",
+            created_by=user.id,
+            updated_by=user.id
+        )
 
         try:
             doc = await doc_dbapi.create_document(
@@ -313,19 +312,13 @@ async def upload_document(
                 mime_type=mime_type,
                 document_version_id=document_version_id
             )
-        except Exception as ex:
+        except Exception as e:
             try:
                 await storage.delete_file(object_key)
             except Exception as clean_ex:
                 logger.warning(f"Failed to cleanup uploaded file {object_key}: {clean_ex}")
             raise HTTPException(status_code=400, detail=str(e))
 
-    # Step 3: Queue async worker task for processing
-    # Worker will:
-    # - Convert image to PDF (if needed)
-    # - Count pages
-    # - Create page records
-    # - Update processing_status to 'ready'
     send_task(
         "document.process_upload",
         kwargs={

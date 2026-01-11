@@ -14,7 +14,6 @@ from papermerge.core.features.custom_fields.db import orm as cf_orm
 from papermerge.core.features.document import schema
 from papermerge.core.features.document.db import api as dbapi
 from papermerge.core.features.document.db import orm as docs_orm
-from papermerge.core.schemas import error as err_schema
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.custom_fields import schema as cf_schema
 
@@ -26,7 +25,6 @@ async def test_get_doc_last_ver(db_session: AsyncSession, make_document, user):
     doc: schema.Document = await make_document(
         title="some doc", user=user, parent=user.home_folder
     )
-    assert len(doc.versions) == 1
 
     await dbapi.version_bump(
         db_session,
@@ -491,17 +489,18 @@ async def test_document_version_dump(db_session: AsyncSession, make_document, us
     doc: schema.Document = await make_document(
         title="some doc", user=user, parent=user.home_folder
     )
-    # initially document has only one version
-    assert len(doc.versions) == 1
 
     await dbapi.version_bump(db_session, doc_id=doc.id, user_id=user.id)
 
-    new_doc = await db_session.get(docs_orm.Document, doc.id)
-
+    doc_versions = await dbapi.get_document_versions(
+        db_session=db_session,
+        doc_id=doc.id
+    )
     # now document has two versions
-    assert len(new_doc.versions) == 2
-    assert new_doc.versions[0].number == 1
-    assert new_doc.versions[1].number == 2
+    assert len(doc_versions) == 2
+
+    assert doc_versions[0].number == 2
+    assert doc_versions[1].number == 1
 
 
 @pytest.mark.skip(reason="is not async")
@@ -555,126 +554,18 @@ async def test_basic_document_creation(db_session: AsyncSession, user):
         created_by=user.id,
         updated_by=user.id
     )
-    doc, error = await dbapi.create_document(db_session, attrs=attrs, mime_type=MimeType.application_pdf)
-    doc: schema.Document
-
-    assert error is None
+    doc = await dbapi.create_document(db_session, attrs=attrs, mime_type=MimeType.application_pdf)
     assert doc.title == "New Document"
-    assert len(doc.versions) == 1
-    assert doc.versions[0].number == 1
-    assert doc.versions[0].page_count == 0
-    assert doc.versions[0].size == 0
 
-
-async def test_document_upload_pdf(make_document, user, db_session: AsyncSession):
-    """
-    Upon creation document model has exactly one document version, and
-    respective document version has attribute `size` set to 0.
-
-    Check that uploaded file is associated with already
-    existing document version and document version is NOT
-    incremented.
-    """
-    doc: schema.Document = await make_document(
-        title="some doc", user=user, parent=user.home_folder
+    versions = await dbapi.get_document_versions(
+        db_session=db_session,
+        doc_id=doc.id
     )
 
-    with open(RESOURCES / "three-pages.pdf", "rb") as file:
-        content = file.read()
-        size = os.stat(RESOURCES / "three-pages.pdf").st_size
-        await dbapi.save_upload_metadata(
-            db_session,
-            document_id=doc.id,
-            file_name="three-pages.pdf",
-            size=size,
-            content_type=MimeType.application_pdf,
-            created_by=user.id
-        )
-
-    stmt = (
-        select(docs_orm.Document)
-        .options(selectinload(docs_orm.Document.versions))
-        .where(docs_orm.Document.id == doc.id)
-    )
-    fresh_doc = (await db_session.execute(stmt)).scalar()
-
-    assert len(fresh_doc.versions) == 1  # document versions was not incremented
-
-    doc_ver = fresh_doc.versions[0]
-    # uploaded file was associated to existing version (with `size` == 0)
-    assert doc_ver.file_name == "three-pages.pdf"
-    # `size` of the document version is now set to the uploaded file size
-    assert doc_ver.size == size
-
-
-
-async def test_document_upload_png(make_document, user, db_session: AsyncSession):
-    """
-    Upon creation document model has exactly one document version, and
-    respective document version has attribute `size` set to 0.
-
-    When uploading png file, the document will end up with two versions:
-     - one document version to hold the original png file
-     - and document version to hold pdf file (png converted to pdf)
-    """
-    doc: schema.Document = await make_document(
-        title="some doc", user=user, parent=user.home_folder
-    )
-    IMAGE_PATH = RESOURCES / "one-page.png"
-    with open(IMAGE_PATH, "rb") as file:
-        content = file.read()
-        size = os.stat(IMAGE_PATH).st_size
-        _, error = await dbapi.save_upload_metadata(
-            db_session,
-            document_id=doc.id,
-            file_name="one-page.png",
-            size=size,
-            content_type=MimeType.image_png,
-            created_by=user.id
-        )
-
-    stmt = (
-        select(docs_orm.Document)
-        .options(selectinload(docs_orm.Document.versions))
-        .where(docs_orm.Document.id == doc.id)
-    )
-    fresh_doc = (await db_session.execute(stmt)).scalar()
-
-    assert error is None, error
-    assert len(fresh_doc.versions) == 2
-
-    assert fresh_doc.versions[0].file_name == "one-page.png"
-    assert fresh_doc.versions[0].size == size
-
-    assert fresh_doc.versions[1].file_name == "one-page.png.pdf"
-
-
-async def test_document_upload_txt(make_document, user, db_session: AsyncSession):
-    """Uploading of txt files is not supported
-
-    When uploading txt file `upload` method should return an error
-    """
-
-    doc: schema.Document = await make_document(
-        title="some doc", user=user, parent=user.home_folder
-    )
-
-    DUMMY_FILE_PATH = RESOURCES / "dummy.txt"
-    with open(DUMMY_FILE_PATH, "rb") as file:
-        content = file.read()
-        size = os.stat(DUMMY_FILE_PATH).st_size
-        fresh_doc, error = await dbapi.save_upload_metadata(
-            db_session,
-            document_id=doc.id,
-            file_name="dummy.txt",
-            size=size,
-            content_type="text/plain",
-            created_by=user.id
-        )
-
-    assert fresh_doc is None
-    error: err_schema.Error
-    assert len(error.messages) == 1
+    assert len(versions) == 1
+    assert versions[0].number == 1
+    assert versions[0].page_count == 0
+    assert versions[0].size == 0
 
 
 async def test_get_last_ver_pages(db_session: AsyncSession, make_document, user):

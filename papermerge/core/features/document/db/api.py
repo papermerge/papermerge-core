@@ -742,14 +742,14 @@ def get_pdf_page_count(content: io.BytesIO | bytes) -> int:
 
 
 async def create_next_version(
-        db_session: AsyncSession,
-        doc: orm.Document,
-        file_name,
-        file_size,
-        content_type: MimeType,
-        created_by: uuid.UUID,
-        short_description=None,
-        document_version_id: uuid.UUID = None,
+    db_session: AsyncSession,
+    doc: orm.Document,
+    file_name,
+    file_size,
+    content_type: MimeType,
+    created_by: uuid.UUID,
+    short_description=None,
+    document_version_id: uuid.UUID = None,
 ) -> orm.DocumentVersion:
     stmt = (
         select(orm.DocumentVersion)
@@ -880,6 +880,23 @@ async def get_doc_id_from_doc_ver_id(
     )
 
     return (await db_session.execute(stmt)).scalar()
+
+
+async def get_document_versions(
+    db_session: AsyncSession,
+    doc_id: uuid.UUID,
+) -> Sequence[orm.DocumentVersion]:
+    """Get all versions of a document ordered by version number (newest first)"""
+    stmt = select(
+        orm.DocumentVersion
+    ).where(
+        orm.DocumentVersion.document_id == doc_id
+    ).order_by(
+        orm.DocumentVersion.number.desc()
+    )
+
+    result = await db_session.execute(stmt)
+    return result.scalars().all()
 
 
 async def get_doc_versions_list(

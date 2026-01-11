@@ -142,8 +142,7 @@ def make_document(db_session: AsyncSession, system_user):
             attrs["created_by"] = system_user.id
             attrs["updated_by"] = system_user.id
 
-
-        doc, _ = await doc_dbapi.create_document(
+        doc = await doc_dbapi.create_document(
             db_session,
             doc_schema.NewDocument(**attrs),
             mime_type=MimeType.application_pdf
@@ -194,7 +193,6 @@ def make_document_from_resource(make_document, db_session: AsyncSession):
             await doc_dbapi.save_upload_metadata(
                 db_session,
                 document_id=doc.id,
-                content=io.BytesIO(content),
                 file_name=resource,
                 size=size,
                 content_type=MimeType.application_pdf,
@@ -220,7 +218,7 @@ def make_document_with_pages(db_session: AsyncSession):
             created_by=user.id,
             updated_by=user.id,
         )
-        doc, _ = await doc_dbapi.create_document(db_session, attrs, mime_type=MimeType.application_pdf)
+        doc = await doc_dbapi.create_document(db_session, attrs, mime_type=MimeType.application_pdf)
         PDF_PATH = RESOURCES / "three-pages.pdf"
 
         with open(PDF_PATH, "rb") as file:
@@ -229,7 +227,6 @@ def make_document_with_pages(db_session: AsyncSession):
             await doc_dbapi.upload(
                 db_session,
                 document_id=doc.id,
-                content=io.BytesIO(content),
                 file_name="three-pages.pdf",
                 size=size,
                 content_type=MimeType.application_pdf,

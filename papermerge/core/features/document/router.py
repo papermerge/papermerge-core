@@ -1,4 +1,3 @@
-import io
 import logging
 import uuid
 from typing import Any
@@ -26,7 +25,6 @@ from papermerge.core.features.document.schema import (
 from papermerge.core import schema, pathlib
 from papermerge.core.config import get_settings, FileServer
 from papermerge.core.tasks import send_task
-from papermerge.core.features.nodes.db import api as nodes_dbapi
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.db import common as dbapi_common
 from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
@@ -50,9 +48,9 @@ config = get_settings()
 
 @router.get("/")
 async def get_documents(
-    user: require_scopes(scopes.NODE_VIEW),
-    params: DocumentParams = Depends(),
-    db_session: AsyncSession = Depends(get_db)
+        user: require_scopes(scopes.NODE_VIEW),
+        params: DocumentParams = Depends(),
+        db_session: AsyncSession = Depends(get_db)
 ) -> schema.PaginatedResponse[schema.FlatDocument]:
     """Gets paginated list of documents"""
     try:
@@ -86,25 +84,25 @@ async def get_documents(
     },
 )
 async def bulk_set_document_custom_field_values(
-    document_id: uuid.UUID,
-    values: dict[uuid.UUID, Any],
-    user: require_scopes(scopes.NODE_UPDATE),
-    db_session: AsyncSession = Depends(get_db),
+        document_id: uuid.UUID,
+        values: dict[uuid.UUID, Any],
+        user: require_scopes(scopes.NODE_UPDATE),
+        db_session: AsyncSession = Depends(get_db),
 ) -> list[schema.CustomFieldValue]:
     """Update document's custom fields"""
     if not await dbapi_common.has_node_perm(
-        db_session,
-        node_id=document_id,
-        codename=scopes.NODE_UPDATE,
-        user_id=user.id,
+            db_session,
+            node_id=document_id,
+            codename=scopes.NODE_UPDATE,
+            user_id=user.id,
     ):
         raise exc.HTTP403Forbidden()
 
     try:
         async with AsyncAuditContext(
-            db_session,
-            user_id=user.id,
-            username=user.username
+                db_session,
+                user_id=user.id,
+                username=user.username
         ):
             updated_entries = await dbapi.bulk_set_custom_field_values(
                 db_session,
@@ -134,16 +132,16 @@ async def bulk_set_document_custom_field_values(
     },
 )
 async def get_document_custom_field_values(
-    document_id: uuid.UUID,
-    user: require_scopes(scopes.NODE_VIEW),
-    db_session: AsyncSession = Depends(get_db),
+        document_id: uuid.UUID,
+        user: require_scopes(scopes.NODE_VIEW),
+        db_session: AsyncSession = Depends(get_db),
 ) -> list[schema.CustomFieldWithValue]:
     """Get document custom field values"""
     if not await dbapi_common.has_node_perm(
-        db_session,
-        node_id=document_id,
-        codename=scopes.NODE_VIEW,
-        user_id=user.id,
+            db_session,
+            node_id=document_id,
+            codename=scopes.NODE_VIEW,
+            user_id=user.id,
     ):
         raise exc.HTTP403Forbidden()
 
@@ -161,6 +159,7 @@ async def get_document_custom_field_values(
 @router.post(
     "/upload",
     status_code=201,
+    response_model=schema.DocumentUploadResponse,
     responses={
         status.HTTP_403_FORBIDDEN: {
             "description": f"No `{scopes.NODE_CREATE}` or `{scopes.DOCUMENT_UPLOAD}` permission",
@@ -177,7 +176,7 @@ async def upload_document(
     ocr: bool = Form(False),
     lang: str | None = Form(None),
     db_session: AsyncSession = Depends(get_db),
-) -> schema.Document:
+):
     """
     Creates a document model and uploads file in same time.
 
@@ -205,10 +204,10 @@ async def upload_document(
 
     # Check permission on parent
     if not await dbapi_common.has_node_perm(
-        db_session,
-        node_id=parent_id,
-        codename=scopes.NODE_VIEW,
-        user_id=user.id,
+            db_session,
+            node_id=parent_id,
+            codename=scopes.NODE_VIEW,
+            user_id=user.id,
     ):
         raise exc.HTTP403Forbidden()
 
@@ -274,7 +273,7 @@ async def upload_document(
     )
 
     try:
-        actual_file_size, content = await storage.upload_file(
+        await storage.upload_file(
             file=file,
             object_key=object_key,
             content_type=mime_type,
@@ -286,55 +285,50 @@ async def upload_document(
         logger.error(f"Storage upload failed for document {doc_id}: {e}")
         raise HTTPException(status_code=500, detail="File upload failed")
 
-    # Create document node
-    new_document = schema.NewDocument(
-        id=doc_id,
-        title=title,
-        lang=lang,
-        parent_id=parent_id,
-        size=file.size or 0,
-        page_count=0,
-        ocr=ocr,
-        file_name=file.filename or title,
-        ctype="document",
-        created_by=user.id,
-        updated_by=user.id
-    )
-
     async with AsyncAuditContext(
         db_session,
         user_id=user.id,
         username=user.username
     ):
-        # Step 1: Create document node
-        created_node, error = await doc_dbapi.create_document(
-            db_session,
-            new_document,
-            mime_type=mime_type,
-            document_version_id=document_version_id
-        )
 
-        if error:
-            await storage.delete_file(object_key)
-            raise HTTPException(status_code=400, detail=error.model_dump())
-
-        # Step 2: Upload file content
-        doc, upload_error = await dbapi.save_upload_metadata(
-            db_session,
-            document_id=created_node.id,
-            size=file.size or 0,
-            content=io.BytesIO(content),
+        new_document = schema.NewDocument(
+            id=doc_id,
+            title=title,
+            lang=lang,
+            parent_id=parent_id,
+            size=0,
+            page_count=0,
+            ocr=ocr,
             file_name=file.filename or title,
-            content_type=mime_type,
+            ctype="document",
             created_by=user.id,
-            document_version_id=document_version_id,
+            updated_by=user.id
         )
 
-        if upload_error:
-            await nodes_dbapi.delete_nodes(
-                db_session, node_ids=[created_node.id], user_id=user.id
+        try:
+            doc = await doc_dbapi.create_document(
+                db_session,
+                new_document,
+                mime_type=mime_type,
+                document_version_id=document_version_id
             )
-            raise HTTPException(status_code=400, detail=upload_error.model_dump())
+        except Exception as e:
+            try:
+                await storage.delete_file(object_key)
+            except Exception as clean_ex:
+                logger.warning(f"Failed to cleanup uploaded file {object_key}: {clean_ex}")
+            raise HTTPException(status_code=400, detail=str(e))
+
+    send_task(
+        "document.process_upload",
+        kwargs={
+            "document_id": str(doc.id),
+            "document_version_id": str(document_version_id)
+        },
+        route_name="document_processing"
+    )
+
+    logger.info(f"Document {doc.id} uploaded, queued for processing")
 
     return doc
 
@@ -349,17 +343,17 @@ async def upload_document(
     },
 )
 async def get_document_last_version(
-    doc_id: uuid.UUID,
-    user: require_scopes(scopes.NODE_VIEW),
-    db_session: AsyncSession = Depends(get_db),
+        doc_id: uuid.UUID,
+        user: require_scopes(scopes.NODE_VIEW),
+        db_session: AsyncSession = Depends(get_db),
 ) -> schema.DocumentVersion:
     """Returns document's last version"""
     try:
         if not await dbapi_common.has_node_perm(
-            db_session,
-            node_id=doc_id,
-            codename=scopes.NODE_VIEW,
-            user_id=user.id,
+                db_session,
+                node_id=doc_id,
+                codename=scopes.NODE_VIEW,
+                user_id=user.id,
         ):
             raise exc.HTTP403Forbidden()
 
@@ -383,9 +377,9 @@ async def get_document_last_version(
     },
 )
 async def get_doc_versions_list(
-    doc_id: uuid.UUID,
-    user: require_scopes(scopes.NODE_VIEW),
-    db_session: AsyncSession = Depends(get_db),
+        doc_id: uuid.UUID,
+        user: require_scopes(scopes.NODE_VIEW),
+        db_session: AsyncSession = Depends(get_db),
 ) -> list[schema.DocVerListItem]:
     """
     Returns versions list for given document ID
@@ -394,10 +388,10 @@ async def get_doc_versions_list(
     """
     try:
         if not await dbapi_common.has_node_perm(
-            db_session,
-            node_id=doc_id,
-            codename=scopes.NODE_VIEW,
-            user_id=user.id,
+                db_session,
+                node_id=doc_id,
+                codename=scopes.NODE_VIEW,
+                user_id=user.id,
         ):
             raise exc.HTTP403Forbidden()
 
@@ -421,17 +415,17 @@ async def get_doc_versions_list(
     },
 )
 async def get_document_details(
-    document_id: uuid.UUID,
-    user: require_scopes(scopes.NODE_VIEW),
-    db_session: AsyncSession = Depends(get_db),
+        document_id: uuid.UUID,
+        user: require_scopes(scopes.NODE_VIEW),
+        db_session: AsyncSession = Depends(get_db),
 ) -> schema.DocumentWithoutVersions:
     """Get document details"""
     try:
         if not await dbapi_common.has_node_perm(
-            db_session,
-            node_id=document_id,
-            codename=scopes.NODE_VIEW,
-            user_id=user.id,
+                db_session,
+                node_id=document_id,
+                codename=scopes.NODE_VIEW,
+                user_id=user.id,
         ):
             raise exc.HTTP403Forbidden()
 
@@ -451,18 +445,18 @@ async def get_document_details(
     },
 )
 async def update_document_type(
-    document_id: uuid.UUID,
-    document_type: DocumentTypeArg,
-    user: require_scopes(scopes.NODE_VIEW),
-    db_session: AsyncSession = Depends(get_db),
+        document_id: uuid.UUID,
+        document_type: DocumentTypeArg,
+        user: require_scopes(scopes.NODE_VIEW),
+        db_session: AsyncSession = Depends(get_db),
 ):
     """Updates document type"""
     try:
         if not await dbapi_common.has_node_perm(
-            db_session,
-            node_id=document_id,
-            codename=scopes.NODE_UPDATE,
-            user_id=user.id,
+                db_session,
+                node_id=document_id,
+                codename=scopes.NODE_UPDATE,
+                user_id=user.id,
         ):
             raise exc.HTTP403Forbidden()
 
@@ -491,10 +485,10 @@ async def update_document_type(
     response_model=schema.PaginatedResponse[schema.DocumentCFV]
 )
 async def get_documents_by_type(
-    document_type_id: uuid.UUID,
-    user: require_scopes(scopes.NODE_VIEW),
-    params: schema.DocumentsByTypeParams = Depends(),
-    db_session: AsyncSession = Depends(get_db),
+        document_type_id: uuid.UUID,
+        user: require_scopes(scopes.NODE_VIEW),
+        params: schema.DocumentsByTypeParams = Depends(),
+        db_session: AsyncSession = Depends(get_db),
 ) -> schema.PaginatedResponse[schema.DocumentCFV]:
     """
     Get all documents of specific type with all custom field values
@@ -534,9 +528,9 @@ async def get_documents_by_type(
     },
 )
 async def get_document_doc_thumbnail_status(
-    user: require_scopes(scopes.NODE_VIEW),
-    doc_ids: list[uuid.UUID] = Query(),
-    db_session: AsyncSession = Depends(get_db),
+        user: require_scopes(scopes.NODE_VIEW),
+        doc_ids: list[uuid.UUID] = Query(),
+        db_session: AsyncSession = Depends(get_db),
 ) -> list[schema.DocumentPreviewImageStatus]:
     """
     Get documents thumbnail image preview status
@@ -550,10 +544,10 @@ async def get_document_doc_thumbnail_status(
 
     for doc_id in doc_ids:
         if not await dbapi_common.has_node_perm(
-            db_session,
-            node_id=doc_id,
-            codename=scopes.NODE_VIEW,
-            user_id=user.id,
+                db_session,
+                node_id=doc_id,
+                codename=scopes.NODE_VIEW,
+                user_id=user.id,
         ):
             raise exc.HTTP403Forbidden()
 

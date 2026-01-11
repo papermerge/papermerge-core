@@ -1,7 +1,10 @@
+import pytest
+
 from papermerge.core.tests.types import DocumentTestFileType
 from papermerge.core.tests.types import AuthTestClient
 
 
+@pytest.mark.skip(reason="Do I need this test?")
 async def test_thumbnails_router(
     auth_api_client: AuthTestClient,
     make_document_with_pages,

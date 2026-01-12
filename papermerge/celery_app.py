@@ -54,7 +54,7 @@ def s3preview_queue_name() -> str:
     - s3preview: there is no prefix and no override
     - demo_s3review: there is a prefix
     - s3preview_demo_node4: user has overridden
-        PAPERMERGE__MAIN__S3_PREVIEW_QUEUE_NAME with queue name specific
+        PM_S3_PREVIEW_QUEUE_NAME with queue name specific
         to the k8s node.
     """
     name = os.environ.get("PM_S3_PREVIEW_QUEUE_NAME", None)
@@ -65,14 +65,11 @@ def s3preview_queue_name() -> str:
 
 
 app.conf.task_routes = {
-    # `s3_worker`: uploads/downloads of document version files
-    # via s3 queue
     "s3": {"queue": s3_queue_name()},
+    "process_upload": {"queue": s3_queue_name()},
     # `s3_worker`: generates previews and uploads them to s3 storage
     # via s3preview queue
     "s3preview": {"queue": s3preview_queue_name()},
     "ocr": {"queue": prefixed("ocr")},
     "path_tmpl": {"queue": prefixed("path_tmpl")},
-    # Document processing queue (conversion, page counting)
-    "document.process_upload": {"queue": prefixed("document_processing")},
 }

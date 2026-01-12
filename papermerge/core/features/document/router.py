@@ -320,12 +320,12 @@ async def upload_document(
             raise HTTPException(status_code=400, detail=str(e))
 
     send_task(
-        "document.process_upload",
+        "process_upload",
         kwargs={
             "document_id": str(doc.id),
             "document_version_id": str(document_version_id)
         },
-        route_name="document_processing"
+        route_name="s3"
     )
 
     logger.info(f"Document {doc.id} uploaded, queued for processing")

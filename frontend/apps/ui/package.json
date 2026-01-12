@@ -40,7 +40,7 @@
     "pdfjs-dist": "^5.4.530",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "react-i18next": "^16.5.1",
+    "react-i18next": "^16.5.2",
     "react-redux": "^9.2.0",
     "react-router": "^7.12.0",
     "react-router-dom": "^7.12.0",
@@ -58,7 +58,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.1.2",
-    "@vitest/ui": "^4.0.16",
+    "@vitest/ui": "^4.0.17",
     "happy-dom": "^20.1.0",
     "jsdom": "^27.4.0",
     "prettier": "^3.7.4",
@@ -67,6 +67,6 @@
     "vite": "^7.3.1",
     "vite-plugin-static-copy": "^3.1.4",
     "vite-tsconfig-paths": "^6.0.4",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.17"
   }
 }

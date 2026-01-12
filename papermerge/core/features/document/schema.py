@@ -22,6 +22,7 @@ from papermerge.core.types import (
     DocumentLang,
     ImagePreviewStatus,
     ImagePreviewSize, DocumentProcessingStatus,
+    StorageBackend
 )
 from papermerge.core.types import OCRStatusEnum
 from papermerge.core import config
@@ -243,8 +244,8 @@ class DocumentVersion(BaseModel):
 
     @field_validator("download_url", mode="before")
     def download_url_validator(cls, _, info):
-        file_server = settings.file_server
-        if file_server in (config.FileServer.S3, config.FileServer.R2):
+        storage_backend = settings.storage_backend
+        if storage_backend in (StorageBackend.S3, StorageBackend.R2):
             return s3.doc_ver_signed_url(info.data['id'], info.data['file_name'])
 
         return f"/api/document-versions/{info.data['id']}/download"
@@ -280,8 +281,8 @@ class DocumentBase(BaseModel):
 
     @field_validator("thumbnail_url", mode="before")
     def thumbnail_url_validator(cls, value, info):
-        file_server = settings.file_server
-        if file_server == config.FileServer.LOCAL:
+        storage_backend = settings.storage_backend
+        if storage_backend == StorageBackend.LOCAL:
             return f"/api/thumbnails/{info.data['id']}"
 
         # Handle both S3/CloudFront and R2
@@ -289,7 +290,7 @@ class DocumentBase(BaseModel):
                 "preview_status" in info.data
                 and info.data["preview_status"] == ImagePreviewStatus.ready
         ):
-            if file_server in (config.FileServer.S3, config.FileServer.R2):
+            if storage_backend in (config.storage_backend.S3, config.storage_backend.R2):
                 return s3.doc_thumbnail_signed_url(info.data['id'])
 
         return f"/api/thumbnails/{info.data['id']}"

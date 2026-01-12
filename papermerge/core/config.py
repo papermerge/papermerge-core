@@ -1,16 +1,9 @@
-from enum import Enum
 from pathlib import Path
 
 from pydantic import PostgresDsn, RedisDsn, Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from papermerge.core.types import DocumentLang
-
-
-class FileServer(str, Enum):
-    LOCAL = 'local'
-    S3 = 's3'           # AWS S3 + CloudFront
-    R2 = 'r2'           # Cloudflare R2
+from papermerge.core.types import DocumentLang, StorageBackend
 
 
 class Settings(BaseSettings):
@@ -28,7 +21,7 @@ class Settings(BaseSettings):
     # File storage
     media_root: Path = Path("media")
     max_file_size_mb: int = Field(gt=0, default=25)
-    file_server: FileServer = FileServer.LOCAL
+    storage_backend: StorageBackend = StorageBackend.LOCAL
 
     # AWS CloudFront settings
     cf_sign_url_private_key: str | None = None

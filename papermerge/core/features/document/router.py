@@ -22,8 +22,8 @@ from papermerge.core.features.auth import scopes
 from papermerge.core.features.document.schema import (
     DocumentTypeArg,
 )
-from papermerge.core import schema, pathlib
-from papermerge.core.config import get_settings, FileServer
+from papermerge.core import schema, pathlib, types
+from papermerge.core.config import get_settings
 from papermerge.core.tasks import send_task
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.db import common as dbapi_common
@@ -323,7 +323,8 @@ async def upload_document(
         "process_upload",
         kwargs={
             "document_id": str(doc.id),
-            "document_version_id": str(document_version_id)
+            "document_version_id": str(document_version_id),
+            "lang": str(lang)
         },
         route_name="s3"
     )
@@ -555,8 +556,8 @@ async def get_document_doc_thumbnail_status(
         db_session, doc_ids=doc_ids
     )
 
-    fserver = config.file_server
-    if fserver == FileServer.S3.value:
+    storage_backend = config.storage_backend
+    if storage_backend in (types.StorageBackend.S3, types.StorageBackend.R2):
         if len(doc_ids_not_yet_considered) > 0:
             for doc_id in doc_ids_not_yet_considered:
                 send_task(

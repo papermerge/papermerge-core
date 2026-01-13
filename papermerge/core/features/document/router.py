@@ -324,7 +324,8 @@ async def upload_document(
         kwargs={
             "document_id": str(doc.id),
             "document_version_id": str(document_version_id),
-            "lang": str(lang)
+            "lang": str(lang),
+            "user_id": str(user.id),
         },
         route_name="s3"
     )

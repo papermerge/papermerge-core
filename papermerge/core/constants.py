@@ -12,6 +12,7 @@ OCR = "ocr"
 PREVIEWS = "previews"
 DEFAULT_TAG_BG_COLOR = "#c41fff"
 DEFAULT_TAG_FG_COLOR = "#ffffff"
+S3_WORKER_PROCESS_UPLOAD = "process_upload"
 S3_WORKER_REMOVE_DOC_VER = "s3_worker_remove_doc_vers"
 S3_WORKER_REMOVE_DOC_THUMBNAIL = "s3_worker_remove_doc_thumbnail"
 # bulk remove of docs thumbnails

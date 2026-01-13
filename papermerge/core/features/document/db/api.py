@@ -32,7 +32,6 @@ from papermerge.core.schemas.common import Breadcrumb
 from papermerge.core.features.ownership.db import api as ownership_api
 from papermerge.core.types import OwnerType, ResourceType, ImagePreviewStatus, \
     MimeType
-from papermerge.core.features.document import s3
 from papermerge.core import schema, orm
 from papermerge.core.features.custom_fields.db import api as cf_dbapi
 from papermerge.core.features.document.schema import Category, Tag
@@ -924,11 +923,13 @@ async def get_doc_versions_list(
     return vers
 
 async def get_doc_version_download_url(
-        db_session: AsyncSession,
-        doc_ver_id: uuid.UUID
+    db_session: AsyncSession,
+    doc_ver_id: uuid.UUID
 ) -> schema.DownloadURL:
-    file_server = settings.file_server
-    if file_server == config.FileServer.LOCAL:
+    from papermerge.storage import get_storage_backend
+
+    storage_backend = settings.storage_backend
+    if storage_backend == types.StorageBackend.LOCAL:
         url = f"/api/document-versions/{doc_ver_id}/download"
         return schema.DownloadURL(downloadURL=url)
 
@@ -938,18 +939,17 @@ async def get_doc_version_download_url(
 
     file_name = (await db_session.execute(stmt)).scalar()
 
-    url = s3.doc_ver_signed_url(doc_ver_id, file_name)
+    backend = get_storage_backend()
+    url = backend.doc_ver_signed_url(doc_ver_id, file_name)
+
     return schema.DownloadURL(downloadURL=url)
 
 
 async def get_document_last_version(
-        db_session: AsyncSession,
-        doc_id: uuid.UUID,
+    db_session: AsyncSession,
+    doc_id: uuid.UUID,
 ) -> schema.DocumentVersion:
     ...
-
-
-
 
 
 async def get_page_document_id(
@@ -1139,7 +1139,9 @@ async def get_docs_thumbnail_img_status(
     IDs for which image preview field has value NULL i.e. was not considered yet
     or maybe was reseted.
     """
-    fserver = settings.file_server
+    from papermerge.storage import get_storage_backend
+
+    backend = get_storage_backend()
 
     stmt = select(
         orm.Document.id.label("doc_id"),
@@ -1150,15 +1152,15 @@ async def get_docs_thumbnail_img_status(
 
     doc_ids_not_yet_considered_for_preview = []
     items = []
-    if fserver == config.FileServer.S3.value:
+    if settings.storage_backend != types.StorageBackend.LOCAL.value:
         for row in await db_session.execute(stmt):
             url = None
             if row.preview_status == ImagePreviewStatus.ready:
                 # image URL is returned if only and only if image
                 # preview is ready (generated and uploaded to S3)
-                if fserver == config.FileServer.S3:
+                if settings.storage_backend != types.StorageBackend.LOCAL:
                     # Real world CDN setup
-                    url = s3.doc_thumbnail_signed_url(row.doc_id)
+                    url = backend.doc_thumbnail_signed_url(row.doc_id)
 
             if row.preview_status is None:
                 doc_ids_not_yet_considered_for_preview.append(row.doc_id)

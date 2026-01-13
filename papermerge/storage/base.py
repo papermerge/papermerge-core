@@ -54,14 +54,15 @@ def get_storage_backend() -> StorageBackend:
     Factory function to get the appropriate storage backend
     based on configuration.
     """
-    from papermerge.core.config import get_settings, FileServer
+    from papermerge.core.config import get_settings
+    from papermerge.core import types
 
     settings = get_settings()
 
-    if settings.file_server == FileServer.S3:
+    if settings.storage_backend == types.StorageBackend.S3:
         from papermerge.storage.backends.cloudfront import CloudFrontBackend
         return CloudFrontBackend()
-    elif settings.file_server == FileServer.R2:
+    elif settings.storage_backend == types.StorageBackend.R2:
         from papermerge.storage.backends.r2 import R2Backend
         return R2Backend()
     else:

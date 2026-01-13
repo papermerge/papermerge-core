@@ -9,7 +9,7 @@ from papermerge.core.db.audit_cols import AuditColumns
 from papermerge.core.db.base import Base
 from papermerge.core.features.document_types.db.orm import DocumentType
 from papermerge.core.features.nodes.db.orm import Node
-from papermerge.core.types import OCRStatusEnum, ImagePreviewStatus, MimeType, \
+from papermerge.core.types import OCRStatusEnum, ImagePreviewStatus, \
     DocumentProcessingStatus
 from papermerge.core.pathlib import abs_docver_path
 
@@ -89,10 +89,7 @@ class DocumentVersion(Base, AuditColumns):
     number: Mapped[int] = mapped_column(default=1)
     file_name: Mapped[str] = mapped_column(nullable=True)
     size: Mapped[int] = mapped_column(default=0)
-    mime_type: Mapped[MimeType] = mapped_column(
-        Enum(MimeType, name="document_version_mime_type"),
-        nullable=False
-    )
+    mime_type: Mapped[str] = mapped_column(nullable=False)
     checksum: Mapped[str] = mapped_column(nullable=True)
     checksum_algorithm: Mapped[str] = mapped_column(nullable=True)
     document_id: Mapped[UUID] = mapped_column(

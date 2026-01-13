@@ -230,3 +230,9 @@ class DocumentLang(str, Enum):
     ukr = "ukr"  # Ukrainian
     cym = "cym"  # Welsh
     eus = "eus"  # Basque
+
+
+class StorageBackend(str, Enum):
+    S3 = 's3'
+    R2 = 'r2'
+    LOCAL = 'local'

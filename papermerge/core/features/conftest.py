@@ -310,7 +310,7 @@ def make_page(db_session: AsyncSession, user: orm.User, system_user):
             title=f"Document {doc_id}",
             user_id=user.id,
             parent_id=user.home_folder_id,
-            lang="de",
+            lang="deu",
             created_by=system_user.id,
             updated_by=system_user.id,
         )

@@ -1,5 +1,6 @@
 import logging
 from uuid import UUID
+from pathlib import Path
 
 import boto3
 from botocore.client import Config
@@ -66,12 +67,13 @@ class R2Backend(StorageBackend):
                 f"File size {len(content)} exceeds maximum {max_file_size}"
             )
 
+        prefix = Path(self.settings.prefix)
         # Add prefix if configured
-        full_key = str(self.prefix / object_key) if self.prefix else object_key
+        full_key = str(prefix / object_key) if prefix else object_key
 
         try:
             self.client.put_object(
-                Bucket=self.bucket_name,
+                Bucket=self.settings.bucket_name,
                 Key=full_key,
                 Body=content,
                 ContentType=content_type
@@ -111,7 +113,7 @@ class R2Backend(StorageBackend):
             url = self.client.generate_presigned_url(
                 'get_object',
                 Params={
-                    'Bucket': self.settings.r2_bucket_name,
+                    'Bucket': self.settings.bucket_name,
                     'Key': object_key,
                 },
                 ExpiresIn=valid_for,

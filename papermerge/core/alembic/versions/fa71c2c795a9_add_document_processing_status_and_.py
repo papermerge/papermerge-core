@@ -82,8 +82,8 @@ def upgrade() -> None:
     # ============================================================
 
     # Temporarily disable ALL triggers to avoid "pending trigger events" error
-    op.execute("ALTER TABLE documents DISABLE TRIGGER ALL;")
-    op.execute("ALTER TABLE document_versions DISABLE TRIGGER ALL;")
+    op.execute("ALTER TABLE documents DISABLE TRIGGER USER;")
+    op.execute("ALTER TABLE document_versions DISABLE TRIGGER USER;")
 
     # Set default values for existing data
 
@@ -138,8 +138,8 @@ def upgrade() -> None:
           AND v2.source_version_id IS NULL
     """)
 
-    op.execute("ALTER TABLE documents ENABLE TRIGGER ALL;")
-    op.execute("ALTER TABLE document_versions ENABLE TRIGGER ALL;")
+    op.execute("ALTER TABLE documents ENABLE TRIGGER USER;")
+    op.execute("ALTER TABLE document_versions ENABLE TRIGGER USER;")
     # ============================================================
     # MAKE COLUMNS NON-NULLABLE
     # ============================================================

@@ -81,9 +81,9 @@ def upgrade() -> None:
     # DATA MIGRATION
     # ============================================================
 
-    # Temporarily disable triggers to avoid "pending trigger events" error
-    # This allows us to UPDATE rows and then ALTER TABLE in same transaction
-    op.execute("SET session_replication_role = replica;")
+    # Temporarily disable ALL triggers to avoid "pending trigger events" error
+    op.execute("ALTER TABLE documents DISABLE TRIGGER ALL;")
+    op.execute("ALTER TABLE document_versions DISABLE TRIGGER ALL;")
 
     # Set default values for existing data
 
@@ -138,9 +138,8 @@ def upgrade() -> None:
           AND v2.source_version_id IS NULL
     """)
 
-    # Re-enable triggers
-    op.execute("SET session_replication_role = DEFAULT;")
-
+    op.execute("ALTER TABLE documents ENABLE TRIGGER ALL;")
+    op.execute("ALTER TABLE document_versions ENABLE TRIGGER ALL;")
     # ============================================================
     # MAKE COLUMNS NON-NULLABLE
     # ============================================================

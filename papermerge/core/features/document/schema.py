@@ -293,7 +293,7 @@ class DocumentBase(BaseModel):
                 "preview_status" in info.data
                 and info.data["preview_status"] == ImagePreviewStatus.ready
         ):
-            if storage_backend in (config.storage_backend.S3, config.storage_backend.R2):
+            if storage_backend in (settings.storage_backend.S3, settings.storage_backend.R2):
                 return backend.doc_thumbnail_signed_url(info.data['id'])
 
         return f"/api/thumbnails/{info.data['id']}"

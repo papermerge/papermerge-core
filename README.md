@@ -1,12 +1,4 @@
-[![Tests](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml/badge.svg)](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml)
-
-<p align="center">
-<img src="./artwork/logo-w160px.png" />
-</p>
-<h1 align="center">Papermerge DMS</h1>
-
-Papermerge DMS or simply Papermerge is a open source document management system
-designed to work with scanned documents (also called digital archives). It
+Document management system designed to work with scanned documents (also called digital archives). It
 extracts text from your scans using OCR, indexes
 them, and prepares them for full text search. Papermerge provides the look and feel
 of modern desktop file browsers. It has features like dual panel document
@@ -16,9 +8,7 @@ you can efficiently store and organize your documents.
 It supports PDF, TIFF, JPEG and PNG document file formats.
 Papermerge is perfect tool for long term storage of your documents.
 
-<p align="center">
-<img src="./artwork/papermerge3-3.png" />
-</p>
+
 
 ## Features Highlights
 
@@ -39,10 +29,6 @@ Papermerge is perfect tool for long term storage of your documents.
 - OCRed text overlay (you can download document with OCRed text overlay)
 - Full Text Search of the scanned documents
 
-## Documentation
-
-Papermerge DMS documentation is available
-at [https://docs.papermerge.io](https://docs.papermerge.io/)
 
 ## Start with Docker
 

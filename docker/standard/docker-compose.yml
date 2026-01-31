@@ -4,32 +4,30 @@ services:
     environment:
       POSTGRES_USER: pm
       POSTGRES_PASSWORD: pm
-      POSTGRES_DB: pmdb
+      POSTGRES_DB: pmdb  # database name is pmdb; username remains 'pm'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U pm" ]
+      test: ["CMD-SHELL", "pg_isready -U pm -d pmdb"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 5 
 
   papermerge:
-    build:
-      context: ../..
-      dockerfile: docker/standard/Dockerfile
+    image: papermerge/papermerge:3.1
     ports:
       - "7000:80"
     environment:
-      PM_PASSWORD: admin
-      PM_USERNAME: admin
-      PM_DB_URL: postgresql://pm:pm@postgres:5432/pmdb
-      PM_LOG_CONFIG: /core_app/log_config.yaml
+      PAPERMERGE__AUTH__USERNAME: admin
+      PAPERMERGE__AUTH__PASSWORD: admin
+      PAPERMERGE__DATABASE__URL: postgresql://pm:pm@postgres:5432/pmdb
+      PAPERMERGE__SECURITY__SECRET_KEY: "dev-secret-key-change-me"
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
       - papermerge_data:/core_app/media
-      - ./log_config.yaml:/core_app/log_config.yaml
+
 
 volumes:
   postgres_data:

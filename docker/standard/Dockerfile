@@ -1,4 +1,4 @@
-FROM node:25.4 AS frontend_build
+FROM node:25.5 AS frontend_build
 # ensure all packages are up-to-date
 RUN apt update && apt upgrade -y && rm -rf /var/cache/apk/*
 

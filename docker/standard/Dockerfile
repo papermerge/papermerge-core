@@ -1,4 +1,4 @@
-FROM node:25.4 AS frontend_build
+FROM node:25.6 AS frontend_build
 # ensure all packages are up-to-date
 RUN apt update && apt upgrade -y && rm -rf /var/cache/apk/*
 
@@ -12,7 +12,7 @@ RUN corepack enable && \
     yarn workspace ui build
 
 FROM papermerge/auth-server:1.2 AS auth_server
-FROM python:3.14.2-alpine AS papermerge_core
+FROM python:3.14.3-alpine AS papermerge_core
 
 ENV CORE_APP=/core_app
 ENV PAPERMERGE__DATABASE__URL=sqlite:////db/db.sqlite3

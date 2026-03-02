@@ -1318,98 +1318,98 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-android-arm64@npm:0.1.93":
-  version: 0.1.93
-  resolution: "@napi-rs/canvas-android-arm64@npm:0.1.93"
+"@napi-rs/canvas-android-arm64@npm:0.1.95":
+  version: 0.1.95
+  resolution: "@napi-rs/canvas-android-arm64@npm:0.1.95"
   conditions: os=android & cpu=arm64
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-darwin-arm64@npm:0.1.93":
-  version: 0.1.93
-  resolution: "@napi-rs/canvas-darwin-arm64@npm:0.1.93"
+"@napi-rs/canvas-darwin-arm64@npm:0.1.95":
+  version: 0.1.95
+  resolution: "@napi-rs/canvas-darwin-arm64@npm:0.1.95"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-darwin-x64@npm:0.1.93":
-  version: 0.1.93
-  resolution: "@napi-rs/canvas-darwin-x64@npm:0.1.93"
+"@napi-rs/canvas-darwin-x64@npm:0.1.95":
+  version: 0.1.95
+  resolution: "@napi-rs/canvas-darwin-x64@npm:0.1.95"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-linux-arm-gnueabihf@npm:0.1.93":
-  version: 0.1.93
-  resolution: "@napi-rs/canvas-linux-arm-gnueabihf@npm:0.1.93"
+"@napi-rs/canvas-linux-arm-gnueabihf@npm:0.1.95":
+  version: 0.1.95
+  resolution: "@napi-rs/canvas-linux-arm-gnueabihf@npm:0.1.95"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-linux-arm64-gnu@npm:0.1.93":
-  version: 0.1.93
-  resolution: "@napi-rs/canvas-linux-arm64-gnu@npm:0.1.93"
+"@napi-rs/canvas-linux-arm64-gnu@npm:0.1.95":
+  version: 0.1.95
+  resolution: "@napi-rs/canvas-linux-arm64-gnu@npm:0.1.95"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-linux-arm64-musl@npm:0.1.93":
-  version: 0.1.93
-  resolution: "@napi-rs/canvas-linux-arm64-musl@npm:0.1.93"
+"@napi-rs/canvas-linux-arm64-musl@npm:0.1.95":
+  version: 0.1.95
+  resolution: "@napi-rs/canvas-linux-arm64-musl@npm:0.1.95"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-linux-riscv64-gnu@npm:0.1.93":
-  version: 0.1.93
-  resolution: "@napi-rs/canvas-linux-riscv64-gnu@npm:0.1.93"
+"@napi-rs/canvas-linux-riscv64-gnu@npm:0.1.95":
+  version: 0.1.95
+  resolution: "@napi-rs/canvas-linux-riscv64-gnu@npm:0.1.95"
   conditions: os=linux & cpu=riscv64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-linux-x64-gnu@npm:0.1.93":
-  version: 0.1.93
-  resolution: "@napi-rs/canvas-linux-x64-gnu@npm:0.1.93"
+"@napi-rs/canvas-linux-x64-gnu@npm:0.1.95":
+  version: 0.1.95
+  resolution: "@napi-rs/canvas-linux-x64-gnu@npm:0.1.95"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-linux-x64-musl@npm:0.1.93":
-  version: 0.1.93
-  resolution: "@napi-rs/canvas-linux-x64-musl@npm:0.1.93"
+"@napi-rs/canvas-linux-x64-musl@npm:0.1.95":
+  version: 0.1.95
+  resolution: "@napi-rs/canvas-linux-x64-musl@npm:0.1.95"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-win32-arm64-msvc@npm:0.1.93":
-  version: 0.1.93
-  resolution: "@napi-rs/canvas-win32-arm64-msvc@npm:0.1.93"
+"@napi-rs/canvas-win32-arm64-msvc@npm:0.1.95":
+  version: 0.1.95
+  resolution: "@napi-rs/canvas-win32-arm64-msvc@npm:0.1.95"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas-win32-x64-msvc@npm:0.1.93":
-  version: 0.1.93
-  resolution: "@napi-rs/canvas-win32-x64-msvc@npm:0.1.93"
+"@napi-rs/canvas-win32-x64-msvc@npm:0.1.95":
+  version: 0.1.95
+  resolution: "@napi-rs/canvas-win32-x64-msvc@npm:0.1.95"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas@npm:^0.1.88":
-  version: 0.1.93
-  resolution: "@napi-rs/canvas@npm:0.1.93"
+"@napi-rs/canvas@npm:^0.1.95":
+  version: 0.1.95
+  resolution: "@napi-rs/canvas@npm:0.1.95"
   dependencies:
-    "@napi-rs/canvas-android-arm64": "npm:0.1.93"
-    "@napi-rs/canvas-darwin-arm64": "npm:0.1.93"
-    "@napi-rs/canvas-darwin-x64": "npm:0.1.93"
-    "@napi-rs/canvas-linux-arm-gnueabihf": "npm:0.1.93"
-    "@napi-rs/canvas-linux-arm64-gnu": "npm:0.1.93"
-    "@napi-rs/canvas-linux-arm64-musl": "npm:0.1.93"
-    "@napi-rs/canvas-linux-riscv64-gnu": "npm:0.1.93"
-    "@napi-rs/canvas-linux-x64-gnu": "npm:0.1.93"
-    "@napi-rs/canvas-linux-x64-musl": "npm:0.1.93"
-    "@napi-rs/canvas-win32-arm64-msvc": "npm:0.1.93"
-    "@napi-rs/canvas-win32-x64-msvc": "npm:0.1.93"
+    "@napi-rs/canvas-android-arm64": "npm:0.1.95"
+    "@napi-rs/canvas-darwin-arm64": "npm:0.1.95"
+    "@napi-rs/canvas-darwin-x64": "npm:0.1.95"
+    "@napi-rs/canvas-linux-arm-gnueabihf": "npm:0.1.95"
+    "@napi-rs/canvas-linux-arm64-gnu": "npm:0.1.95"
+    "@napi-rs/canvas-linux-arm64-musl": "npm:0.1.95"
+    "@napi-rs/canvas-linux-riscv64-gnu": "npm:0.1.95"
+    "@napi-rs/canvas-linux-x64-gnu": "npm:0.1.95"
+    "@napi-rs/canvas-linux-x64-musl": "npm:0.1.95"
+    "@napi-rs/canvas-win32-arm64-msvc": "npm:0.1.95"
+    "@napi-rs/canvas-win32-x64-msvc": "npm:0.1.95"
   dependenciesMeta:
     "@napi-rs/canvas-android-arm64":
       optional: true
@@ -1433,7 +1433,7 @@ __metadata:
       optional: true
     "@napi-rs/canvas-win32-x64-msvc":
       optional: true
-  checksum: 10c0/32a5b71fa245235821507d24d04e9e8e8b7c27e104aee01689541ee4ab376ee8a84f69ab3763d9f290e9e019ae6836903d5f0ff39e0b68507f3ed8d912c2fbed
+  checksum: 10c0/82bc6dcc0dc8f737ea05f73290f6c7ff0098cb5969b8744d9476427ea3e37ee6bf2a3355da665d5d127275f51bdacd87af3c01a97415114c6e996e00de3947da
   languageName: node
   linkType: hard
 
@@ -1800,21 +1800,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tabler/icons-react@npm:^3.37.1":
-  version: 3.37.1
-  resolution: "@tabler/icons-react@npm:3.37.1"
+"@tabler/icons-react@npm:^3.38.0":
+  version: 3.38.0
+  resolution: "@tabler/icons-react@npm:3.38.0"
   dependencies:
-    "@tabler/icons": "npm:"
+    "@tabler/icons": "npm:3.38.0"
   peerDependencies:
     react: ">= 16"
-  checksum: 10c0/115857abe5f15e252cd69b7c9b64ac91c9e0e7f7cb3a30a0dd56fdb463d96f68612713544fa856dd4b142503456ca314f619f32e9d255bbef11f50d3d6cd0ed5
+  checksum: 10c0/b0744a4dcd9eef77b7cbc39b11a7eed561dec0d3e42d388ab69389616c5d1623bb863093fff306025cfae679c8dae28b2cef22753756812365b4a90b31e78c9c
   languageName: node
   linkType: hard
 
-"@tabler/icons@npm:":
-  version: 3.36.1
-  resolution: "@tabler/icons@npm:3.36.1"
-  checksum: 10c0/3201b3ccace5756ba9e840ece3922718165b820f760b7bc01bcab21bf7d6fed5da6e876ea9e1155ed498d8eb008e3ac3308b270c402d744014dafad20d99534c
+"@tabler/icons@npm:3.38.0":
+  version: 3.38.0
+  resolution: "@tabler/icons@npm:3.38.0"
+  checksum: 10c0/209f89e6ec3df40eea2d13700082855006e6f2e0535ddbd99823230eb03d743a562fccb4f91849f9b9736d762b956c015ddfb51ee6f7b5ab8958ec15dcf4fab4
   languageName: node
   linkType: hard
 
@@ -2670,7 +2670,7 @@ __metadata:
     "@eslint/js": "npm:^10.0.1"
     "@mantine/core": "npm:^8.3.15"
     "@mantine/hooks": "npm:^8.3.15"
-    "@tabler/icons-react": "npm:^3.37.1"
+    "@tabler/icons-react": "npm:^3.38.0"
     "@types/react": "npm:^19.2.14"
     "@types/react-dom": "npm:^19.2.3"
     "@vitejs/plugin-react": "npm:^5.1.4"
@@ -2679,7 +2679,7 @@ __metadata:
     eslint: "npm:^10.0.2"
     eslint-plugin-react-hooks: "npm:^7.0.1"
     eslint-plugin-react-refresh: "npm:^0.5.2"
-    globals: "npm:^17.3.0"
+    globals: "npm:^17.4.0"
     kommon: "workspace:*"
     react: "npm:^19.2.4"
     react-dom: "npm:^19.2.4"
@@ -3633,10 +3633,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:^17.3.0":
-  version: 17.3.0
-  resolution: "globals@npm:17.3.0"
-  checksum: 10c0/7f21443ecaa60c6e9ff56d9fb6f10a9b5f9514e7f22e5392f715472bb220ce31c865ebf414a32695150e733fb3e1013e6322dbce70fddd1e066f372b8d55a4b8
+"globals@npm:^17.4.0":
+  version: 17.4.0
+  resolution: "globals@npm:17.4.0"
+  checksum: 10c0/2be9e8c2b9035836f13d420b22f0247a328db82967d3bebfc01126d888ed609305f06c05895914e969653af5c6ba35fd7a0920f3e6c869afa60666c810630feb
   languageName: node
   linkType: hard
 
@@ -3727,7 +3727,7 @@ __metadata:
     eslint: "npm:^10.0.2"
     eslint-plugin-react-hooks: "npm:^7.0.1"
     eslint-plugin-react-refresh: "npm:^0.5.2"
-    globals: "npm:^17.3.0"
+    globals: "npm:^17.4.0"
     react: "npm:^19.2.4"
     react-dom: "npm:^19.2.4"
     typescript: "npm:~5.9.3"
@@ -4112,7 +4112,7 @@ __metadata:
     "@eslint/js": "npm:^10.0.1"
     "@mantine/core": "npm:^8.3.15"
     "@mantine/hooks": "npm:^8.3.15"
-    "@tabler/icons-react": "npm:^3.37.1"
+    "@tabler/icons-react": "npm:^3.38.0"
     "@types/react": "npm:^19.2.14"
     "@types/react-dom": "npm:^19.2.3"
     "@vitejs/plugin-react": "npm:^5.1.4"
@@ -4120,7 +4120,7 @@ __metadata:
     eslint: "npm:^10.0.2"
     eslint-plugin-react-hooks: "npm:^7.0.1"
     eslint-plugin-react-refresh: "npm:^0.5.2"
-    globals: "npm:^17.3.0"
+    globals: "npm:^17.4.0"
     kommon: "workspace:*"
     react: "npm:^19.2.4"
     react-dom: "npm:^19.2.4"
@@ -4599,18 +4599,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pdfjs-dist@npm:^5.4.624":
-  version: 5.4.624
-  resolution: "pdfjs-dist@npm:5.4.624"
+"pdfjs-dist@npm:^5.5.207":
+  version: 5.5.207
+  resolution: "pdfjs-dist@npm:5.5.207"
   dependencies:
-    "@napi-rs/canvas": "npm:^0.1.88"
+    "@napi-rs/canvas": "npm:^0.1.95"
     node-readable-to-web-readable-stream: "npm:^0.4.2"
   dependenciesMeta:
     "@napi-rs/canvas":
       optional: true
     node-readable-to-web-readable-stream:
       optional: true
-  checksum: 10c0/cebfc264ff41f7bedb60bfd2c9900be82bc19f143a1f8dd426d1e08c2093116e41c3900451633733c9ee65b18e39972e4f8de3622d443dde7d01c7eeb018dcfe
+  checksum: 10c0/764edfe839644c82f11cc16872625af4fe8a878b8434df91e64aaf023344c592748a079c3f886b19ab5a75ab9ca2ae02c7e0af18e36184c0dbf2a010d11df2e6
   languageName: node
   linkType: hard
 
@@ -5497,7 +5497,7 @@ __metadata:
     "@mantine/hooks": "npm:^8.3.15"
     "@mantine/notifications": "npm:^8.3.15"
     "@reduxjs/toolkit": "npm:^2.11.2"
-    "@tabler/icons-react": "npm:^3.37.1"
+    "@tabler/icons-react": "npm:^3.38.0"
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/jest-dom": "npm:^6.9.1"
     "@testing-library/react": "npm:^16.3.2"
@@ -5523,7 +5523,7 @@ __metadata:
     js-cookie: "npm:^3.0.5"
     jsdom: "npm:^28.1.0"
     kommon: "workspace:*"
-    pdfjs-dist: "npm:^5.4.624"
+    pdfjs-dist: "npm:^5.5.207"
     prettier: "npm:^3.8.1"
     react: "npm:^19.2.4"
     react-dom: "npm:^19.2.4"
@@ -5708,7 +5708,7 @@ __metadata:
     "@eslint/js": "npm:^10.0.1"
     "@mantine/core": "npm:^8.3.15"
     "@mantine/hooks": "npm:^8.3.15"
-    "@tabler/icons-react": "npm:^3.37.1"
+    "@tabler/icons-react": "npm:^3.38.0"
     "@types/react": "npm:^19.2.14"
     "@types/react-dom": "npm:^19.2.3"
     "@vitejs/plugin-react": "npm:^5.1.4"
@@ -5716,7 +5716,7 @@ __metadata:
     eslint: "npm:^10.0.2"
     eslint-plugin-react-hooks: "npm:^7.0.1"
     eslint-plugin-react-refresh: "npm:^0.5.2"
-    globals: "npm:^17.3.0"
+    globals: "npm:^17.4.0"
     kommon: "workspace:*"
     react: "npm:^19.2.4"
     react-dom: "npm:^19.2.4"

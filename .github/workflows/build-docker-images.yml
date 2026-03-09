@@ -30,7 +30,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Docker metadata for standard image
         id: meta_standard
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: papermerge/papermerge
           tags: |
@@ -40,7 +40,7 @@ jobs:
             type=raw,value=latest,enable=${{ !contains(github.ref_name, 'a') && !contains(github.ref_name, 'b') && !contains(github.ref_name, 'rc') }}
       - name: Docker metadata for OIDC image
         id: meta_oidc
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: papermerge/papermerge
           tags: |

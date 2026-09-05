@@ -44,11 +44,6 @@ Papermerge is perfect tool for long term storage of your documents.
 - OCRed text overlay (you can download document with OCRed text overlay)
 - Full Text Search of the scanned documents
 
-## Documentation
-
-Papermerge DMS documentation is available
-at [https://docs.papermerge.io](https://docs.papermerge.io/)
-
 ## Start with Docker
 
 In order to start Papermerge App with the most basic setup use following command:
@@ -60,20 +55,6 @@ In order to start Papermerge App with the most basic setup use following command
 
 For more info about various docker compose scenarios
 check [documentation page](https://docs.papermerge.io/latest/setup/docker-compose/).
-
-## Demo Page
-
-Online demo is available at: https://demo.papermerge.com
-
-```
-Username: demo
-Password: demo
-```
-
-Please note that, in order to save resources, online demo instance is deployed
-using very basic setup: there is no OCR worker and no full text search engine
-behind. Online instance is reseted every 24 hours (0:00 UTC timezone). Reset
-means that all data is restored to initial state and all documents are deleted.
 
 ## Development
 

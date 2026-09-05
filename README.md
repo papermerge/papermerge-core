@@ -1,9 +1,14 @@
-[![Tests](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml/badge.svg)](https://github.com/papermerge/papermerge-core/actions/workflows/tests.yml)
+# Papermerge DMS - Open Source Core | SEEKING MAINTAINERS
 
-<p align="center">
-<img src="./artwork/logo-w160px.png" />
-</p>
-<h1 align="center">Papermerge DMS</h1>
+This is the open-source version of Papermerge, after 9 years of 
+development. I'm now focusing on Papermerge Cloud (managed, SaaS version).
+
+* 🔗 Join as maintainer: https://github.com/papermerge/papermerge-core/issues/1318
+* 🔗 Try Papermerge Cloud: https://papermerge.com
+
+The code remains available for anyone who wants to self-host or contribute.
+
+--------------------------
 
 Papermerge DMS or simply Papermerge is a open source document management system
 designed to work with scanned documents (also called digital archives). It

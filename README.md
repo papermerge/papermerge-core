@@ -1,4 +1,6 @@
-# Papermerge DMS - Open Source Core | SEEKING MAINTAINERS
+# ⚠️ Important Notice
+
+Papermerge DMS - Open Source Core | **SEEKING MAINTAINERS**
 
 This is the open-source version of Papermerge, after 9 years of 
 development. I'm now focusing on Papermerge Cloud (managed, SaaS version).

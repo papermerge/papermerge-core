@@ -56,6 +56,12 @@ async def retrieve_tags_without_pagination(
     If `group_id` parameter is not provided (empty) then
     will return all tags of the current user.
     """
+    if group_id:
+        ok = await users_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
+        if not ok:
+            detail = f"User {user.id=} does not belong to group {group_id=}"
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
+
     owner_id = group_id or user.id
     if group_id:
         owner_type = OwnerType.GROUP

@@ -14,6 +14,7 @@ from papermerge.core.routers.common import OPEN_API_GENERIC_JSON_DETAIL
 from papermerge.core.features.document_types import schema as dt_schema
 from papermerge.core.db.engine import get_db
 from papermerge.core.features.ownership.db import api as ownership_api
+from papermerge.core.features.users.db import api as users_dbapi
 from papermerge.core.types import ResourceType
 from papermerge.core.features.audit.db.audit_context import AsyncAuditContext
 from .schema import DocumentTypeParams, DocumentTypeEx
@@ -52,6 +53,12 @@ async def get_document_types_without_pagination(
     If `group_id` parameter is not provided (empty) then
     will return all document types of the current user.
     """
+    if group_id:
+        ok = await users_dbapi.user_belongs_to(db_session, user_id=user.id, group_id=group_id)
+        if not ok:
+            detail = f"User {user.id=} does not belong to group {group_id=}"
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
+
     owner = schema.Owner.create_from(
         user_id=user.id,
         group_id=group_id

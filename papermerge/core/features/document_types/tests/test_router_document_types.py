@@ -357,6 +357,25 @@ async def test__positive__document_types_all_route_with_group_id_param(
     assert dtype_names == {"Research 1", "Research 2"}
 
 
+async def test__negative__document_types_all_route_with_group_id_param_not_member(
+    db_session: AsyncSession,
+    make_document_type,
+    auth_api_client: AuthTestClient,
+    make_group,
+):
+    """User does not belong to the group provided in parameter,
+    must return 403 Forbidden.
+    """
+    group = await make_group("other-team")
+    await make_document_type(name="Secret Type", group_id=group.id)
+
+    response = await auth_api_client.get(
+        "/document-types/all", params={"group_id": str(group.id)}
+    )
+
+    assert response.status_code == 403, response.json()
+
+
 async def test_all_grouped_ep(
     db_session: AsyncSession,
     login_as,

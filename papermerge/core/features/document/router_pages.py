@@ -7,7 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from papermerge.core.features.document.db import api as doc_dbapi
 from papermerge.core.config import get_settings
-from papermerge.core import utils, schema, orm
+from papermerge.core import utils, schema, orm, exceptions as exc
+from papermerge.core.db import common as dbapi_common
 from papermerge.core.features.auth import get_current_user
 from papermerge.core.features.auth import scopes
 from papermerge.core.features.page_mngm.db.api import apply_pages_op
@@ -55,6 +56,30 @@ async def apply_page_operations(
     When `angle` > 0 -> the rotation is clockwise.
     When `angle` < 0 -> the rotation is counterclockwise.
     """
+    if not items:
+        return schema.Document.model_validate(None)
+
+    page_ids = [item.page.id for item in items]
+    stmt = (
+        select(orm.DocumentVersion.document_id)
+        .select_from(orm.Page)
+        .join(orm.DocumentVersion, orm.Page.document_version_id == orm.DocumentVersion.id)
+        .where(orm.Page.id.in_(page_ids))
+        .distinct()
+    )
+    doc_ids = (await db_session.execute(stmt)).scalars().all()
+    if not doc_ids:
+        raise exc.HTTP404NotFound()
+
+    for doc_id in doc_ids:
+        if not await dbapi_common.has_node_perm(
+            db_session,
+            node_id=doc_id,
+            codename=scopes.NODE_UPDATE,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
+
     async with AsyncAuditContext(
         db_session,
         user_id=user.id,
@@ -84,6 +109,44 @@ async def move_pages(
     moves all it's pages into the target, the returned source will
     be None.
     """
+    stmt_src = (
+        select(orm.DocumentVersion.document_id)
+        .select_from(orm.Page)
+        .join(orm.DocumentVersion, orm.Page.document_version_id == orm.DocumentVersion.id)
+        .where(orm.Page.id.in_(arg.source_page_ids))
+        .distinct()
+    )
+    src_doc_ids = (await db_session.execute(stmt_src)).scalars().all()
+    if not src_doc_ids:
+        raise exc.HTTP404NotFound()
+
+    for doc_id in src_doc_ids:
+        if not await dbapi_common.has_node_perm(
+            db_session,
+            node_id=doc_id,
+            codename=scopes.NODE_UPDATE,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
+
+    stmt_tgt = (
+        select(orm.DocumentVersion.document_id)
+        .select_from(orm.Page)
+        .join(orm.DocumentVersion, orm.Page.document_version_id == orm.DocumentVersion.id)
+        .where(orm.Page.id == arg.target_page_id)
+    )
+    tgt_doc_id = (await db_session.execute(stmt_tgt)).scalar_one_or_none()
+    if not tgt_doc_id:
+        raise exc.HTTP404NotFound()
+
+    if not await dbapi_common.has_node_perm(
+        db_session,
+        node_id=tgt_doc_id,
+        codename=scopes.NODE_UPDATE,
+        user_id=user.id,
+    ):
+        raise exc.HTTP403Forbidden()
+
     async with AsyncAuditContext(
         db_session,
         user_id=user.id,
@@ -121,6 +184,34 @@ async def extract_pages(
     Source IDs are IDs of the pages to move.
     Target is the ID of the folder where to extract pages into.
     """
+    stmt_src = (
+        select(orm.DocumentVersion.document_id)
+        .select_from(orm.Page)
+        .join(orm.DocumentVersion, orm.Page.document_version_id == orm.DocumentVersion.id)
+        .where(orm.Page.id.in_(arg.source_page_ids))
+        .distinct()
+    )
+    src_doc_ids = (await db_session.execute(stmt_src)).scalars().all()
+    if not src_doc_ids:
+        raise exc.HTTP404NotFound()
+
+    for doc_id in src_doc_ids:
+        if not await dbapi_common.has_node_perm(
+            db_session,
+            node_id=doc_id,
+            codename=scopes.NODE_UPDATE,
+            user_id=user.id,
+        ):
+            raise exc.HTTP403Forbidden()
+
+    if not await dbapi_common.has_node_perm(
+        db_session,
+        node_id=arg.target_folder_id,
+        codename=scopes.NODE_UPDATE,
+        user_id=user.id,
+    ):
+        raise exc.HTTP403Forbidden()
+
     async with AsyncAuditContext(
         db_session,
         user_id=user.id,

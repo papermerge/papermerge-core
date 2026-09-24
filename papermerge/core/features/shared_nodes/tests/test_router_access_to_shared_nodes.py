@@ -214,3 +214,45 @@ async def test_5_paginated_for_nodes_shared_multiple_times(
     folder = schema.Folder(**data["items"][0])
     # folder is shared indeed
     assert folder.is_shared
+
+
+async def test_get_shared_node_access_requires_ownership(
+    auth_api_client: AuthTestClient, make_user, make_folder, db_session: AsyncSession
+):
+    """A user cannot view access details of a node they do not own."""
+    john = await make_user("john", is_superuser=False)
+    receipts = await make_folder("John's Receipts", user=john, parent=john.home_folder)
+
+    # auth_api_client is logged in as david, who does not own receipts
+    response = await auth_api_client.get(f"/shared-nodes/access/{receipts.id}")
+    assert response.status_code == 404
+
+
+async def test_update_shared_node_access_requires_ownership(
+    auth_api_client: AuthTestClient, make_user, make_folder, db_session: AsyncSession
+):
+    """A user cannot modify access details of a node they do not own."""
+    john = await make_user("john", is_superuser=False)
+    receipts = await make_folder("John's Receipts", user=john, parent=john.home_folder)
+
+    payload = {"id": str(receipts.id), "users": [], "groups": []}
+    response = await auth_api_client.patch(f"/shared-nodes/access/{receipts.id}", json=payload)
+    assert response.status_code == 404
+
+
+async def test_create_shared_nodes_requires_ownership(
+    auth_api_client: AuthTestClient, make_user, make_folder, db_session: AsyncSession
+):
+    """A user cannot share a node they do not own."""
+    john = await make_user("john", is_superuser=False)
+    receipts = await make_folder("John's Receipts", user=john, parent=john.home_folder)
+
+    payload = {
+        "node_ids": [str(receipts.id)],
+        "user_ids": [],
+        "group_ids": [],
+        "role_ids": [],
+    }
+    response = await auth_api_client.post("/shared-nodes", json=payload)
+    assert response.status_code == 404
+

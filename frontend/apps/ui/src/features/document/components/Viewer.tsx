@@ -4,7 +4,7 @@ import {setPanelComponent} from "@/features/ui/panelRegistry"
 import {Center, Flex, Group, Loader} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {useContext} from "react"
-import {useNavigate} from "react-router-dom"
+import {useNavigate} from "react-router"
 
 import Breadcrumbs from "@/components/Breadcrumbs"
 import PanelContext from "@/contexts/PanelContext"

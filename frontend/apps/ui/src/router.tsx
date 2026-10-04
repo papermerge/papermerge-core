@@ -1,4 +1,4 @@
-import {createBrowserRouter, Navigate} from "react-router-dom"
+import {createBrowserRouter, Navigate} from "react-router"
 
 import App from "@/app/App.tsx"
 import {

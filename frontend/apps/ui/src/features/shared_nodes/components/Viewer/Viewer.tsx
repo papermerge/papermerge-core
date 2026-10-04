@@ -2,7 +2,7 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 
 import {Flex, Group, Loader} from "@mantine/core"
 import {useContext, useRef} from "react"
-import {useNavigate} from "react-router-dom"
+import {useNavigate} from "react-router"
 
 import {currentDocVerUpdated} from "@/features/ui/uiSlice"
 

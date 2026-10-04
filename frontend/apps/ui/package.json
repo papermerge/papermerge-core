@@ -6,7 +6,6 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "de": "vite build && vite preview",
     "build": "vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "prettier": "prettier --check \"**/*.{ts,tsx}\"",
@@ -43,7 +42,6 @@
     "react-i18next": "^16.5.4",
     "react-redux": "^9.2.0",
     "react-router": "^7.18.3",
-    "react-router-dom": "^7.13.1",
     "use-immer": "^0.11.0",
     "viewer": "workspace:*"
   },
@@ -56,9 +54,8 @@
     "@types/jsdom": "^28",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.1.4",
-    "@vitest/ui": "^4.0.18",
+    "@vitest/ui": "^5.0.2",
     "happy-dom": "^20.14.5",
     "jsdom": "^28.1.0",
     "prettier": "^3.8.1",

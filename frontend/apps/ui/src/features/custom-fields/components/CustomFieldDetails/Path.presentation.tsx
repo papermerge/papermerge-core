@@ -1,5 +1,5 @@
 import {Breadcrumbs, Group, Loader} from "@mantine/core"
-import {Link} from "react-router-dom"
+import {Link} from "react-router"
 import type {PathProps} from "./types"
 
 /**

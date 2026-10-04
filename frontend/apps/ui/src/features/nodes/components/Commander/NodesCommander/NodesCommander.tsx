@@ -11,7 +11,7 @@ import {useMemo, useState} from "react"
 import {createRoot} from "react-dom/client"
 
 import {useAppDispatch, useAppSelector} from "@/app/hooks"
-import {useNavigate} from "react-router-dom"
+import {useNavigate} from "react-router"
 
 import {
   selectCurrentNodeID,

@@ -12,7 +12,7 @@ import {isHTTP403Forbidden} from "@/services/helpers"
 import {Group, Stack} from "@mantine/core"
 import type {SortState} from "kommon"
 import {DataTable, TablePagination} from "kommon"
-import {useNavigate} from "react-router-dom"
+import {useNavigate} from "react-router"
 import type {DocumentTypeItem} from "../types"
 import documentTypeColumns from "./columns"
 

@@ -6,7 +6,7 @@ import {
 } from "@/features/ui/panelRegistry"
 import {ActionIcon} from "@mantine/core"
 import {IconArrowBarLeft, IconArrowBarRight} from "@tabler/icons-react"
-import {useNavigate} from "react-router-dom"
+import {useNavigate} from "react-router"
 
 import {usePanel} from "@/features/ui/hooks/usePanel"
 

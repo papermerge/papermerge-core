@@ -1,4 +1,4 @@
-import {Link} from "react-router-dom"
+import {Link} from "react-router"
 import {useDispatch, useSelector} from "react-redux"
 import {Table, Checkbox} from "@mantine/core"
 

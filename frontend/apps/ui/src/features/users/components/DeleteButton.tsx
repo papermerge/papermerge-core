@@ -6,7 +6,7 @@ import {
 } from "@/features/ui/panelRegistry"
 import {closeUserDetailsSecondaryPanel} from "@/features/users/storage/thunks"
 import {useDisclosure} from "@mantine/hooks"
-import {useNavigate} from "react-router-dom"
+import {useNavigate} from "react-router"
 
 import DeleteButton from "@/components/buttons/DeleteButton"
 import {useTranslation} from "react-i18next"

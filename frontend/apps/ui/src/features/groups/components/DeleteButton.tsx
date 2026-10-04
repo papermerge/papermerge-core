@@ -1,6 +1,6 @@
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {useDisclosure} from "@mantine/hooks"
-import {useNavigate} from "react-router-dom"
+import {useNavigate} from "react-router"
 
 import {
   clearPanelSelection,

@@ -37,7 +37,7 @@ import {
 import {useEffect, useState} from "react"
 
 import {useSelector} from "react-redux"
-import {NavLink, useLocation} from "react-router-dom"
+import {NavLink, useLocation} from "react-router"
 
 import {useGetVersionQuery} from "@/features/version/apiSlice"
 import {useTranslation} from "react-i18next"

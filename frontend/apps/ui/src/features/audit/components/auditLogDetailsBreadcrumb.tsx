@@ -1,7 +1,7 @@
 import {PanelMode} from "@/types"
 import {Breadcrumbs} from "@mantine/core"
 import {TFunction} from "i18next"
-import {Link} from "react-router-dom"
+import {Link} from "react-router"
 
 interface Args {
   auditLogID: string

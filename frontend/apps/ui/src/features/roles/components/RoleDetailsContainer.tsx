@@ -24,7 +24,7 @@ import {
 } from "@mantine/core"
 import {CopyableTextInput, RoleForm} from "kommon"
 import {useCallback} from "react"
-import {Link, useNavigation} from "react-router-dom"
+import {Link, useNavigation} from "react-router"
 import {DeleteRoleButton} from "./DeleteButton"
 import EditButton from "./EditButton"
 

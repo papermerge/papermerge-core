@@ -1,6 +1,6 @@
 import {useDisclosure} from "@mantine/hooks"
 import {useDispatch} from "react-redux"
-import {useNavigate} from "react-router-dom"
+import {useNavigate} from "react-router"
 
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {

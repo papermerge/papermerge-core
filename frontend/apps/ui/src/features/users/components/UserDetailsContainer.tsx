@@ -16,7 +16,7 @@ import {
   Stack
 } from "@mantine/core"
 import {CopyableTextInput} from "kommon"
-import {Link, useNavigation} from "react-router-dom"
+import {Link, useNavigation} from "react-router"
 import {DeleteUserButton} from "./DeleteButton"
 import EditButton from "./EditButton"
 import UserForm from "./UserForm"

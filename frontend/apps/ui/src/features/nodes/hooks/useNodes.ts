@@ -13,7 +13,7 @@ import {
 } from "@/features/ui/panelRegistry"
 import {skipToken} from "@reduxjs/toolkit/query"
 import {useMemo} from "react"
-import {useNavigate} from "react-router-dom"
+import {useNavigate} from "react-router"
 
 import {useGetPaginatedNodesQuery} from "@/features/nodes/storage/api"
 import type {NodeQueryParams, SortBy} from "@/features/nodes/types"

@@ -7,7 +7,7 @@ import {
 import type {ColoredTag} from "@/types"
 import {Checkbox, Pill, Table} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
-import {Link} from "react-router-dom"
+import {Link} from "react-router"
 
 import Check from "@/components/Check"
 

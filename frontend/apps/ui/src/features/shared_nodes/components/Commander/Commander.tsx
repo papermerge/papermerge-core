@@ -10,7 +10,7 @@ import {
 import type {SortState} from "kommon"
 import {DataTable, TablePagination} from "kommon"
 import {useTranslation} from "react-i18next"
-import {useNavigate} from "react-router-dom"
+import {useNavigate} from "react-router"
 
 import {getSharedFolderBreadcrumb} from "@/components/Breadcrumbs/utils"
 import {usePanel} from "@/features/ui/hooks/usePanel"

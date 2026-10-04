@@ -1,5 +1,5 @@
 import {Box, Breadcrumbs, Group, Loader, LoadingOverlay} from "@mantine/core"
-import {Link, useNavigation} from "react-router-dom"
+import {Link, useNavigation} from "react-router"
 
 import {useGetUserQuery} from "@/features/users/storage/api"
 import type {UserDetails} from "@/types"

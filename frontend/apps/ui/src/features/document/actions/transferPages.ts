@@ -13,7 +13,7 @@ import {t} from "@/utils/i18nHelper"
 import {otherMode} from "@/utils/mode"
 import {notifications} from "@mantine/notifications"
 import {createAsyncThunk} from "@reduxjs/toolkit"
-import type {NavigateFunction} from "react-router-dom"
+import type {NavigateFunction} from "react-router"
 import {getLastVersion, getSourceOrderedPageIDs} from "./utils"
 
 export const transferPages = createAsyncThunk<

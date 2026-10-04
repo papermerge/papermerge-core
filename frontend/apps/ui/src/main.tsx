@@ -3,7 +3,7 @@ import {Notifications} from "@mantine/notifications"
 import * as React from "react"
 import * as ReactDOM from "react-dom/client"
 import {Provider} from "react-redux"
-import {RouterProvider} from "react-router-dom"
+import {RouterProvider} from "react-router"
 
 import {store} from "@/app/store"
 import {cookieLoaded} from "@/features/auth/slice"

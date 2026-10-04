@@ -2,7 +2,7 @@ import {useAppDispatch, useAppSelector} from "@/app/hooks"
 import {Button} from "@mantine/core"
 import {useDisclosure} from "@mantine/hooks"
 import {IconTrash} from "@tabler/icons-react"
-import {useNavigate} from "react-router-dom"
+import {useNavigate} from "react-router"
 
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import {

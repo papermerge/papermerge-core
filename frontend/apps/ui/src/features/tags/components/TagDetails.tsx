@@ -1,5 +1,5 @@
 import {Box, Breadcrumbs, Group, Loader, LoadingOverlay} from "@mantine/core"
-import {Link, useNavigation} from "react-router-dom"
+import {Link, useNavigation} from "react-router"
 
 import {useGetTagQuery} from "@/features/tags/storage/api"
 import type {ColoredTagType} from "@/types"

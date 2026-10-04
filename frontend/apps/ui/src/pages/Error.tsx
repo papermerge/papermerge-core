@@ -1,4 +1,4 @@
-import {useRouteError} from "react-router-dom"
+import {useRouteError} from "react-router"
 
 interface RouteError {
   data: string

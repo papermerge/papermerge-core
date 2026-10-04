@@ -7,7 +7,7 @@ import {
 import type {DocType} from "@/features/document-types/types"
 import {Checkbox, Table} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
-import {Link} from "react-router-dom"
+import {Link} from "react-router"
 
 type Args = {
   documentType: DocType

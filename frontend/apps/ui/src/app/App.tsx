@@ -2,7 +2,7 @@ import {Box} from "@mantine/core"
 import "@mantine/core/styles.css"
 import "@mantine/dates/styles.css"
 import {useSelector} from "react-redux"
-import {Outlet} from "react-router-dom"
+import {Outlet} from "react-router"
 
 import Header from "@/components/Header/Header"
 import NavBar from "@/components/NavBar"

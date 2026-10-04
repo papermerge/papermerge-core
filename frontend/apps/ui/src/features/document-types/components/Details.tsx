@@ -1,5 +1,5 @@
 import {Box, Breadcrumbs, Group, Loader, LoadingOverlay} from "@mantine/core"
-import {Link, useNavigation} from "react-router-dom"
+import {Link, useNavigation} from "react-router"
 
 import {useGetDocumentTypeQuery} from "@/features/document-types/storage/api"
 import type {DocType} from "../types"

@@ -6,7 +6,7 @@ import {
 import type {Role} from "@/types"
 import {Checkbox, Table} from "@mantine/core"
 import {useDispatch, useSelector} from "react-redux"
-import {Link} from "react-router-dom"
+import {Link} from "react-router"
 
 type Args = {
   role: Role

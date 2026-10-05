@@ -17,7 +17,7 @@ This guide explains how to report issues, propose changes, and get your work mer
 
 ## Development setup
 
-> **Platforms:** these instructions cover Windows (PowerShell 7+) and Linux (bash).
+> **Platforms:** these instructions cover Windows (PowerShell 7+) and Linux (Bash).
 >
 > **Prerequisites:** [git](https://git-scm.com/downloads), [uv](https://docs.astral.sh/uv/),
 > a current Node.js LTS release with [yarn](https://yarnpkg.com/), and either
@@ -88,7 +88,7 @@ requires an elevated shell):
 > `papermerge`):
 > `psql -U postgres -h 127.0.0.1 -c "DROP DATABASE IF EXISTS papermerge WITH (FORCE);"`
 
-**Linux (bash):**
+**Linux (Bash):**
 
 ```bash
 docker run -d --name papermerge-postgres \
@@ -116,7 +116,7 @@ PM_API_PREFIX=/api
 $env:UV_ENV_FILE = ".env"
 ```
 
-**Linux (bash):**
+**Linux (Bash):**
 
 ```bash
 cat > .env <<'EOF'
@@ -152,7 +152,7 @@ $userId = uv run pm users ls | Select-String '\badmin\b' |
   Select-Object -First 1
 ```
 
-**Linux (bash):**
+**Linux (Bash):**
 
 ```bash
 USER_ID=$(uv run pm users ls | grep -w admin \
@@ -178,7 +178,7 @@ VITE_KEEP_UNUSED_DATA_FOR=1
 "@ | Set-Content -Encoding utf8NoBOM frontend\apps\ui\.env.development.local
 ```
 
-**Linux (bash):**
+**Linux (Bash):**
 
 ```bash
 cat > frontend/apps/ui/.env.development.local <<EOF

@@ -10,7 +10,7 @@ This guide explains how to report issues, propose changes, and get your work mer
 ## Ways to contribute
 
 - **Report a bug** - open an [issue](https://github.com/papermerge/papermerge-core/issues) with steps to reproduce, expected vs. actual behavior, your version, and how you deploy (Docker, source, etc.).
-- **Suggest a feature** - start a thread in [Discussions](https://github.com/papermerge/papermerge-core/discussions) first. Once the idea is scoped, it can become an issue.
+- **Suggest a feature** - start a thread in [Discussions](https://github.com/papermerge/papermerge-core/discussions) first. Once the idea is scoped, open an issue to track it.
 - **Ask a question** - use [Discussions](https://github.com/papermerge/papermerge-core/discussions) rather than issues.
 - **Improve docs, translations, or tests** - always welcome, and a good way to start.
 - **Fix bugs / build features** - see the workflow below.

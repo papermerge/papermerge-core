@@ -234,18 +234,13 @@ async def get_paginated_nodes(
 
     total_nodes = await db_session.scalar(count_query)
 
-    # Apply sorting
-    if sort_by and sort_direction:
-        base_query = _apply_node_sorting(
-            base_query, sort_by, sort_direction,
-            created_user=created_user,
-            updated_user=updated_user,
-            owner_user=owner_user,
-            owner_group=owner_group
-        )
-    else:
-        # Default sorting by ctype then title
-        base_query = base_query.order_by(orm.Node.ctype, orm.Node.title)
+    base_query = apply_node_sorting(
+        base_query, sort_by, sort_direction,
+        created_user=created_user,
+        updated_user=updated_user,
+        owner_user=owner_user,
+        owner_group=owner_group
+    )
 
     # Apply pagination
     offset = page_size * (page_number - 1)
@@ -888,16 +883,19 @@ def _build_node_filter_conditions(
     return conditions
 
 
-def _apply_node_sorting(
+def apply_node_sorting(
     query,
-    sort_by: str,
-    sort_direction: str,
+    sort_by: str | None,
+    sort_direction: str | None,
     created_user,
     updated_user,
     owner_user,
     owner_group
 ):
-    """Apply sorting to the query."""
+    """Apply sorting to the query, listing folders before documents.
+
+    Explicit sorting by `ctype` is applied as is, without folders-first.
+    """
     direction = desc if sort_direction == "desc" else asc
 
     sort_columns = {
@@ -912,4 +910,9 @@ def _apply_node_sorting(
     }
 
     sort_column = sort_columns.get(sort_by, orm.Node.title)
-    return query.order_by(direction(sort_column))
+
+    if sort_by == "ctype":
+        return query.order_by(direction(sort_column))
+
+    folders_first = (orm.Node.ctype == "folder").desc()
+    return query.order_by(folders_first, direction(sort_column))

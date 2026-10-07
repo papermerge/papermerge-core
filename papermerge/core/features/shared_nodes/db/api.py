@@ -5,7 +5,7 @@ from typing import Union
 from uuid import UUID
 
 from sqlalchemy import delete, tuple_
-from sqlalchemy import select, func, and_, or_, desc, asc
+from sqlalchemy import select, func, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, selectin_polymorphic, aliased
 

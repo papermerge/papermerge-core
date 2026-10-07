@@ -6,6 +6,7 @@ import {selectPanelAllCustom} from "@/features/ui/panelRegistry"
 import PanelToolbar from "@/components/DualPanel/PanelToolbar"
 import Search from "@/components/Search"
 import SharedButton from "@/components/ShareButton"
+import {FolderTreeToggle} from "@/features/nodes/components/Commander/FolderTree"
 import ViewOptionsMenu from "@/features/nodes/components/Commander/ViewOptionsMenu"
 import {usePanel} from "@/features/ui/hooks/usePanel"
 import type {NodeType, ViewOption} from "@/types"
@@ -34,6 +35,7 @@ function LeftActions({selectedNodes}: Args) {
 
   return (
     <>
+      <FolderTreeToggle />
       {selectedCount == 0 && <NewFolderButton />}
       {selectedCount == 1 && (
         <EditNodeTitleButton selectedNodes={selectedNodes} />

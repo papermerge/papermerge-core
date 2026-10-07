@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, selectin_polymorphic, aliased
 
 from papermerge.core.features.nodes.db.orm import Folder
+from papermerge.core.features.nodes.db.api import apply_node_sorting
 from papermerge.core.features.ownership.db.orm import Ownership
 from papermerge.core.features.shared_nodes import schema as sn_schema
 from papermerge.core.features.shared_nodes.db import orm as sn_orm
@@ -19,26 +20,6 @@ from papermerge.core.db import common as dbapi_common
 from papermerge.core import orm, schema
 from papermerge.core.schemas.common import PaginatedResponse
 from papermerge.core.types import ResourceType, OwnerType
-
-
-def str2colexpr(keys: list[str]):
-    result = []
-    ORDER_BY_MAP = {
-        "ctype": orm.Node.ctype,
-        "-ctype": orm.Node.ctype.desc(),
-        "title": orm.Node.title,
-        "-title": orm.Node.title.desc(),
-        "created_at": orm.Node.created_at,
-        "-created_at": orm.Node.created_at.desc(),
-        "updated_at": orm.Node.updated_at,
-        "-updated_at": orm.Node.updated_at.desc(),
-    }
-
-    for key in keys:
-        item = ORDER_BY_MAP.get(key, orm.Node.title)
-        result.append(item)
-
-    return result
 
 
 async def create_shared_nodes(
@@ -241,18 +222,13 @@ async def get_paginated_shared_nodes(
 
     total_nodes = await db_session.scalar(count_query)
 
-    # Apply sorting
-    if sort_by and sort_direction:
-        base_query = _apply_shared_node_sorting(
-            base_query, sort_by, sort_direction,
-            created_user=created_user,
-            updated_user=updated_user,
-            owner_user=owner_user,
-            owner_group=owner_group
-        )
-    else:
-        # Default sorting by ctype then title
-        base_query = base_query.order_by(orm.Node.ctype, orm.Node.title)
+    base_query = apply_node_sorting(
+        base_query, sort_by, sort_direction,
+        created_user=created_user,
+        updated_user=updated_user,
+        owner_user=owner_user,
+        owner_group=owner_group
+    )
 
     # Apply pagination
     offset = page_size * (page_number - 1)
@@ -638,29 +614,3 @@ def _build_shared_node_filter_conditions(
 
     return conditions
 
-
-def _apply_shared_node_sorting(
-    query,
-    sort_by: str,
-    sort_direction: str,
-    created_user,
-    updated_user,
-    owner_user,
-    owner_group
-):
-    """Apply sorting to the query."""
-    direction = desc if sort_direction == "desc" else asc
-
-    sort_columns = {
-        "id": orm.Node.id,
-        "title": orm.Node.title,
-        "ctype": orm.Node.ctype,
-        "created_at": orm.Node.created_at,
-        "updated_at": orm.Node.updated_at,
-        "created_by": created_user.username,
-        "updated_by": updated_user.username,
-        "owned_by": func.coalesce(owner_user.username, owner_group.name),
-    }
-
-    sort_column = sort_columns.get(sort_by, orm.Node.title)
-    return query.order_by(direction(sort_column))

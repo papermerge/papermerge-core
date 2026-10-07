@@ -1,5 +1,6 @@
 import uuid
 
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
@@ -448,11 +449,33 @@ async def test_home_with_two_tagged_nodes(
     results = response.json()["items"]
     assert len(results) == 2  # there are two folders
 
-    doc_tag_names = [tag["name"] for tag in results[0]["tags"]]
-    folder_tag_names = [tag["name"] for tag in results[1]["tags"]]
+    folder_tag_names = [tag["name"] for tag in results[0]["tags"]]
+    doc_tag_names = [tag["name"] for tag in results[1]["tags"]]
 
     assert {"doc_a", "doc_b"} == set(doc_tag_names)
     assert {"folder_a", "folder_b"} == set(folder_tag_names)
+
+
+@pytest.mark.parametrize(
+    "query, expected_titles",
+    [
+        ("", ["b_folder", "z_folder", "a_doc.pdf", "y_doc.pdf"]),
+        ("?sort_by=title&sort_direction=desc", ["z_folder", "b_folder", "y_doc.pdf", "a_doc.pdf"]),
+    ],
+)
+async def test_folders_are_listed_before_documents(
+    auth_api_client: AuthTestClient, make_folder, make_document, query, expected_titles
+):
+    u = auth_api_client.user
+    await make_document(title="a_doc.pdf", user=u, parent=u.home_folder)
+    await make_folder(title="z_folder", user=u, parent=u.home_folder)
+    await make_document(title="y_doc.pdf", user=u, parent=u.home_folder)
+    await make_folder(title="b_folder", user=u, parent=u.home_folder)
+
+    response = await auth_api_client.get(f"/nodes/{u.home_folder.id}{query}")
+
+    assert response.status_code == 200
+    assert [item["title"] for item in response.json()["items"]] == expected_titles
 
 
 async def test_rename_folder(

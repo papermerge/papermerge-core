@@ -1,0 +1,84 @@
+.tree {
+  flex-shrink: 0;
+  width: 15rem;
+  min-width: 10rem;
+  max-width: 50%;
+  overflow: auto;
+  resize: horizontal;
+  padding: 0.25rem 0.25rem 0.25rem 0;
+  border-right: 1px solid var(--mantine-color-default-border);
+}
+
+.header {
+  padding-inline-end: 0.25rem;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding-block: 2px;
+  padding-inline-end: 0.25rem;
+  border-radius: var(--mantine-radius-sm);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.label:hover {
+  background-color: var(--mantine-color-default-hover);
+}
+
+.label[data-selected],
+.label[data-selected]:hover {
+  background-color: var(--mantine-primary-color-light);
+  color: var(--mantine-primary-color-light-color);
+  font-weight: 500;
+}
+
+.label[data-drag-over] {
+  background-color: var(--mantine-primary-color-light);
+  outline: 2px dashed var(--mantine-primary-color-filled);
+  outline-offset: -2px;
+}
+
+/* every drop moves into the folder, so hide the reorder (before/after) lines */
+.label[data-drag-over]::before,
+.label[data-drag-over]::after {
+  display: none;
+}
+
+.tree :global([role="treeitem"]):focus-visible > .label {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: -2px;
+}
+
+.more {
+  color: var(--mantine-color-dimmed);
+  font-style: italic;
+}
+
+.groupSection {
+  margin-top: 0.25rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--mantine-color-default-border);
+  border-radius: 0;
+}
+
+.chevronPlaceholder {
+  flex-shrink: 0;
+  width: var(--ai-size-xs, 18px);
+}
+
+.icon {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.title {
+  min-width: 0;
+}
+
+.description {
+  flex-shrink: 0;
+}

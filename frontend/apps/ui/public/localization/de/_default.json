@@ -600,6 +600,15 @@
       "home": "Dein Home-Ordner ist leer",
       "inbox": "Dein Posteingang ist leer",
       "folder": "Ordner ist leer"
+    },
+    "folderTree": {
+      "label": "Ordner",
+      "show": "Ordnerbaum anzeigen",
+      "hide": "Ordnerbaum ausblenden",
+      "loadError": "Ordner konnten nicht geladen werden",
+      "showDocuments": "Dokumente anzeigen",
+      "hideDocuments": "Dokumente ausblenden",
+      "moreDocuments": "Alle Dokumente anzeigen…"
     }
   },
   "filterPlaceholder": "Filtern...",

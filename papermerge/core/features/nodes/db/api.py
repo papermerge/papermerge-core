@@ -61,27 +61,6 @@ async def load_folder(db_session: AsyncSession, folder: orm.Folder) -> orm.Folde
     return result.scalar_one()
 
 
-def str2colexpr(keys: list[str]):
-    result = []
-    ORDER_BY_MAP = {
-        "ctype": orm.Node.ctype,
-        "-ctype": orm.Node.ctype.desc(),
-        "title": orm.Node.title,
-        "-title": orm.Node.title.desc(),
-        "created_at": orm.Node.created_at,
-        "-created_at": orm.Node.created_at.desc(),
-        "updated_at": orm.Node.updated_at,
-        "-updated_at": orm.Node.updated_at.desc(),
-    }
-    logger.debug(f"str2colexpr keys = {keys}")
-
-    for key in keys:
-        item = ORDER_BY_MAP.get(key, orm.Node.title)
-        result.append(item)
-
-    return result
-
-
 async def get_nodes(
     db_session: AsyncSession,
     node_ids: list[UUID] | None = None,

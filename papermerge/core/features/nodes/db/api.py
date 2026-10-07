@@ -895,6 +895,7 @@ def apply_node_sorting(
     """Apply sorting to the query, listing folders before documents.
 
     Explicit sorting by `ctype` is applied as is, without folders-first.
+    Ties are broken by title and id, so pagination is deterministic.
     """
     direction = desc if sort_direction == "desc" else asc
 
@@ -912,7 +913,8 @@ def apply_node_sorting(
     sort_column = sort_columns.get(sort_by, orm.Node.title)
 
     if sort_by == "ctype":
-        return query.order_by(direction(sort_column))
+        ordering = [direction(sort_column)]
+    else:
+        ordering = [(orm.Node.ctype == "folder").desc(), direction(sort_column)]
 
-    folders_first = (orm.Node.ctype == "folder").desc()
-    return query.order_by(folders_first, direction(sort_column))
+    return query.order_by(*ordering, orm.Node.title, orm.Node.id)

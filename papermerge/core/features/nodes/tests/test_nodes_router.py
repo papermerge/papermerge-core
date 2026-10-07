@@ -461,6 +461,7 @@ async def test_home_with_two_tagged_nodes(
     [
         ("", ["b_folder", "z_folder", "a_doc.pdf", "y_doc.pdf"]),
         ("?sort_by=title&sort_direction=desc", ["z_folder", "b_folder", "y_doc.pdf", "a_doc.pdf"]),
+        ("?sort_by=ctype&sort_direction=desc", ["b_folder", "z_folder", "a_doc.pdf", "y_doc.pdf"]),
     ],
 )
 async def test_folders_are_listed_before_documents(

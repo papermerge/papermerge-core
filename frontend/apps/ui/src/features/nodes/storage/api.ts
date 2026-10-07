@@ -43,7 +43,16 @@ export type PaginatedArgs = {
 }
 
 import {PAGINATION_DEFAULT_ITEMS_PER_PAGES} from "@/cconstants"
-import {NodeQueryParams} from "@/features/nodes/types"
+import type {
+  FolderDocuments,
+  FolderTreeItem,
+  NodeQueryParams
+} from "@/features/nodes/types"
+
+// backend caps `page_size` of `/nodes/{id}` at 100
+const FOLDER_CHILDREN_PAGE_SIZE = 100
+// only the first page of documents is fetched; folders can hold thousands
+const FOLDER_DOCUMENTS_LIMIT = 100
 
 export const apiSliceWithNodes = apiSlice.injectEndpoints({
   endpoints: builder => ({
@@ -67,6 +76,67 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
         {type: "Node", id: arg.nodeID}, // "Node" tag per parent ID
         // "Node" tag per each returned item
         ...result.items.map(({id}) => ({type: "Node", id}) as const)
+      ]
+    }),
+    getFolderChildren: builder.query<FolderTreeItem[], string>({
+      async queryFn(parentID, _api, _extraOptions, baseQuery) {
+        const folders: FolderTreeItem[] = []
+        let pageNumber = 1
+        let numPages = 1
+
+        do {
+          const searchParams = new URLSearchParams({
+            page_number: String(pageNumber),
+            page_size: String(FOLDER_CHILDREN_PAGE_SIZE),
+            sort_by: "title",
+            sort_direction: "asc",
+            filter_ctype: "folder"
+          })
+          const result = await baseQuery(
+            `/nodes/${parentID}?${searchParams.toString()}`
+          )
+          if (result.error) {
+            return {error: result.error}
+          }
+          const page = result.data as Paginated<NodeType>
+          folders.push(
+            ...page.items.map(({id, title, is_shared}) => ({
+              id,
+              title,
+              is_shared
+            }))
+          )
+          numPages = page.num_pages
+          pageNumber += 1
+        } while (pageNumber <= numPages)
+
+        return {data: folders}
+      },
+      providesTags: (result = [], _error, parentID) => [
+        "Node",
+        {type: "Node", id: parentID},
+        ...result.map(({id}) => ({type: "Node", id}) as const)
+      ]
+    }),
+    getFolderDocuments: builder.query<FolderDocuments, string>({
+      query: parentID => {
+        const searchParams = new URLSearchParams({
+          page_number: "1",
+          page_size: String(FOLDER_DOCUMENTS_LIMIT),
+          sort_by: "title",
+          sort_direction: "asc",
+          filter_ctype: "document"
+        })
+        return `/nodes/${parentID}?${searchParams.toString()}`
+      },
+      transformResponse: (page: Paginated<NodeType>) => ({
+        items: page.items.map(({id, title}) => ({id, title})),
+        hasMore: page.num_pages > 1
+      }),
+      providesTags: (result, _error, parentID) => [
+        "Node",
+        {type: "Node", id: parentID},
+        ...(result?.items ?? []).map(({id}) => ({type: "Node", id}) as const)
       ]
     }),
     getFolder: builder.query<FolderType, string>({
@@ -217,6 +287,8 @@ export const apiSliceWithNodes = apiSlice.injectEndpoints({
 
 export const {
   useGetPaginatedNodesQuery,
+  useGetFolderChildrenQuery,
+  useGetFolderDocumentsQuery,
   useGetFolderQuery,
   useAddNewFolderMutation,
   useRenameFolderMutation,

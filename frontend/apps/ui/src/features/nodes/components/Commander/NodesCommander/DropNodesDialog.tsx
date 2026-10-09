@@ -17,8 +17,8 @@ import {dragEnded} from "@/features/ui/uiSlice"
 import {useTranslation} from "react-i18next"
 
 type DropNodesModalArgs = {
-  sourceNodes: NodeType[]
-  targetFolder: FolderType
+  sourceNodes: Pick<NodeType, "id" | "title">[]
+  targetFolder: Pick<FolderType, "id" | "title">
   sourceFolderID: string
   opened: boolean
   onSubmit: () => void

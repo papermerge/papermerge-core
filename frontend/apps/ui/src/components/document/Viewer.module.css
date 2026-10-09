@@ -36,3 +36,16 @@
   overflow: hidden;
   min-height: 0;
 }
+
+/* folder tree + content, below the toolbar */
+.body {
+  flex: 1;
+  min-height: 0;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}

@@ -19,6 +19,9 @@ import ThumbnailsToggle from "@/components/document/ThumbnailsToggle"
 import classes from "@/components/document/Viewer.module.css"
 import {applyPageChangesThunk} from "@/features/document/actions/applyPageOpChanges"
 import {useCurrentDocVer} from "@/features/document/hooks"
+import FolderTree, {
+  useFolderTreeOpened
+} from "@/features/nodes/components/Commander/FolderTree"
 import {
   pagesDeleted,
   pagesReseted,
@@ -98,8 +101,26 @@ export function Viewer({doc, docVer}: Args) {
     selectPanelAllCustom(s, panelId)
   )
   const pages = useAppSelector(s => selectAllPages(s, docVer?.id)) || []
+  const [folderTreeOpened] = useFolderTreeOpened()
 
   const onClick = (node: NType) => {
+    if (node.ctype == "document") {
+      if (node.id == doc?.id) {
+        return
+      }
+      if (mode == "secondary") {
+        dispatch(
+          updatePanelCurrentNode({
+            entityID: node.id,
+            component: "viewer",
+            panelID: "secondary"
+          })
+        )
+      } else {
+        navigate(`/document/${node.id}`)
+      }
+      return
+    }
     if (mode == "secondary" && node.ctype == "folder") {
       dispatch(
         updatePanelCurrentNode({
@@ -215,7 +236,7 @@ export function Viewer({doc, docVer}: Args) {
   }
 
   return (
-    <div ref={ref} className={classes.viewer}>
+    <div className={classes.viewer}>
       <div className={classes.header}>
         <PanelToolbar
           onEditNodeTitleClicked={onEditNodeTitleItem}
@@ -223,29 +244,43 @@ export function Viewer({doc, docVer}: Args) {
           onRotateCCClicked={onRotateCCItemClicked}
           onDeletePagesClicked={onDeletePagesItemClicked}
         />
-        <Group justify="space-between" py={"xs"}>
-          <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
-          <DocumentDetailsToggle />
-        </Group>
       </div>
-      <Flex className={classes.inner}>
-        {thumbnailsIsOpen && <ThumbnailList docVer={docVer} />}
-        <ThumbnailsToggle />
-        <PageList docVer={docVer} />
-        <DocumentDetails docVer={docVer} doc={doc} isLoading={false} />
-        <PagesHaveChangedDialog docID={doc.id} />
-        <ContextMenu
-          opened={opened}
-          position={position}
-          onEditNodeTitleItemClicked={onEditNodeTitleItem}
-          onRotateCCItemClicked={onRotateCCItemClicked}
-          onRotateCWItemClicked={onRotateCWItemClicked}
-          onResetChangesItemClicked={onResetChangesItemClicked}
-          onSaveChangesItemClicked={onSaveChangesItemClicked}
-          onDeletePagesItemClicked={onDeletePagesItemClicked}
-          onDeleteDocumentItemClicked={onDeleteDocumentItemClicked}
-        />
-      </Flex>
+      <Group wrap="nowrap" align="stretch" gap="xs" className={classes.body}>
+        {folderTreeOpened && (
+          <FolderTree
+            currentFolderID={doc.parent_id ?? undefined}
+            currentDocumentID={doc.id}
+            breadcrumb={doc.breadcrumb}
+            onNavigate={onClick}
+          />
+        )}
+        {/* page context menu is limited to this area, so it won't
+            open on right-click in the folder tree */}
+        <div ref={ref} className={classes.content}>
+          <Group justify="space-between" py={"xs"} className={classes.header}>
+            <Breadcrumbs breadcrumb={doc?.breadcrumb} onClick={onClick} />
+            <DocumentDetailsToggle />
+          </Group>
+          <Flex className={classes.inner}>
+            {thumbnailsIsOpen && <ThumbnailList docVer={docVer} />}
+            <ThumbnailsToggle />
+            <PageList docVer={docVer} />
+            <DocumentDetails docVer={docVer} doc={doc} isLoading={false} />
+            <PagesHaveChangedDialog docID={doc.id} />
+            <ContextMenu
+              opened={opened}
+              position={position}
+              onEditNodeTitleItemClicked={onEditNodeTitleItem}
+              onRotateCCItemClicked={onRotateCCItemClicked}
+              onRotateCWItemClicked={onRotateCWItemClicked}
+              onResetChangesItemClicked={onResetChangesItemClicked}
+              onSaveChangesItemClicked={onSaveChangesItemClicked}
+              onDeletePagesItemClicked={onDeletePagesItemClicked}
+              onDeleteDocumentItemClicked={onDeleteDocumentItemClicked}
+            />
+          </Flex>
+        </div>
+      </Group>
       <EditNodeTitleModal
         opened={openedEditNodeTitleModal}
         node={{id: doc?.id!, title: doc?.title!}}

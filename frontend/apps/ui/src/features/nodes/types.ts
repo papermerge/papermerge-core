@@ -24,6 +24,18 @@ export interface NodeQueryParams extends Partial<PaginatedArgs> {
   filter_free_text?: string
 }
 
+export interface FolderTreeItem {
+  id: string
+  title: string
+  is_shared: boolean
+}
+
+export interface FolderDocuments {
+  items: Array<{id: string; title: string}>
+  // the folder has more documents than were fetched
+  hasMore: boolean
+}
+
 export interface ByUser {
   id: string
   username: string

@@ -242,20 +242,21 @@ const panelRegistrySlice = createSlice({
       state.panels[panelId].type = type
     },
 
-    // Set custom state for current component
+    // Set custom state for the given component (current one by default)
     setPanelCustomState: (
       state,
       action: PayloadAction<{
         panelId: string
         key: string
         value: any
+        component?: string
       }>
     ) => {
       const {panelId, key, value} = action.payload
       const panel = state.panels[panelId]
-      const component = panel?.component
+      const component = action.payload.component ?? panel?.component
 
-      if (!component) {
+      if (!panel || !component) {
         console.warn(
           `setPanelCustomState: No component set for panel ${panelId}`
         )

@@ -11,6 +11,7 @@ import RotateButton from "@/features/document/components/RotateButton"
 import RotateCCButton from "@/features/document/components/RotateCCButton"
 import RunOCRButton from "@/features/document/components/RunOCRButton"
 import {useCurrentDocVer, useSelectedPages} from "@/features/document/hooks"
+import {FolderTreeToggle} from "@/features/nodes/components/Commander/FolderTree"
 
 interface Args {
   onEditNodeTitleClicked: () => void
@@ -34,6 +35,7 @@ export default function PanelToolbarContainer({
     <PanelToolbar
       leftActions={
         <Group>
+          <FolderTreeToggle />
           <EditTitleButton onClick={onEditNodeTitleClicked} />
           {!runtimeConfig.ocr__automatic && <RunOCRButton />}
           <DownloadButton />

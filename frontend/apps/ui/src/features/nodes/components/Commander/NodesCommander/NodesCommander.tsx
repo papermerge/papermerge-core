@@ -18,9 +18,12 @@ import {
   selectPanelSelectedIDs
 } from "@/features/ui/panelRegistry"
 import {
+  dragEnded,
+  dragNodesStarted,
   selectDraggedPagesDocID,
   selectDraggedPagesDocParentID
 } from "@/features/ui/uiSlice"
+import {equalUUIDs} from "@/utils"
 
 import {
   isHTTP403Forbidden,
@@ -56,6 +59,9 @@ import {
 import {APP_NODE_KEY, APP_NODE_VALUE} from "@/features/nodes/constants"
 import useNodes from "@/features/nodes/hooks/useNodes"
 
+import FolderTree, {
+  useFolderTreeOpened
+} from "@/features/nodes/components/Commander/FolderTree"
 import EmptyState from "@/features/nodes/components/EmptyState"
 import {NodeQueryParams} from "@/features/nodes/types"
 import {usePanel} from "@/features/ui/hooks/usePanel"
@@ -85,6 +91,7 @@ export default function Commander() {
   const [dropNodesOpened, {open: dropNodesOpen, close: dropNodesClose}] =
     useDisclosure(false)
   const [dragOver, setDragOver] = useState<boolean>(false)
+  const [folderTreeOpened] = useFolderTreeOpened()
 
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
@@ -308,6 +315,15 @@ export default function Commander() {
       return
     }
     if (draggedNodes && draggedNodes?.length > 0) {
+      if (
+        draggedNodesSourceFolderID &&
+        currentNodeID &&
+        equalUUIDs(draggedNodesSourceFolderID, currentNodeID)
+      ) {
+        // nodes were dropped back into the folder they came from
+        dispatch(dragEnded())
+        return
+      }
       dropNodesOpen()
       return
     }
@@ -335,6 +351,12 @@ export default function Commander() {
     root.render(image)
   }
 
+  const onTableRowDragStart = (row: NodeType, event: React.DragEvent) => {
+    const nodes = Array.from(new Set([row.id, ...(selectedItemIDs || [])]))
+    dispatch(dragNodesStarted({nodes, sourceFolderID: currentNodeID!}))
+    onNodeDragStart(row.id, event)
+  }
+
   return (
     <>
       <Stack
@@ -348,31 +370,48 @@ export default function Commander() {
         className={dragOver ? classes.accept_files : classes.commander}
       >
         <PanelToolbar selectedNodes={selectedNodes} />
-        <Breadcrumbs
-          breadcrumb={currentFolder?.breadcrumb}
-          onClick={onClick}
-          isFetching={isFetching}
-        />
-        <DataItems
-          data={data}
-          onClick={onClick}
-          handleSelectionChange={handleSelectionChange}
-          handleSortChange={handleSortChange}
-          onTableRowClick={onTableRowClick}
-          queryParams={queryParams}
-          selectedItemsSet={selectedItemsSet}
-          onNodeDrag={onNodeDrag}
-          onNodeDragStart={onNodeDragStart}
-        />
-        <TablePagination
-          currentPage={data?.page_number || 1}
-          totalPages={data?.num_pages || 0}
-          pageSize={data?.page_size || 15}
-          onPageChange={onPageNumberChange}
-          onPageSizeChange={onPageSizeChange}
-          totalItems={data?.total_items}
-          t={t}
-        />
+        <Group
+          wrap="nowrap"
+          align="stretch"
+          gap="xs"
+          style={{flex: 1, minHeight: 0}}
+        >
+          {folderTreeOpened && (
+            <FolderTree
+              currentFolderID={currentNodeID}
+              breadcrumb={currentFolder?.breadcrumb}
+              onNavigate={onClick}
+            />
+          )}
+          <Stack style={{flex: 1, minWidth: 0, minHeight: 0}}>
+            <Breadcrumbs
+              breadcrumb={currentFolder?.breadcrumb}
+              onClick={onClick}
+              isFetching={isFetching}
+            />
+            <DataItems
+              data={data}
+              onClick={onClick}
+              handleSelectionChange={handleSelectionChange}
+              handleSortChange={handleSortChange}
+              onTableRowClick={onTableRowClick}
+              onTableRowDragStart={onTableRowDragStart}
+              queryParams={queryParams}
+              selectedItemsSet={selectedItemsSet}
+              onNodeDrag={onNodeDrag}
+              onNodeDragStart={onNodeDragStart}
+            />
+            <TablePagination
+              currentPage={data?.page_number || 1}
+              totalPages={data?.num_pages || 0}
+              pageSize={data?.page_size || 15}
+              onPageChange={onPageNumberChange}
+              onPageSizeChange={onPageSizeChange}
+              totalItems={data?.total_items}
+              t={t}
+            />
+          </Stack>
+        </Group>
       </Stack>
       {draggedPagesDocParentID &&
         draggedPagesDocID &&
@@ -421,6 +460,7 @@ interface DataItemsArgs {
   onNodeDrag: () => void
   onNodeDragStart: (nodeID: string, event: React.DragEvent) => void
   onTableRowClick: (row: NodeType, openInSecondaryPanel: boolean) => void
+  onTableRowDragStart: (row: NodeType, event: React.DragEvent) => void
   queryParams: NodeQueryParams
 }
 
@@ -433,7 +473,8 @@ function DataItems({
   selectedItemsSet,
   onNodeDrag,
   onNodeDragStart,
-  onTableRowClick
+  onTableRowClick,
+  onTableRowDragStart
 }: DataItemsArgs) {
   const {t} = useTranslation()
   const {panelId} = usePanel()
@@ -492,6 +533,7 @@ function DataItems({
       onSortChange={handleSortChange}
       onSelectionChange={handleSelectionChange}
       onRowClick={onTableRowClick}
+      onRowDragStart={onTableRowDragStart}
       withCheckbox={true}
       withSecondaryPanelTriggerColumn={panelId == "main"}
       getRowId={getRowId}

@@ -1,4 +1,4 @@
-import {MantineProvider} from "@mantine/core"
+import {MantineProvider, v8CssVariablesResolver} from "@mantine/core"
 import {Notifications} from "@mantine/notifications"
 import * as React from "react"
 import * as ReactDOM from "react-dom/client"
@@ -23,11 +23,18 @@ async function start_app() {
 
   ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-      <MantineProvider theme={theme}>
+      <MantineProvider
+        theme={theme}
+        cssVariablesResolver={v8CssVariablesResolver}
+      >
         <Provider store={store}>
           <RouterProvider router={router} />
         </Provider>
-        <Notifications position="bottom-center" limit={5} />
+        <Notifications
+          position="bottom-center"
+          limit={5}
+          pauseResetOnHover="notification"
+        />
       </MantineProvider>
     </React.StrictMode>
   )

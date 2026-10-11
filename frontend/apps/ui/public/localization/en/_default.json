@@ -600,6 +600,15 @@
       "home": "Your home folder is empty",
       "inbox": "Your inbox folder is empty",
       "folder": "Folder is empty"
+    },
+    "folderTree": {
+      "label": "Folders",
+      "show": "Show folder tree",
+      "hide": "Hide folder tree",
+      "loadError": "Could not load folders",
+      "showDocuments": "Show documents",
+      "hideDocuments": "Hide documents",
+      "moreDocuments": "Show all documents…"
     }
   },
   "filterPlaceholder": "Filter...",

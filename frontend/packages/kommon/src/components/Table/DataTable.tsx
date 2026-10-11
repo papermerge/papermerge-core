@@ -36,6 +36,8 @@ interface Args<T> {
   selectedRows?: Set<string>
   onSelectionChange?: (selectedRows: Set<string>) => void
   getRowId?: (row: T) => string
+  // when provided, rows become draggable
+  onRowDragStart?: (row: T, event: React.DragEvent) => void
 }
 
 export default function DataTable<T>({
@@ -51,7 +53,8 @@ export default function DataTable<T>({
   withSecondaryPanelTriggerColumn = true,
   selectedRows = new Set(),
   onSelectionChange,
-  getRowId = (row: T) => String((row as any).id)
+  getRowId = (row: T) => String((row as any).id),
+  onRowDragStart
 }: Args<T>) {
   const theme = useMantineTheme()
   const {colorScheme} = useMantineColorScheme()
@@ -159,6 +162,7 @@ export default function DataTable<T>({
           selectedRows={selectedRows}
           onRowSelect={handleRowSelect}
           getRowId={getRowId}
+          onRowDragStart={onRowDragStart}
         />
       </Table>
     </Box>
@@ -209,6 +213,7 @@ interface RowArgs<T> {
   selectedRows?: Set<string>
   onRowSelect?: (rowId: string, checked: boolean) => void
   getRowId?: (row: T) => string
+  onRowDragStart?: (row: T, event: React.DragEvent) => void
 }
 
 const TableRow = <T,>({
@@ -221,7 +226,8 @@ const TableRow = <T,>({
   withSecondaryPanelTriggerColumn = true,
   selectedRows = new Set(),
   onRowSelect,
-  getRowId = (row: T) => String((row as any).id)
+  getRowId = (row: T) => String((row as any).id),
+  onRowDragStart
 }: RowArgs<T>) => {
   const highlighted = isRowHighlighted(row, highlightRowID)
   const rowId = getRowId(row)
@@ -265,7 +271,14 @@ const TableRow = <T,>({
   })
 
   return (
-    <Table.Tr style={rowStyle} className="row-hover">
+    <Table.Tr
+      style={rowStyle}
+      className="row-hover"
+      draggable={onRowDragStart !== undefined}
+      onDragStart={
+        onRowDragStart ? event => onRowDragStart(row, event) : undefined
+      }
+    >
       <LeadColumnBody
         rowId={rowId}
         isSelected={isSelected}
@@ -298,6 +311,7 @@ interface TBodyArgs<T> {
     event?: React.MouseEvent
   ) => void
   getRowId?: (row: T) => string
+  onRowDragStart?: (row: T, event: React.DragEvent) => void
 }
 
 function TableBody<T>({
@@ -311,7 +325,8 @@ function TableBody<T>({
   withSecondaryPanelTriggerColumn = true,
   selectedRows = new Set(),
   onRowSelect,
-  getRowId = (row: T) => String((row as any).id)
+  getRowId = (row: T) => String((row as any).id),
+  onRowDragStart
 }: TBodyArgs<T>) {
   const fullWidthFlex: MantineStyleProp = {
     height: "100%",
@@ -335,6 +350,7 @@ function TableBody<T>({
       selectedRows={selectedRows}
       onRowSelect={onRowSelect}
       getRowId={getRowId}
+      onRowDragStart={onRowDragStart}
     />
   ))
 

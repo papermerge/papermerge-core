@@ -10,7 +10,7 @@ This document lists the current maintainers, what they are responsible for, and 
 
 | Maintainer | GitHub ID                                 |
 |------------|-------------------------------------------|
-| Nossam    | [delasio](https://github.com/dl3sm)        |
+| Nossama    | [delasio](https://github.com/delasio)     |
 | Thomas     | [Jalst](https://github.com/Jalst)         |
 | martinf    | [marfoerst](https://github.com/marfoerst) |
 

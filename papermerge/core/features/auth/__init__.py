@@ -26,6 +26,7 @@ from papermerge.core.features.auth.remote_scheme import RemoteUserScheme
 from papermerge.core.features.auth import scopes
 from papermerge.core.utils import base64
 from papermerge.core.db.engine import get_db
+from papermerge.core.config import settings
 # Import PAT validation
 from papermerge.core.features.api_tokens.db.api import is_pat_token, \
     validate_token
@@ -245,11 +246,20 @@ async def _authenticate_with_remote_user(
 
     Returns the user if authentication succeeds, None otherwise.
     """
+    if not settings.remote_user_auth_enabled:
+        logger.debug("Remote-User authentication is disabled")
+        return None
+
     logger.debug(f"Attempting Remote-User authentication for {remote_user.username}")
     # Get or create user
     try:
         user = await usr_dbapi.get_user(db_session, remote_user.username)
     except NoResultFound:
+        if not settings.remote_user_auto_create:
+            logger.warning(
+                f"Remote user '{remote_user.username}' not found and remote_user_auto_create is disabled"
+            )
+            return None
         logger.debug(f"User {remote_user.username} not found, creating...")
         user = await usr_dbapi.create_user(
             db_session,
@@ -257,6 +267,13 @@ async def _authenticate_with_remote_user(
             email=remote_user.email,
             password="-",
         )
+
+    # Protect against superuser impersonation via remote header
+    if user.is_superuser and not settings.remote_user_allow_superuser:
+        logger.warning(
+            f"Remote user '{remote_user.username}' is a superuser, but remote_user_allow_superuser is disabled"
+        )
+        return None
 
     # Build scopes list
     total_scopes = []
@@ -294,7 +311,7 @@ async def get_current_user(
     Authentication methods are tried in this order:
     1. PAT token (if token starts with "pm_")
     2. JWT token (if token contains dots)
-    3. Remote-User header (from trusted proxy)
+    3. Remote-User header (from trusted proxy, if enabled)
 
     This allows:
     - CLI tools to use PAT tokens
@@ -319,8 +336,13 @@ async def get_current_user(
             logger.debug("Token identified as JWT")
             user = await _authenticate_with_jwt(token, db_session, security_scopes)
 
-    # Fall back to Remote-User header
-    if user is None and remote_user:
+        # If a token was provided, do not fall back to remote_user
+        if user is None:
+            logger.debug("Provided token authentication failed")
+            raise exc.HTTP401Unauthorized()
+
+    # Remote-User header is only used if no token was provided
+    elif remote_user:
         logger.debug("Falling back to Remote-User authentication")
         user = await _authenticate_with_remote_user(
             remote_user, db_session, security_scopes

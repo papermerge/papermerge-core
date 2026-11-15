@@ -40,11 +40,15 @@ class Settings(BaseSettings):
     prefix: str = ''
 
     # Remote user config
+    remote_user_auth_enabled: bool = False
     remote_user_header: str = "X-Forwarded-User"
     remote_groups_header: str = "X-Forwarded-Groups"
     remote_roles_header: str = "X-Forwarded-Roles"
     remote_name_header: str = "X-Forwarded-Name"
     remote_email_header: str = "X-Forwarded-Email"
+    remote_user_trusted_proxies: str = ""
+    remote_user_auto_create: bool = False
+    remote_user_allow_superuser: bool = False
 
     @computed_field
     @property

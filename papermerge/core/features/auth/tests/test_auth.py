@@ -1,6 +1,7 @@
 from httpx import AsyncClient
 
 from papermerge.core import types
+from papermerge.core.config import settings
 from papermerge.core.features.auth import extract_token_data
 from papermerge.core.features.users.db.orm import User
 
@@ -11,7 +12,12 @@ async def test_get_current_user(token):
     assert token_data is not None
 
 
-async def test_remote_based_authentication(montaigne: User, api_client: AsyncClient):
+async def test_remote_based_authentication(
+    montaigne: User, api_client: AsyncClient, monkeypatch
+):
+    monkeypatch.setattr(settings, "remote_user_auth_enabled", True)
+    monkeypatch.setattr(settings, "remote_user_trusted_proxies", "testclient,127.0.0.1")
+    monkeypatch.setattr(settings, "remote_user_allow_superuser", True)
     response = await api_client.get("/users/me", headers={"X-Forwarded-User": "montaigne"})
     assert response.status_code == 200
 
